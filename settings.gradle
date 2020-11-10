@@ -1,0 +1,30 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
+    }
+    plugins {
+        id 'org.jetbrains.kotlin.jvm' version "$kotlin_version"
+        id 'org.jetbrains.kotlin.plugin.serialization' version "$kotlin_version"
+        id 'org.jetbrains.kotlin.kapt' version "$kotlin_version"
+    }
+}
+
+rootProject.name = 'geary'
+
+//TODO clean up how we check if properties exist
+if (properties.containsKey("useLocalGuiy") && useLocalGuiy.toBoolean()) includeBuild '../guiy'
+
+if (properties.containsKey("useLocalIdofront") && useLocalIdofront.toBoolean()){
+    includeBuild('../idofront') {
+        dependencySubstitution {
+            substitute module("com.mineinabyss:idofront") with project(":")
+            substitute module("com.mineinabyss:idofront-annotation") with project(":annotation")
+            substitute module("com.mineinabyss:idofront-processor") with project(":processor")
+        }
+    }
+}
+
+include "processor"
+
+//include "benchmarks"

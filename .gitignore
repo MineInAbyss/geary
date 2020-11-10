@@ -1,0 +1,12 @@
+.idea
+.gradle
+build
+target
+*/out/production/
+
+.classpath
+.project
+.settings
+eclipse
+*.ipr
+*.iws

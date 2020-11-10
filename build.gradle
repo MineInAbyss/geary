@@ -1,0 +1,103 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '6.0.0'
+    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'org.jetbrains.kotlin.kapt'
+    id 'io.github.0ffz.github-packages' version '1.0.5'
+}
+
+apply from: 'https://raw.githubusercontent.com/MineInAbyss/shared-gradle/master/common.gradle'
+
+group 'com.mineinabyss'
+version plugin_version
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven { url 'https://repo.codemc.io/repository/nms/' }
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url 'https://erethon.de/repo/' } //HeadLib
+    maven { url 'https://hub.spigotmc.org/nexus/content/groups/public/' }
+    maven { url "https://repo.dmulloy2.net/nexus/repository/public/" }
+    maven { url 'https://maven.sk89q.com/repo/' } //WorldGuard/Edit
+    maven { url 'https://papermc.io/repo/repository/maven-public/' }
+    maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
+    maven githubPackage.invoke("MineInAbyss/Idofront")
+    maven githubPackage.invoke("MineInAbyss/Guiy")
+    maven githubPackage.invoke("MineInAbyss/KotlinSpice")
+    maven githubPackage.invoke("MineInAbyss/Mobzy")
+    maven { url 'http://nexus.okkero.com/repository/maven-releases/' }
+    maven { url 'https://jitpack.io' } //JitPack
+
+    mavenLocal()
+}
+
+repositories {
+    maven { url 'http://nexus.okkero.com/repository/maven-releases/' }
+}
+dependencies {
+    compileOnly "com.okkero.skedule:skedule:1.2.6"
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+        freeCompilerArgs += "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
+    }
+}
+compileTestKotlin { kotlinOptions { jvmTarget = "1.8" } }
+
+java {
+    sourceCompatibility(JavaVersion.VERSION_1_8)
+    withSourcesJar()
+}
+
+dependencies {
+    compileOnly "com.destroystokyo.paper:paper-api:$server_version"
+//    compileOnly "org.spigotmc:spigot:$server_version" // NMS
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compileOnly "org.cultofclang.minecraft:kotlinspice:$kotlin_version-9"
+
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.0.1"
+//    implementation "com.derongan.minecraft:guiy:0.1.0-alpha.7"
+    implementation "com.mineinabyss:idofront:0.3.24"
+
+//    compileOnly "de.erethon:headlib:3.0.2"
+//    compileOnly "com.sk89q.worldguard:worldguard-bukkit:7.0.2"
+    compileOnly "com.comphenix.protocol:ProtocolLib:4.5.0"
+//    compileOnly "com.github.WesJD.AnvilGUI:anvilgui:5e3ab1f721"
+
+    //ecs-related libs
+    implementation "net.onedaybeard.bitvector:bitvector-jvm:0.1.4"
+    implementation 'com.zaxxer:SparseBitSet:1.1'
+    implementation 'org.clapper:javautil:3.2.0'
+}
+
+shadowJar {
+    getArchiveBaseName().set("Geary")
+    getArchiveClassifier().set(null)
+
+    relocate 'com.derongan.minecraft.guiy', "${project.group}.${project.name}.guiy".toLowerCase()
+    relocate 'com.mineinabyss.idofront', "${project.group}.${project.name}.idofront".toLowerCase()
+
+    minimize {
+        exclude(dependency('de.erethon:headlib:3.0.2'))
+        exclude(dependency('com.github.WesJD.AnvilGUI:anvilgui:5e3ab1f721'))
+    }
+}
+build.dependsOn shadowJar
+
+publishing {
+    repositories {
+        maven githubPackagePublish.invoke("MineInAbyss/Mobzy")
+    }
+    publications {
+        gpr(MavenPublication) {
+            from components.java
+        }
+    }
+}
