@@ -1,33 +1,38 @@
-# Mobzy
-
-![CI](https://github.com/MineInAbyss/Mobzy/workflows/Java%20CI/badge.svg)
+# Geary
 
 ### Overview
 
-Mobzy is a plugin for Spigot/Paper 1.16.2 which allows creating custom entities through an ECS (Entity Component System). It is currently under heavy development.
+Geary is a Spigot plugin that adds an Engine for an Entity Component System (ECS). It's currently rather slow (though relative to Minecraft this is insignificant), but it adds some features unique to our situation with Minecraft. 
 
-It also handles injecting custom NMS entity types into the server, and packet interception to allow clients to see them. Some of these more general-use features may be placed into their own library eventually.
+Geary is also written in and for Kotlin, reducing boilerplate code for end users and internally (by avoiding writing wrappers around existing Java libraries).
 
-### ECS Plans
+We have two Spigot plugins using this ECS to add Minecraft-specific functionality:
+- [Mobzy](https://github.com/MineInAbyss/Mobzy) - Custom NMS entities that bridge ECS and Minecraft's very inheritance based design.
+- [Looty](https://github.com/MineInAbyss/Looty) - Custom, highly configurable items
 
-ECS code currently in this project will eventually be moved into another project, Geary, which will also support custom items.
+## Features
 
-The project uses kotlinx.serialization for quick and easy serialization of components. This part of the project will eventually be delegated to Story, which will also allow components to be serialized seamlessly to entities.
+### kotlinx.serialization backend
 
-Currently, the ECS supports defining custom entity types with static components, as well as pathfinder goals (if they have a registered serializable wrapper class). The plan is to eventually implement a behaviour tree system that fits nicely with the ECS to replace pathfinder goals entirely.
+All components are serialized through kotlinx.serialization, allowing them to be stored in many formats, including JSON, Yaml, and CBOR. 
 
-Some performance improvements (such as archetypes) may be added for the backend for systems iterating over entities, though compared to the cost of Bukkit's operations and Minecraft's poorly optimized entities, the current system is almost sufficient. 
+Both Mobzy and Looty use this to allow for config-based entity creation, and storing components directly in Minecraft's persistent data containers.
 
-![Custom Mobs](https://media.discordapp.net/attachments/464678554681081856/625036159772524582/2019-09-21_19.39.27.png?width=1210&height=681)
+## Planned 
 
-### Use
+### Nice Kotlin syntax
 
-- We have [Github packages](https://github.com/MineInAbyss/Mobzy/packages) set up for use with gradle/maven, however the API isn't properly maintained yet. Many things will change as the ECS is being built.
-- There currently isn't a wiki explaining how to use things yet. We'll get one done once the plugin is properly released. You can ask about things in #plugin-dev on our [Discord](https://discord.gg/QXPCk2y).
+Idiomatic Kotlin syntax for instantiating entities, iterating over them in systems, and creating components.
 
-### Additional features
+### Static entity types
 
-- Custom hitboxes (Minecraft normally lets the client handle that, so it wouldn't work on entity types it doesn't know).
-- A small pathfinder goal API, with some premade pathfinders for our own mobs.
-- Custom mob spawning system
-- Configuration for mob drops and spawn locations
+A Geary entity can have an entity type whose static components it will inherit. Accessing a component on the entity will return the entity type's component if the entity itself doesn't have one present.
+
+## Limitations
+- Lack of automatic data migration for components.
+- Speed could be greatly improved with some caching and better engine design.
+
+## Usage
+
+- We have [Github packages](https://github.com/MineInAbyss/Geary/packages) set up for use with gradle/maven, however the API isn't properly maintained yet. Many things will change as the ECS is being built.
+- We'll eventually make a wiki explaining how to use things. In the meantime, you can ask questions in `#plugin-dev` on our [Discord](https://discord.gg/QXPCk2y) server.
