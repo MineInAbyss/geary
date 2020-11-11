@@ -1,18 +1,15 @@
-name: Mobzy
+name: Geary
 version: @plugin_version@
 author: Offz
-main: com.mineinabyss.mobzy.Mobzy
+main: com.mineinabyss.geary.minecraft.Geary
 api-version: 1.16
-depend: [WorldGuard, ProtocolLib, KotlinSpice]
+depend: [KotlinSpice]
 
-prefix: Mobzy
-description: A custom entities API
+prefix: Geary
+description: An Entity Component System written for Spigot
 
 commands:
-  mobzy:
-    aliases: [mz, mobzy]
-    description: The main mobzy command
-    usage: /mobzy [sub command]
-  looty:
-    description: The main looty command
-    usage: /looty [sub command]
+  geary:
+    aliases: [geary]
+    description: The main Geary command
+    usage: /geary [sub command]

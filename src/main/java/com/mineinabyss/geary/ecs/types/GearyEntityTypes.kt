@@ -17,13 +17,14 @@ abstract class GearyEntityTypes<T : GearyEntityType> {
             (_types.entries.find { type === it.value }?.key
                     ?: error("Static entity template was accessed but not registered in any configuration"))
 
+    //TODO perhaps better immutability
     /** Registers entity types with the plugin. These will be cleared after a command reload is triggered. */
-    internal fun registerType(name: String, type: T) {
+    fun registerType(name: String, type: T) {
         _types[name] = type
     }
 
     /** Registers entity types with the plugin. These will be cleared after a command reload is triggered. */
-    internal fun registerTypes(types: Map<String, T>) {
+    fun registerTypes(types: Map<String, T>) {
         this._types += types
     }
 
@@ -35,7 +36,7 @@ abstract class GearyEntityTypes<T : GearyEntityType> {
     }
 
     /** Clears all stored [_types], but not [persistentTypes] */
-    internal fun reset() {
+    fun reset() {
         _types.clear()
         _types += persistentTypes
     }

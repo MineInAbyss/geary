@@ -24,7 +24,3 @@ if (properties.containsKey("useLocalIdofront") && useLocalIdofront.toBoolean()){
         }
     }
 }
-
-include "processor"
-
-//include "benchmarks"

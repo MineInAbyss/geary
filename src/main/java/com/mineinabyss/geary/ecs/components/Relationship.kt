@@ -51,7 +51,7 @@ fun GearyEntity.clearChildren() {
 
 @Serializable
 data class Parent(
-        internal var id: GearyEntity?
+        var id: GearyEntity?
 ) : GearyComponent()
 
 /** Update child's parent without recursion. */

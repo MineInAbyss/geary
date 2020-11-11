@@ -36,26 +36,6 @@ repositories {
     mavenLocal()
 }
 
-repositories {
-    maven { url 'http://nexus.okkero.com/repository/maven-releases/' }
-}
-dependencies {
-    compileOnly "com.okkero.skedule:skedule:1.2.6"
-}
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs += "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
-    }
-}
-compileTestKotlin { kotlinOptions { jvmTarget = "1.8" } }
-
-java {
-    sourceCompatibility(JavaVersion.VERSION_1_8)
-    withSourcesJar()
-}
-
 dependencies {
     compileOnly "com.destroystokyo.paper:paper-api:$server_version"
 //    compileOnly "org.spigotmc:spigot:$server_version" // NMS
@@ -68,7 +48,7 @@ dependencies {
 
 //    compileOnly "de.erethon:headlib:3.0.2"
 //    compileOnly "com.sk89q.worldguard:worldguard-bukkit:7.0.2"
-    compileOnly "com.comphenix.protocol:ProtocolLib:4.5.0"
+//    compileOnly "com.comphenix.protocol:ProtocolLib:4.5.0"
 //    compileOnly "com.github.WesJD.AnvilGUI:anvilgui:5e3ab1f721"
 
     //ecs-related libs
@@ -81,19 +61,13 @@ shadowJar {
     getArchiveBaseName().set("Geary")
     getArchiveClassifier().set(null)
 
-    relocate 'com.derongan.minecraft.guiy', "${project.group}.${project.name}.guiy".toLowerCase()
     relocate 'com.mineinabyss.idofront', "${project.group}.${project.name}.idofront".toLowerCase()
-
-    minimize {
-        exclude(dependency('de.erethon:headlib:3.0.2'))
-        exclude(dependency('com.github.WesJD.AnvilGUI:anvilgui:5e3ab1f721'))
-    }
 }
 build.dependsOn shadowJar
 
 publishing {
     repositories {
-        maven githubPackagePublish.invoke("MineInAbyss/Mobzy")
+        maven githubPackagePublish.invoke("MineInAbyss/Geary")
     }
     publications {
         gpr(MavenPublication) {
@@ -101,3 +75,11 @@ publishing {
         }
     }
 }
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+        freeCompilerArgs += "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
+    }
+}
+compileTestKotlin { kotlinOptions { jvmTarget = "1.8" } }

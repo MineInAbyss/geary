@@ -6,8 +6,8 @@ import com.mineinabyss.geary.ecs.components.StaticType
 import com.mineinabyss.geary.ecs.components.parent
 import com.mineinabyss.geary.ecs.components.removeChildren
 import com.mineinabyss.geary.ecs.events.EntityRemovedEvent
-import com.mineinabyss.geary.ecs.geary
 import com.mineinabyss.geary.ecs.systems.TickingSystem
+import com.mineinabyss.geary.minecraft.geary
 import com.mineinabyss.idofront.events.call
 import com.okkero.skedule.schedule
 import com.zaxxer.sparsebits.SparseBitSet
