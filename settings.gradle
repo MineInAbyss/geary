@@ -12,9 +12,6 @@ pluginManagement {
 
 rootProject.name = 'geary'
 
-//TODO clean up how we check if properties exist
-if (properties.containsKey("useLocalGuiy") && useLocalGuiy.toBoolean()) includeBuild '../guiy'
-
 if (properties.containsKey("useLocalIdofront") && useLocalIdofront.toBoolean()){
     includeBuild('../idofront') {
         dependencySubstitution {

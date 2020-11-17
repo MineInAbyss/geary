@@ -60,9 +60,6 @@ class EngineImpl : Engine {
 
     override fun getComponentFor(kClass: ComponentClass, id: Int): GearyComponent? = runCatching {
         components[kClass]?.get(id)
-    }.getOrNull() ?: runCatching {
-        //tries finding a component in the static type if a StaticType component is present
-        (components[StaticType::class]?.get(id) as StaticType).getComponent(kClass)
     }.getOrNull()
 
     override fun hasComponentFor(kClass: ComponentClass, id: Int) = bitsets[kClass]?.contains(id) ?: false

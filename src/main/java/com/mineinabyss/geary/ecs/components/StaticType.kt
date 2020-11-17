@@ -1,18 +1,23 @@
 package com.mineinabyss.geary.ecs.components
 
 import com.mineinabyss.geary.ecs.GearyComponent
+import com.mineinabyss.geary.ecs.types.EntityTypeManager
+import com.mineinabyss.geary.ecs.types.GearyEntityType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.reflect.KClass
+import kotlinx.serialization.Transient
 
 @Serializable
 @SerialName("mobzy:statictype")
 class StaticType(
-        val name: String
+        val plugin: String,
+        val name: String,
 ) : GearyComponent() {
-    // TODO val type by lazy {  }
-    //TODO types param to work with other things
-    fun getComponent(kClass: KClass<out GearyComponent>/*types: GearyEntityTypes<*>*/): GearyComponent? =
-            TODO()
-//            LootyTypes[name].staticComponentMap[kClass]
+    init {
+        persist = true
+    }
+
+    val entityType: GearyEntityType by lazy {
+        EntityTypeManager.get(plugin)?.get(name) ?: error("Type $plugin:$name not found")
+    }
 }

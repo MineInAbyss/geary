@@ -19,6 +19,8 @@ class Geary : JavaPlugin() {
 //        reloadConfig()
 
         registerService<Engine>(EngineImpl())
+
+        GearyCommands
     }
 
     override fun onDisable() {

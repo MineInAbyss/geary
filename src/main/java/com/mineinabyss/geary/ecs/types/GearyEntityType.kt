@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.types
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.components.StaticType
 import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlinx.serialization.PolymorphicSerializer
@@ -43,7 +44,8 @@ abstract class GearyEntityType {
     fun instantiateComponents(existingComponents: Set<GearyComponent> = emptySet()): Set<GearyComponent> =
             Formats.yamlFormat.decodeFromString(componentSerializer, serializedComponents).apply {
                 forEach { it.persist = true }
-            } + existingComponents// + staticComponents TODO incorporate into the types system
+            } + existingComponents + staticComponents + StaticType(types.plugin.name, name)
+    // + staticComponents TODO incorporate into the types system
 
     /** Creates a new instance of this type's defined entity, which is registered with the [Engine] */
     abstract fun instantiate(): GearyEntity
