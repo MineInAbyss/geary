@@ -18,10 +18,10 @@ import org.clapper.util.misc.SparseArrayList
 import java.util.*
 import kotlin.reflect.KClass
 
-typealias ComponentClass = KClass<out GearyComponent>
+internal typealias ComponentClass = KClass<out GearyComponent>
 
 
-class EngineImpl : Engine {
+public class EngineImpl : Engine {
     init {
         //tick all systems every interval ticks
         geary.schedule {
@@ -50,7 +50,7 @@ class EngineImpl : Engine {
     @Synchronized
     override fun getNextId(): Int = if (removedEntities.isNotEmpty()) removedEntities.pop() ?: ++currId else ++currId
 
-    override fun addSystem(system: TickingSystem) = registeredSystems.add(system)
+    override fun addSystem(system: TickingSystem): Boolean = registeredSystems.add(system)
 
     //TODO get a more memory efficient list, right now this is literally just an ArrayList that auto expands
     private val components = mutableMapOf<ComponentClass, SparseArrayList<GearyComponent>>()
@@ -62,7 +62,7 @@ class EngineImpl : Engine {
         components[kClass]?.get(id)
     }.getOrNull()
 
-    override fun hasComponentFor(kClass: ComponentClass, id: Int) = bitsets[kClass]?.contains(id) ?: false
+    override fun hasComponentFor(kClass: ComponentClass, id: Int): Boolean = bitsets[kClass]?.contains(id) ?: false
     override fun removeComponentFor(kClass: ComponentClass, id: Int) {
         val bitset = bitsets[kClass] ?: return
         if (bitset[id]) {
@@ -119,7 +119,7 @@ class EngineImpl : Engine {
     }
 }
 
-inline fun SparseBitSet.forEachBit(block: (Int) -> Unit) {
+internal inline fun SparseBitSet.forEachBit(block: (Int) -> Unit) {
     var i = 0
     while (i >= 0) {
         i = nextSetBit(i + 1)

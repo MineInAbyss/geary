@@ -6,21 +6,21 @@ import kotlinx.serialization.Serializable
 
 //TODO document and maybe split into two files
 @Serializable
-class Children(
+public class Children(
         internal val ids: MutableSet<GearyEntity> = mutableSetOf()
 ) : GearyComponent()
 
-val GearyEntity.children
-    get(): Set<GearyEntity> = get<Children>()?.ids?.toSet() ?: emptySet()
+public val GearyEntity.children: Set<GearyEntity>
+    get() = get<Children>()?.ids?.toSet() ?: emptySet()
 
-fun GearyEntity.addChild(child: GearyEntity) {
+public fun GearyEntity.addChild(child: GearyEntity) {
     getOrAdd { Children() }.apply {
         ids += child
     }
     child.unsafeParent = this
 }
 
-fun GearyEntity.addChildren(vararg children: GearyEntity) {
+public fun GearyEntity.addChildren(vararg children: GearyEntity) {
     getOrAdd { Children() }.apply {
         ids.addAll(children)
     }
@@ -32,17 +32,17 @@ private fun GearyEntity.unsafeRemoveChild(child: GearyEntity) {
     get<Children>()?.ids?.remove(child)
 }
 
-fun GearyEntity.removeChild(child: GearyEntity) {
+public fun GearyEntity.removeChild(child: GearyEntity) {
     unsafeRemoveChild(child)
     child.unsafeParent = null
 }
 
-fun GearyEntity.removeChildren(vararg children: GearyEntity) {
+public fun GearyEntity.removeChildren(vararg children: GearyEntity) {
     children.forEach { it.unsafeParent = null }
     get<Children>()?.ids?.removeAll(children)
 }
 
-fun GearyEntity.clearChildren() {
+public fun GearyEntity.clearChildren() {
     val ids = get<Children>()?.ids ?: return
     ids.forEach { it.unsafeParent = null }
     ids.clear()
@@ -50,7 +50,7 @@ fun GearyEntity.clearChildren() {
 
 
 @Serializable
-data class Parent(
+public data class Parent(
         var id: GearyEntity?
 ) : GearyComponent()
 
@@ -64,7 +64,7 @@ private var GearyEntity.unsafeParent
     }
 
 /** Set an entity's parent. Also adds/removes this child from the parent. */
-var GearyEntity.parent
+public var GearyEntity.parent: GearyEntity?
     get() = get<Parent>()?.id
     set(parent) {
         this.parent?.unsafeRemoveChild(this)

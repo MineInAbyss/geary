@@ -9,18 +9,18 @@ import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.plus
 
-object Formats {
+public object Formats {
     private var module = EmptySerializersModule
 
     @ExperimentalSerializationApi
-    val cborFormat by lazy {
+    public val cborFormat: Cbor by lazy {
         Cbor {
             serializersModule = module
             encodeDefaults = false
         }
     }
 
-    val jsonFormat by lazy {
+    public val jsonFormat: Json by lazy {
         Json {
             serializersModule = module
             useArrayPolymorphism = true
@@ -28,11 +28,11 @@ object Formats {
         }
     }
 
-    val yamlFormat by lazy {
+    public val yamlFormat: Yaml by lazy {
         Yaml(serializersModule = module, configuration = YamlConfiguration(encodeDefaults = false))
     }
 
-    fun addSerializerModule(module: SerializersModule) {
+    internal fun addSerializerModule(module: SerializersModule) {
         this.module += module
     }
 }

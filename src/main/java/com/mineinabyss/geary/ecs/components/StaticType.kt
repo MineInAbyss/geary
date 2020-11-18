@@ -9,15 +9,15 @@ import kotlinx.serialization.Transient
 
 @Serializable
 @SerialName("mobzy:statictype")
-class StaticType(
-        val plugin: String,
-        val name: String,
+public class StaticType(
+        public val plugin: String,
+        public val name: String,
 ) : GearyComponent() {
     init {
         persist = true
     }
 
-    val entityType: GearyEntityType by lazy {
+    public val entityType: GearyEntityType by lazy {
         EntityTypeManager.get(plugin)?.get(name) ?: error("Type $plugin:$name not found")
     }
 }

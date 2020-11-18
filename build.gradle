@@ -14,7 +14,7 @@ group 'com.mineinabyss'
 version plugin_version
 
 kotlin {
-    explicitApiWarning()
+    explicitApi()
 }
 
 repositories {

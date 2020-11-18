@@ -17,27 +17,29 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import kotlin.collections.set
 
-object BukkitEntityAccess: Listener {
-    val mobMap = mutableMapOf<Entity, GearyEntity>()
+public object BukkitEntityAccess : Listener {
+    private val mobMap = mutableMapOf<Entity, GearyEntity>()
 
-    fun registerEntity(entity: Entity, gearyEntity: GearyEntity) {
+    private fun registerEntity(entity: Entity, gearyEntity: GearyEntity) {
         mobMap[entity] = gearyEntity
     }
 
-    fun removeEntity(entity: Entity) = mobMap.remove(entity)
+    private fun removeEntity(entity: Entity) = mobMap.remove(entity)
 
-    fun getEntity(entity: Entity) = mobMap[entity]
+    public fun getEntity(entity: Entity): GearyEntity? = mobMap[entity]
     //TODO a way of getting ID given a vanilla entity as fallback
 
 
-    fun registerPlayer(player: Player) = registerEntity(player,
-            Engine.entity {
-                //TODO allow Looty to add onto this
-                addComponents(setOf(PlayerComponent(player.uniqueId)/*, ChildItemCache()*/))
-            }
-    )
+    public fun registerPlayer(player: Player) {
+        registerEntity(player,
+                Engine.entity {
+                    //TODO allow Looty to add onto this
+                    addComponents(setOf(PlayerComponent(player.uniqueId)/*, ChildItemCache()*/))
+                }
+        )
+    }
 
-    fun unregisterPlayer(player: Player) {
+    public fun unregisterPlayer(player: Player) {
         val gearyPlayer = geary(player) ?: return
         //TODO allow Looty to add onto this
         /*ItemTrackerSystem.apply {
@@ -50,7 +52,7 @@ object BukkitEntityAccess: Listener {
     }
 
     @EventHandler
-    fun onEntityRemoved(e: EntityRemovedEvent) {
+    public fun onEntityRemoved(e: EntityRemovedEvent) {
         //clear itself from parent and children
         e.entity.apply {
             with<PlayerComponent> { (player) ->
@@ -61,12 +63,12 @@ object BukkitEntityAccess: Listener {
 }
 
 //TODO allow mobzy to add onto this
-fun geary(entity: Entity): GearyEntity? = /*entity.toMobzy() ?: */BukkitEntityAccess.getEntity(entity)
-inline fun geary(entity: Entity, run: GearyEntity.() -> Unit): GearyEntity? = (/*entity.toMobzy() ?: */BukkitEntityAccess.getEntity(entity))?.apply(run)
+public fun geary(entity: Entity): GearyEntity? = /*entity.toMobzy() ?: */BukkitEntityAccess.getEntity(entity)
+public inline fun geary(entity: Entity, run: GearyEntity.() -> Unit): GearyEntity? = (/*entity.toMobzy() ?: */BukkitEntityAccess.getEntity(entity))?.apply(run)
 
 //TODO add the rest of the GearyEntity operations here
-inline fun <reified T : GearyComponent> Entity.get(): T? = geary(this)?.get()
+public inline fun <reified T : GearyComponent> Entity.get(): T? = geary(this)?.get()
 
-inline fun <reified T : GearyComponent> Entity.with(let: (T) -> Unit) = geary(this)?.get<T>()?.let(let)
+public inline fun <reified T : GearyComponent> Entity.with(let: (T) -> Unit): Unit? = geary(this)?.get<T>()?.let(let)
 
-inline fun <reified T : GearyComponent> Entity.has(): Boolean = geary(this)?.has<T>() ?: false
+public inline fun <reified T : GearyComponent> Entity.has(): Boolean = geary(this)?.has<T>() ?: false

@@ -9,6 +9,9 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.SerializersModuleBuilder
 import org.bukkit.plugin.Plugin
 
+private val registeredExtensions = mutableMapOf<Plugin, GearyExtension>()
+
+//TODO make a reusable solution for extensions within idofront
 public class GearyExtension(
         internal val plugin: Plugin,
         internal val types: GearyEntityTypes<*>,
@@ -29,5 +32,6 @@ public class GearyExtension(
 public fun Plugin.attachToGeary(
         types: GearyEntityTypes<*>,
         init: GearyExtension.() -> Unit) {
+    //TODO support plugins being re-registered after a reload
     GearyExtension(this, types).apply(init)
 }

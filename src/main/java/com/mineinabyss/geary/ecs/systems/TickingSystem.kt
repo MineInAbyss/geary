@@ -1,5 +1,5 @@
 package com.mineinabyss.geary.ecs.systems
 
-abstract class TickingSystem(val interval: Int = 1) {
-    abstract fun tick()
+public abstract class TickingSystem(public val interval: Int = 1) {
+    public abstract fun tick()
 }

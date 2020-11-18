@@ -9,45 +9,48 @@ import org.bukkit.plugin.Plugin
  * @property persistentTypes A map of types similar to [types], which persists (command) reloads. Useful for other
  * plugins which register types via code and can't re-register them easily.
  */
-abstract class GearyEntityTypes<T : GearyEntityType>(
-        val plugin: Plugin
+public abstract class GearyEntityTypes<T : GearyEntityType>(
+        public val plugin: Plugin
 ) {
-    val types: List<String> get() = _types.keys.toList()
+    public val types: List<String> get() = _types.keys.toList()
 
     private val _types: MutableMap<String, T> = mutableMapOf()
     private val persistentTypes: MutableMap<String, T> = mutableMapOf()
 
     /** When accessing a type by name, will convert the input to follow a defined pattern. */
-    open fun String.toEntityTypeName(): String = this
+    protected open fun String.toEntityTypeName(): String = this
 
-    operator fun get(name: String): T = _types[name.toEntityTypeName()]
-            ?: error("Static entity template for $name not found")
+    public operator fun get(name: String): T = _types[name.toEntityTypeName()]
+            ?: error("Static entity type for $name not found")
 
+    //TODO set the template name upon instantiation
     /** Gets the entity name from a type [T] if registered, otherwise throws an [IllegalArgumentException]*/
-    fun getNameForTemplate(type: GearyEntityType): String =
+    public fun getNameForTemplate(type: GearyEntityType): String =
             (_types.entries.find { type === it.value }?.key
-                    ?: error("Static entity template was accessed but not registered in any configuration"))
+                    ?: error("Static entity type was accessed but not registered in any configuration"))
 
     //TODO perhaps better immutability
-    /** Registers entity types with the plugin. These will be cleared after a command reload is triggered. */
-    fun registerType(name: String, type: T) {
+    /** Registers an entity type with the plugin. It will be cleared after a command reload is triggered. */
+    public fun registerType(name: String, type: T) {
+        type.name = name
         _types[name] = type
     }
 
     /** Registers entity types with the plugin. These will be cleared after a command reload is triggered. */
-    fun registerTypes(types: Map<String, T>) {
+    public fun registerTypes(types: Map<String, T>) {
         this._types += types
     }
 
     /** Registers persistent entity types with the plugin which do not get cleared after a command reload is triggered. */
-    fun registerPersistentType(mob: String, type: T) {
+    public fun registerPersistentType(mob: String, type: T) {
         val entityName = mob.toEntityTypeName()
         _types[entityName] = type
         persistentTypes[entityName] = type
     }
 
+    //TODO should maybe be internal
     /** Clears all stored [_types], but not [persistentTypes] */
-    fun reset() {
+    public fun reset() {
         _types.clear()
         _types += persistentTypes
     }

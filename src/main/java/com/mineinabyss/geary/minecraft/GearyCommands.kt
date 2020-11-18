@@ -9,7 +9,7 @@ import com.mineinabyss.idofront.messaging.info
 import com.mineinabyss.idofront.plugin.getService
 
 @ExperimentalCommandDSL
-object GearyCommands: IdofrontCommandExecutor() {
+internal object GearyCommands: IdofrontCommandExecutor() {
     override val commands = commands(geary) {
         "geary" {
             "components"{

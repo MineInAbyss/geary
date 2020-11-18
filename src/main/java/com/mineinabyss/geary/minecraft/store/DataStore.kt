@@ -10,19 +10,19 @@ import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
-inline fun <reified T : GearyComponent> PersistentDataContainer.encode(serializer: KSerializer<T> = cborFormat.serializersModule.serializer(), value: T) {
+public inline fun <reified T : GearyComponent> PersistentDataContainer.encode(serializer: KSerializer<T> = cborFormat.serializersModule.serializer(), value: T) {
     val encoded = cborFormat.encodeToByteArray(serializer, value)
     this[NamespacedKey(geary, T::class.qualifiedName ?: error("")), PersistentDataType.BYTE_ARRAY] = encoded
 }
 
 //TODO make others pass plugin here
-inline fun <reified T : GearyComponent> PersistentDataContainer.decode(serializer: KSerializer<T> = cborFormat.serializersModule.serializer()): T? {
+public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(serializer: KSerializer<T> = cborFormat.serializersModule.serializer()): T? {
     val encoded = this[NamespacedKey(geary, T::class.qualifiedName ?: error("")), PersistentDataType.BYTE_ARRAY]
             ?: return null
     return cborFormat.decodeFromByteArray(serializer, encoded)
 }
 
-fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>) {
+public fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>) {
     isGearyEntity = true
     //remove all currently present keys, since removing a component should be reflected here as well
     keys.filter { it.namespace == "gearyecs" }.forEach { remove(it) }
@@ -38,10 +38,7 @@ fun PersistentDataContainer.encodeComponents(components: Collection<GearyCompone
     }
 }
 
-fun String.toMCKey() = replace(":", "_")
-fun String.toSerialKey() = replace("_", ":")
-
-fun PersistentDataContainer.decodeComponents(): Set<GearyComponent> {
+public fun PersistentDataContainer.decodeComponents(): Set<GearyComponent> {
     //key is serialname, we find all the valid ones registered in our module and use those serializers to deserialize
     return keys.mapNotNull { key ->
         val serializer = cborFormat.serializersModule.getPolymorphic(GearyComponent::class, key.key.toSerialKey())
@@ -51,7 +48,10 @@ fun PersistentDataContainer.decodeComponents(): Set<GearyComponent> {
     }.toSet()
 }
 
-var PersistentDataContainer.isGearyEntity
+private fun String.toMCKey() = replace(":", "_")
+private fun String.toSerialKey() = replace("_", ":")
+
+public var PersistentDataContainer.isGearyEntity: Boolean
     get() = has(Engine.componentsKey, PersistentDataType.BYTE)
     set(value) =
         if (value)

@@ -8,9 +8,9 @@ import org.bukkit.plugin.java.JavaPlugin
 import kotlin.time.ExperimentalTime
 
 /** Gets [Geary] via Bukkit once, then sends that reference back afterwards */
-val geary: Geary by lazy { JavaPlugin.getPlugin(Geary::class.java) }
+public val geary: Geary by lazy { JavaPlugin.getPlugin(Geary::class.java) }
 
-class Geary : JavaPlugin() {
+public class Geary : JavaPlugin() {
     @ExperimentalCommandDSL
     @ExperimentalTime
     override fun onEnable() {
