@@ -1,12 +1,17 @@
 package com.mineinabyss.geary.dsl
 
+import com.mineinabyss.geary.ecs.GearyComponent
+import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.systems.TickingSystem
 import com.mineinabyss.geary.ecs.types.EntityTypeManager
 import com.mineinabyss.geary.ecs.types.GearyEntityTypes
+import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.SerializersModuleBuilder
+import org.bukkit.entity.Entity
+import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 
 private val registeredExtensions = mutableMapOf<Plugin, GearyExtension>()
@@ -26,6 +31,24 @@ public class GearyExtension(
 
     public fun serializers(init: SerializersModuleBuilder.() -> Unit) {
         Formats.addSerializerModule(SerializersModule { init() })
+    }
+
+    public fun bukkitEntityAccess(init: BukkitEntityAccessExtension.() -> Unit) {
+        BukkitEntityAccessExtension().apply(init)
+    }
+
+    public class BukkitEntityAccessExtension {
+        public fun onPlayerRegister(list: MutableList<GearyComponent>.(Player) -> Unit) {
+            BukkitEntityAccess.playerRegistryExtensions += list
+        }
+
+        public fun onPlayerUnregister(run: (GearyEntity, Player) -> Unit){
+            BukkitEntityAccess.playerUnregisterExtensions += run
+        }
+
+        public fun entityConversion(getter: Entity.() -> GearyEntity?){
+            BukkitEntityAccess.bukkitEntityAccessExtensions += getter
+        }
     }
 }
 

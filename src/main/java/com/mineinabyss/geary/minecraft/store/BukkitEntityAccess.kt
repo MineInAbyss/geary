@@ -19,6 +19,9 @@ import kotlin.collections.set
 
 public object BukkitEntityAccess : Listener {
     private val mobMap = mutableMapOf<Entity, GearyEntity>()
+    internal val bukkitEntityAccessExtensions = mutableSetOf<Entity.() -> GearyEntity?>()
+    internal val playerRegistryExtensions = mutableListOf<MutableList<GearyComponent>.(Player) -> Unit>()
+    internal val playerUnregisterExtensions = mutableListOf<(GearyEntity, Player) -> Unit>()
 
     private fun registerEntity(entity: Entity, gearyEntity: GearyEntity) {
         mobMap[entity] = gearyEntity
@@ -26,27 +29,34 @@ public object BukkitEntityAccess : Listener {
 
     private fun removeEntity(entity: Entity) = mobMap.remove(entity)
 
-    public fun getEntity(entity: Entity): GearyEntity? = mobMap[entity]
+    public fun getEntity(entity: Entity): GearyEntity? =
+            //get first non null mapping in registered extensions
+            bukkitEntityAccessExtensions
+                    .asSequence()
+                    .map { it(entity) }
+                    .firstOrNull { it != null }
+            //or try to find the mob in the map
+                    ?: mobMap[entity]
     //TODO a way of getting ID given a vanilla entity as fallback
-
 
     public fun registerPlayer(player: Player) {
         registerEntity(player,
                 Engine.entity {
-                    //TODO allow Looty to add onto this
-                    addComponents(setOf(PlayerComponent(player.uniqueId)/*, ChildItemCache()*/))
+                    addComponents(setOf(PlayerComponent(player.uniqueId)) +
+                            playerRegistryExtensions.flatMap { mapping ->
+                                mutableListOf<GearyComponent>().apply { mapping(player) }
+                            })
                 }
         )
     }
 
     public fun unregisterPlayer(player: Player) {
         val gearyPlayer = geary(player) ?: return
-        //TODO allow Looty to add onto this
-        /*ItemTrackerSystem.apply {
-            val inventory = player.get<ChildItemCache>() ?: return
-            inventory.updateAndSaveItems(player.inventory, gearyPlayer)
-            inventory.clear()
-        }*/
+
+        for (extension in playerUnregisterExtensions) {
+            extension(gearyPlayer, player)
+        }
+
         gearyPlayer.remove()
         removeEntity(player)
     }
@@ -63,8 +73,9 @@ public object BukkitEntityAccess : Listener {
 }
 
 //TODO allow mobzy to add onto this
-public fun geary(entity: Entity): GearyEntity? = /*entity.toMobzy() ?: */BukkitEntityAccess.getEntity(entity)
-public inline fun geary(entity: Entity, run: GearyEntity.() -> Unit): GearyEntity? = (/*entity.toMobzy() ?: */BukkitEntityAccess.getEntity(entity))?.apply(run)
+public fun geary(entity: Entity): GearyEntity? = BukkitEntityAccess.getEntity(entity)
+
+public inline fun geary(entity: Entity, run: GearyEntity.() -> Unit): GearyEntity? = geary(entity)?.apply(run)
 
 //TODO add the rest of the GearyEntity operations here
 public inline fun <reified T : GearyComponent> Entity.get(): T? = geary(this)?.get()
