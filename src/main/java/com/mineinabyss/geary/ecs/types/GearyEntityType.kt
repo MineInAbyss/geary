@@ -7,7 +7,6 @@ import com.mineinabyss.geary.ecs.engine.ComponentClass
 import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlinx.serialization.PolymorphicSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.SetSerializer
@@ -46,9 +45,15 @@ public abstract class GearyEntityType {
     }
 
     public fun instantiateComponents(existingComponents: Set<GearyComponent> = emptySet()): Set<GearyComponent> =
-            Formats.yamlFormat.decodeFromString(componentSerializer, serializedComponents).apply {
-                forEach { it.persist = true }
-            } + existingComponents + staticComponents + StaticType(types.plugin.name, name)
+            //TODO not sure if all non-static components should be serialized (marked as persistent.
+            // There is probably a use case for components that are always added on entity load, but the serialized
+            // version is only stored within the static type.
+            //The quick fix for now is to make `persistent` a serialized value so each component can decide
+            // whether it should be persistent for itself. This uses more data.
+            Formats.yamlFormat.decodeFromString(componentSerializer, serializedComponents)/*.onEach { it.persist = true }*/ +
+                    existingComponents +
+                    staticComponents +
+                    StaticType(types.plugin.name, name)
     // + staticComponents TODO incorporate into the types system
 
     /** Creates a new instance of this type's defined entity, which is registered with the [Engine] */
