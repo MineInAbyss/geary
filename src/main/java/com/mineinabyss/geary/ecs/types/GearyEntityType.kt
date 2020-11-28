@@ -7,21 +7,36 @@ import com.mineinabyss.geary.ecs.engine.ComponentClass
 import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlinx.serialization.PolymorphicSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.SetSerializer
 
 @Serializable
 public abstract class GearyEntityType {
-    //TODO shouldn't be public
-    public val staticComponents: Set<GearyComponent> = mutableSetOf()
-    public val components: Set<GearyComponent> = setOf()
-
     /** Resulting set will be added to the list of components, but won't be serialized. */
-    protected open fun MutableSet<GearyComponent>.additionalComponents() {}
+    protected open fun MutableSet<GearyComponent>.addComponents() {}
 
     /** Resulting set will be added to the list of static components, but won't be serialized. */
-    protected open fun MutableSet<GearyComponent>.additionalStaticComponents() {}
+    protected open fun MutableSet<GearyComponent>.addStaticComponents() {}
+
+    @SerialName("staticComponents")
+    private val _staticComponents = mutableSetOf<GearyComponent>()
+
+    @SerialName("components")
+    private val _components = mutableSetOf<GearyComponent>()
+
+    private val staticComponents: Set<GearyComponent> by lazy {
+        _staticComponents.apply {
+            addStaticComponents()
+        }.toSet()
+    }
+
+    private val components: Set<GearyComponent> by lazy {
+        _components.apply {
+            addComponents()
+        }.toSet()
+    }
 
     protected abstract val types: GearyEntityTypes<*>
 
@@ -34,21 +49,20 @@ public abstract class GearyEntityType {
         Formats.yamlFormat.encodeToString(
                 componentSerializer,
                 //FIXME this plus here will add persistent components when we might not want that
-                components.plus(mutableSetOf<GearyComponent>().apply { additionalComponents() })
+                components
         )
     }
 
     public val staticComponentMap: Map<ComponentClass, GearyComponent> by lazy {
         staticComponents
-                .plus(mutableSetOf<GearyComponent>().apply { additionalStaticComponents() })
                 .associateBy { it::class }
     }
 
     public fun instantiateComponents(existingComponents: Set<GearyComponent> = emptySet()): Set<GearyComponent> =
-            //TODO not sure if all non-static components should be serialized (marked as persistent.
-            // There is probably a use case for components that are always added on entity load, but the serialized
-            // version is only stored within the static type.
-            //The quick fix for now is to make `persistent` a serialized value so each component can decide
+    //TODO not sure if all non-static components should be serialized (marked as persistent.
+    // There is probably a use case for components that are always added on entity load, but the serialized
+    // version is only stored within the static type.
+    //The quick fix for now is to make `persistent` a serialized value so each component can decide
             // whether it should be persistent for itself. This uses more data.
             Formats.yamlFormat.decodeFromString(componentSerializer, serializedComponents)/*.onEach { it.persist = true }*/ +
                     existingComponents +
