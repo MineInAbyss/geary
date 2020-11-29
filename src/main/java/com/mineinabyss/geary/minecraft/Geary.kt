@@ -2,8 +2,10 @@ package com.mineinabyss.geary.minecraft
 
 import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.engine.EngineImpl
+import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.plugin.registerService
+import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.time.ExperimentalTime
 
@@ -21,6 +23,11 @@ public class Geary : JavaPlugin() {
         registerService<Engine>(EngineImpl())
 
         GearyCommands
+
+        //Register all players with the ECS
+        Bukkit.getOnlinePlayers().forEach { player ->
+            BukkitEntityAccess.registerPlayer(player)
+        }
     }
 
     override fun onDisable() {
