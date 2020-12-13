@@ -48,7 +48,6 @@ public abstract class GearyEntityType {
     private val serializedComponents: String by lazy {
         Formats.yamlFormat.encodeToString(
                 componentSerializer,
-                //FIXME this plus here will add persistent components when we might not want that
                 components
         )
     }

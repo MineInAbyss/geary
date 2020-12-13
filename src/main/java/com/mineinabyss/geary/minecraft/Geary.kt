@@ -2,32 +2,36 @@ package com.mineinabyss.geary.minecraft
 
 import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.engine.EngineImpl
+import com.mineinabyss.geary.minecraft.config.GearyConfig
 import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
+import com.mineinabyss.idofront.messaging.logInfo
 import com.mineinabyss.idofront.plugin.registerService
+import com.okkero.skedule.schedule
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.time.ExperimentalTime
-
-/** Gets [Geary] via Bukkit once, then sends that reference back afterwards */
-public val geary: Geary by lazy { JavaPlugin.getPlugin(Geary::class.java) }
 
 public class Geary : JavaPlugin() {
     @ExperimentalCommandDSL
     @ExperimentalTime
     override fun onEnable() {
         logger.info("On enable has been called")
-//        saveDefaultConfig()
-//        reloadConfig()
+        saveDefaultConfig()
+        reloadConfig()
 
         registerService<Engine>(EngineImpl())
 
         GearyCommands
 
-        //Register all players with the ECS
-        Bukkit.getOnlinePlayers().forEach { player ->
-            BukkitEntityAccess.registerPlayer(player)
+        //Register all players with the ECS after all plugins loaded
+        schedule {
+            waitFor(1)
+            Bukkit.getOnlinePlayers().forEach { player ->
+                BukkitEntityAccess.registerPlayer(player)
+            }
         }
+
     }
 
     override fun onDisable() {
