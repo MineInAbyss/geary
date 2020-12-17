@@ -13,10 +13,6 @@ public class StaticType(
         public val plugin: String,
         public val name: String,
 ) : GearyComponent() {
-    init {
-        persist = true
-    }
-
     public val entityType: GearyEntityType by lazy {
         EntityTypeManager.get(plugin)?.get(name) ?: error("Type $plugin:$name not found")
     }

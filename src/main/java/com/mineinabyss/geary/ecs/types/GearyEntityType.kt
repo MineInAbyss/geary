@@ -3,39 +3,51 @@ package com.mineinabyss.geary.ecs.types
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.components.StaticType
+import com.mineinabyss.geary.ecs.components.addComponents
+import com.mineinabyss.geary.ecs.components.addPersistingComponents
 import com.mineinabyss.geary.ecs.engine.ComponentClass
 import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.serialization.Formats
+import com.mineinabyss.geary.minecraft.store.encodeComponents
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.SetSerializer
+import org.bukkit.persistence.PersistentDataContainer
 
 @Serializable
 public abstract class GearyEntityType {
-    /** Resulting set will be added to the list of components, but won't be serialized. */
+    /** Resulting set will be added to the list of instance components, but won't be serialized. */
     protected open fun MutableSet<GearyComponent>.addComponents() {}
+
+    /** Resulting set will be added to the list of persisting components and will be encoded to the entity's
+     * [PersistentDataContainer] if applicable. */
+    protected open fun MutableSet<GearyComponent>.addPersistingComponents() {}
 
     /** Resulting set will be added to the list of static components, but won't be serialized. */
     protected open fun MutableSet<GearyComponent>.addStaticComponents() {}
 
+    @SerialName("instanceComponents")
+    private val _instanceComponents = mutableSetOf<GearyComponent>()
+
+    @SerialName("persistingComponents")
+    private val _persistingComponents = mutableSetOf<GearyComponent>()
+
     @SerialName("staticComponents")
     private val _staticComponents = mutableSetOf<GearyComponent>()
 
-    @SerialName("components")
-    private val _components = mutableSetOf<GearyComponent>()
 
-    private val staticComponents: Set<GearyComponent> by lazy {
-        _staticComponents.apply {
-            addStaticComponents()
-        }.toSet()
+    private val instanceComponents: Set<GearyComponent> by lazy {
+        _instanceComponents.apply { addComponents() }.toSet()
     }
 
-    private val components: Set<GearyComponent> by lazy {
-        _components.apply {
-            addComponents()
-        }.toSet()
+    private val persistingComponents: Set<GearyComponent> by lazy {
+        _persistingComponents.apply { addPersistingComponents() }.toSet()
+    }
+
+    private val staticComponents: Set<GearyComponent> by lazy {
+        _staticComponents.apply { addStaticComponents() }.toSet()
     }
 
     protected abstract val types: GearyEntityTypes<*>
@@ -44,33 +56,37 @@ public abstract class GearyEntityType {
     public lateinit var name: String
         internal set
 
+    @Serializable
+    private data class ComponentDeepCopy(
+            val instance: Set<GearyComponent>,
+            val persist: Set<GearyComponent>
+    )
+
     //TODO this is the safest and cleanest way to deepcopy. Check how this performs vs deepcopy's reflection method.
-    private val serializedComponents: String by lazy {
-        Formats.yamlFormat.encodeToString(
-                componentSerializer,
-                components
+    private val serializedComponents by lazy {
+        Formats.cborFormat.encodeToByteArray(
+                ComponentDeepCopy.serializer(),
+                ComponentDeepCopy(instanceComponents, persistingComponents)
         )
     }
 
-    public val staticComponentMap: Map<ComponentClass, GearyComponent> by lazy {
-        staticComponents
-                .associateBy { it::class }
+    private val deepCopied get() = Formats.cborFormat.decodeFromByteArray(ComponentDeepCopy.serializer(), serializedComponents)
+
+
+    public fun decodeTo(entity: GearyEntity) {
+        val (instance, persist) = deepCopied
+        //order of addition determines which group overrides which
+        entity.addComponents(staticComponents + instance + StaticType(types.plugin.name, name))
+        entity.addPersistingComponents(persist)
     }
 
-    public fun instantiateComponents(existingComponents: Set<GearyComponent> = emptySet()): Set<GearyComponent> =
-    //TODO not sure if all non-static components should be serialized (marked as persistent.
-    // There is probably a use case for components that are always added on entity load, but the serialized
-    // version is only stored within the static type.
-    //The quick fix for now is to make `persistent` a serialized value so each component can decide
-            // whether it should be persistent for itself. This uses more data.
-            Formats.yamlFormat.decodeFromString(componentSerializer, serializedComponents)/*.onEach { it.persist = true }*/ +
-                    existingComponents +
-                    staticComponents +
-                    StaticType(types.plugin.name, name)
-    // + staticComponents TODO incorporate into the types system
+    public fun encodeTo(pdc: PersistentDataContainer) {
+        pdc.encodeComponents(deepCopied.persist + StaticType(types.plugin.name, name))
+    }
 
-    /** Creates a new instance of this type's defined entity, which is registered with the [Engine] */
-    public abstract fun instantiate(): GearyEntity
+    public val staticComponentMap: Map<ComponentClass, GearyComponent> by lazy {
+        staticComponents.associateBy { it::class }
+    }
 
     public inline fun <reified T : GearyComponent> get(): T? = staticComponentMap[T::class] as? T
 

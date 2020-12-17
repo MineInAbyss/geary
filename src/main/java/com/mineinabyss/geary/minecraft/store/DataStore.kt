@@ -1,13 +1,15 @@
 package com.mineinabyss.geary.minecraft.store
 
 import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
 import com.mineinabyss.geary.minecraft.geary
+import com.mineinabyss.geary.minecraft.isGearyEntity
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
 import org.bukkit.NamespacedKey
+import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
+import org.bukkit.persistence.PersistentDataHolder
 import org.bukkit.persistence.PersistentDataType
 
 public inline fun <reified T : GearyComponent> PersistentDataContainer.encode(serializer: KSerializer<T> = cborFormat.serializersModule.serializer(), value: T) {
@@ -48,13 +50,7 @@ public fun PersistentDataContainer.decodeComponents(): Set<GearyComponent> {
     }.toSet()
 }
 
+
 private fun String.toMCKey() = replace(":", "_")
 private fun String.toSerialKey() = replace("_", ":")
 
-public var PersistentDataContainer.isGearyEntity: Boolean
-    get() = has(Engine.componentsKey, PersistentDataType.BYTE)
-    set(value) =
-        if (value)
-            set(Engine.componentsKey, PersistentDataType.BYTE, 1) //TODO are there any empty keys?
-        else
-            remove(Engine.componentsKey)
