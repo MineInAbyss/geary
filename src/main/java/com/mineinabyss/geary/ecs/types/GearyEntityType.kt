@@ -20,7 +20,7 @@ import org.bukkit.persistence.PersistentDataContainer
 
 @Serializable
 @SerialName("geary:type")
-public abstract class GearyEntityType : GearyComponent() {
+public abstract class GearyEntityType : GearyComponent {
     /** Resulting set will be added to the list of instance components, but won't be serialized. */
     protected open fun MutableSet<GearyComponent>.addComponents() {}
 

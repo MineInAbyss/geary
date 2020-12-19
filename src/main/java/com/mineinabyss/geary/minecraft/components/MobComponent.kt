@@ -5,4 +5,4 @@ import org.bukkit.entity.Mob
 
 public data class MobComponent(
         val mob: Mob
-) : GearyComponent()
+) : GearyComponent

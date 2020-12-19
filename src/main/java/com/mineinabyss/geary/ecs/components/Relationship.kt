@@ -8,7 +8,7 @@ import com.mineinabyss.geary.ecs.GearyEntity
 //TODO have UUIDs for referencing children/parents after an engine restart, then make serializable
 public class Children(
         internal val ids: MutableSet<GearyEntity> = mutableSetOf()
-) : GearyComponent()
+) : GearyComponent
 
 public val GearyEntity.children: Set<GearyEntity>
     get() = get<Children>()?.ids?.toSet() ?: emptySet()
@@ -51,7 +51,7 @@ public fun GearyEntity.clearChildren() {
 
 public data class Parent(
         var id: GearyEntity?
-) : GearyComponent()
+) : GearyComponent
 
 /** Update child's parent without recursion. */
 private var GearyEntity.unsafeParent

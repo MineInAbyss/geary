@@ -11,7 +11,7 @@ import java.util.*
 public class PlayerComponent(
         @Serializable(with = UUIDSerializer::class)
         public val uuid: UUID
-) : GearyComponent() {
+) : GearyComponent {
     public val player: Player get() = Bukkit.getPlayer(uuid) ?: error("UUID is not a player")
 
     public operator fun component1(): Player = player

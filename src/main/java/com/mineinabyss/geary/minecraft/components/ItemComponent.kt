@@ -7,7 +7,7 @@ import org.bukkit.persistence.PersistentDataContainer
 public data class ItemComponent(
         var item: ItemStack, //TODO should setter be internal?
         var slot: Int,
-) : GearyComponent() {
+) : GearyComponent {
 
     //TODO move into the entity itself, not component
     /** Serializes the entity's components to an [ItemStack]'s [PersistentDataContainer] */
