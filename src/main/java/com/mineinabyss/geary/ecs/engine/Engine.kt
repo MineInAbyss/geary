@@ -21,7 +21,7 @@ public interface Engine {
     public fun getComponentFor(kClass: ComponentClass, id: Int): GearyComponent?
     public fun hasComponentFor(kClass: ComponentClass, id: Int): Boolean
     public fun removeComponentFor(kClass: ComponentClass, id: Int)
-    public fun <T : GearyComponent> addComponentFor(id: Int, component: T): T
+    public fun <T : GearyComponent> addComponentFor(kClass: ComponentClass, id: Int, component: T): T
 
     public fun removeEntity(entity: GearyEntity)
 
@@ -34,7 +34,7 @@ public interface Engine {
     }
 
     public fun addComponentsFor(id: Int, components: Set<GearyComponent>) {
-        components.forEach { addComponentFor(id, it) }
+        components.forEach { addComponentFor(it::class, id, it) }
     }
 }
 

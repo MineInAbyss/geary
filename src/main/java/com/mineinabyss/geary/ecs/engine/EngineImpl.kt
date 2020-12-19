@@ -70,9 +70,9 @@ public class EngineImpl : Engine {
         }
     }
 
-    override fun <T : GearyComponent> addComponentFor(id: Int, component: T): T {
-        components.getOrPut(component::class, { SparseArrayList() })[id] = component
-        bitsets.getOrPut(component::class, { bitsOf() }).set(id)
+    override fun <T : GearyComponent> addComponentFor(kClass: ComponentClass, id: Int, component: T): T {
+        components.getOrPut(kClass, { SparseArrayList() })[id] = component
+        bitsets.getOrPut(kClass, { bitsOf() }).set(id)
         return component
     }
 

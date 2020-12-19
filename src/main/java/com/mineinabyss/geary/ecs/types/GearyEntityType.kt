@@ -18,7 +18,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import org.bukkit.persistence.PersistentDataContainer
 
-@Serializable(with = GearyEntityType.Serializer::class)
+@Serializable
 @SerialName("geary:type")
 public abstract class GearyEntityType : GearyComponent() {
     /** Resulting set will be added to the list of instance components, but won't be serialized. */
@@ -95,7 +95,8 @@ public abstract class GearyEntityType : GearyComponent() {
 
     public inline fun <reified T : GearyComponent> has(): Boolean = staticComponentMap.containsKey(T::class)
 
-    public class Serializer : KSerializer<GearyEntityType> {
+
+    public object ByReferenceSerializer : KSerializer<GearyEntityType> {
         override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("entitytype", PrimitiveKind.STRING)
 
         override fun deserialize(decoder: Decoder): GearyEntityType {

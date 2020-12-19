@@ -6,12 +6,13 @@ import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.engine.Engine
 
-public inline fun <T : GearyComponent> GearyEntity.addComponent(component: T): T = Engine.addComponentFor(gearyId, component)
+public inline fun <reified T : GearyComponent> GearyEntity.addComponent(component: T): T =
+        Engine.addComponentFor(T::class, gearyId, component)
 public inline fun GearyEntity.addComponents(components: Set<GearyComponent>) {
     Engine.addComponentsFor(gearyId, components)
 }
 
-public fun <T : GearyComponent> GearyEntity.addPersistingComponent(component: T) {
+public inline fun <reified T : GearyComponent> GearyEntity.addPersistingComponent(component: T) {
     addComponent(component)
     getOrAdd { PersistingComponents() }.add(component)
 }
