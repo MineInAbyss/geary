@@ -9,5 +9,7 @@ internal object EntityTypeManager {
         typeMap[key.name] = types
     }
 
-    fun get(key: String) = typeMap[key]
+    operator fun get(plugin: String) = typeMap[plugin]
+
+    operator fun get(plugin: String, type: String) = get(plugin)?.get(type)
 }

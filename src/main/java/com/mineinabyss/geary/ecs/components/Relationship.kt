@@ -1,11 +1,11 @@
 package com.mineinabyss.geary.ecs.components
 
+//TODO add documentation and maybe split into two files
+
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
-import kotlinx.serialization.Serializable
 
-//TODO document and maybe split into two files
-@Serializable
+//TODO have UUIDs for referencing children/parents after an engine restart, then make serializable
 public class Children(
         internal val ids: MutableSet<GearyEntity> = mutableSetOf()
 ) : GearyComponent()
@@ -49,7 +49,6 @@ public fun GearyEntity.clearChildren() {
 }
 
 
-@Serializable
 public data class Parent(
         var id: GearyEntity?
 ) : GearyComponent()

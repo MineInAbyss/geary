@@ -3,6 +3,7 @@ package com.mineinabyss.geary.minecraft.store
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.components.addPersistingComponents
 import com.mineinabyss.geary.ecs.components.getPersistingComponents
+import com.mineinabyss.geary.ecs.type
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataHolder
 
@@ -13,8 +14,9 @@ public fun GearyEntity.encodeComponents(pdc: PersistentDataContainer) {
 
 /** Decodes a [PersistentDataContainer]'s components, adding them to this entity and its list of persisting components */
 public fun GearyEntity.decodeComponents(pdc: PersistentDataContainer) {
+    type?.decodeComponentsTo(this)
+    //currently components written to this entity's PDC will override the ones defined in type
     addPersistingComponents(pdc.decodeComponents())
-    //TODO check for static type component and add its components
 }
 
 /** Encodes this entity's persisting components into its [PersistentDataContainer] */

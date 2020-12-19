@@ -2,22 +2,25 @@ package com.mineinabyss.geary.ecs.types
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.components.StaticType
 import com.mineinabyss.geary.ecs.components.addComponents
 import com.mineinabyss.geary.ecs.components.addPersistingComponents
 import com.mineinabyss.geary.ecs.engine.ComponentClass
-import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.minecraft.store.encodeComponents
-import kotlinx.serialization.PolymorphicSerializer
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.builtins.SetSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import org.bukkit.persistence.PersistentDataContainer
 
-@Serializable
-public abstract class GearyEntityType {
+@Serializable(with = GearyEntityType.Serializer::class)
+@SerialName("geary:type")
+public abstract class GearyEntityType : GearyComponent() {
     /** Resulting set will be added to the list of instance components, but won't be serialized. */
     protected open fun MutableSet<GearyComponent>.addComponents() {}
 
@@ -73,15 +76,15 @@ public abstract class GearyEntityType {
     private val deepCopied get() = Formats.cborFormat.decodeFromByteArray(ComponentDeepCopy.serializer(), serializedComponents)
 
 
-    public fun decodeTo(entity: GearyEntity) {
+    public fun decodeComponentsTo(entity: GearyEntity) {
         val (instance, persist) = deepCopied
         //order of addition determines which group overrides which
-        entity.addComponents(staticComponents + instance + StaticType(types.plugin.name, name))
+        entity.addComponents(staticComponents + instance + this)
         entity.addPersistingComponents(persist)
     }
 
-    public fun encodeTo(pdc: PersistentDataContainer) {
-        pdc.encodeComponents(deepCopied.persist + StaticType(types.plugin.name, name))
+    public fun encodeComponentsTo(pdc: PersistentDataContainer) {
+        pdc.encodeComponents(deepCopied.persist + this)
     }
 
     public val staticComponentMap: Map<ComponentClass, GearyComponent> by lazy {
@@ -92,7 +95,16 @@ public abstract class GearyEntityType {
 
     public inline fun <reified T : GearyComponent> has(): Boolean = staticComponentMap.containsKey(T::class)
 
-    internal companion object {
-        private val componentSerializer = SetSerializer(PolymorphicSerializer(GearyComponent::class))
+    public class Serializer : KSerializer<GearyEntityType> {
+        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("entitytype", PrimitiveKind.STRING)
+
+        override fun deserialize(decoder: Decoder): GearyEntityType {
+            val (plugin, type) = decoder.decodeString().split(':')
+            return EntityTypeManager[plugin, type] ?: error("Type: $plugin:$type not found while deserializing")
+        }
+
+        override fun serialize(encoder: Encoder, value: GearyEntityType) {
+            encoder.encodeString("${value.types.plugin}:${value.name}")
+        }
     }
 }

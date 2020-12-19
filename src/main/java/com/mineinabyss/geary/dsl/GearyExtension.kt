@@ -18,11 +18,12 @@ private val registeredExtensions = mutableMapOf<Plugin, GearyExtension>()
 
 //TODO make a reusable solution for extensions within idofront
 public class GearyExtension(
-        internal val plugin: Plugin,
-        internal val types: GearyEntityTypes<*>,
+        plugin: Plugin,
+        types: GearyEntityTypes<*>?,
 ) {
     init {
-        EntityTypeManager.add(plugin, types)
+        if (types != null)
+            EntityTypeManager.add(plugin, types)
     }
 
     public fun systems(vararg systems: TickingSystem) {
@@ -42,18 +43,18 @@ public class GearyExtension(
             BukkitEntityAccess.playerRegistryExtensions += list
         }
 
-        public fun onPlayerUnregister(run: (GearyEntity, Player) -> Unit){
+        public fun onPlayerUnregister(run: (GearyEntity, Player) -> Unit) {
             BukkitEntityAccess.playerUnregisterExtensions += run
         }
 
-        public fun entityConversion(getter: Entity.() -> GearyEntity?){
+        public fun entityConversion(getter: Entity.() -> GearyEntity?) {
             BukkitEntityAccess.bukkitEntityAccessExtensions += getter
         }
     }
 }
 
 public fun Plugin.attachToGeary(
-        types: GearyEntityTypes<*>,
+        types: GearyEntityTypes<*>? = null,
         init: GearyExtension.() -> Unit) {
     //TODO support plugins being re-registered after a reload
     GearyExtension(this, types).apply(init)

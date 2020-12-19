@@ -1,13 +1,18 @@
 
 package com.mineinabyss.geary.ecs
 
+import com.mineinabyss.geary.ecs.components.get
 import com.mineinabyss.geary.ecs.engine.Engine
+import com.mineinabyss.geary.ecs.types.GearyEntityType
 
 public interface GearyEntity {
     public val gearyId: Int
 
     public operator fun component1(): Int = gearyId
 }
+
+//TODO pretty sure this won't get the subclasses (i.e. MobType) since we haven't marked reified T with `out`
+public val GearyEntity.type: GearyEntityType? get() = get<GearyEntityType>()
 
 public fun GearyEntity.remove() {
     Engine.removeEntity(this)
