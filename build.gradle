@@ -5,7 +5,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '6.0.0'
     id 'org.jetbrains.kotlin.jvm'
     id 'org.jetbrains.kotlin.plugin.serialization'
-    id 'io.github.0ffz.github-packages' version '1.1.0'
+    id 'io.github.0ffz.github-packages' version '1.2.0'
 }
 
 apply from: 'https://raw.githubusercontent.com/MineInAbyss/shared-gradle/master/common.gradle'
