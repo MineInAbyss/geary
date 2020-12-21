@@ -19,12 +19,12 @@ public fun GearyEntity.decodeComponentsFrom(pdc: PersistentDataContainer) {
     val components = pdc.decodeComponents()
 
     //if there's an entity type component on the PDC, we need to add it before we try and decode components from it.
-    components.filterIsInstance<GearyEntityType>().firstOrNull()?.let {
+    components.asSequence().filterIsInstance<GearyEntityType>().firstOrNull()?.let {
         addPersistingComponent(it)
     }
     type?.decodeComponentsTo(this)
 
-    //currently components written to this entity's PDC will override the ones defined in type
+    //components written to this entity's PDC will override the ones defined in type
     addPersistingComponents(components)
 }
 

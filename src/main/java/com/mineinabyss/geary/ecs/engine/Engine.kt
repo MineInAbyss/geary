@@ -10,6 +10,7 @@ import org.bukkit.NamespacedKey
 
 public interface Engine {
     public companion object : Engine by getService() {
+        //TODO all other components use key gearyecs, change it here for consistency
         public val componentsKey: NamespacedKey = NamespacedKey("geary", "components")
     }
 

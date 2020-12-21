@@ -6,10 +6,12 @@ import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.systems.TickingSystem
 import com.mineinabyss.geary.ecs.types.EntityTypeManager
+import com.mineinabyss.geary.ecs.types.GearyEntityType
 import com.mineinabyss.geary.ecs.types.GearyEntityTypes
 import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.SerializersModuleBuilder
+import kotlinx.serialization.modules.polymorphic
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
@@ -53,9 +55,18 @@ public class GearyExtension(
     }
 }
 
-public fun Plugin.attachToGeary(
-        types: GearyEntityTypes<*>? = null,
+public inline fun <reified T: GearyEntityType> Plugin.attachToGeary(
+        types: GearyEntityTypes<T>? = null,
         init: GearyExtension.() -> Unit) {
     //TODO support plugins being re-registered after a reload
-    GearyExtension(this, types).apply(init)
+    GearyExtension(this, types).apply(init).apply {
+        serializers {
+            polymorphic(GearyComponent::class) {
+                // Whenever we're using this serial module to deserialize our components we want to access them by
+                // reference through geary, not by using the actual EntityType's serializer like we would when
+                // reading config files.
+                subclass(T::class, GearyEntityType.ByReferenceSerializer(T::class))
+            }
+        }
+    }
 }

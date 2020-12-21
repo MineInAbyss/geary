@@ -17,6 +17,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import org.bukkit.persistence.PersistentDataContainer
+import kotlin.reflect.KClass
 
 @Serializable
 @SerialName("geary:type")
@@ -96,16 +97,23 @@ public abstract class GearyEntityType : GearyComponent {
     public inline fun <reified T : GearyComponent> has(): Boolean = staticComponentMap.containsKey(T::class)
 
 
-    public object ByReferenceSerializer : KSerializer<GearyEntityType> {
-        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("entitytype", PrimitiveKind.STRING)
+    /**
+     * Allows us to serialize entity types to a reference to ones actually registered in the system.
+     * This is used to load the static entity type when we decode components from an in-game entity.
+     */
+    public class ByReferenceSerializer<T : GearyEntityType>(
+            kclass: KClass<T>
+    ) : KSerializer<T> {
+        override val descriptor: SerialDescriptor =
+                PrimitiveSerialDescriptor("geary:${kclass.simpleName!!}".toLowerCase(), PrimitiveKind.STRING)
 
-        override fun deserialize(decoder: Decoder): GearyEntityType {
+        override fun deserialize(decoder: Decoder): T {
             val (plugin, type) = decoder.decodeString().split(':')
-            return EntityTypeManager[plugin, type] ?: error("Type: $plugin:$type not found while deserializing")
+            return (EntityTypeManager[plugin, type] ?: error("Type: $plugin:$type not found while deserializing")) as T
         }
 
-        override fun serialize(encoder: Encoder, value: GearyEntityType) {
-            encoder.encodeString("${value.types.plugin}:${value.name}")
+        override fun serialize(encoder: Encoder, value: T) {
+            encoder.encodeString("${value.types.plugin.name}:${value.name}")
         }
     }
 }

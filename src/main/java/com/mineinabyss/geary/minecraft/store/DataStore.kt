@@ -1,42 +1,45 @@
 package com.mineinabyss.geary.minecraft.store
 
 import com.mineinabyss.geary.ecs.GearyComponent
+import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
-import com.mineinabyss.geary.minecraft.geary
 import com.mineinabyss.geary.minecraft.isGearyEntity
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.serializer
 import org.bukkit.NamespacedKey
-import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
-import org.bukkit.persistence.PersistentDataHolder
-import org.bukkit.persistence.PersistentDataType
+import org.bukkit.persistence.PersistentDataType.BYTE_ARRAY
 
-public inline fun <reified T : GearyComponent> PersistentDataContainer.encode(serializer: KSerializer<T> = cborFormat.serializersModule.serializer(), value: T) {
+public inline fun <reified T : GearyComponent> PersistentDataContainer.encode(
+        serializer: SerializationStrategy<T> = cborFormat.serializersModule.serializer(),
+        key: String = T::class.qualifiedName ?: error(""),
+        value: T
+) {
     val encoded = cborFormat.encodeToByteArray(serializer, value)
-    this[NamespacedKey(geary, T::class.qualifiedName ?: error("")), PersistentDataType.BYTE_ARRAY] = encoded
+    this[NamespacedKey("geary", key), BYTE_ARRAY] = encoded
 }
 
 //TODO make others pass plugin here
-public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(serializer: KSerializer<T> = cborFormat.serializersModule.serializer()): T? {
-    val encoded = this[NamespacedKey(geary, T::class.qualifiedName ?: error("")), PersistentDataType.BYTE_ARRAY]
-            ?: return null
+public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
+        serializer: DeserializationStrategy<out T> = cborFormat.serializersModule.serializer(),
+        key: NamespacedKey//String = T::class.qualifiedName ?: error(""),
+): T? {
+    val encoded = this[key /*NamespacedKey("geary", key)*/, BYTE_ARRAY] ?: return null
     return cborFormat.decodeFromByteArray(serializer, encoded)
 }
 
 public fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>) {
     isGearyEntity = true
-    //remove all currently present keys, since removing a component should be reflected here as well
-    keys.filter { it.namespace == "gearyecs" }.forEach { remove(it) }
+    //remove all keys present on the PDC so we only end up with the new list of components being encoded
+    keys.filter { it.namespace == "geary" && it != Engine.componentsKey }.forEach { remove(it) }
 
     //get the serializer registered under the MobzyComponent class through polymorphic serialization, and use it to
     // write a serialized value under its serialname
-    components.forEach { value ->
+    for (value in components) {
         val serializer = cborFormat.serializersModule.getPolymorphic(GearyComponent::class, value)
-                ?: return@forEach //TODO error?
-        @Suppress("DEPRECATION") //we really want this to be a unique key!
-        this[NamespacedKey("gearyecs", serializer.descriptor.serialName.toMCKey()), PersistentDataType.BYTE_ARRAY] =
-                cborFormat.encodeToByteArray(serializer, value)
+                ?: continue //TODO error?
+        encode(serializer, serializer.descriptor.serialName.toMCKey(), value)
     }
 }
 
@@ -45,11 +48,9 @@ public fun PersistentDataContainer.decodeComponents(): Set<GearyComponent> {
     return keys.mapNotNull { key ->
         val serializer = cborFormat.serializersModule.getPolymorphic(GearyComponent::class, key.key.toSerialKey())
                 ?: return@mapNotNull null
-        val encoded = this[key, PersistentDataType.BYTE_ARRAY] ?: return@mapNotNull null
-        cborFormat.decodeFromByteArray(serializer, encoded)
+        decode(serializer, key)
     }.toSet()
 }
-
 
 private fun String.toMCKey() = replace(":", "_")
 private fun String.toSerialKey() = replace("_", ":")

@@ -37,6 +37,9 @@ public inline fun GearyEntity.getComponents(): Set<GearyComponent> = Engine.getC
 public inline fun GearyEntity.getPersistingComponents(): Set<GearyComponent> =
         get<PersistingComponents>()?.persisting?.intersect(getComponents()) ?: emptySet()
 
+public inline fun GearyEntity.getInstanceComponents(): Set<GearyComponent> =
+        getComponents() - (get<PersistingComponents>()?.persisting ?: emptySet())
+
 public inline fun <reified T : GearyComponent> GearyEntity.with(let: (T) -> Unit): Unit? = get<T>()?.let(let)
 
 public inline fun <reified T : GearyComponent> GearyEntity.has(): Boolean = Engine.hasComponentFor(T::class, gearyId)
