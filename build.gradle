@@ -67,7 +67,7 @@ publishing {
 compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
-        freeCompilerArgs += "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
+        freeCompilerArgs = ["-Xinline-classes"]
     }
 }
 compileTestKotlin { kotlinOptions { jvmTarget = "1.8" } }

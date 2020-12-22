@@ -18,7 +18,7 @@ public fun GearyEntity.remove() {
     Engine.removeEntity(this)
 }
 
-public class BoxedEntityID(override val gearyId: Int) : GearyEntity
+public inline class BoxedEntityID(override val gearyId: Int) : GearyEntity
 
 public inline fun geary(id: Int, run: GearyEntity.() -> Unit): GearyEntity =
         BoxedEntityID(id).apply(run)
