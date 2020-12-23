@@ -11,21 +11,26 @@ public interface FlatWrap<A> {
 }
 
 @ExperimentalSerializationApi
-public class DescriptorWrapper(override val serialName: String, wrapped: SerialDescriptor) : SerialDescriptor by wrapped
+private class DescriptorWrapper(override val serialName: String, wrapped: SerialDescriptor) : SerialDescriptor by wrapped
+
+//not technically needed but doing this just in case
+@ExperimentalSerializationApi
+private class SerializerWrapper<T>(override val descriptor: SerialDescriptor, wrapped: KSerializer<T>) : KSerializer<T> by wrapped
 
 public abstract class FlatSerializer<T : FlatWrap<A>, A : Any>(
         serialName: String,
-        private val serializer: KSerializer<A>,
+        serializer: KSerializer<A>,
         private val create: (A) -> T
 ) : KSerializer<T> {
     @ExperimentalSerializationApi
-    override val descriptor: SerialDescriptor = DescriptorWrapper(serialName, serializer.descriptor)
+    final override val descriptor: SerialDescriptor = DescriptorWrapper(serialName, serializer.descriptor)
+    private val wrappedSerializer = SerializerWrapper(descriptor, serializer)
 
     override fun deserialize(decoder: Decoder): T {
-        return create(decoder.decodeSerializableValue(serializer))
+        return create(decoder.decodeSerializableValue(wrappedSerializer))
     }
 
     override fun serialize(encoder: Encoder, value: T) {
-        encoder.encodeSerializableValue(serializer, value.wrapped)
+        encoder.encodeSerializableValue(wrappedSerializer, value.wrapped)
     }
 }

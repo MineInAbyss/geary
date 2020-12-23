@@ -42,4 +42,14 @@ public inline fun GearyEntity.getInstanceComponents(): Set<GearyComponent> =
 
 public inline fun <reified T : GearyComponent> GearyEntity.with(let: (T) -> Unit): Unit? = get<T>()?.let(let)
 
+public inline fun <reified T : GearyComponent> GearyEntity.holds(): Boolean = Engine.holdsComponentFor(T::class, gearyId)
+
 public inline fun <reified T : GearyComponent> GearyEntity.has(): Boolean = Engine.hasComponentFor(T::class, gearyId)
+
+public inline fun <reified T : GearyComponent> GearyEntity.enable() {
+    Engine.enableComponentFor(T::class, gearyId)
+}
+
+public inline fun <reified T : GearyComponent> GearyEntity.disable() {
+    Engine.disableComponentFor(T::class, gearyId)
+}

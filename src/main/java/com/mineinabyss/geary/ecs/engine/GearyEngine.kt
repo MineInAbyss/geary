@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 internal typealias ComponentClass = KClass<out GearyComponent>
 
 
-public class EngineImpl : Engine {
+public class GearyEngine : Engine {
     init {
         //tick all systems every interval ticks
         geary.schedule {
@@ -61,6 +61,8 @@ public class EngineImpl : Engine {
         components[kClass]?.get(id)
     }.getOrNull()
 
+    override fun holdsComponentFor(kClass: ComponentClass, id: Int): Boolean = components[kClass]?.get(id) != null
+
     override fun hasComponentFor(kClass: ComponentClass, id: Int): Boolean = bitsets[kClass]?.contains(id) ?: false
     override fun removeComponentFor(kClass: ComponentClass, id: Int) {
         val bitset = bitsets[kClass] ?: return
@@ -74,6 +76,15 @@ public class EngineImpl : Engine {
         components.getOrPut(kClass, { SparseArrayList() })[id] = component
         bitsets.getOrPut(kClass, { bitsOf() }).set(id)
         return component
+    }
+
+    override fun enableComponentFor(kClass: ComponentClass, id: Int) {
+        if(holdsComponentFor(kClass, id))
+            bitsets[kClass]?.set(id, true)
+    }
+
+    override fun disableComponentFor(kClass: ComponentClass, id: Int) {
+        bitsets[kClass]?.set(id, false)
     }
 
 

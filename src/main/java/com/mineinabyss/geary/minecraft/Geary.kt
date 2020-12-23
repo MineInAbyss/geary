@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.minecraft
 
 import com.mineinabyss.geary.ecs.engine.Engine
-import com.mineinabyss.geary.ecs.engine.EngineImpl
+import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.serialization.registerSerializers
 import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
@@ -19,7 +19,7 @@ public class Geary : JavaPlugin() {
         saveDefaultConfig()
         reloadConfig()
 
-        registerService<Engine>(EngineImpl())
+        registerService<Engine>(GearyEngine())
 
         GearyCommands
 

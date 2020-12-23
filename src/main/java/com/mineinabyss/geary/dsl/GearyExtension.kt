@@ -9,6 +9,8 @@ import com.mineinabyss.geary.ecs.types.EntityTypeManager
 import com.mineinabyss.geary.ecs.types.GearyEntityType
 import com.mineinabyss.geary.ecs.types.GearyEntityTypes
 import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.SerializersModuleBuilder
 import kotlinx.serialization.modules.polymorphic
@@ -32,6 +34,15 @@ public class GearyExtension(
         Engine.addSystems(*systems)
     }
 
+    public inline fun <reified T : GearyComponent> PolymorphicModuleBuilder<T>.component(serializer: KSerializer<T>) {
+        Formats.addSerialName(serializer.descriptor.serialName, T::class)
+        subclass(T::class, serializer)
+    }
+
+    public inline fun components(crossinline init: PolymorphicModuleBuilder<GearyComponent>.() -> Unit) {
+        serializers { polymorphic(GearyComponent::class) { init() } }
+    }
+
     public fun serializers(init: SerializersModuleBuilder.() -> Unit) {
         Formats.addSerializerModule(SerializersModule { init() })
     }
@@ -53,20 +64,19 @@ public class GearyExtension(
             BukkitEntityAccess.bukkitEntityAccessExtensions += getter
         }
     }
+
 }
 
-public inline fun <reified T: GearyEntityType> Plugin.attachToGeary(
+public inline fun <reified T : GearyEntityType> Plugin.attachToGeary(
         types: GearyEntityTypes<T>? = null,
         init: GearyExtension.() -> Unit) {
     //TODO support plugins being re-registered after a reload
     GearyExtension(this, types).apply(init).apply {
-        serializers {
-            polymorphic(GearyComponent::class) {
-                // Whenever we're using this serial module to deserialize our components we want to access them by
-                // reference through geary, not by using the actual EntityType's serializer like we would when
-                // reading config files.
-                subclass(T::class, GearyEntityType.ByReferenceSerializer(T::class))
-            }
+        components {
+            // Whenever we're using this serial module to deserialize our components we want to access them by
+            // reference through geary, not by using the actual EntityType's serializer like we would when
+            // reading config files.
+            component(GearyEntityType.ByReferenceSerializer(T::class))
         }
     }
 }

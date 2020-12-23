@@ -20,9 +20,17 @@ public interface Engine {
 
     public fun getComponentsFor(id: Int): Set<GearyComponent>
     public fun getComponentFor(kClass: ComponentClass, id: Int): GearyComponent?
+
+    /** Checks whether [id] holds a [component type][kClass], without regards for whether or not it's active. */
+    public fun holdsComponentFor(kClass: ComponentClass, id: Int): Boolean
+
+    /** Checks whether [id] has an active [component type][kClass] */
     public fun hasComponentFor(kClass: ComponentClass, id: Int): Boolean
+
     public fun removeComponentFor(kClass: ComponentClass, id: Int)
     public fun <T : GearyComponent> addComponentFor(kClass: ComponentClass, id: Int, component: T): T
+    public fun enableComponentFor(kClass: ComponentClass, id: Int)
+    public fun disableComponentFor(kClass: ComponentClass, id: Int)
 
     public fun removeEntity(entity: GearyEntity)
 

@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.minecraft
 
 import com.mineinabyss.geary.ecs.engine.Engine
-import com.mineinabyss.geary.ecs.engine.EngineImpl
+import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
@@ -15,7 +15,7 @@ internal object GearyCommands: IdofrontCommandExecutor() {
             "components"{
                 val type by stringArg()
                 action {
-                    (getService<Engine>() as EngineImpl).bitsets.forEach { (t, u) ->
+                    (getService<Engine>() as GearyEngine).bitsets.forEach { (t, u) ->
                         if (t.simpleName == type) {
                             var sum = 0
                             u.forEachBit { sum++ }
