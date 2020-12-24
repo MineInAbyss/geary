@@ -12,9 +12,10 @@ public inline fun GearyEntity.addComponents(components: Set<GearyComponent>) {
     Engine.addComponentsFor(gearyId, components)
 }
 
-public inline fun <reified T : GearyComponent> GearyEntity.addPersistingComponent(component: T) {
+public inline fun <reified T : GearyComponent> GearyEntity.addPersistingComponent(component: T): T {
     addComponent(component)
     getOrAdd { PersistingComponents() }.add(component)
+    return component
 }
 
 public fun GearyEntity.addPersistingComponents(components: Set<GearyComponent>) {
@@ -29,6 +30,9 @@ public inline fun <reified T : GearyComponent> GearyEntity.removeComponent() {
 
 public inline fun <reified T : GearyComponent> GearyEntity.getOrAdd(component: () -> T): T =
         get<T>() ?: addComponent(component())
+
+public inline fun <reified T : GearyComponent> GearyEntity.getOrAddPersisting(component: () -> T): T =
+        get<T>() ?: addPersistingComponent(component())
 
 public inline fun <reified T : GearyComponent> GearyEntity.get(): T? = Engine.getComponentFor(T::class, gearyId) as? T
 
