@@ -27,7 +27,10 @@ public interface Engine {
     /** Checks whether [id] has an active [component type][kClass] */
     public fun hasComponentFor(kClass: ComponentClass, id: Int): Boolean
 
-    public fun removeComponentFor(kClass: ComponentClass, id: Int)
+    /**
+     * @return Whether the component was present before removal.
+     */
+    public fun removeComponentFor(kClass: ComponentClass, id: Int): Boolean
     public fun <T : GearyComponent> addComponentFor(kClass: ComponentClass, id: Int, component: T): T
     public fun enableComponentFor(kClass: ComponentClass, id: Int)
     public fun disableComponentFor(kClass: ComponentClass, id: Int)

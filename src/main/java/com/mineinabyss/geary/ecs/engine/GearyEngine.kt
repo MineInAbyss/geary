@@ -64,12 +64,13 @@ public class GearyEngine : Engine {
     override fun holdsComponentFor(kClass: ComponentClass, id: Int): Boolean = components[kClass]?.get(id) != null
 
     override fun hasComponentFor(kClass: ComponentClass, id: Int): Boolean = bitsets[kClass]?.contains(id) ?: false
-    override fun removeComponentFor(kClass: ComponentClass, id: Int) {
-        val bitset = bitsets[kClass] ?: return
+    override fun removeComponentFor(kClass: ComponentClass, id: Int): Boolean {
+        val bitset = bitsets[kClass] ?: return false
         if (bitset[id]) {
             bitset[id] = false
             components[kClass]?.set(id, null)
         }
+        return true
     }
 
     override fun <T : GearyComponent> addComponentFor(kClass: ComponentClass, id: Int, component: T): T {

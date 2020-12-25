@@ -8,6 +8,7 @@ import com.mineinabyss.geary.ecs.engine.Engine
 
 public inline fun <reified T : GearyComponent> GearyEntity.addComponent(component: T): T =
         Engine.addComponentFor(T::class, gearyId, component)
+
 public inline fun GearyEntity.addComponents(components: Set<GearyComponent>) {
     Engine.addComponentsFor(gearyId, components)
 }
@@ -19,14 +20,13 @@ public inline fun <reified T : GearyComponent> GearyEntity.addPersistingComponen
 }
 
 public fun GearyEntity.addPersistingComponents(components: Set<GearyComponent>) {
-    if(components.isEmpty()) return //avoid adding a persisting components component if there are none to add
+    if (components.isEmpty()) return //avoid adding a persisting components component if there are none to add
     addComponents(components)
     getOrAdd { PersistingComponents() }.addAll(components)
 }
 
-public inline fun <reified T : GearyComponent> GearyEntity.removeComponent() {
-    Engine.removeComponentFor(T::class, gearyId)
-}
+public inline fun <reified T : GearyComponent> GearyEntity.removeComponent(): Boolean =
+        Engine.removeComponentFor(T::class, gearyId)
 
 public inline fun <reified T : GearyComponent> GearyEntity.getOrAdd(component: () -> T): T =
         get<T>() ?: addComponent(component())
@@ -56,4 +56,24 @@ public inline fun <reified T : GearyComponent> GearyEntity.enable() {
 
 public inline fun <reified T : GearyComponent> GearyEntity.disable() {
     Engine.disableComponentFor(T::class, gearyId)
+}
+
+/**
+ * @return Whether or not at least one component of type [T] was present and swapped places.
+ */
+public inline fun <reified T : GearyComponent> GearyEntity?.swapComponent(with: GearyEntity?): Boolean {
+    val component = this?.get<T>()
+    val otherComponent = with?.get<T>()
+
+    if(component != null)
+        with?.addComponent(component)
+    else
+        with?.removeComponent<T>()
+
+    if(otherComponent != null)
+        this?.addComponent(otherComponent)
+    else
+        this?.removeComponent<T>()
+
+    return component != null || otherComponent != null
 }
