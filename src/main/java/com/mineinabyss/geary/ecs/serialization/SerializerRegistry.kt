@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.ecs.serialization
 
 import com.mineinabyss.geary.dsl.attachToGeary
+import com.mineinabyss.geary.ecs.actions.ConditionalAction
 import com.mineinabyss.geary.ecs.actions.CooldownAction
 import com.mineinabyss.geary.ecs.actions.DebugAction
 import com.mineinabyss.geary.ecs.actions.EntityAction
@@ -18,6 +19,7 @@ internal fun Geary.registerSerializers() {
             action(DebugAction.serializer())
             action(EntityAction.serializer())
             action(CooldownAction.serializer())
+            action(ConditionalAction.serializer())
 
             action(AddComponentAction.serializer())
             action(RemoveComponentAction.serializer())

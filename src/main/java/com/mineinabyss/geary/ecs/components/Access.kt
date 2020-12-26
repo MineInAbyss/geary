@@ -5,6 +5,7 @@ package com.mineinabyss.geary.ecs.components
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.engine.Engine
+import kotlin.reflect.KClass
 
 public inline fun <reified T : GearyComponent> GearyEntity.addComponent(component: T): T =
         Engine.addComponentFor(T::class, gearyId, component)
@@ -50,6 +51,9 @@ public inline fun <reified T : GearyComponent> GearyEntity.holds(): Boolean = En
 
 public inline fun <reified T : GearyComponent> GearyEntity.has(): Boolean = Engine.hasComponentFor(T::class, gearyId)
 
+public inline fun GearyEntity.hasAll(components: Collection<KClass<out GearyComponent>>): Boolean =
+        components.all { Engine.hasComponentFor(it, gearyId) }
+
 public inline fun <reified T : GearyComponent> GearyEntity.enable() {
     Engine.enableComponentFor(T::class, gearyId)
 }
@@ -65,12 +69,12 @@ public inline fun <reified T : GearyComponent> GearyEntity?.swapComponent(with: 
     val component = this?.get<T>()
     val otherComponent = with?.get<T>()
 
-    if(component != null)
+    if (component != null)
         with?.addComponent(component)
     else
         with?.removeComponent<T>()
 
-    if(otherComponent != null)
+    if (otherComponent != null)
         this?.addComponent(otherComponent)
     else
         this?.removeComponent<T>()
