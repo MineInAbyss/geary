@@ -35,7 +35,7 @@ public inline fun <reified T : GearyComponent> GearyEntity.getOrAdd(component: (
 public inline fun <reified T : GearyComponent> GearyEntity.getOrAddPersisting(component: () -> T): T =
         get<T>() ?: addPersistingComponent(component())
 
-public inline fun <reified T : GearyComponent> GearyEntity.get(): T? = Engine.getComponentFor(T::class, gearyId) as? T
+public inline fun <reified T : GearyComponent> GearyEntity.get(): T? = Engine.getComponentFor(T::class, gearyId)
 
 public inline fun GearyEntity.getComponents(): Set<GearyComponent> = Engine.getComponentsFor(gearyId)
 

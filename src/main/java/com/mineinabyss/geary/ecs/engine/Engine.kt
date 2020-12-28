@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.systems.TickingSystem
 import com.mineinabyss.idofront.plugin.getService
 import net.onedaybeard.bitvector.BitVector
 import org.bukkit.NamespacedKey
+import kotlin.reflect.KClass
 
 public interface Engine {
     public companion object : Engine by getService() {
@@ -19,7 +20,7 @@ public interface Engine {
     public fun addSystem(system: TickingSystem): Boolean
 
     public fun getComponentsFor(id: Int): Set<GearyComponent>
-    public fun getComponentFor(kClass: ComponentClass, id: Int): GearyComponent?
+    public fun <T : GearyComponent> getComponentFor(kClass: KClass<T>, id: Int): T?
 
     /** Checks whether [id] holds a [component type][kClass], without regards for whether or not it's active. */
     public fun holdsComponentFor(kClass: ComponentClass, id: Int): Boolean
@@ -38,7 +39,11 @@ public interface Engine {
     public fun removeEntity(entity: GearyEntity)
 
     //TODO this shouldn't be in interface but currently required for inline functions in [Iteration]
-    public fun getBitsMatching(vararg components: ComponentClass, andNot: Array<out ComponentClass> = emptyArray()): BitVector
+    public fun getBitsMatching(
+        vararg components: ComponentClass,
+        andNot: Array<out ComponentClass> = emptyArray(),
+        checkConditions: Boolean = true
+    ): BitVector
 
     //some helpers
     public fun addSystems(vararg systems: TickingSystem) {

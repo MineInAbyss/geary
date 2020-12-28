@@ -2,9 +2,11 @@ package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.actions.components.Conditions
 import com.mineinabyss.geary.ecs.components.parent
 import com.mineinabyss.geary.ecs.components.removeChildren
 import com.mineinabyss.geary.ecs.events.EntityRemovedEvent
+import com.mineinabyss.geary.ecs.geary
 import com.mineinabyss.geary.ecs.systems.TickingSystem
 import com.mineinabyss.geary.minecraft.geary
 import com.mineinabyss.idofront.events.call
@@ -30,8 +32,8 @@ public class GearyEngine : Engine {
             while (true) {
                 val currTick = Bukkit.getCurrentTick()
                 registeredSystems
-                        .filter { currTick % it.interval == 0 }
-                        .forEach(TickingSystem::tick)
+                    .filter { currTick % it.interval == 0 }
+                    .forEach(TickingSystem::tick)
                 yield()
             }
         }
@@ -55,10 +57,12 @@ public class GearyEngine : Engine {
     private val components = mutableMapOf<ComponentClass, SparseArrayList<GearyComponent>>()
     internal val bitsets = mutableMapOf<ComponentClass, BitVector>()
 
-    override fun getComponentsFor(id: Int): Set<GearyComponent> = components.mapNotNullTo(mutableSetOf()) { (_, value) -> value.getOrNull(id) }
+    override fun getComponentsFor(id: Int): Set<GearyComponent> =
+        components.mapNotNullTo(mutableSetOf()) { (_, value) -> value.getOrNull(id) }
 
-    override fun getComponentFor(kClass: ComponentClass, id: Int): GearyComponent? = runCatching {
-        components[kClass]?.get(id)
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : GearyComponent> getComponentFor(kClass: KClass<T>, id: Int): T? = runCatching {
+        components[kClass]?.get(id) as? T
     }.getOrNull()
 
     override fun holdsComponentFor(kClass: ComponentClass, id: Int): Boolean = components[kClass]?.get(id) != null
@@ -80,7 +84,7 @@ public class GearyEngine : Engine {
     }
 
     override fun enableComponentFor(kClass: ComponentClass, id: Int) {
-        if(holdsComponentFor(kClass, id))
+        if (holdsComponentFor(kClass, id))
             bitsets[kClass]?.set(id, true)
     }
 
@@ -89,18 +93,41 @@ public class GearyEngine : Engine {
     }
 
 
-    override fun getBitsMatching(vararg components: ComponentClass, andNot: Array<out ComponentClass>): BitVector {
+    override fun getBitsMatching(
+        vararg components: ComponentClass,
+        andNot: Array<out ComponentClass>,
+        checkConditions: Boolean
+    ): BitVector {
         //copy one component's bitset and go through the others, keeping only bits present in all sets
         val allowed = components
-                .mapTo(mutableListOf()) { (bitsets[it] ?: return bitsOf()) } //if a set isn't present, there's 0 matches
-                .also { list -> list[0] = list[0].copy() } //only copy the first bitset, all further operations only mutate it
-                .reduce { a, b -> a.and(b).let { a } }
+            //if a set isn't present, there's 0 matches
+            .mapTo(mutableListOf()) { (bitsets[it] ?: return bitsOf()) }
+            //only copy the first bitset, all further operations only mutate it
+            .also { list -> list[0] = list[0].copy() }
+            .reduce { a, b -> a.and(b).let { a } }
 
         //remove any bits present in any bitsets from andNot
-        return if (andNot.isEmpty())
-            allowed
-        else andNot.mapNotNull { (bitsets[it]) }
+        val matchingBits =
+            if (andNot.isEmpty())
+                allowed
+            else andNot
+                .mapNotNull { (bitsets[it]) }
                 .fold(allowed) { a, b -> a.andNot(b).let { a } }
+
+        if (checkConditions) {
+            val conditional = bitsets[Conditions::class] ?: matchingBits
+            if (conditional.isEmpty) return matchingBits
+
+            // get all entities in the original bitset with conditional component
+            // then set their bit in the original bitset to whether or not its conditions are met
+            val conditionComponents = this.components[Conditions::class]
+            matchingBits.copy().apply { and(conditional) }.forEachBit { i ->
+                (conditionComponents?.get(i) as? Conditions)?.conditionsMet(components, geary(i))?.let { result ->
+                    matchingBits[i] = result
+                }
+            }
+        }
+        return matchingBits
     }
 
     //TODO might be a smarter way of storing these as an implicit list within a larger list of entities eventually
