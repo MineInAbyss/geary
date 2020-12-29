@@ -4,6 +4,7 @@ import com.mineinabyss.geary.ecs.GearyComponent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+//TODO persist cooldowns on entity, but dont serialize any cooldowns that are already complete
 @Serializable
 @SerialName("geary:cooldowns")
 public class CooldownManager : GearyComponent {
