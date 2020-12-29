@@ -19,10 +19,12 @@ public class CooldownAction(
     @Transient
     private val name = _name ?: run.hashCode().toString()
 
-    override fun runOn(entity: GearyEntity) {
+    override fun runOn(entity: GearyEntity): Boolean {
         val cooldowns = entity.getOrAddPersisting { CooldownManager() }
-        cooldowns.onCooldown(name, length.millis) {
-            run.forEach { it.runOn(entity) }
+
+        // restart cooldown if any of the actions ran successfully
+        return cooldowns.onCooldownIf(name, length.millis) {
+            run.any { it.runOn(entity) }
         }
     }
 }

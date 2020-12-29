@@ -13,37 +13,41 @@ import kotlinx.serialization.Serializable
 public class AddComponentAction(
         private val components: Set<GearyComponent>
 ) : GearyAction() {
-    override fun runOn(entity: GearyEntity) {
+    override fun runOn(entity: GearyEntity): Boolean {
         entity.addComponents(components)
+        return true
     }
 }
 
 @Serializable
 @SerialName("remove")
 public data class RemoveComponentAction(override val components: Set<String>) : ComponentAction() {
-    override fun runOn(entity: GearyEntity) {
+    override fun runOn(entity: GearyEntity): Boolean {
         componentClasses.forEach {
             Engine.removeComponentFor(it, entity.gearyId)
         }
+        return true
     }
 }
 
 @Serializable
 @SerialName("disable")
 public class DisableComponentAction(override val components: Set<String>) : ComponentAction() {
-    override fun runOn(entity: GearyEntity) {
+    override fun runOn(entity: GearyEntity): Boolean {
         componentClasses.forEach {
             Engine.disableComponentFor(it, entity.gearyId)
         }
+        return true
     }
 }
 
 @Serializable
 @SerialName("enable")
 public data class EnableComponentAction(override val components: Set<String>) : ComponentAction() {
-    override fun runOn(entity: GearyEntity) {
+    override fun runOn(entity: GearyEntity): Boolean {
         componentClasses.forEach {
             Engine.enableComponentFor(it, entity.gearyId)
         }
+        return true
     }
 }

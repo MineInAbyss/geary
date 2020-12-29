@@ -13,9 +13,10 @@ import kotlinx.serialization.Serializable
 public class EntityAction(
         private val components: Set<GearyComponent>
 ) : GearyAction() {
-    override fun runOn(entity: GearyEntity) {
+    override fun runOn(entity: GearyEntity): Boolean {
         Engine.entity {
             addComponents(components)
         }
+        return true
     }
 }

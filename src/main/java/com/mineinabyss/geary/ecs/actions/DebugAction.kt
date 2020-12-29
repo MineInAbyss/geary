@@ -10,7 +10,8 @@ import kotlinx.serialization.Serializable
 public class DebugAction(
         private val msg: String
 ) : GearyAction() {
-    override fun runOn(entity: GearyEntity) {
+    override fun runOn(entity: GearyEntity): Boolean {
         broadcast(msg)
+        return true
     }
 }

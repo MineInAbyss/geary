@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 public abstract class GearyAction {
-    public abstract fun runOn(entity: GearyEntity)
+    public abstract fun runOn(entity: GearyEntity): Boolean
 }
 

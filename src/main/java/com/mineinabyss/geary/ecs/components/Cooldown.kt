@@ -15,11 +15,22 @@ public class CooldownManager : GearyComponent {
         return (completionTime[key] ?: return true) <= System.currentTimeMillis()
     }
 
-    public fun onCooldown(key: String, cooldown: Long, run: () -> Unit) {
-        if(isDone(key)) {
+    public inline fun onCooldown(key: String, cooldown: Long, run: () -> Unit): Boolean {
+        if (isDone(key)) {
             run()
             start(key, cooldown)
+            return true
         }
+        return false
+    }
+
+    public inline fun onCooldownIf(key: String, cooldown: Long, run: () -> Boolean): Boolean {
+        if (isDone(key))
+            if (run()) {
+                start(key, cooldown)
+                return true
+            }
+        return false
     }
 
     public fun start(key: String, cooldown: Long) {
