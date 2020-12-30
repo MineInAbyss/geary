@@ -11,13 +11,17 @@ public interface GearyEntity {
     public operator fun component1(): Int = gearyId
 }
 
-//TODO pretty sure this won't get the subclasses (i.e. MobType) since we haven't marked reified T with `out`
 public val GearyEntity.type: GearyEntityType? get() = get<GearyEntityType>()
 
 public fun GearyEntity.remove() {
     Engine.removeEntity(this)
 }
 
+/**
+ * A wrapper around an integer id that allows us to use extension functions of [GearyEntity] but gets inlined to avoid
+ * performance hits of boxing an integer.
+ */
+//TODO change name to reflect that it's not boxed anymore.
 public inline class BoxedEntityID(override val gearyId: Int) : GearyEntity
 
 public inline fun geary(id: Int, run: GearyEntity.() -> Unit): GearyEntity =

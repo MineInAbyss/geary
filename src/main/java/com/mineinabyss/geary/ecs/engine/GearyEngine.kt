@@ -21,7 +21,22 @@ import kotlin.reflect.KClass
 
 internal typealias ComponentClass = KClass<out GearyComponent>
 
-
+/**
+ * The default implementation of Geary's Engine.
+ *
+ * This engine currently uses a bitset approach for iterating over entities.
+ *
+ * We hold a map of component classes to arrays (currently using [SparseArrayList], where the index represents an entity.
+ *
+ * Additionally, we hold a similar map but with bitsets (currently using [BitVector]) which allow us to quickly perform
+ * a fold operation to find all the entities that match all of the requested components.
+ *
+ * There is also support for enabling/disabling components without actually removing them by just toggling a bit
+ * in the bitset, but not removing it from the matching array.
+ *
+ * Lastly there's a very basic implementation for only iterating over components with additional conditions. This is
+ * currently quite inefficient, but optional.
+ */
 public class GearyEngine : Engine {
     init {
         //tick all systems every interval ticks
@@ -49,7 +64,7 @@ public class GearyEngine : Engine {
     private val registeredSystems = mutableSetOf<TickingSystem>()
 
     @Synchronized
-    override fun getNextId(): Int = if (removedEntities.isNotEmpty()) removedEntities.pop() ?: ++currId else ++currId
+    override fun getNextId(): Int = if (removedEntities.isNotEmpty()) removedEntities.pop() else ++currId
 
     override fun addSystem(system: TickingSystem): Boolean = registeredSystems.add(system)
 
@@ -77,7 +92,7 @@ public class GearyEngine : Engine {
         return true
     }
 
-    override fun <T : GearyComponent> addComponentFor(kClass: ComponentClass, id: Int, component: T): T {
+    override fun <T : GearyComponent> addComponentFor(kClass: KClass<out T>, id: Int, component: T): T {
         components.getOrPut(kClass, { SparseArrayList() })[id] = component
         bitsets.getOrPut(kClass, { bitsOf() }).set(id)
         return component

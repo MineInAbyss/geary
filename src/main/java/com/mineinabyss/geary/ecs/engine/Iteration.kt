@@ -5,6 +5,8 @@ import com.mineinabyss.geary.ecs.geary
 import com.mineinabyss.geary.ecs.GearyComponent as GC
 
 //TODO support component families with infix functions
+
+/** Iterate over all entities in the [Engine] that match a list of [components] and not [andNot]. */
 public inline fun Engine.forEach(
     vararg components: ComponentClass,
     andNot: Array<out ComponentClass> = emptyArray(),
@@ -14,6 +16,8 @@ public inline fun Engine.forEach(
         geary(index).run(components.map { getComponentFor(it, index) ?: return@forEachBit })
     }
 }
+
+// Iteration functions with reified types so we can automatically cast the list of components we got back.
 
 public inline fun <reified T : GC> Engine.forEach(
     vararg andNot: ComponentClass = emptyArray(),
