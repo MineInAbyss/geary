@@ -10,7 +10,7 @@ import org.bukkit.plugin.Plugin
  * plugins which register types via code and can't re-register them easily.
  */
 public abstract class GearyEntityTypes<T : GearyEntityType>(
-        public val plugin: Plugin
+    public val plugin: Plugin
 ) {
     public val types: List<String> get() = _types.keys.toList()
 
@@ -20,14 +20,15 @@ public abstract class GearyEntityTypes<T : GearyEntityType>(
     /** When accessing a type by name, will convert the input to follow a defined pattern. */
     protected open fun String.toEntityTypeName(): String = this
 
+    /** Get an entity type by [name]. */
     public operator fun get(name: String): T = _types[name.toEntityTypeName()]
-            ?: error("Static entity type for $name not found")
+        ?: error("Static entity type for $name not found")
 
     //TODO set the template name upon instantiation
     /** Gets the entity name from a type [T] if registered, otherwise throws an [IllegalArgumentException]*/
     public fun getNameForTemplate(type: GearyEntityType): String =
-            (_types.entries.find { type === it.value }?.key
-                    ?: error("Static entity type was accessed but not registered in any configuration"))
+        _types.entries.find { type === it.value }?.key
+            ?: error("Static entity type was accessed but not registered in any configuration")
 
     //TODO perhaps better immutability
     /** Registers an entity type with the plugin. It will be cleared after a command reload is triggered. */

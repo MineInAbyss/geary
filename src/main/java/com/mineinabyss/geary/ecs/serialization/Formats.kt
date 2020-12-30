@@ -11,11 +11,21 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.plus
 import kotlin.reflect.KClass
 
+/**
+ * A singleton for accessing different serialization formats with all the registered serializers for [GearyComponent]s
+ * and more. If anything should be serialized within the ECS, it should be going through one of these serializers.
+ *
+ * Will likely be converted into a service eventually.
+ */
 public object Formats {
     //TODO some immutability
     public val componentSerialNames: MutableMap<String, KClass<out GearyComponent>> = mutableMapOf()
     private var module = EmptySerializersModule
 
+    /**
+     * Adds a class associated with a serial name. Currently haven't found an easy way to get this using serializer
+     * modules, but if possible this will be removed.
+     */
     public fun addSerialName(name: String, kClass: KClass<out GearyComponent>) {
         componentSerialNames[name] = kClass
     }

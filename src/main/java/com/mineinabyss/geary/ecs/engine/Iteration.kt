@@ -6,7 +6,19 @@ import com.mineinabyss.geary.ecs.GearyComponent as GC
 
 //TODO support component families with infix functions
 
-/** Iterate over all entities in the [Engine] that match a list of [components] and not [andNot]. */
+/**
+ * Iterate over all entities in the [Engine] that match a list of [components] and not [andNot].
+ *
+ * There are versions of this function that use reified types as components and automatically cast them to the
+ * appropriate types. You can also use destructure within the passed parameters as shown below.
+ *
+ * Ex:
+ * ```kotlin
+ * Engine.forEach<Position, Sprite>(andNot = Invisible::class) { (x, y), sprite ->
+ *     render(x, y, sprite)
+ * }
+ * ```
+ */
 public inline fun Engine.forEach(
     vararg components: ComponentClass,
     andNot: Array<out ComponentClass> = emptyArray(),
