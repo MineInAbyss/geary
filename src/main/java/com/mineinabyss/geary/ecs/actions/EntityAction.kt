@@ -8,6 +8,12 @@ import com.mineinabyss.geary.ecs.engine.entity
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * An action that spawns a new [GearyEntity] with certain [components].
+ *
+ * @param components The components to spawn the new entity with. Will not be copied.
+ */
+//TODO add another list of components that get copied upon creation.
 @Serializable
 @SerialName("entity")
 public class EntityAction(

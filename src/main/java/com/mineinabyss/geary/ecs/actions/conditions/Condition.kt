@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.ecs.actions
+package com.mineinabyss.geary.ecs.actions.conditions
 
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.actions.components.toComponentClass
@@ -8,8 +8,13 @@ import com.mineinabyss.geary.ecs.components.parent
 import com.mineinabyss.geary.minecraft.components.PlayerComponent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.bukkit.entity.Player
 
+/**
+ * A serializable condition that can be checked against a certain entity.
+ *
+ * @param components Components the entity must have.
+ * @param player Additional conditions relating to the player associated with this entity.
+ */
 @Serializable
 public class Condition(
     @SerialName("has")
@@ -23,32 +28,4 @@ public class Condition(
         return entity.hasAll(componentClasses) &&
                 player?.conditionsMet(entity.parent?.get<PlayerComponent>()?.player ?: return false) != false
     }
-}
-
-@Serializable
-@SerialName("if")
-public class ConditionalAction(
-    private val condition: Condition,
-    private val run: List<GearyAction>
-) : GearyAction() {
-    override fun runOn(entity: GearyEntity): Boolean {
-        if (condition.conditionsMet(entity)) {
-            run.forEach { it.runOn(entity) }
-            return true
-        }
-        return false
-    }
-}
-
-@Serializable
-public class PlayerConditions(
-    public val isSneaking: Boolean? = null,
-    public val isSprinting: Boolean? = null,
-) {
-    private infix fun <T> T?.nullOrEquals(other: T?): Boolean =
-        this == null || this == other
-
-    public fun conditionsMet(player: Player): Boolean =
-        isSneaking nullOrEquals player.isSneaking &&
-                isSprinting nullOrEquals player.isSprinting
 }

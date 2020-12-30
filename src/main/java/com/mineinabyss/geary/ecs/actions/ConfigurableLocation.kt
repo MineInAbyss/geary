@@ -9,11 +9,23 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.Location
 
+/**
+ * Base abstract class for getting a location given an entity.
+ *
+ * Using polymorphic serialization, we can define and configure subclasses of this class to get locations
+ * their own ways.
+ *
+ * Useful for actions that wish to run at a specific location but want to remain configurable.
+ */
 @Serializable
 public sealed class ConfigurableLocation {
+    /** Get a location given an [entity] or null if not applicable. */
     public abstract fun get(entity: GearyEntity): Location?
 }
 
+/**
+ * Gets the location of the player associated with the entity.
+ */
 @Serializable
 @SerialName("player.location")
 public class AtPlayerLocation : ConfigurableLocation() {
@@ -21,7 +33,12 @@ public class AtPlayerLocation : ConfigurableLocation() {
         entity.parent?.get<PlayerComponent>()?.player?.location
 }
 
-
+/**
+ * Gets the location of the target block the player associated with the entity is looking at.
+ *
+ * @param maxDist The maximum distance this can extend.
+ * @param allowAir Whether to allow clicking on nothing.
+ */
 @Serializable
 @SerialName("player.target_block")
 public class AtPlayerTargetBlock(

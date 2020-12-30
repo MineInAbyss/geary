@@ -8,6 +8,9 @@ import com.mineinabyss.geary.ecs.engine.Engine
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Adds components to the entity this action is run on.
+ */
 @Serializable
 @SerialName("add")
 public class AddComponentAction(
