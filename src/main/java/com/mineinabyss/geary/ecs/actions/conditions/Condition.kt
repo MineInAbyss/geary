@@ -26,6 +26,6 @@ public class Condition(
 
     public fun conditionsMet(entity: GearyEntity): Boolean {
         return entity.hasAll(componentClasses) &&
-                player?.conditionsMet(entity.parent?.get<PlayerComponent>()?.player ?: return false) != false
+                player?.conditionsMet(entity.parent?.get<PlayerComponent>()?.entity ?: return false) != false
     }
 }

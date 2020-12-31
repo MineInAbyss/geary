@@ -30,7 +30,7 @@ public sealed class ConfigurableLocation {
 @SerialName("player.location")
 public class AtPlayerLocation : ConfigurableLocation() {
     override fun get(entity: GearyEntity): Location? =
-        entity.parent?.get<PlayerComponent>()?.player?.location
+        entity.parent?.get<PlayerComponent>()?.entity?.location
 }
 
 /**

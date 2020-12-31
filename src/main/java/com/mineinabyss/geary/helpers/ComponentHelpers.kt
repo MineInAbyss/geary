@@ -7,11 +7,13 @@ import com.mineinabyss.geary.ecs.components.getPersistingComponents
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.type
 
+/** Gets the serial name of this component as registered in [Formats] */
 public val GearyComponent.serialName: String?
     get() = Formats.cborFormat.serializersModule.getPolymorphic(GearyComponent::class, this)?.descriptor?.serialName
 
-public val Collection<GearyComponent>.names: String get() = mapNotNull { it.serialName }.joinToString()
+private val Collection<GearyComponent>.names: String get() = mapNotNull { it.serialName }.joinToString()
 
+/** Neatly lists all the components on this entity. */
 public fun GearyEntity.listComponents(): String {
     return """
         Static: ${type?.staticComponentMap?.values?.names}
