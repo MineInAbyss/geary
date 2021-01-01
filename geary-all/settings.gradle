@@ -1,0 +1,15 @@
+rootProject.name = 'geary-all'
+
+for (project in includedProjects.split(',')) {
+    includeBuild "../../$project"
+}
+
+if (properties.containsKey("useLocalIdofront") && useLocalIdofront.toBoolean()){
+    includeBuild('../../idofront') {
+        dependencySubstitution {
+            substitute module("com.mineinabyss:idofront") with project(":")
+            substitute module("com.mineinabyss:idofront-annotation") with project(":annotation")
+            substitute module("com.mineinabyss:idofront-processor") with project(":processor")
+        }
+    }
+}
