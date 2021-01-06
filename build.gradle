@@ -13,10 +13,6 @@ apply from: 'https://raw.githubusercontent.com/MineInAbyss/shared-gradle/master/
 group 'com.mineinabyss'
 version plugin_version
 
-kotlin {
-    explicitApi()
-}
-
 repositories {
     mavenCentral()
     jcenter()
@@ -54,6 +50,15 @@ shadowJar {
 }
 build.dependsOn shadowJar
 
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+        freeCompilerArgs += "-Xinline-classes"
+        freeCompilerArgs += '-Xexplicit-api=strict'
+    }
+}
+compileTestKotlin { kotlinOptions { jvmTarget = "1.8" } }
+
 publishing {
     repositories {
         maven githubPackagePublish.invoke("MineInAbyss/Geary")
@@ -64,11 +69,3 @@ publishing {
         }
     }
 }
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs = ["-Xinline-classes"]
-    }
-}
-compileTestKotlin { kotlinOptions { jvmTarget = "1.8" } }
