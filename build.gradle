@@ -34,7 +34,7 @@ dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compileOnly "org.cultofclang.minecraft:kotlinspice:$kotlin_version-9"
     compileOnly "org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.0.1"
-    implementation "com.mineinabyss:idofront:0.3.29"
+    implementation "com.mineinabyss:idofront:0.4.3"
 
     //ecs-related libs
     implementation "net.onedaybeard.bitvector:bitvector-jvm:0.1.4"
