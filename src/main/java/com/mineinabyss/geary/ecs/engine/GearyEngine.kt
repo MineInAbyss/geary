@@ -10,6 +10,7 @@ import com.mineinabyss.geary.ecs.geary
 import com.mineinabyss.geary.ecs.systems.TickingSystem
 import com.mineinabyss.geary.minecraft.geary
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.messaging.logError
 import com.okkero.skedule.schedule
 import com.zaxxer.sparsebits.SparseBitSet
 import net.onedaybeard.bitvector.BitVector
@@ -48,7 +49,14 @@ public class GearyEngine : Engine {
                 val currTick = Bukkit.getCurrentTick()
                 registeredSystems
                     .filter { currTick % it.interval == 0 }
-                    .forEach(TickingSystem::tick)
+                    .forEach {
+                        try {
+                            it.tick()
+                        } catch (e: Exception) {
+                            logError("Error while running system ${it.javaClass.name}")
+                            e.printStackTrace()
+                        }
+                    }
                 yield()
             }
         }
