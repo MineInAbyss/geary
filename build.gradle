@@ -47,8 +47,7 @@ dependencies {
 }
 
 shadowJar {
-    getArchiveBaseName().set("Geary")
-    getArchiveClassifier().set(null)
+    archivesBaseName = "Geary"
 
     relocate 'com.mineinabyss.idofront', "${project.group}.${project.name}.idofront".toLowerCase()
 }
