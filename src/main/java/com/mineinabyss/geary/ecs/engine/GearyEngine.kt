@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.GearyEntityId
 import com.mineinabyss.geary.ecs.actions.components.Conditions
 import com.mineinabyss.geary.ecs.components.parent
 import com.mineinabyss.geary.ecs.components.removeChildren
@@ -62,17 +63,17 @@ public class GearyEngine : Engine {
         }
     }
 
-    private var currId = 0
+    private var currId: GearyEntityId = 0
 
     //TODO there's likely a more performant option
-    private val removedEntities = Stack<Int>()
+    private val removedEntities = Stack<GearyEntityId>()
 
     //TODO use archetypes instead
     //TODO system for reusing deleted entities
     private val registeredSystems = mutableSetOf<TickingSystem>()
 
     @Synchronized
-    override fun getNextId(): Int = if (removedEntities.isNotEmpty()) removedEntities.pop() else ++currId
+    override fun getNextId(): GearyEntityId = if (removedEntities.isNotEmpty()) removedEntities.pop() else ++currId
 
     override fun addSystem(system: TickingSystem): Boolean = registeredSystems.add(system)
 
@@ -80,18 +81,18 @@ public class GearyEngine : Engine {
     private val components = mutableMapOf<ComponentClass, SparseArrayList<GearyComponent>>()
     internal val bitsets = mutableMapOf<ComponentClass, BitVector>()
 
-    override fun getComponentsFor(id: Int): Set<GearyComponent> =
+    override fun getComponentsFor(id: GearyEntityId): Set<GearyComponent> =
         components.mapNotNullTo(mutableSetOf()) { (_, value) -> value.getOrNull(id) }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : GearyComponent> getComponentFor(kClass: KClass<T>, id: Int): T? = runCatching {
+    override fun <T : GearyComponent> getComponentFor(kClass: KClass<T>, id: GearyEntityId): T? = runCatching {
         components[kClass]?.get(id) as? T
     }.getOrNull()
 
-    override fun holdsComponentFor(kClass: ComponentClass, id: Int): Boolean = components[kClass]?.get(id) != null
+    override fun holdsComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean = components[kClass]?.get(id) != null
 
-    override fun hasComponentFor(kClass: ComponentClass, id: Int): Boolean = bitsets[kClass]?.contains(id) ?: false
-    override fun removeComponentFor(kClass: ComponentClass, id: Int): Boolean {
+    override fun hasComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean = bitsets[kClass]?.contains(id) ?: false
+    override fun removeComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean {
         val bitset = bitsets[kClass] ?: return false
         if (bitset[id]) {
             bitset[id] = false
@@ -100,18 +101,18 @@ public class GearyEngine : Engine {
         return true
     }
 
-    override fun <T : GearyComponent> addComponentFor(kClass: KClass<out T>, id: Int, component: T): T {
+    override fun <T : GearyComponent> addComponentFor(kClass: KClass<out T>, id: GearyEntityId, component: T): T {
         components.getOrPut(kClass, { SparseArrayList() })[id] = component
         bitsets.getOrPut(kClass, { bitsOf() }).set(id)
         return component
     }
 
-    override fun enableComponentFor(kClass: ComponentClass, id: Int) {
+    override fun enableComponentFor(kClass: ComponentClass, id: GearyEntityId) {
         if (holdsComponentFor(kClass, id))
             bitsets[kClass]?.set(id, true)
     }
 
-    override fun disableComponentFor(kClass: ComponentClass, id: Int) {
+    override fun disableComponentFor(kClass: ComponentClass, id: GearyEntityId) {
         bitsets[kClass]?.set(id, false)
     }
 
