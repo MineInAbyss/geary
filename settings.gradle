@@ -21,3 +21,8 @@ if (properties.containsKey("useLocalIdofront") && useLocalIdofront.toBoolean()){
         }
     }
 }
+
+include 'geary-ecs', 'geary-spigot'
+
+project(':geary-ecs').projectDir = file('./ecs')
+project(':geary-spigot').projectDir = file('./spigot')

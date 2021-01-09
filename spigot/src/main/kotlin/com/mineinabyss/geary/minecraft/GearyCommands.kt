@@ -10,7 +10,7 @@ import com.mineinabyss.idofront.plugin.getService
 
 @ExperimentalCommandDSL
 internal object GearyCommands: IdofrontCommandExecutor() {
-    override val commands = commands(geary) {
+    override val commands = commands(minecraft.geary) {
         "geary" {
             "components"{
                 val type by stringArg()

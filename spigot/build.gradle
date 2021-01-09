@@ -1,0 +1,49 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'maven-publish'
+    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'com.github.johnrengelman.shadow'
+}
+
+apply from: 'https://raw.githubusercontent.com/MineInAbyss/shared-gradle/master/common.gradle'
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url 'http://nexus.okkero.com/repository/maven-releases/' }
+    maven githubPackage.invoke("MineInAbyss/Idofront")
+}
+
+dependencies {
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compileOnly "org.spigotmc:spigot-api:$server_version"
+
+    compileOnly "org.jetbrains.kotlinx:kotlinx-serialization-cbor"
+    compileOnly "com.okkero.skedule:skedule"
+
+    implementation "com.mineinabyss:idofront:0.4.3"
+
+    implementation project(":geary-ecs")
+}
+
+shadowJar {
+    archivesBaseName = "Geary"
+
+    relocate 'com.mineinabyss.idofront', "${project.group}.${project.name}.idofront".toLowerCase()
+}
+build.dependsOn shadowJar
+
+publishing {
+    repositories {
+        maven githubPackagePublish.invoke("MineInAbyss/Geary")
+    }
+    publications {
+        gpr(MavenPublication) {
+            artifactId = "geary-spigot"
+            from components.java
+        }
+    }
+}
