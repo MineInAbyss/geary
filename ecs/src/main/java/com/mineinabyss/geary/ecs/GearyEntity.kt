@@ -1,4 +1,3 @@
-
 package com.mineinabyss.geary.ecs
 
 import com.mineinabyss.geary.ecs.components.get
@@ -32,7 +31,7 @@ public inline class BoxedEntityID(override val gearyId: Int) : GearyEntity
 
 /** Gets the entity associated with [id] and runs code on it. */
 public inline fun geary(id: Int, run: GearyEntity.() -> Unit): GearyEntity =
-        BoxedEntityID(id).apply(run)
+    BoxedEntityID(id).apply(run)
 
 /** Gets the entity associated with [id]. */
 @Suppress("NOTHING_TO_INLINE")

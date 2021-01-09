@@ -27,7 +27,9 @@ public class BukkitEntityComponent<T : Entity>(
     @Transient
     private val _entity: T? = null
 ) : GearyComponent {
-    public val entity: T get() = _entity ?: (Bukkit.getEntity(uuid) as? T) ?: error("UUID does not link to anything")
+    @Suppress("UNCHECKED_CAST")
+    public val entity: T
+        get() = _entity ?: (Bukkit.getEntity(uuid) as? T) ?: error("UUID does not link to anything")
 
     public operator fun component1(): T = entity
 }

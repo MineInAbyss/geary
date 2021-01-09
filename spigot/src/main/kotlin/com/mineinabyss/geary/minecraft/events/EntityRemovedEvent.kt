@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.ecs.events
+package com.mineinabyss.geary.minecraft.events
 
 import com.mineinabyss.geary.ecs.GearyEntity
 import org.bukkit.event.Event

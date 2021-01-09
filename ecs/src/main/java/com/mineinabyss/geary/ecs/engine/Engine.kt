@@ -7,7 +7,6 @@ import com.mineinabyss.geary.ecs.geary
 import com.mineinabyss.geary.ecs.systems.TickingSystem
 import com.mineinabyss.idofront.plugin.getService
 import net.onedaybeard.bitvector.BitVector
-import org.bukkit.NamespacedKey
 import kotlin.reflect.KClass
 
 /**
@@ -18,10 +17,8 @@ import kotlin.reflect.KClass
 //TODO I originally made a choice to use ints for al the `for` functions to avoid boxing, but this is likely no longer
 // an issue with inline classes. It may be worth just taking the GearyEntity instead.
 public interface Engine {
-    public companion object : Engine by getService() {
-        //TODO all other components use key gearyecs, change it here for consistency
-        public val componentsKey: NamespacedKey = NamespacedKey("geary", "components")
-    }
+    //TODO relying on spigot here for service
+    public companion object : Engine by getService()
 
     /** Get the next free ID for use with the ECS. */
     public fun getNextId(): Int

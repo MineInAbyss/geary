@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.dsl
+package com.mineinabyss.geary.minecraft.dsl
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
@@ -27,7 +27,7 @@ public class GearyExtension(
 ) {
     init {
         if (types != null)
-            EntityTypeManager.add(plugin, types)
+            EntityTypeManager.add(plugin.name, types)
     }
 
     /** Registers a list of [systems]. */

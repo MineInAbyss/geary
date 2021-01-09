@@ -5,7 +5,6 @@ package com.mineinabyss.geary.ecs.components
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.engine.Engine
-import org.bukkit.persistence.PersistentDataContainer
 import kotlin.reflect.KClass
 
 /** Adds a component of type [T] to this entity */

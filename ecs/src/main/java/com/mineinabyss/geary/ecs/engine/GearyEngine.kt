@@ -5,17 +5,11 @@ import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.actions.components.Conditions
 import com.mineinabyss.geary.ecs.components.parent
 import com.mineinabyss.geary.ecs.components.removeChildren
-import com.mineinabyss.geary.ecs.events.EntityRemovedEvent
 import com.mineinabyss.geary.ecs.geary
 import com.mineinabyss.geary.ecs.systems.TickingSystem
-import com.mineinabyss.geary.minecraft.geary
-import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.logError
-import com.okkero.skedule.schedule
 import com.zaxxer.sparsebits.SparseBitSet
 import net.onedaybeard.bitvector.BitVector
 import net.onedaybeard.bitvector.bitsOf
-import org.bukkit.Bukkit
 import org.clapper.util.misc.SparseArrayList
 import java.util.*
 import kotlin.reflect.KClass
@@ -38,29 +32,9 @@ internal typealias ComponentClass = KClass<out GearyComponent>
  * Lastly there's a very basic implementation for only iterating over components with additional conditions. This is
  * currently quite inefficient, but optional.
  */
-public class GearyEngine : Engine {
-    init {
-        //tick all systems every interval ticks
-        geary.schedule {
-            repeating(1)
-            //TODO support suspending functions for systems
-            // perhaps async support in the future
-            while (true) {
-                val currTick = Bukkit.getCurrentTick()
-                registeredSystems
-                    .filter { currTick % it.interval == 0 }
-                    .forEach {
-                        try {
-                            it.tick()
-                        } catch (e: Exception) {
-                            logError("Error while running system ${it.javaClass.name}")
-                            e.printStackTrace()
-                        }
-                    }
-                yield()
-            }
-        }
-    }
+public open class GearyEngine : Engine {
+
+    //TODO function here to schedule events without spigot
 
     private var currId = 0
 
@@ -69,7 +43,7 @@ public class GearyEngine : Engine {
 
     //TODO use archetypes instead
     //TODO system for reusing deleted entities
-    private val registeredSystems = mutableSetOf<TickingSystem>()
+    protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
 
     @Synchronized
     override fun getNextId(): Int = if (removedEntities.isNotEmpty()) removedEntities.pop() else ++currId
@@ -156,8 +130,6 @@ public class GearyEngine : Engine {
     //TODO might be a smarter way of storing these as an implicit list within a larger list of entities eventually
     override fun removeEntity(entity: GearyEntity) {
         val (id) = entity
-
-        EntityRemovedEvent(entity).call()
 
         //clear relationship with parent and children
         //TODO add option to recursively remove children in the future

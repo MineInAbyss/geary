@@ -1,8 +1,9 @@
 package com.mineinabyss.geary.minecraft.store
 
 import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
+import com.mineinabyss.geary.minecraft.engine.SpigotEngine
+import com.mineinabyss.geary.minecraft.geary
 import com.mineinabyss.geary.minecraft.isGearyEntity
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
@@ -17,7 +18,7 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.encode(
         value: T
 ) {
     val encoded = cborFormat.encodeToByteArray(serializer, value)
-    this[NamespacedKey("geary", key), BYTE_ARRAY] = encoded
+    this[NamespacedKey(geary, key), BYTE_ARRAY] = encoded
 }
 
 //TODO make others pass plugin here
@@ -32,7 +33,7 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
 public fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>) {
     isGearyEntity = true
     //remove all keys present on the PDC so we only end up with the new list of components being encoded
-    keys.filter { it.namespace == "geary" && it != Engine.componentsKey }.forEach { remove(it) }
+    keys.filter { it.namespace == "geary" && it != SpigotEngine.componentsKey }.forEach { remove(it) }
 
     //get the serializer registered under the MobzyComponent class through polymorphic serialization, and use it to
     // write a serialized value under its serialname

@@ -50,7 +50,8 @@ public object Formats {
         Yaml(serializersModule = module, configuration = YamlConfiguration(encodeDefaults = false))
     }
 
-    internal fun addSerializerModule(module: SerializersModule) {
+    //TODO make internal once we switch off of a singleton object
+    public fun addSerializerModule(module: SerializersModule) {
         this.module += module
     }
 }

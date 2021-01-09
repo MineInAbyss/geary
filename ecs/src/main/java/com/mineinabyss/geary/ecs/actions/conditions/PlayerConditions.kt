@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.ecs.actions.conditions
 
 import kotlinx.serialization.Serializable
-import org.bukkit.entity.Player
 
 /**
  * Conditions that can be checked against a [Player].
@@ -14,7 +13,7 @@ public class PlayerConditions(
     private infix fun <T> T?.nullOrEquals(other: T?): Boolean =
         this == null || this == other
 
-    public fun conditionsMet(player: Player): Boolean =
-        isSneaking nullOrEquals player.isSneaking &&
-                isSprinting nullOrEquals player.isSprinting
+//    public fun conditionsMet(player: Player): Boolean =
+//        isSneaking nullOrEquals player.isSneaking &&
+//                isSprinting nullOrEquals player.isSprinting
 }

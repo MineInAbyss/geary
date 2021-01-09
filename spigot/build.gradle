@@ -12,6 +12,7 @@ apply from: 'https://raw.githubusercontent.com/MineInAbyss/shared-gradle/master/
 repositories {
     mavenCentral()
     jcenter()
+    maven { url 'https://papermc.io/repo/repository/maven-public/' }
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url 'http://nexus.okkero.com/repository/maven-releases/' }
     maven githubPackage.invoke("MineInAbyss/Idofront")
@@ -19,12 +20,11 @@ repositories {
 
 dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    compileOnly "org.spigotmc:spigot-api:$server_version"
+    //TODO decide whether we stick with spigot or not since paper adds some nice things
+    compileOnly "com.destroystokyo.paper:paper-api:$server_version"
+//    compileOnly "org.spigotmc:spigot-api:$server_version"
 
-    compileOnly "org.jetbrains.kotlinx:kotlinx-serialization-cbor"
     compileOnly "com.okkero.skedule:skedule"
-
-    implementation "com.mineinabyss:idofront:0.4.3"
 
     implementation project(":geary-ecs")
 }

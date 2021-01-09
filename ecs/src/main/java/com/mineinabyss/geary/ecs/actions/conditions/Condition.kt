@@ -2,10 +2,7 @@ package com.mineinabyss.geary.ecs.actions.conditions
 
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.actions.components.toComponentClass
-import com.mineinabyss.geary.ecs.components.get
 import com.mineinabyss.geary.ecs.components.hasAll
-import com.mineinabyss.geary.ecs.components.parent
-import com.mineinabyss.geary.minecraft.components.PlayerComponent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -25,7 +22,7 @@ public class Condition(
     private val componentClasses by lazy { components.map { it.toComponentClass() } }
 
     public fun conditionsMet(entity: GearyEntity): Boolean {
-        return entity.hasAll(componentClasses) &&
-                player?.conditionsMet(entity.parent?.get<PlayerComponent>()?.entity ?: return false) != false
+        return entity.hasAll(componentClasses) //TODO refactor Player conditions
+//                && player?.conditionsMet(entity.parent?.get<PlayerComponent>()?.entity ?: return false) != false
     }
 }

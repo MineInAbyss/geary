@@ -1,7 +1,5 @@
 package com.mineinabyss.geary.ecs.types
 
-import org.bukkit.plugin.Plugin
-
 /**
  * Manages registered [GearyEntityType]s and accessing them via name, bukkit entity, etc...
  *
@@ -10,7 +8,7 @@ import org.bukkit.plugin.Plugin
  * plugins which register types via code and can't re-register them easily.
  */
 public abstract class GearyEntityTypes<T : GearyEntityType>(
-    public val plugin: Plugin
+    public val plugin: String
 ) {
     public val types: List<String> get() = _types.keys.toList()
 

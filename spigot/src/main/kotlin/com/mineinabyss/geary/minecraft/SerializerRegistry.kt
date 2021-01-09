@@ -1,12 +1,11 @@
-package com.mineinabyss.geary.ecs.serialization
+package com.mineinabyss.geary.minecraft
 
-import com.mineinabyss.geary.dsl.attachToGeary
 import com.mineinabyss.geary.ecs.actions.*
 import com.mineinabyss.geary.ecs.actions.components.*
 import com.mineinabyss.geary.ecs.types.GearyEntityType
-import com.mineinabyss.geary.minecraft.Geary
+import com.mineinabyss.geary.minecraft.dsl.attachToGeary
 
-internal fun Geary.registerSerializers() {
+internal fun GearyPlugin.registerSerializers() {
     // This will also register a serializer for GearyEntityType
     attachToGeary<GearyEntityType> {
         components {
@@ -24,7 +23,6 @@ internal fun Geary.registerSerializers() {
             action(RemoveComponentAction.serializer())
             action(DisableComponentAction.serializer())
             action(EnableComponentAction.serializer())
-
         }
     }
 }

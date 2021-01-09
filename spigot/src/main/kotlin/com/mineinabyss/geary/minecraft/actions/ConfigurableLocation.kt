@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.ecs.actions
+package com.mineinabyss.geary.minecraft.actions
 
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.components.get

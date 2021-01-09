@@ -7,7 +7,6 @@ import com.mineinabyss.geary.ecs.components.addPersistingComponents
 import com.mineinabyss.geary.ecs.engine.ComponentClass
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.types.GearyEntityType.Companion.serializer
-import com.mineinabyss.geary.minecraft.store.encodeComponents
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -17,7 +16,6 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import org.bukkit.persistence.PersistentDataContainer
 import kotlin.reflect.KClass
 
 /**
@@ -108,9 +106,10 @@ public abstract class GearyEntityType : GearyComponent {
         entity.addPersistingComponents(persist)
     }
 
-    public fun encodeComponentsTo(pdc: PersistentDataContainer) {
-        pdc.encodeComponents(deepCopied.persist + this)
-    }
+    //TODO REFACTOR
+//    public fun encodeComponentsTo(pdc: PersistentDataContainer) {
+//        pdc.encodeComponents(deepCopied.persist + this)
+//    }
 
     public val staticComponentMap: Map<ComponentClass, GearyComponent> by lazy {
         staticComponents.associateBy { it::class }
@@ -132,13 +131,16 @@ public abstract class GearyEntityType : GearyComponent {
         override val descriptor: SerialDescriptor =
             PrimitiveSerialDescriptor("geary:${kclass.simpleName!!}".toLowerCase(), PrimitiveKind.STRING)
 
+        @Suppress("UNCHECKED_CAST")
         override fun deserialize(decoder: Decoder): T {
             val (plugin, type) = decoder.decodeString().split(':')
-            return (EntityTypeManager[plugin, type] ?: error("Type: $plugin:$type not found while deserializing")) as T
+            return (EntityTypeManager[plugin, type]
+                ?: error("Type $plugin:$type not found while deserializing")) as? T
+                ?: error("Found an entity type with the same name but different class. Were conflicting ones registered?")
         }
 
         override fun serialize(encoder: Encoder, value: T) {
-            encoder.encodeString("${value.types.plugin.name}:${value.name}")
+            encoder.encodeString("${value.types.plugin}:${value.name}")
         }
     }
 }

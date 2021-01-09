@@ -10,13 +10,17 @@ plugins {
 
 allprojects {
     apply plugin: 'java'
-//    apply plugin: 'idea'
+    apply plugin: 'idea'
 //    apply plugin: 'maven-publish'
     apply plugin: 'kotlin'
-//    apply plugin: 'kotlinx-serialization'
+    apply plugin: 'kotlinx-serialization'
 
     group 'com.mineinabyss'
     version plugin_version
+
+    kotlin {
+        explicitApi()
+    }
 
     repositories {
         mavenCentral()
@@ -26,20 +30,20 @@ allprojects {
 
     dependencies {
         compileOnly platform("com.mineinabyss:kotlinspice:$kotlin_version-10")
+        compileOnly "org.jetbrains.kotlinx:kotlinx-serialization-cbor"
+
+        implementation "com.mineinabyss:idofront:0.4.3"
     }
 
     compileKotlin {
         kotlinOptions {
             jvmTarget = "1.8"
-            freeCompilerArgs = ["-Xinline-classes"]
+            freeCompilerArgs += "-Xinline-classes"
+            freeCompilerArgs += "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
         }
     }
     compileTestKotlin { kotlinOptions { jvmTarget = "1.8" } }
 }
-
-//kotlin {
-//    explicitApi()
-//}
 
 //repositories {
 //

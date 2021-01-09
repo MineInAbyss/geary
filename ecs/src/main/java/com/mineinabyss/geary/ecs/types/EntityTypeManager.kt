@@ -1,7 +1,5 @@
 package com.mineinabyss.geary.ecs.types
 
-import com.mineinabyss.geary.dsl.GearyExtension
-import org.bukkit.plugin.Plugin
 
 /**
  * A singleton into which [GearyExtension]s register [GearyEntityTypes].
@@ -13,8 +11,8 @@ import org.bukkit.plugin.Plugin
 public object EntityTypeManager {
     private val typeMap = hashMapOf<String, GearyEntityTypes<*>>()
 
-    internal fun add(key: Plugin, types: GearyEntityTypes<*>) {
-        typeMap[key.name] = types
+    public fun add(key: String, types: GearyEntityTypes<*>) {
+        typeMap[key] = types
     }
 
     public operator fun get(plugin: String): GearyEntityTypes<*>? = typeMap[plugin]

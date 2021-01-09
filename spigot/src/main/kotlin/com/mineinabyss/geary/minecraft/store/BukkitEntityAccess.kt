@@ -8,9 +8,9 @@ import com.mineinabyss.geary.ecs.components.has
 import com.mineinabyss.geary.ecs.components.with
 import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.engine.entity
-import com.mineinabyss.geary.ecs.events.EntityRemovedEvent
 import com.mineinabyss.geary.ecs.remove
 import com.mineinabyss.geary.minecraft.components.PlayerComponent
+import com.mineinabyss.geary.minecraft.events.EntityRemovedEvent
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
