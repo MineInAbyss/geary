@@ -4,6 +4,7 @@ import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
 import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
+import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
 import com.okkero.skedule.schedule
 import org.bukkit.Bukkit
@@ -21,6 +22,10 @@ public class GearyPlugin : JavaPlugin() {
         registerService<Engine>(SpigotEngine().apply { start() })
 
         GearyCommands
+
+        registerEvents(
+            PlayerJoinLeaveListener,
+        )
 
         registerSerializers()
 
