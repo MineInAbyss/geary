@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.GearyEntityId
 import com.mineinabyss.geary.ecs.actions.components.Conditions
 import com.mineinabyss.geary.ecs.geary
 import com.mineinabyss.geary.ecs.systems.TickingSystem
@@ -21,40 +22,40 @@ public interface Engine {
     public companion object : Engine by getService()
 
     /** Get the next free ID for use with the ECS. */
-    public fun getNextId(): Int
+    public fun getNextId(): GearyEntityId
 
     /** Adds a [system] to the engine, which will be ticked appropriately by the engine */
     public fun addSystem(system: TickingSystem): Boolean
 
     /** Gets the components for entity of [id]. */
-    public fun getComponentsFor(id: Int): Set<GearyComponent>
+    public fun getComponentsFor(id: GearyEntityId): Set<GearyComponent>
 
     /** Gets a component of type [T] for entity of [id]. */
-    public fun <T : GearyComponent> getComponentFor(kClass: KClass<T>, id: Int): T?
+    public fun <T : GearyComponent> getComponentFor(kClass: KClass<T>, id: GearyEntityId): T?
 
     /**
      * Checks whether entity of [id] holds a [component type][kClass], without regards for whether or not it's active.
      */
-    public fun holdsComponentFor(kClass: ComponentClass, id: Int): Boolean
+    public fun holdsComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean
 
     /** Checks whether entity of [id] has an active [component type][kClass] */
-    public fun hasComponentFor(kClass: ComponentClass, id: Int): Boolean
+    public fun hasComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean
 
     /**
      * Removes a [component type][kClass] from entity of [id].
      *
      * @return Whether the component was present before removal.
      */
-    public fun removeComponentFor(kClass: ComponentClass, id: Int): Boolean
+    public fun removeComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean
 
     /** Adds a [component] of under a [component type][kClass] for entity of [id].  */
-    public fun <T : GearyComponent> addComponentFor(kClass: KClass<out T>, id: Int, component: T): T
+    public fun <T : GearyComponent> addComponentFor(kClass: KClass<out T>, id: GearyEntityId, component: T): T
 
     /**
      * Enables a [component type][kClass] for entity of [id], meaning it will be found via [getComponentFor],
      * [hasComponentFor], or when iterating over a family that includes this component.
      */
-    public fun enableComponentFor(kClass: ComponentClass, id: Int)
+    public fun enableComponentFor(kClass: ComponentClass, id: GearyEntityId)
 
     /**
      * Disables a [component type][kClass] for entity of [id], meaning it will not be found via [getComponentFor],
@@ -62,7 +63,7 @@ public interface Engine {
      *
      * However, it will be visible via [holdsComponentFor].
      */
-    public fun disableComponentFor(kClass: ComponentClass, id: Int)
+    public fun disableComponentFor(kClass: ComponentClass, id: GearyEntityId)
 
     /** Removes an entity from the ECS, freeing up its entity id. */
     public fun removeEntity(entity: GearyEntity)
@@ -88,7 +89,7 @@ public interface Engine {
     }
 
     /** Adds a list of [components] to entity of [id]. */
-    public fun addComponentsFor(id: Int, components: Set<GearyComponent>) {
+    public fun addComponentsFor(id: GearyEntityId, components: Set<GearyComponent>) {
         components.forEach { addComponentFor(it::class, id, it) }
     }
 }
