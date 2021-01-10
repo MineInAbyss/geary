@@ -10,6 +10,6 @@ import com.mineinabyss.geary.ecs.engine.forEach
  *
  * @see [Engine.forEach]
  */
-public abstract class TickingSystem(public val interval: Int = 1) {
+public abstract class TickingSystem(public val interval: Long = 1) {
     public abstract fun tick()
 }

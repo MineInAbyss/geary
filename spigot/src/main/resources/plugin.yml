@@ -1,7 +1,7 @@
 name: Geary
 version: @plugin_version@
 author: Offz
-main: com.mineinabyss.geary.minecraft.Geary
+main: com.mineinabyss.geary.minecraft.GearyPlugin
 api-version: 1.16
 depend: [KotlinSpice]
 

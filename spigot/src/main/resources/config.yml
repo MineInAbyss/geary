@@ -1,1 +1,29 @@
 debug: false
+item:
+  type: STICK
+staticComponents:
+  - !<looty:potion>
+    effects:
+      - type: SPEED
+        duration: 10t
+        amplifier: 2
+        ambient: true
+  - !<geary:conditions>
+    looty:potion:
+      - !<geary:conditons.entity>
+        has:
+          - looty:slot.held
+  - !<geary:events>
+    leftClick:
+      - !<if>
+        conditions:
+          - !<mobzy:conditions.player>
+            isSneaking: true
+        run:
+          - !<enable>
+            components:
+              - looty:potion
+    rightClick:
+      - !<disable>
+        components:
+          - looty:potion

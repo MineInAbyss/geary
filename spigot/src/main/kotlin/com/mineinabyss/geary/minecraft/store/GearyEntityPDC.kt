@@ -9,6 +9,11 @@ import com.mineinabyss.geary.ecs.types.GearyEntityType
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataHolder
 
+
+public fun GearyEntityType.encodeComponentsTo(pdc: PersistentDataContainer) {
+    pdc.encodeComponents(instantiatePersistingComponents())
+}
+
 /** Encodes this entity's persisting components into a [PersistentDataContainer] */
 public fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
     pdc.encodeComponents(getPersistingComponents())

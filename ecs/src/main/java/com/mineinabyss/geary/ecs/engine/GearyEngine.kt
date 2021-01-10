@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.components.parent
 import com.mineinabyss.geary.ecs.components.removeChildren
 import com.mineinabyss.geary.ecs.geary
 import com.mineinabyss.geary.ecs.systems.TickingSystem
+import com.mineinabyss.idofront.messaging.logError
 import com.zaxxer.sparsebits.SparseBitSet
 import net.onedaybeard.bitvector.BitVector
 import net.onedaybeard.bitvector.bitsOf
@@ -32,9 +33,25 @@ internal typealias ComponentClass = KClass<out GearyComponent>
  * Lastly there's a very basic implementation for only iterating over components with additional conditions. This is
  * currently quite inefficient, but optional.
  */
-public open class GearyEngine : Engine {
+public open class GearyEngine : TickingEngine() {
+    //TODO support suspending functions for systems
+    // perhaps async support in the future
+    override fun tick(currentTick: Long) {
+        registeredSystems
+            .filter { currentTick % it.interval == 0L }
+            .forEach {
+                try {
+                    it.tick()
+                } catch (e: Exception) {
+                    logError("Error while running system ${it.javaClass.name}")
+                    e.printStackTrace()
+                }
+            }
+    }
 
-    //TODO function here to schedule events without spigot
+    override fun onStart() {
+        TODO("Implement a system for ticking independent of spigot")
+    }
 
     private var currId = 0
 

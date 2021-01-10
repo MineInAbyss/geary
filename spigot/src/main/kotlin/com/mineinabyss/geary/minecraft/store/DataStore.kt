@@ -24,9 +24,9 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.encode(
 //TODO make others pass plugin here
 public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
         serializer: DeserializationStrategy<out T> = cborFormat.serializersModule.serializer(),
-        key: NamespacedKey//String = T::class.qualifiedName ?: error(""),
+        key: NamespacedKey
 ): T? {
-    val encoded = this[key /*NamespacedKey("geary", key)*/, BYTE_ARRAY] ?: return null
+    val encoded = this[key, BYTE_ARRAY] ?: return null
     return cborFormat.decodeFromByteArray(serializer, encoded)
 }
 

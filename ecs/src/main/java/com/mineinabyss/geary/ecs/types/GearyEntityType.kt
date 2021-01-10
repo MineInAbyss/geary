@@ -106,10 +106,7 @@ public abstract class GearyEntityType : GearyComponent {
         entity.addPersistingComponents(persist)
     }
 
-    //TODO REFACTOR
-//    public fun encodeComponentsTo(pdc: PersistentDataContainer) {
-//        pdc.encodeComponents(deepCopied.persist + this)
-//    }
+    public fun instantiatePersistingComponents(): Set<GearyComponent> = deepCopied.persist + this
 
     public val staticComponentMap: Map<ComponentClass, GearyComponent> by lazy {
         staticComponents.associateBy { it::class }
