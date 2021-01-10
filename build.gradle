@@ -17,6 +17,7 @@ allprojects {
 
     group 'com.mineinabyss'
     version plugin_version
+    if (System.getenv("GITHUB_RUN_NUMBER") != null) version += ".${System.getenv("GITHUB_RUN_NUMBER")}"
 
     kotlin {
         explicitApi()
