@@ -2,7 +2,6 @@ package com.mineinabyss.geary.minecraft
 
 import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
-import com.mineinabyss.geary.minecraft.listeners.PlayerJoinLeaveListener
 import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.plugin.registerEvents
@@ -18,14 +17,13 @@ public class GearyPlugin : JavaPlugin() {
     override fun onEnable() {
         logger.info("On enable has been called")
         saveDefaultConfig()
-        reloadConfig()
 
         registerService<Engine>(SpigotEngine().apply { start() })
 
         GearyCommands
 
         registerEvents(
-            PlayerJoinLeaveListener,
+            BukkitEntityAccess
         )
 
         registerSerializers()
@@ -34,7 +32,7 @@ public class GearyPlugin : JavaPlugin() {
         schedule {
             waitFor(1)
             Bukkit.getOnlinePlayers().forEach { player ->
-                BukkitEntityAccess.registerPlayer(player)
+                BukkitEntityAccess.registerEntity(player)
             }
         }
 

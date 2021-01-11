@@ -77,12 +77,17 @@ public open class GearyEngine : TickingEngine() {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : GearyComponent> getComponentFor(kClass: KClass<T>, id: GearyEntityId): T? = runCatching {
+        //TODO this cast will succeed even when it shouldn't because of type erasure with generics
+        // consider using reflective typeOf<T>
         components[kClass]?.get(id) as? T
     }.getOrNull()
 
-    override fun holdsComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean = components[kClass]?.get(id) != null
+    override fun holdsComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean =
+        components[kClass]?.get(id) != null
 
-    override fun hasComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean = bitsets[kClass]?.contains(id) ?: false
+    override fun hasComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean =
+        bitsets[kClass]?.contains(id) ?: false
+
     override fun removeComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean {
         val bitset = bitsets[kClass] ?: return false
         if (bitset[id]) {

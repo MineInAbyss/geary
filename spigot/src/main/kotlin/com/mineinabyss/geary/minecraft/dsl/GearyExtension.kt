@@ -13,7 +13,6 @@ import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.modules.*
 import org.bukkit.entity.Entity
-import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 
 //TODO make a reusable solution for extensions within idofront
@@ -22,8 +21,8 @@ import org.bukkit.plugin.Plugin
  * and more.
  */
 public class GearyExtension(
-        plugin: Plugin,
-        types: GearyEntityTypes<*>?,
+    plugin: Plugin,
+    types: GearyEntityTypes<*>?,
 ) {
     init {
         if (types != null)
@@ -41,7 +40,7 @@ public class GearyExtension(
      */
     public inline fun <reified T : GearyComponent> PolymorphicModuleBuilder<T>.component(serializer: KSerializer<T>) {
         val name = serializer.descriptor.serialName
-        if(name !in Formats.componentSerialNames) {
+        if (name !in Formats.componentSerialNames) {
             Formats.addSerialName(name, T::class)
             subclass(T::class, serializer)
         }
@@ -74,14 +73,18 @@ public class GearyExtension(
 
     /** Entry point for extending behaviour regarding how bukkit entities are linked to the ECS. */
     public class BukkitEntityAccessExtension {
-        /** Additional components to be added to the player when they are registered with the ECS. */
-        public fun onPlayerRegister(list: MutableList<GearyComponent>.(Player) -> Unit) {
-            BukkitEntityAccess.playerRegistryExtensions += list
+        /** Additional things to do or components to be added to an [Entity] of type [T] is registered with the ECS. */
+        public inline fun <reified T : Entity> onEntityRegister(crossinline list: MutableList<GearyComponent>.(T) -> Unit) {
+            BukkitEntityAccess.onBukkitEntityRegister { entity ->
+                if (entity is T) list(entity)
+            }
         }
 
-        /** Additional things to do before a player's [GearyEntity] is removed. */
-        public fun onPlayerUnregister(run: (GearyEntity, Player) -> Unit) {
-            BukkitEntityAccess.playerUnregisterExtensions += run
+        /** Additional things to do before an [Entity] of type [T] is removed from the ECS (or Minecraft World). */
+        public inline fun <reified T : Entity> onEntityUnregister(crossinline list: (GearyEntity, T) -> Unit) {
+            BukkitEntityAccess.onBukkitEntityUnregister { gearyEntity, entity ->
+                if (entity is T) list(gearyEntity, entity)
+            }
         }
 
         /**
@@ -102,8 +105,9 @@ public class GearyExtension(
  * @param types The subclass of [GearyEntityTypes] associated with this plugin.
  */
 public inline fun <reified T : GearyEntityType> Plugin.attachToGeary(
-        types: GearyEntityTypes<T>? = null,
-        init: GearyExtension.() -> Unit) {
+    types: GearyEntityTypes<T>? = null,
+    init: GearyExtension.() -> Unit
+) {
     //TODO support plugins being re-registered after a reload
     GearyExtension(this, types).apply(init).apply {
         components {
