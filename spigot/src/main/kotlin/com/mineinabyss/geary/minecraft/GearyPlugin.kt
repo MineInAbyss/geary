@@ -20,7 +20,8 @@ public class GearyPlugin : JavaPlugin() {
 
         registerService<Engine>(SpigotEngine().apply { start() })
 
-        GearyCommands
+        // Register commands.
+        GearyCommands()
 
         registerEvents(
             BukkitEntityAccess
