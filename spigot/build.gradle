@@ -22,6 +22,9 @@ dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     //TODO decide whether we stick with spigot or not since paper adds some nice things
     compileOnly "com.destroystokyo.paper:paper-api:$server_version"
+    implementation group: 'org.reflections', name: 'reflections', version: '0.9.12'
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
+
 //    compileOnly "org.spigotmc:spigot-api:$server_version"
 
     compileOnly "com.okkero.skedule:skedule"
