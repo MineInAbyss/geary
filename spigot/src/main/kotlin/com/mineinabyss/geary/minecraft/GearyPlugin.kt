@@ -17,6 +17,7 @@ public class GearyPlugin : JavaPlugin() {
     override fun onEnable() {
         logger.info("On enable has been called")
         saveDefaultConfig()
+        reloadConfig()
 
         registerService<Engine>(SpigotEngine().apply { start() })
 

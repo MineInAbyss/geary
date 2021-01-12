@@ -3,10 +3,14 @@ package com.mineinabyss.geary.minecraft.store
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.components.*
+import com.mineinabyss.geary.ecs.components.addComponent
+import com.mineinabyss.geary.ecs.components.addComponents
+import com.mineinabyss.geary.ecs.components.get
+import com.mineinabyss.geary.ecs.components.has
 import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.engine.entity
 import com.mineinabyss.geary.minecraft.components.BukkitEntityComponent
+import com.mineinabyss.geary.minecraft.components.toBukkit
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
 import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
@@ -76,10 +80,9 @@ public object BukkitEntityAccess : Listener {
 
     @EventHandler
     public fun GearyEntityRemoveEvent.onEntityRemoved() {
-        //clear itself from parent and children
-        entity.with<BukkitEntityComponent<*>> { (entity) ->
-            unregisterEntity(entity)
-        } //TODO might be better to move elsewhere, also handle for all bukkit entities
+        entity.toBukkit<Entity>()?.let {
+            unregisterEntity(it)
+        }
     }
 
     @EventHandler
