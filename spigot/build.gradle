@@ -25,11 +25,10 @@ dependencies {
     //TODO decide whether we stick with spigot or not since paper adds some nice things
     compileOnly "com.destroystokyo.paper:paper-api:$server_version"
     implementation "org.reflections:reflections:0.9.12"
+    //TODO I'd like to use kotlinspice here but not sure how to best add dependencies that need to be shaded.
+    // For now leave as compile only since this dep is always present and having 2 copies was causing issues.
     compileOnly "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
 
-    implementation("com.soywiz.korlibs.kds:kds:2.0.3") {
-        exclude group: 'org.jetbrains.kotlin'
-    }
 //    compileOnly "org.spigotmc:spigot-api:$server_version"
     compileOnly "com.okkero.skedule:skedule"
 
