@@ -36,9 +36,9 @@ public class GearyPlugin : JavaPlugin() {
 
         // This will also register a serializer for GearyEntityType
         attachToGeary<GearyEntityType> {
-            autoscanComponents {
-
-            }
+            autoscanComponents()
+            autoscanConditions()
+            autoscanActions()
 
             bukkitEntityAccess {
                 onEntityRegister<Player> { player ->

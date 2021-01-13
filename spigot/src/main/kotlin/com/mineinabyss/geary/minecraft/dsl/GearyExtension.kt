@@ -4,6 +4,7 @@ import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.actions.GearyAction
 import com.mineinabyss.geary.ecs.autoscan.ExcludeAutoscan
+import com.mineinabyss.geary.ecs.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.systems.TickingSystem
@@ -11,7 +12,7 @@ import com.mineinabyss.geary.ecs.types.EntityTypeManager
 import com.mineinabyss.geary.ecs.types.GearyEntityType
 import com.mineinabyss.geary.ecs.types.GearyEntityTypes
 import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
-import com.mineinabyss.idofront.messaging.logInfo
+import com.mineinabyss.idofront.messaging.logVal
 import com.mineinabyss.idofront.messaging.logWarn
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.*
@@ -38,7 +39,7 @@ public annotation class GearySystem
  */
 @GearyExtensionDSL
 public class GearyExtension(
-    private val plugin: Plugin,
+    public val plugin: Plugin,
     types: GearyEntityTypes<out GearyEntityType>?,
 ) {
     init {
@@ -47,29 +48,37 @@ public class GearyExtension(
     }
 
     /**
-     * Scans for [GearyComponent]s in the classpath of the provided [plugin]s [ClassLoader]. Optional
-     * [componentPath] can be used to restrict what packages are scanned.
+     * Registers serializers for [GearyComponent]s on the classpath of [plugin]'s [ClassLoader].
      *
-     * _Note that if the plugin is loaded using a custom classloading solution, autoscan may not work._
+     * @see autoscan
      */
     @InternalSerializationApi
     public fun autoscanComponents(init: AutoScanner.() -> Unit = {}) {
-        AutoScanner().apply(init).registerSerializers<GearyComponent> { kClass, serializer ->
+        autoscan<GearyComponent>(init) { kClass, serializer ->
             component(kClass, serializer)
         }
     }
 
     /**
-     * Scans for [GearyAction]s in the classpath of the provided [plugin]s [ClassLoader]. Optional
-     * [actionPath] can be used to restrict what packages are scanned.
+     * Registers serializers for [GearyAction]s on the classpath of [plugin]'s [ClassLoader].
      *
-     * _Note that if the plugin is loaded using a custom classloading solution, autoscan may not work._
+     * @see autoscan
      */
     @InternalSerializationApi
     public fun autoscanActions(init: AutoScanner.() -> Unit = {}) {
-        AutoScanner().apply(init).registerSerializers<GearyAction> { kClass, serializer ->
+        autoscan<GearyAction>(init) { kClass, serializer ->
             action(kClass, serializer)
         }
+    }
+
+    /**
+     * Registers serializers for [GearyCondition]s on the classpath of [plugin]'s [ClassLoader].
+     *
+     * @see autoscan
+     */
+    @InternalSerializationApi
+    public fun autoscanConditions(init: AutoScanner.() -> Unit = {}) {
+        autoscan<GearyCondition>(init)
     }
 
     /*public fun autoscanSingletonSystems(init: AutoScanner.() -> Unit = {}) {
@@ -79,65 +88,96 @@ public class GearyExtension(
         }
     }*/
 
-    public fun getReflections(path: String?, excluded: MutableList<String>): Reflections? {
-        val reflections = Reflections(
-            ConfigurationBuilder()
-                .addClassLoaders(plugin::class.java.classLoader)
-                .addUrls(ClasspathHelper.forClassLoader(plugin::class.java.classLoader))
-                .addScanners(SubTypesScanner())
-                .apply {
-                    path?.let {
-                        filterInputsBy(FilterBuilder().includePackage(path)
-                            .apply {
-                                excluded.forEach { excludePackage(it) }
-                            })
-                    }
-                }
-        )
+    private companion object {
+        private data class CacheKey(val plugin: Plugin, val path: String?, val excluded: Collection<String>)
 
-        // Check if the store is empty. Since we only use a single SubTypesScanner, if this is empty
-        // then the path passed in returned 0 matches.
-        if (reflections.store.keySet().isEmpty()) return null
-        return reflections
+        private val reflectionsCache = mutableMapOf<CacheKey, Reflections>()
     }
 
+    /**
+     * DSL for configuring scanning of classes to be registered into Geary's [SerializersModule].
+     *
+     * _Note that if the plugin is loaded using a custom classloading solution, autoscan may not work._
+     *
+     * @property path Optional path to restrict what packages are scanned.
+     * @property excluded Excluded paths under [path].
+     */
     @GearyExtensionDSL
     public inner class AutoScanner {
         public var path: String? = null
-        private val excluded = mutableListOf<String>()
+        private val _excluded = mutableListOf<String>()
+        public val excluded: Set<String> get() = _excluded.toSet()
 
+        /** Add a path to be excluded from the scanner. */
         public fun excludePath(path: String) {
-            excluded += path
+            _excluded += path
         }
 
-        /**
-         * Helper function to register serializers via scanning for geary classes.
-         */
-        @InternalSerializationApi
-        internal inline fun <reified T : Any> registerSerializers(
-            crossinline addSubclass: PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>) -> Unit,
-        ) {
-            val reflections = this@GearyExtension.getReflections(path, excluded)
+        /** Gets a reflections object under [path]*/
+        public fun getReflections(): Reflections? {
+            // cache the object we get because it takes considerable amount of time to get
+            val cacheKey = CacheKey(this@GearyExtension.plugin, path, excluded)
+            reflectionsCache[cacheKey]?.let { return it }
+            val classLoader = this@GearyExtension.plugin::class.java.classLoader
+            val reflections = Reflections(
+                ConfigurationBuilder()
+                    .addClassLoaders(classLoader)
+                    .addUrls(ClasspathHelper.forClassLoader(classLoader))
+                    .addScanners(SubTypesScanner())
+                    .filterInputsBy(FilterBuilder().apply {
+                        if (path != null) includePackage(path)
+                        excluded.forEach { excludePackage(it) }
+                    })
+            )
 
-            if (reflections == null) {
-                logWarn("No ${T::class.simpleName}s found for ${this@GearyExtension.plugin.name}${if (path == null) "" else " in package ${path}}"}.")
-                return
+            reflectionsCache[cacheKey] = reflections
+
+            // Check if the store is empty. Since we only use a single SubTypesScanner, if this is empty
+            // then the path passed in returned 0 matches.
+            if (reflections.store.keySet().isEmpty()) {
+                logWarn("Autoscanner failed to find classes for ${this@GearyExtension.plugin.name}${if (path == null) "" else " in package ${path}}"}.")
+                return null
             }
+            return reflections
+        }
 
+
+        /** Helper function to register serializers via scanning for geary classes. */
+        @InternalSerializationApi
+        public fun <T : Any> registerSerializers(
+            kClass: KClass<T>,
+            addSubclass: SerializerRegistry<T> = { kClass, serializer -> subclass(kClass, serializer) },
+        ) {
+            val reflections = getReflections() ?: return
             this@GearyExtension.serializers {
-                polymorphic(T::class) {
-                    reflections.getSubTypesOf(T::class.java).toSet()
+                polymorphic(kClass) {
+                    reflections.getSubTypesOf(kClass.java).toSet()
                         .map { it.kotlin }
                         .filter { it.hasAnnotation<Serializable>() }
                         .filter { !it.hasAnnotation<ExcludeAutoscan>() }
                         .filterIsInstance<KClass<T>>()
-                        .forEach {
+                        .map {
                             this@polymorphic.addSubclass(it, it.serializer())
-                            logInfo("Autoscan loaded serializer for ${it.qualifiedName}.")
+                            it.simpleName
                         }
+                        .joinToString()
+                        .logVal("Autoscan loaded serializers: ")
                 }
             }
         }
+    }
+
+    /**
+     * Registers serializers for any type [T] on the classpath of [plugin]'s [ClassLoader].
+     *
+     *
+     */
+    @InternalSerializationApi
+    public inline fun <reified T : Any> autoscan(
+        init: AutoScanner.() -> Unit = {},
+        noinline addSubclass: SerializerRegistry<T> = { kClass, serializer -> subclass(kClass, serializer) }
+    ) {
+        AutoScanner().apply(init).registerSerializers(T::class, addSubclass)
     }
 
 
@@ -230,6 +270,8 @@ public class GearyExtension(
         }
     }
 }
+
+public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>) -> Unit
 
 /**
  * Entry point to register a new [Plugin] with the Geary ECS.
