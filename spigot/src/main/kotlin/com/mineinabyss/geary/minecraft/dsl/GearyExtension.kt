@@ -29,9 +29,6 @@ import kotlin.reflect.full.hasAnnotation
 @DslMarker
 internal annotation class GearyExtensionDSL
 
-public annotation class GearySystem
-
-
 //TODO make a reusable solution for extensions within idofront
 /**
  * The entry point for other plugins to hook into Geary. Allows registering serializable components, systems, actions,
@@ -50,7 +47,7 @@ public class GearyExtension(
     /**
      * Registers serializers for [GearyComponent]s on the classpath of [plugin]'s [ClassLoader].
      *
-     * @see autoscan
+     * @see AutoScanner
      */
     @InternalSerializationApi
     public fun autoscanComponents(init: AutoScanner.() -> Unit = {}) {
@@ -62,7 +59,7 @@ public class GearyExtension(
     /**
      * Registers serializers for [GearyAction]s on the classpath of [plugin]'s [ClassLoader].
      *
-     * @see autoscan
+     * @see AutoScanner
      */
     @InternalSerializationApi
     public fun autoscanActions(init: AutoScanner.() -> Unit = {}) {
@@ -74,19 +71,33 @@ public class GearyExtension(
     /**
      * Registers serializers for [GearyCondition]s on the classpath of [plugin]'s [ClassLoader].
      *
-     * @see autoscan
+     * @see AutoScanner
      */
     @InternalSerializationApi
     public fun autoscanConditions(init: AutoScanner.() -> Unit = {}) {
         autoscan<GearyCondition>(init)
     }
 
+    //TODO basically use the same system except get different annotations and not kSerializer
     /*public fun autoscanSingletonSystems(init: AutoScanner.() -> Unit = {}) {
         val scanner = AutoScanner().apply(init)
         scanner.registerSerializers<TickingSystem, GearySystem> { kClass, _ ->
             kClass.objectInstance?.let { system(it) }
         }
     }*/
+
+    /**
+     * Registers serializers for any type [T] on the classpath of [plugin]'s [ClassLoader].
+     *
+     * @see AutoScanner
+     */
+    @InternalSerializationApi
+    public inline fun <reified T : Any> autoscan(
+        init: AutoScanner.() -> Unit = {},
+        noinline addSubclass: SerializerRegistry<T> = { kClass, serializer -> subclass(kClass, serializer) }
+    ) {
+        AutoScanner().apply(init).registerSerializers(T::class, addSubclass)
+    }
 
     private companion object {
         private data class CacheKey(val plugin: Plugin, val path: String?, val excluded: Collection<String>)
@@ -95,7 +106,10 @@ public class GearyExtension(
     }
 
     /**
-     * DSL for configuring scanning of classes to be registered into Geary's [SerializersModule].
+     * DSL for configuring automatic scanning of classes to be registered into Geary's [SerializersModule].
+     *
+     * A [path] to limit search to may be specified. Specific packages can also be excluded with [excludePath].
+     * Annotate a class with [ExcludeAutoscan] to exclude it from automatically being registered.
      *
      * _Note that if the plugin is loaded using a custom classloading solution, autoscan may not work._
      *
@@ -105,16 +119,15 @@ public class GearyExtension(
     @GearyExtensionDSL
     public inner class AutoScanner {
         public var path: String? = null
-        private val _excluded = mutableListOf<String>()
-        public val excluded: Set<String> get() = _excluded.toSet()
+        private val excluded = mutableListOf<String>()
 
         /** Add a path to be excluded from the scanner. */
         public fun excludePath(path: String) {
-            _excluded += path
+            excluded += path
         }
 
-        /** Gets a reflections object under [path]*/
-        public fun getReflections(): Reflections? {
+        /** Gets a reflections object under [path] */
+        private fun getReflections(): Reflections? {
             // cache the object we get because it takes considerable amount of time to get
             val cacheKey = CacheKey(this@GearyExtension.plugin, path, excluded)
             reflectionsCache[cacheKey]?.let { return it }
@@ -165,19 +178,6 @@ public class GearyExtension(
                 }
             }
         }
-    }
-
-    /**
-     * Registers serializers for any type [T] on the classpath of [plugin]'s [ClassLoader].
-     *
-     *
-     */
-    @InternalSerializationApi
-    public inline fun <reified T : Any> autoscan(
-        init: AutoScanner.() -> Unit = {},
-        noinline addSubclass: SerializerRegistry<T> = { kClass, serializer -> subclass(kClass, serializer) }
-    ) {
-        AutoScanner().apply(init).registerSerializers(T::class, addSubclass)
     }
 
 
