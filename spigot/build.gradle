@@ -19,13 +19,17 @@ repositories {
     maven githubPackage.invoke("MineInAbyss/Idofront")
 }
 
+
 dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     //TODO decide whether we stick with spigot or not since paper adds some nice things
     compileOnly "com.destroystokyo.paper:paper-api:$server_version"
     implementation "org.reflections:reflections:0.9.12"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
+    compileOnly "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
 
+    implementation("com.soywiz.korlibs.kds:kds:2.0.3") {
+        exclude group: 'org.jetbrains.kotlin'
+    }
 //    compileOnly "org.spigotmc:spigot-api:$server_version"
     compileOnly "com.okkero.skedule:skedule"
 
@@ -34,6 +38,10 @@ dependencies {
 
 shadowJar {
     archivesBaseName = "Geary"
+
+    dependencies {
+        exclude(dependency('org.jetbrains.kotlin:kotlin-stdlib:.*'))
+    }
 
     relocate 'com.mineinabyss.idofront', "${project.group}.${project.name}.idofront".toLowerCase()
 }
