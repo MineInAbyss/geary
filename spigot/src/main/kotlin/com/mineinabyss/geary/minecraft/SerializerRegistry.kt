@@ -5,6 +5,8 @@ import com.mineinabyss.geary.ecs.actions.components.*
 import com.mineinabyss.geary.ecs.conditions.ComponentConditions
 import com.mineinabyss.geary.ecs.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.types.GearyEntityType
+import com.mineinabyss.geary.minecraft.actions.ApplyPotionAction
+import com.mineinabyss.geary.minecraft.actions.DealDamageAction
 import com.mineinabyss.geary.minecraft.conditions.PlayerConditions
 import com.mineinabyss.geary.minecraft.dsl.attachToGeary
 import kotlinx.serialization.modules.polymorphic
@@ -23,11 +25,15 @@ internal fun GearyPlugin.registerSerializers() {
             action(CooldownAction.serializer())
             action(ConditionalAction.serializer())
             action(CancelEventAction.serializer())
+            action(SwitchToTargetAction.serializer())
 
             action(AddComponentAction.serializer())
             action(RemoveComponentAction.serializer())
             action(DisableComponentAction.serializer())
             action(EnableComponentAction.serializer())
+
+            action(ApplyPotionAction.serializer())
+            action(DealDamageAction.serializer())
         }
 
         serializers {

@@ -39,6 +39,9 @@ public object BukkitEntityAccess : Listener {
                     ?: mobMap[entity]
     //TODO a way of getting ID given a vanilla entity as fallback
 
+    public fun getBukkitEntity(entity: GearyEntity): Entity? =
+        mobMap.entries.find { entity === it.value }?.key
+
     public fun registerPlayer(player: Player) {
         registerEntity(player,
                 Engine.entity {
@@ -71,6 +74,8 @@ public object BukkitEntityAccess : Listener {
         }
     }
 }
+
+public fun bukkit(entity: GearyEntity): Entity? = BukkitEntityAccess.getBukkitEntity(entity)
 
 //TODO allow mobzy to add onto this
 public fun geary(entity: Entity): GearyEntity? = BukkitEntityAccess.getEntity(entity)
