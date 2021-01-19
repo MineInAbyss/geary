@@ -10,11 +10,19 @@ import com.mineinabyss.geary.ecs.types.EntityTypeManager
 import com.mineinabyss.geary.ecs.types.GearyEntityType
 import com.mineinabyss.geary.ecs.types.GearyEntityTypes
 import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
-import kotlinx.serialization.KSerializer
+import com.mineinabyss.idofront.messaging.logInfo
+import com.mineinabyss.idofront.messaging.logWarn
+import kotlinx.serialization.*
 import kotlinx.serialization.modules.*
 import org.bukkit.entity.Entity
-import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
+import org.reflections.Reflections
+import org.reflections.scanners.SubTypesScanner
+import org.reflections.util.ClasspathHelper
+import org.reflections.util.ConfigurationBuilder
+import org.reflections.util.FilterBuilder
+import kotlin.reflect.KClass
+import kotlin.reflect.full.hasAnnotation
 
 //TODO make a reusable solution for extensions within idofront
 /**
@@ -22,8 +30,8 @@ import org.bukkit.plugin.Plugin
  * and more.
  */
 public class GearyExtension(
-        plugin: Plugin,
-        types: GearyEntityTypes<*>?,
+    plugin: Plugin,
+    types: GearyEntityTypes<*>?,
 ) {
     init {
         if (types != null)
@@ -41,15 +49,115 @@ public class GearyExtension(
      */
     public inline fun <reified T : GearyComponent> PolymorphicModuleBuilder<T>.component(serializer: KSerializer<T>) {
         val name = serializer.descriptor.serialName
-        if(name !in Formats.componentSerialNames) {
+        if (name !in Formats.componentSerialNames) {
             Formats.addSerialName(name, T::class)
             subclass(T::class, serializer)
+        }
+    }
+
+    /**
+     * Adds a serializable component and registers it with Geary to allow finding the appropriate class via
+     * component serial name.
+     */
+    public fun <T : GearyComponent> PolymorphicModuleBuilder<T>.component(
+        kClass: KClass<T>,
+        serializer: KSerializer<T>
+    ) {
+        val name = serializer.descriptor.serialName
+        if (name !in Formats.componentSerialNames) {
+            Formats.addSerialName(name, kClass)
+            subclass(kClass, serializer)
         }
     }
 
     /** Adds a [SerializersModule] for polymorphic serialization of [GearyComponent]s within the ECS. */
     public inline fun components(crossinline init: PolymorphicModuleBuilder<GearyComponent>.() -> Unit) {
         serializers { polymorphic(GearyComponent::class) { init() } }
+    }
+
+    /**
+     * Scans for [GearyComponent]s in the classpath of the provided [plugin]s [ClassLoader]. Optional
+     * [componentPath] can be used to restrict what packages are scanned.
+     *
+     * _Note that if the plugin is loaded using a custom classloading solution, autoscan may not work._
+     */
+    @InternalSerializationApi
+    public fun autoscanComponents(plugin: Plugin, componentPath: String? = null) {
+        autoscan(
+            plugin,
+            componentPath
+        ) { kClass: KClass<GearyComponent>,
+            kSerializer: KSerializer<GearyComponent>,
+            module: PolymorphicModuleBuilder<GearyComponent> ->
+            module.component(
+                kClass,
+                kSerializer,
+            )
+        }
+    }
+
+    /**
+     * Scans for [GearyAction]s in the classpath of the provided [plugin]s [ClassLoader]. Optional
+     * [actionPath] can be used to restrict what packages are scanned.
+     *
+     * _Note that if the plugin is loaded using a custom classloading solution, autoscan may not work._
+     */
+    @InternalSerializationApi
+    public fun autoscanActions(plugin: Plugin, actionPath: String? = null) {
+        autoscan(
+            plugin,
+            actionPath
+        ) { kClass: KClass<GearyAction>,
+            kSerializer: KSerializer<GearyAction>,
+            module: PolymorphicModuleBuilder<GearyAction> ->
+            module.action(
+                kClass,
+                kSerializer
+            )
+        }
+    }
+
+    /**
+     * Helper function to register sreializers via scanning for geary classes.
+     */
+    @Suppress("UNCHECKED_CAST")
+    @InternalSerializationApi
+    private inline fun <reified T : Any> autoscan(
+        plugin: Plugin,
+        path: String? = null,
+        crossinline registrationFn: (kClass: KClass<T>, serializer: KSerializer<T>, moduleBuilder: PolymorphicModuleBuilder<T>) -> Unit
+    ) {
+        serializers {
+            polymorphic(T::class) {
+                val reflections = Reflections(
+                    ConfigurationBuilder()
+                        .addClassLoaders(plugin::class.java.classLoader)
+                        .addUrls(ClasspathHelper.forClassLoader(plugin::class.java.classLoader))
+                        .addScanners(SubTypesScanner())
+                        .apply {
+                            path?.let {
+                                filterInputsBy(FilterBuilder().includePackage(path))
+                            }
+                        }
+                )
+
+                // Check if the store is empty. Since we only use a single SubTypesScanner, if this is empty
+                // then the path passed in returned 0 matches.
+                if (reflections.store.keySet().isNotEmpty()) {
+                    val components = reflections.getSubTypesOf(T::class.java).toSet()
+                    components.map { it.kotlin }
+                        .filter { it.hasAnnotation<Serializable>() }
+                        .forEach {
+                            it as KClass<T>
+                            val ser = it.serializer()
+                            registrationFn(it, ser, this@polymorphic)
+                            logInfo("Autoscan loaded serializer for ${it.qualifiedName}.")
+                        }
+                } else {
+                    logWarn("No ${T::class.simpleName}s found for ${plugin.name}${if (path == null) "" else " in package ${path}}"}.")
+                }
+            }
+        }
     }
 
     /** Adds a [SerializersModule] for polymorphic serialization of [GearyAction]s within the ECS. */
@@ -60,6 +168,11 @@ public class GearyExtension(
     /** Adds a serializable action. */
     public inline fun <reified T : GearyAction> PolymorphicModuleBuilder<T>.action(serializer: KSerializer<T>) {
         subclass(serializer)
+    }
+
+    /** Adds a serializable action. */
+    public fun <T : GearyAction> PolymorphicModuleBuilder<T>.action(kClass: KClass<T>, serializer: KSerializer<T>) {
+        subclass(kClass, serializer)
     }
 
     /** Adds a [SerializersModule] to be used for polymorphic serialization within the ECS. */
@@ -74,14 +187,18 @@ public class GearyExtension(
 
     /** Entry point for extending behaviour regarding how bukkit entities are linked to the ECS. */
     public class BukkitEntityAccessExtension {
-        /** Additional components to be added to the player when they are registered with the ECS. */
-        public fun onPlayerRegister(list: MutableList<GearyComponent>.(Player) -> Unit) {
-            BukkitEntityAccess.playerRegistryExtensions += list
+        /** Additional things to do or components to be added to an [Entity] of type [T] is registered with the ECS. */
+        public inline fun <reified T : Entity> onEntityRegister(crossinline list: MutableList<GearyComponent>.(T) -> Unit) {
+            BukkitEntityAccess.onBukkitEntityRegister { entity ->
+                if (entity is T) list(entity)
+            }
         }
 
-        /** Additional things to do before a player's [GearyEntity] is removed. */
-        public fun onPlayerUnregister(run: (GearyEntity, Player) -> Unit) {
-            BukkitEntityAccess.playerUnregisterExtensions += run
+        /** Additional things to do before an [Entity] of type [T] is removed from the ECS (or Minecraft World). */
+        public inline fun <reified T : Entity> onEntityUnregister(crossinline list: (GearyEntity, T) -> Unit) {
+            BukkitEntityAccess.onBukkitEntityUnregister { gearyEntity, entity ->
+                if (entity is T) list(gearyEntity, entity)
+            }
         }
 
         /**
@@ -102,8 +219,9 @@ public class GearyExtension(
  * @param types The subclass of [GearyEntityTypes] associated with this plugin.
  */
 public inline fun <reified T : GearyEntityType> Plugin.attachToGeary(
-        types: GearyEntityTypes<T>? = null,
-        init: GearyExtension.() -> Unit) {
+    types: GearyEntityTypes<T>? = null,
+    init: GearyExtension.() -> Unit
+) {
     //TODO support plugins being re-registered after a reload
     GearyExtension(this, types).apply(init).apply {
         components {

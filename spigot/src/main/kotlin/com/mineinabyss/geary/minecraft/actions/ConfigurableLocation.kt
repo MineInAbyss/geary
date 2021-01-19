@@ -1,13 +1,14 @@
 package com.mineinabyss.geary.minecraft.actions
 
 import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.components.get
 import com.mineinabyss.geary.ecs.components.parent
 import com.mineinabyss.geary.ecs.components.with
 import com.mineinabyss.geary.minecraft.components.PlayerComponent
+import com.mineinabyss.geary.minecraft.components.toBukkit
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.Location
+import org.bukkit.entity.Player
 
 /**
  * Base abstract class for getting a location given an entity.
@@ -30,7 +31,7 @@ public sealed class ConfigurableLocation {
 @SerialName("player.location")
 public class AtPlayerLocation : ConfigurableLocation() {
     override fun get(entity: GearyEntity): Location? =
-        entity.parent?.get<PlayerComponent>()?.entity?.location
+        entity.parent?.toBukkit<Player>()?.location
 }
 
 /**

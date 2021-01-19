@@ -12,8 +12,13 @@ public inline fun <reified T : GearyComponent> GearyEntity.addComponent(componen
     Engine.addComponentFor(T::class, gearyId, component)
 
 /** Adds a list of [components] to this entity */
-public inline fun GearyEntity.addComponents(components: Set<GearyComponent>) {
-    Engine.addComponentsFor(gearyId, components)
+public inline fun GearyEntity.addComponents(components: Collection<GearyComponent>) {
+    Engine.addComponentsFor(gearyId, components.toSet())
+}
+
+/** Adds a list of [components] to this entity */
+public inline fun GearyEntity.addComponents(vararg components: GearyComponent) {
+    addComponents(components.toSet())
 }
 
 /**

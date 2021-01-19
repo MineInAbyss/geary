@@ -15,6 +15,7 @@ repositories {
     maven { url 'https://papermc.io/repo/repository/maven-public/' }
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url 'http://nexus.okkero.com/repository/maven-releases/' }
+    maven { url("https://dl.bintray.com/korlibs/korlibs") }
     maven githubPackage.invoke("MineInAbyss/Idofront")
 }
 
@@ -22,8 +23,10 @@ dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     //TODO decide whether we stick with spigot or not since paper adds some nice things
     compileOnly "com.destroystokyo.paper:paper-api:$server_version"
-//    compileOnly "org.spigotmc:spigot-api:$server_version"
+    implementation "org.reflections:reflections:0.9.12"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
 
+//    compileOnly "org.spigotmc:spigot-api:$server_version"
     compileOnly "com.okkero.skedule:skedule"
 
     implementation project(":")

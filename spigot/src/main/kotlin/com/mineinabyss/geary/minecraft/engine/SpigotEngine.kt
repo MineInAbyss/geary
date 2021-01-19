@@ -2,7 +2,7 @@ package com.mineinabyss.geary.minecraft.engine
 
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.engine.GearyEngine
-import com.mineinabyss.geary.minecraft.events.EntityRemovedEvent
+import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
 import com.mineinabyss.geary.minecraft.geary
 import com.mineinabyss.idofront.events.call
 import com.okkero.skedule.schedule
@@ -26,7 +26,7 @@ public class SpigotEngine : GearyEngine() {
     }
 
     override fun removeEntity(entity: GearyEntity) {
-        EntityRemovedEvent(entity).call()
+        GearyEntityRemoveEvent(entity).call()
         super.removeEntity(entity)
     }
 }
