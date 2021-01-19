@@ -12,7 +12,6 @@ import com.mineinabyss.geary.ecs.engine.entity
 import com.mineinabyss.geary.minecraft.components.BukkitEntityComponent
 import com.mineinabyss.geary.minecraft.components.toBukkit
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
-import org.bukkit.World
 import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
