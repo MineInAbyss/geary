@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.actions.components
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.SerializableGearyComponent
 import com.mineinabyss.geary.ecs.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.engine.ComponentClass
 import com.mineinabyss.geary.ecs.serialization.FlatSerializer
@@ -17,7 +18,7 @@ import kotlin.reflect.KClass
 @Serializable(with = ConditionsSerializer::class)
 public class Conditions(
     override val wrapped: Map<String, List<GearyCondition>>
-) : GearyComponent, FlatWrap<Map<String, List<GearyCondition>>> {
+) : SerializableGearyComponent, FlatWrap<Map<String, List<GearyCondition>>> {
     private val wrappedClasses: Map<KClass<out GearyComponent>, List<GearyCondition>> =
         wrapped.mapKeys { it.key.toComponentClass() }
 

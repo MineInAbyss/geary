@@ -5,6 +5,7 @@ import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.components.addComponents
 import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.engine.entity
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -17,7 +18,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("entity")
 public class EntityAction(
-        private val components: Set<GearyComponent>
+        private val components: Set<@Contextual GearyComponent>
 ) : GearyAction() {
     override fun runOn(entity: GearyEntity): Boolean {
         Engine.entity {

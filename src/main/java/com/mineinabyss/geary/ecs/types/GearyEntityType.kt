@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.types
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.SerializableGearyComponent
 import com.mineinabyss.geary.ecs.autoscan.ExcludeAutoscan
 import com.mineinabyss.geary.ecs.components.addComponents
 import com.mineinabyss.geary.ecs.components.addPersistingComponents
@@ -45,32 +46,32 @@ import kotlin.reflect.KClass
 @Serializable
 @SerialName("geary:type")
 @ExcludeAutoscan
-public abstract class GearyEntityType : GearyComponent {
+public abstract class GearyEntityType : SerializableGearyComponent {
     /** Resulting set will be added to the list of instance components, but won't be serialized. */
-    protected open fun MutableSet<GearyComponent>.addComponents() {}
+    protected open fun MutableSet<SerializableGearyComponent>.addComponents() {}
 
     /** Resulting set will be added to the list of persisting components and will be encoded to the entity's
      * [PersistentDataContainer] if applicable. */
-    protected open fun MutableSet<GearyComponent>.addPersistingComponents() {}
+    protected open fun MutableSet<SerializableGearyComponent>.addPersistingComponents() {}
 
     /** Resulting set will be added to the list of static components, but won't be serialized. */
-    protected open fun MutableSet<GearyComponent>.addStaticComponents() {}
+    protected open fun MutableSet<out GearyComponent>.addStaticComponents() {}
 
     @SerialName("instanceComponents")
-    private val _instanceComponents = mutableSetOf<GearyComponent>()
+    private val _instanceComponents = mutableSetOf<SerializableGearyComponent>()
 
     @SerialName("persistingComponents")
-    private val _persistingComponents = mutableSetOf<GearyComponent>()
+    private val _persistingComponents = mutableSetOf<SerializableGearyComponent>()
 
     @SerialName("staticComponents")
-    private val _staticComponents = mutableSetOf<GearyComponent>()
+    private val _staticComponents = mutableSetOf<SerializableGearyComponent>()
 
 
-    private val instanceComponents: Set<GearyComponent> by lazy {
+    private val instanceComponents: Set<SerializableGearyComponent> by lazy {
         _instanceComponents.apply { addComponents() }.toSet()
     }
 
-    private val persistingComponents: Set<GearyComponent> by lazy {
+    private val persistingComponents: Set<SerializableGearyComponent> by lazy {
         _persistingComponents.apply { addPersistingComponents() }.toSet()
     }
 
@@ -86,8 +87,8 @@ public abstract class GearyEntityType : GearyComponent {
 
     @Serializable
     private data class ComponentDeepCopy(
-        val instance: Set<GearyComponent>,
-        val persist: Set<GearyComponent>
+        val instance: Set<SerializableGearyComponent>,
+        val persist: Set<SerializableGearyComponent>
     )
 
     //TODO this is the safest and cleanest way to deepcopy. Check how this performs vs deepcopy's reflection method.
@@ -108,17 +109,17 @@ public abstract class GearyEntityType : GearyComponent {
         entity.addPersistingComponents(persist)
     }
 
-    public fun instantiatePersistingComponents(): Set<GearyComponent> = deepCopied.persist + this
+    public fun instantiatePersistingComponents(): Set<SerializableGearyComponent> = deepCopied.persist + this
 
     public val staticComponentMap: Map<ComponentClass, GearyComponent> by lazy {
         staticComponents.associateBy { it::class }
     }
 
     /** Gets a static component of type [T] from this entity type. */
-    public inline fun <reified T : GearyComponent> get(): T? = staticComponentMap[T::class] as? T
+    public inline fun <reified T : SerializableGearyComponent> get(): T? = staticComponentMap[T::class] as? T
 
     /** Checks whether this entity type has a static component of type [T]. */
-    public inline fun <reified T : GearyComponent> has(): Boolean = staticComponentMap.containsKey(T::class)
+    public inline fun <reified T : SerializableGearyComponent> has(): Boolean = staticComponentMap.containsKey(T::class)
 
     /**
      * Allows us to serialize entity types to a reference to ones actually registered in the system.

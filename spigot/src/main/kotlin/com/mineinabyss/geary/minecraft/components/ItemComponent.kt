@@ -13,4 +13,4 @@ import org.bukkit.inventory.ItemStack
 public data class ItemComponent(
         var item: ItemStack, //TODO should setter be internal?
         var slot: Int
-) : GearyComponent
+): GearyComponent()
