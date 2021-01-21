@@ -19,12 +19,15 @@ repositories {
     maven githubPackage.invoke("MineInAbyss/Idofront")
 }
 
+
 dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     //TODO decide whether we stick with spigot or not since paper adds some nice things
     compileOnly "com.destroystokyo.paper:paper-api:$server_version"
     implementation "org.reflections:reflections:0.9.12"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
+    //TODO I'd like to use kotlinspice here but not sure how to best add dependencies that need to be shaded.
+    // For now leave as compile only since this dep is always present and having 2 copies was causing issues.
+    compileOnly "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
 
 //    compileOnly "org.spigotmc:spigot-api:$server_version"
     compileOnly "com.okkero.skedule:skedule"
@@ -34,6 +37,10 @@ dependencies {
 
 shadowJar {
     archivesBaseName = "Geary"
+
+    dependencies {
+        exclude(dependency('org.jetbrains.kotlin:kotlin-stdlib:.*'))
+    }
 
     relocate 'com.mineinabyss.idofront', "${project.group}.${project.name}.idofront".toLowerCase()
 }

@@ -8,7 +8,7 @@ import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.plus
+import kotlinx.serialization.modules.overwriteWith
 import kotlin.reflect.KClass
 
 /**
@@ -52,6 +52,6 @@ public object Formats {
 
     //TODO make internal once we switch off of a singleton object
     public fun addSerializerModule(module: SerializersModule) {
-        this.module += module
+        this.module = module.overwriteWith(this.module)
     }
 }

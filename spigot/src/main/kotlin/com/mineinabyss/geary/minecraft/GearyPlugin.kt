@@ -1,17 +1,23 @@
 package com.mineinabyss.geary.minecraft
 
 import com.mineinabyss.geary.ecs.engine.Engine
+import com.mineinabyss.geary.ecs.types.GearyEntityType
+import com.mineinabyss.geary.minecraft.components.PlayerComponent
+import com.mineinabyss.geary.minecraft.dsl.attachToGeary
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
 import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
 import com.okkero.skedule.schedule
+import kotlinx.serialization.InternalSerializationApi
 import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.time.ExperimentalTime
 
 public class GearyPlugin : JavaPlugin() {
+    @InternalSerializationApi
     @ExperimentalCommandDSL
     @ExperimentalTime
     override fun onEnable() {
@@ -28,7 +34,18 @@ public class GearyPlugin : JavaPlugin() {
             BukkitEntityAccess
         )
 
-        registerSerializers()
+        // This will also register a serializer for GearyEntityType
+        attachToGeary<GearyEntityType> {
+            autoscanComponents()
+            autoscanConditions()
+            autoscanActions()
+
+            bukkitEntityAccess {
+                onEntityRegister<Player> { player ->
+                    add(PlayerComponent(player.uniqueId))
+                }
+            }
+        }
 
         //Register all players with the ECS after all plugins loaded
         schedule {

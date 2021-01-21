@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.types
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.autoscan.ExcludeAutoscan
 import com.mineinabyss.geary.ecs.components.addComponents
 import com.mineinabyss.geary.ecs.components.addPersistingComponents
 import com.mineinabyss.geary.ecs.engine.ComponentClass
@@ -43,6 +44,7 @@ import kotlin.reflect.KClass
  */
 @Serializable
 @SerialName("geary:type")
+@ExcludeAutoscan
 public abstract class GearyEntityType : GearyComponent {
     /** Resulting set will be added to the list of instance components, but won't be serialized. */
     protected open fun MutableSet<GearyComponent>.addComponents() {}
