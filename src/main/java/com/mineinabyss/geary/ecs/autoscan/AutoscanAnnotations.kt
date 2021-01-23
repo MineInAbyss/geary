@@ -5,3 +5,5 @@ package com.mineinabyss.geary.ecs.autoscan
  * with the Autoscanner.
  */
 public annotation class ExcludeAutoscan
+
+public annotation class AutoscanComponent

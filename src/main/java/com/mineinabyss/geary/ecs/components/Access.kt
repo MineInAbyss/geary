@@ -4,7 +4,6 @@ package com.mineinabyss.geary.ecs.components
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.SerializableGearyComponent
 import com.mineinabyss.geary.ecs.engine.Engine
 import kotlin.reflect.KClass
 
@@ -27,7 +26,7 @@ public inline fun GearyEntity.addComponents(vararg components: GearyComponent) {
  *
  * Ex. for bukkit entities this is done through a [PersistentDataContainer].
  */
-public inline fun <reified T : SerializableGearyComponent> GearyEntity.addPersistingComponent(component: T): T {
+public inline fun <reified T : GearyComponent> GearyEntity.addPersistingComponent(component: T): T {
     addComponent(component)
     getOrAdd { PersistingComponents() }.add(component)
     return component
@@ -37,7 +36,7 @@ public inline fun <reified T : SerializableGearyComponent> GearyEntity.addPersis
  * Adds a list of persisting [components]
  * @see addPersistingComponent
  */
-public fun GearyEntity.addPersistingComponents(components: Set<SerializableGearyComponent>) {
+public fun GearyEntity.addPersistingComponents(components: Set<GearyComponent>) {
     if (components.isEmpty()) return //avoid adding a persisting components component if there are none to add
     addComponents(components)
     getOrAdd { PersistingComponents() }.addAll(components)
@@ -56,7 +55,7 @@ public inline fun <reified T : GearyComponent> GearyEntity.getOrAdd(default: () 
     get<T>() ?: addComponent(default())
 
 /** Gets a persisting component of type [T] or adds a [default] if no component was present. */
-public inline fun <reified T : SerializableGearyComponent> GearyEntity.getOrAddPersisting(default: () -> T): T =
+public inline fun <reified T : GearyComponent> GearyEntity.getOrAddPersisting(default: () -> T): T =
     get<T>() ?: addPersistingComponent(default())
 
 /** Gets a component of type [T] on this entity. */
@@ -66,10 +65,8 @@ public inline fun <reified T : GearyComponent> GearyEntity.get(): T? = Engine.ge
 public inline fun GearyEntity.getComponents(): Set<GearyComponent> = Engine.getComponentsFor(gearyId)
 
 /** Gets all the active persisting components on this entity. */
-public inline fun GearyEntity.getPersistingComponents(): Set<SerializableGearyComponent> =
-    get<PersistingComponents>()?.persisting
-        ?.intersect(getComponents().filterIsInstance<SerializableGearyComponent>())
-        ?: emptySet()
+public inline fun GearyEntity.getPersistingComponents(): Set<GearyComponent> =
+    get<PersistingComponents>()?.persisting?.intersect(getComponents()) ?: emptySet()
 
 /** Gets all the active non-persisting components on this entity. */
 public inline fun GearyEntity.getInstanceComponents(): Set<GearyComponent> =

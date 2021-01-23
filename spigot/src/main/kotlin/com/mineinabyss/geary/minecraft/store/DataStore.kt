@@ -1,19 +1,16 @@
 package com.mineinabyss.geary.minecraft.store
 
 import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.SerializableGearyComponent
 import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
 import com.mineinabyss.geary.minecraft.geary
 import com.mineinabyss.geary.minecraft.isGearyEntity
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.serializer
+import kotlinx.serialization.*
 import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType.BYTE_ARRAY
 
-public inline fun <reified T : SerializableGearyComponent> PersistentDataContainer.encode(
+public inline fun <reified T : GearyComponent> PersistentDataContainer.encode(
         serializer: SerializationStrategy<T> = cborFormat.serializersModule.serializer(),
         key: String = T::class.qualifiedName ?: error(""),
         value: T
@@ -23,15 +20,15 @@ public inline fun <reified T : SerializableGearyComponent> PersistentDataContain
 }
 
 //TODO make others pass plugin here
-public inline fun <reified T : SerializableGearyComponent> PersistentDataContainer.decode(
+public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
         serializer: DeserializationStrategy<out T> = cborFormat.serializersModule.serializer(),
         key: NamespacedKey
 ): T? {
     val encoded = this[key, BYTE_ARRAY] ?: return null
-    return cborFormat.decodeFromByteArray(serializer, encoded)
+    return cborFormat.decodeFromByteArray(encoded)
 }
 
-public fun PersistentDataContainer.encodeComponents(components: Collection<SerializableGearyComponent>) {
+public fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>) {
     isGearyEntity = true
     //remove all keys present on the PDC so we only end up with the new list of components being encoded
     keys.filter { it.namespace == "geary" && it != SpigotEngine.componentsKey }.forEach { remove(it) }
@@ -45,12 +42,11 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Seria
     }
 }
 
-public fun PersistentDataContainer.decodeComponents(): Set<SerializableGearyComponent> {
+public fun PersistentDataContainer.decodeComponents(): Set<GearyComponent> {
     //key is serialname, we find all the valid ones registered in our module and use those serializers to deserialize
     return keys.mapNotNull { key ->
-        val serializer = cborFormat.serializersModule.getPolymorphic(SerializableGearyComponent::class, key.key.toSerialKey())
-                ?: return@mapNotNull null
-        decode(serializer, key)
+        //TODO Cleanup and ensure this still works
+        decode(PolymorphicSerializer(Any::class), key)
     }.toSet()
 }
 

@@ -5,7 +5,7 @@ import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.actions.GearyAction
 import com.mineinabyss.geary.ecs.components.addComponents
 import com.mineinabyss.geary.ecs.engine.Engine
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("add")
 public class AddComponentAction(
-        private val components: Set<@Contextual GearyComponent>
+        private val components: Set<@Polymorphic GearyComponent>
 ) : GearyAction() {
     override fun runOn(entity: GearyEntity): Boolean {
         entity.addComponents(components)

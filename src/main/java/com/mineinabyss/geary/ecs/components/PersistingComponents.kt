@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.ecs.components
 
-import com.mineinabyss.geary.ecs.SerializableGearyComponent
+import com.mineinabyss.geary.ecs.GearyComponent
 
 /**
  * A component that holds a list of components to be persisted.
@@ -9,5 +9,5 @@ import com.mineinabyss.geary.ecs.SerializableGearyComponent
  * at the ones that were serialized to it.
  */
 public class PersistingComponents(
-    public val persisting: MutableSet<SerializableGearyComponent> = mutableSetOf()
-) : MutableSet<SerializableGearyComponent> by persisting
+    public val persisting: MutableSet<GearyComponent> = mutableSetOf()
+) : MutableSet<GearyComponent> by persisting

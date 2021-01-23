@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.ecs.components
 
-import com.mineinabyss.geary.ecs.SerializableGearyComponent
+import com.mineinabyss.geary.ecs.autoscan.AutoscanComponent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -14,7 +14,8 @@ import kotlinx.serialization.Serializable
 //TODO persist cooldowns on entity, but dont serialize any cooldowns that are already complete
 @Serializable
 @SerialName("geary:cooldowns")
-public class CooldownManager : SerializableGearyComponent {
+@AutoscanComponent
+public class CooldownManager {
     private val completionTime: MutableMap<String, Long> = mutableMapOf()
     public val incompleteCooldowns: Map<String, Long> get() = completionTime.filterValues { it > System.currentTimeMillis() }
 
