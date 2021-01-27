@@ -5,15 +5,17 @@ import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
 import com.mineinabyss.geary.minecraft.geary
 import com.mineinabyss.geary.minecraft.isGearyEntity
-import kotlinx.serialization.*
+import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.serializer
 import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType.BYTE_ARRAY
 
 public inline fun <reified T : GearyComponent> PersistentDataContainer.encode(
-        serializer: SerializationStrategy<T> = cborFormat.serializersModule.serializer(),
-        key: String = T::class.qualifiedName ?: error(""),
-        value: T
+    serializer: SerializationStrategy<T> = cborFormat.serializersModule.serializer(),
+    key: String = T::class.qualifiedName ?: error(""),
+    value: T
 ) {
     val encoded = cborFormat.encodeToByteArray(serializer, value)
     this[NamespacedKey(geary, key), BYTE_ARRAY] = encoded
@@ -21,11 +23,11 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.encode(
 
 //TODO make others pass plugin here
 public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
-        serializer: DeserializationStrategy<out T> = cborFormat.serializersModule.serializer(),
-        key: NamespacedKey
+    serializer: DeserializationStrategy<out T> = cborFormat.serializersModule.serializer(),
+    key: NamespacedKey
 ): T? {
     val encoded = this[key, BYTE_ARRAY] ?: return null
-    return cborFormat.decodeFromByteArray(encoded)
+    return cborFormat.decodeFromByteArray(serializer, encoded)
 }
 
 public fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>) {
@@ -37,7 +39,7 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
     // write a serialized value under its serialname
     for (value in components) {
         val serializer = cborFormat.serializersModule.getPolymorphic(GearyComponent::class, value)
-                ?: continue //TODO error?
+            ?: continue //TODO error?
         encode(serializer, serializer.descriptor.serialName.toMCKey(), value)
     }
 }
@@ -45,8 +47,13 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
 public fun PersistentDataContainer.decodeComponents(): Set<GearyComponent> {
     //key is serialname, we find all the valid ones registered in our module and use those serializers to deserialize
     return keys.mapNotNull { key ->
-        //TODO Cleanup and ensure this still works
-        decode(PolymorphicSerializer(Any::class), key)
+        // don't use PolymorphicSerializer since we want to skip this component right away if no serializer was registered
+        val serializer = cborFormat.serializersModule.getPolymorphic(
+            baseClass = GearyComponent::class,
+            serializedClassName = key.key.toSerialKey()
+        ) ?: return@mapNotNull null
+
+        decode(serializer, key)
     }.toSet()
 }
 

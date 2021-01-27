@@ -161,8 +161,6 @@ public class GearyExtension(
                         if (path != null) includePackage(path)
                         excluded.forEach { excludePackage(it) }
                     })
-                    //stops warnings https://github.com/ronmamo/reflections/issues/168#issuecomment-524521894
-                    .setExpandSuperTypes(false)
             )
 
             reflectionsCache[cacheKey] = reflections
