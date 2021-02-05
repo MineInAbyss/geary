@@ -32,7 +32,7 @@ dependencies {
 //    compileOnly "org.spigotmc:spigot-api:$server_version"
     compileOnly "com.okkero.skedule:skedule"
 
-    implementation project(":")
+    api project(":")
 }
 
 shadowJar {
