@@ -3,6 +3,9 @@ package com.mineinabyss.geary.ecs.serialization
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
 import com.mineinabyss.geary.ecs.GearyComponent
+import com.uchuhimo.collections.MutableBiMap
+import com.uchuhimo.collections.mutableBiMapOf
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.json.Json
@@ -18,15 +21,20 @@ import kotlin.reflect.KClass
  * Will likely be converted into a service eventually.
  */
 public object Formats {
-    //TODO some immutability
-    public val componentSerialNames: MutableMap<String, KClass<out GearyComponent>> = mutableMapOf()
+    private val componentSerialNames: MutableBiMap<String, KClass<out GearyComponent>> = mutableBiMapOf()
     private var module = EmptySerializersModule
+
+    public fun getClassFor(serialName: String): KClass<out GearyComponent> =
+        componentSerialNames[serialName] ?: error("$this is not a valid component name in the registered components")
+
+    public fun isRegistered(serialName: String): Boolean =
+        serialName in componentSerialNames
 
     /**
      * Adds a class associated with a serial name. Currently haven't found an easy way to get this using serializer
      * modules, but if possible this will be removed.
      */
-    public fun addSerialName(name: String, kClass: KClass<out GearyComponent>) {
+    public fun registerSerialName(name: String, kClass: KClass<out GearyComponent>) {
         componentSerialNames[name] = kClass
     }
 
@@ -54,4 +62,24 @@ public object Formats {
     public fun addSerializerModule(module: SerializersModule) {
         this.module = module.overwriteWith(this.module)
     }
+
+    public fun getSerializerFor(
+        key: String,
+        baseClass: KClass<*> = GearyComponent::class
+    ): DeserializationStrategy<out GearyComponent>? =
+        module.getPolymorphic(baseClass = baseClass, serializedClassName = key.toSerialKey())
+
+    public inline fun <reified T : GearyComponent> getSerializerFor(): DeserializationStrategy<T>? {
+        val serialName = getSerialNameFor<T>() ?: return null
+
+        @Suppress("UNCHECKED_CAST") // higher level logic ensures this never fails based on how we register serial names
+        return getSerializerFor(serialName, GearyComponent::class) as? DeserializationStrategy<T>
+    }
+
+    public inline fun <reified T : GearyComponent> getSerialNameFor(): String? = getSerialNameFor(T::class)
+
+    public fun getSerialNameFor(kClass: KClass<out GearyComponent>): String? =
+        componentSerialNames.inverse[kClass]
+
+    private fun String.toSerialKey(): String = replace("_", ":")
 }

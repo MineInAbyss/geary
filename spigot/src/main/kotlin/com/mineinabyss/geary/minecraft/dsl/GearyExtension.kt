@@ -247,9 +247,10 @@ public class GearyExtension(
         kClass: KClass<T>,
         serializer: KSerializer<T>
     ) {
-        val name = serializer.descriptor.serialName
-        if (name !in Formats.componentSerialNames) {
-            Formats.addSerialName(name, kClass)
+        val serialName = serializer.descriptor.serialName
+
+        if (!Formats.isRegistered(serialName)) {
+            Formats.registerSerialName(serialName, kClass)
             subclass(kClass, serializer)
         }
     }

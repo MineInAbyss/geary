@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.engine.ComponentClass
 import com.mineinabyss.geary.ecs.serialization.FlatSerializer
 import com.mineinabyss.geary.ecs.serialization.FlatWrap
+import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import kotlin.reflect.KClass
@@ -21,7 +22,7 @@ public class Conditions(
     override val wrapped: Map<String, List<GearyCondition>>
 ) : FlatWrap<Map<String, List<GearyCondition>>> {
     private val wrappedClasses: Map<KClass<out GearyComponent>, List<GearyCondition>> =
-        wrapped.mapKeys { it.key.toComponentClass() }
+        wrapped.mapKeys { (serialName, _) -> Formats.getClassFor(serialName) }
 
     /**
      * Whether the conditions for a list of [component classes][kClasses] are met for an [entity].
