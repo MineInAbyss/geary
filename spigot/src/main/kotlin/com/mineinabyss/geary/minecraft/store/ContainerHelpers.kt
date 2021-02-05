@@ -7,14 +7,14 @@ import org.bukkit.persistence.PersistentDataHolder
 
 
 public fun PersistentDataHolder.decodeComponents(): Set<GearyComponent> =
-        persistentDataContainer.decodeComponents()
+    persistentDataContainer.decodeComponents()
 
 public fun PersistentDataHolder.encodeComponents(components: Collection<GearyComponent>) {
     persistentDataContainer.encodeComponents(components)
 }
 
 public fun ItemStack.decodeComponents(): Set<GearyComponent> =
-        itemMeta.decodeComponents()
+    itemMeta.decodeComponents()
 
 public fun ItemStack.encodeComponents(components: Collection<GearyComponent>) {
     editItemMeta { encodeComponents(components) }

@@ -2,8 +2,8 @@
 
 package com.mineinabyss.geary.minecraft.components
 
-import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.autoscan.AutoscanComponent
 import com.mineinabyss.geary.ecs.components.get
 import com.mineinabyss.idofront.serialization.UUIDSerializer
 import kotlinx.serialization.SerialName
@@ -15,12 +15,13 @@ import java.util.*
 
 @Serializable
 @SerialName("geary:bukkit_entity_reference")
+@AutoscanComponent
 public class BukkitEntityComponent(
     @Serializable(with = UUIDSerializer::class)
     public val uuid: UUID,
     @Transient
     private val _entity: Entity? = null
-): GearyComponent {
+) {
     // Not using lazy here since I think the entity object can stop being the actual entity ingame (ex if player relogs).
     public val entity: Entity
         get() = _entity ?: Bukkit.getEntity(uuid) ?: error("UUID does not link to anything")

@@ -9,5 +9,5 @@ import com.mineinabyss.geary.ecs.GearyComponent
  * at the ones that were serialized to it.
  */
 public class PersistingComponents(
-        public val persisting: MutableSet<GearyComponent> = mutableSetOf()
-) : GearyComponent, MutableSet<GearyComponent> by persisting
+    public val persisting: MutableSet<GearyComponent> = mutableSetOf()
+) : MutableSet<GearyComponent> by persisting
