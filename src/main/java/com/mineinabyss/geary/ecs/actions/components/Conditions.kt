@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.actions.components
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.autoscan.AutoscanComponent
 import com.mineinabyss.geary.ecs.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.engine.ComponentClass
 import com.mineinabyss.geary.ecs.serialization.FlatSerializer
@@ -15,9 +16,10 @@ import kotlin.reflect.KClass
  * components to be considered active and iterated over.
  */
 @Serializable(with = ConditionsSerializer::class)
+@AutoscanComponent
 public class Conditions(
     override val wrapped: Map<String, List<GearyCondition>>
-) : GearyComponent, FlatWrap<Map<String, List<GearyCondition>>> {
+) : FlatWrap<Map<String, List<GearyCondition>>> {
     private val wrappedClasses: Map<KClass<out GearyComponent>, List<GearyCondition>> =
         wrapped.mapKeys { it.key.toComponentClass() }
 

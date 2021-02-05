@@ -13,9 +13,9 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType.BYTE_ARRAY
 
 public inline fun <reified T : GearyComponent> PersistentDataContainer.encode(
-        serializer: SerializationStrategy<T> = cborFormat.serializersModule.serializer(),
-        key: String = T::class.qualifiedName ?: error(""),
-        value: T
+    serializer: SerializationStrategy<T> = cborFormat.serializersModule.serializer(),
+    key: String = T::class.qualifiedName ?: error(""),
+    value: T
 ) {
     val encoded = cborFormat.encodeToByteArray(serializer, value)
     this[NamespacedKey(geary, key), BYTE_ARRAY] = encoded
@@ -23,8 +23,8 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.encode(
 
 //TODO make others pass plugin here
 public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
-        serializer: DeserializationStrategy<out T> = cborFormat.serializersModule.serializer(),
-        key: NamespacedKey
+    serializer: DeserializationStrategy<out T> = cborFormat.serializersModule.serializer(),
+    key: NamespacedKey
 ): T? {
     val encoded = this[key, BYTE_ARRAY] ?: return null
     return cborFormat.decodeFromByteArray(serializer, encoded)
@@ -39,7 +39,7 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
     // write a serialized value under its serialname
     for (value in components) {
         val serializer = cborFormat.serializersModule.getPolymorphic(GearyComponent::class, value)
-                ?: continue //TODO error?
+            ?: continue //TODO error?
         encode(serializer, serializer.descriptor.serialName.toMCKey(), value)
     }
 }
@@ -47,8 +47,12 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
 public fun PersistentDataContainer.decodeComponents(): Set<GearyComponent> {
     //key is serialname, we find all the valid ones registered in our module and use those serializers to deserialize
     return keys.mapNotNull { key ->
-        val serializer = cborFormat.serializersModule.getPolymorphic(GearyComponent::class, key.key.toSerialKey())
-                ?: return@mapNotNull null
+        // don't use PolymorphicSerializer since we want to skip this component right away if no serializer was registered
+        val serializer = cborFormat.serializersModule.getPolymorphic(
+            baseClass = GearyComponent::class,
+            serializedClassName = key.key.toSerialKey()
+        ) ?: return@mapNotNull null
+
         decode(serializer, key)
     }.toSet()
 }

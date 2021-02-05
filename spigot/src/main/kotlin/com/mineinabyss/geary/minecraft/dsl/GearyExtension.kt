@@ -3,6 +3,7 @@ package com.mineinabyss.geary.minecraft.dsl
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.actions.GearyAction
+import com.mineinabyss.geary.ecs.autoscan.AutoscanComponent
 import com.mineinabyss.geary.ecs.autoscan.ExcludeAutoscan
 import com.mineinabyss.geary.ecs.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.engine.Engine
@@ -51,7 +52,16 @@ public class GearyExtension(
      */
     @InternalSerializationApi
     public fun autoscanComponents(init: AutoScanner.() -> Unit = {}) {
-        autoscan<GearyComponent>(init) { kClass, serializer ->
+        autoscan<GearyComponent>({
+            getBy = {
+                getTypesAnnotatedWith(AutoscanComponent::class.java)
+            }
+            filterBy = {
+                filter { it.hasAnnotation<Serializable>() }
+            }
+
+            init()
+        }) { kClass, serializer ->
             component(kClass, serializer)
         }
     }
@@ -79,9 +89,12 @@ public class GearyExtension(
     }
 
     //TODO basically use the same system except get different annotations and not kSerializer
-    /*public fun autoscanSingletonSystems(init: AutoScanner.() -> Unit = {}) {
-        val scanner = AutoScanner().apply(init)
-        scanner.registerSerializers<TickingSystem, GearySystem> { kClass, _ ->
+    /*@InternalSerializationApi
+    public fun autoscanSingletonSystems(init: AutoScanner.() -> Unit = {}) {
+        autoscan<TickingSystem>({
+            filterBy = { this }
+            init()
+        }) { kClass, _ ->
             kClass.objectInstance?.let { system(it) }
         }
     }*/
@@ -119,6 +132,12 @@ public class GearyExtension(
     @GearyExtensionDSL
     public inner class AutoScanner {
         public var path: String? = null
+        internal var getBy: Reflections.(kClass: KClass<*>) -> Set<Class<*>> = { kClass ->
+            getSubTypesOf(kClass.java)
+        }
+        internal var filterBy: List<KClass<*>>.() -> List<KClass<*>> = {
+            filter { it.hasAnnotation<Serializable>() }
+        }
         private val excluded = mutableListOf<String>()
 
         /** Add a path to be excluded from the scanner. */
@@ -132,9 +151,10 @@ public class GearyExtension(
             val cacheKey = CacheKey(this@GearyExtension.plugin, path, excluded)
             reflectionsCache[cacheKey]?.let { return it }
             val classLoader = this@GearyExtension.plugin::class.java.classLoader
+
             val reflections = Reflections(
                 ConfigurationBuilder()
-                    .addClassLoaders(classLoader)
+                    .addClassLoader(classLoader)
                     .addUrls(ClasspathHelper.forClassLoader(classLoader))
                     .addScanners(SubTypesScanner())
                     .filterInputsBy(FilterBuilder().apply {
@@ -164,9 +184,9 @@ public class GearyExtension(
             val reflections = getReflections() ?: return
             this@GearyExtension.serializers {
                 polymorphic(kClass) {
-                    reflections.getSubTypesOf(kClass.java).toSet()
+                    reflections.getBy(kClass)
                         .map { it.kotlin }
-                        .filter { it.hasAnnotation<Serializable>() }
+                        .apply { filterBy() }
                         .filter { !it.hasAnnotation<ExcludeAutoscan>() }
                         .filterIsInstance<KClass<T>>()
                         .map {
@@ -174,7 +194,7 @@ public class GearyExtension(
                             it.simpleName
                         }
                         .joinToString()
-                        .logVal("Autoscan loaded serializers: ")
+                        .logVal("Autoscan loaded serializers for class ${kClass.simpleName}: ")
                 }
             }
         }

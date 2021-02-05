@@ -8,10 +8,7 @@ import com.mineinabyss.geary.ecs.components.addPersistingComponents
 import com.mineinabyss.geary.ecs.engine.ComponentClass
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.types.GearyEntityType.Companion.serializer
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -45,7 +42,7 @@ import kotlin.reflect.KClass
 @Serializable
 @SerialName("geary:type")
 @ExcludeAutoscan
-public abstract class GearyEntityType : GearyComponent {
+public abstract class GearyEntityType {
     /** Resulting set will be added to the list of instance components, but won't be serialized. */
     protected open fun MutableSet<GearyComponent>.addComponents() {}
 
@@ -57,13 +54,13 @@ public abstract class GearyEntityType : GearyComponent {
     protected open fun MutableSet<GearyComponent>.addStaticComponents() {}
 
     @SerialName("instanceComponents")
-    private val _instanceComponents = mutableSetOf<GearyComponent>()
+    private val _instanceComponents = mutableSetOf<@Polymorphic GearyComponent>()
 
     @SerialName("persistingComponents")
-    private val _persistingComponents = mutableSetOf<GearyComponent>()
+    private val _persistingComponents = mutableSetOf<@Polymorphic GearyComponent>()
 
     @SerialName("staticComponents")
-    private val _staticComponents = mutableSetOf<GearyComponent>()
+    private val _staticComponents = mutableSetOf<@Polymorphic GearyComponent>()
 
 
     private val instanceComponents: Set<GearyComponent> by lazy {
@@ -86,8 +83,8 @@ public abstract class GearyEntityType : GearyComponent {
 
     @Serializable
     private data class ComponentDeepCopy(
-        val instance: Set<GearyComponent>,
-        val persist: Set<GearyComponent>
+        val instance: Set<@Polymorphic GearyComponent>,
+        val persist: Set<@Polymorphic GearyComponent>
     )
 
     //TODO this is the safest and cleanest way to deepcopy. Check how this performs vs deepcopy's reflection method.
