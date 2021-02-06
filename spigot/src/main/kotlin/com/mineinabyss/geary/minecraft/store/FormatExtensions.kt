@@ -5,4 +5,4 @@ import com.mineinabyss.geary.ecs.serialization.Formats
 import org.bukkit.NamespacedKey
 
 public inline fun <reified T : GearyComponent> Formats.getNamespacedKeyFor(): NamespacedKey? =
-    getSerialNameFor<T>()?.toMCKey()
+    getSerialNameFor<T>()?.toMCKey()?.addComponentPrefix()

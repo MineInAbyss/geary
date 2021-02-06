@@ -21,6 +21,10 @@ public fun NamespacedKey.addComponentPrefix(): NamespacedKey {
     return NamespacedKey(namespace, "$COMPONENT_PREFIX${key}")
 }
 
+public inline fun <reified T : GearyComponent> PersistentDataContainer.has(): Boolean {
+    return has(Formats.getNamespacedKeyFor<T>() ?: return false, BYTE_ARRAY)
+}
+
 public fun <T : GearyComponent> PersistentDataContainer.encode(
     value: T,
     serializer: SerializationStrategy<T> = cborFormat.serializersModule.getPolymorphic(GearyComponent::class, value)
