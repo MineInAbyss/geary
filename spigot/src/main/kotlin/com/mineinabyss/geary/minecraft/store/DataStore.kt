@@ -14,6 +14,13 @@ import org.bukkit.plugin.Plugin
 
 internal const val COMPONENT_PREFIX = "component."
 
+public fun NamespacedKey.addComponentPrefix(): NamespacedKey {
+    if (key.startsWith(COMPONENT_PREFIX)) return this
+
+    @Suppress("DEPRECATION")
+    return NamespacedKey(namespace, "$COMPONENT_PREFIX${key}")
+}
+
 public fun <T : GearyComponent> PersistentDataContainer.encode(
     value: T,
     serializer: SerializationStrategy<T> = cborFormat.serializersModule.getPolymorphic(GearyComponent::class, value)
@@ -21,10 +28,8 @@ public fun <T : GearyComponent> PersistentDataContainer.encode(
     key: NamespacedKey = Formats.getSerialNameFor(value::class)?.toMCKey()
         ?: error("SerialName  not registered for ${value::class.simpleName}"),
 ) {
-    @Suppress("DEPRECATION")
-    val componentKey = NamespacedKey(key.namespace, "$COMPONENT_PREFIX${key.key}")
     val encoded = cborFormat.encodeToByteArray(serializer, value)
-    this[componentKey, BYTE_ARRAY] = encoded
+    this[key.addComponentPrefix(), BYTE_ARRAY] = encoded
 }
 
 public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(): T? {
@@ -40,7 +45,7 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
     serializer: DeserializationStrategy<T>? = Formats.getSerializerFor(key.key) as? DeserializationStrategy<T>,
 ): T? {
     serializer ?: return null
-    val encoded = this[key, BYTE_ARRAY] ?: return null
+    val encoded = this[key.addComponentPrefix(), BYTE_ARRAY] ?: return null
     return cborFormat.decodeFromByteArray(serializer, encoded)
 }
 
