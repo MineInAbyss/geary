@@ -46,7 +46,7 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode():
 //TODO make others pass plugin here
 public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
     key: NamespacedKey,
-    serializer: DeserializationStrategy<T>? = Formats.getSerializerFor(key.key) as? DeserializationStrategy<T>,
+    serializer: DeserializationStrategy<T>? = Formats.getSerializerFor(key) as? DeserializationStrategy<T>,
 ): T? {
     serializer ?: return null
     val encoded = this[key.addComponentPrefix(), BYTE_ARRAY] ?: return null
@@ -58,8 +58,6 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
     //remove all keys present on the PDC so we only end up with the new list of components being encoded
     keys.filter { it.namespace == "geary" && it != SpigotEngine.componentsKey }.forEach { remove(it) }
 
-    //get the serializer registered under the MobzyComponent class through polymorphic serialization, and use it to
-    // write a serialized value under its serialname
     for (value in components)
         encode(value)
 }
@@ -90,5 +88,4 @@ public fun String.toMCKey(): NamespacedKey {
     return NamespacedKey(namespace, key)
 }
 
-public fun NamespacedKey.toSerialName(): String =
-    this.key.replace("_", ":")
+public fun NamespacedKey.toSerialName(): String = "$namespace:$key"
