@@ -10,49 +10,56 @@ import kotlinx.serialization.SerializationStrategy
 import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType.BYTE_ARRAY
-import org.bukkit.plugin.Plugin
 
-internal const val COMPONENT_PREFIX = "component."
-
-public fun NamespacedKey.addComponentPrefix(): NamespacedKey {
-    if (key.startsWith(COMPONENT_PREFIX)) return this
-
-    @Suppress("DEPRECATION")
-    return NamespacedKey(namespace, "$COMPONENT_PREFIX${key}")
-}
-
+/** Returns whether or not this [PersistentDataContainer] has a component [T] encoded in it. */
 public inline fun <reified T : GearyComponent> PersistentDataContainer.has(): Boolean {
     return has(Formats.getNamespacedKeyFor<T>() ?: return false, BYTE_ARRAY)
 }
 
+/**
+ * Encodes a component into this [PersistentDataContainer], where the serializer and key can automatically be found via
+ * [Formats].
+ */
 public fun <T : GearyComponent> PersistentDataContainer.encode(
     value: T,
     serializer: SerializationStrategy<T> = cborFormat.serializersModule.getPolymorphic(GearyComponent::class, value)
         ?: error("Serializer not registered for ${value::class.simpleName}"),
-    key: NamespacedKey = Formats.getSerialNameFor(value::class)?.toMCKey()
+    key: NamespacedKey = Formats.getSerialNameFor(value::class)?.toComponentKey()
         ?: error("SerialName  not registered for ${value::class.simpleName}"),
 ) {
     val encoded = cborFormat.encodeToByteArray(serializer, value)
-    this[key.addComponentPrefix(), BYTE_ARRAY] = encoded
+    this[key, BYTE_ARRAY] = encoded
 }
 
+/**
+ * Decodes a component of type [T] from this [PersistentDataContainer], where serializer and key are automatically
+ * found via [Formats].
+ */
 public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(): T? {
     return decode(
         serializer = Formats.getSerializerFor<T>() ?: return null,
-        key = Formats.getSerialNameFor<T>()?.toMCKey() ?: return null
+        key = Formats.getSerialNameFor<T>()?.toComponentKey() ?: return null
     )
 }
 
-//TODO make others pass plugin here
+/**
+ * Decodes a component of type [T] from this [PersistentDataContainer] where the [serializer] may automatically be found
+ * via [Formats] given a [key].
+ */
 public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
     key: NamespacedKey,
     serializer: DeserializationStrategy<T>? = Formats.getSerializerFor(key) as? DeserializationStrategy<T>,
 ): T? {
     serializer ?: return null
-    val encoded = this[key.addComponentPrefix(), BYTE_ARRAY] ?: return null
+    val encoded = this[key, BYTE_ARRAY] ?: return null
     return cborFormat.decodeFromByteArray(serializer, encoded)
 }
 
+/**
+ * Encodes a list of [components] to this [PersistentDataContainer].
+ *
+ * @see encode
+ */
 public fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>) {
     isGearyEntity = true
     //remove all keys present on the PDC so we only end up with the new list of components being encoded
@@ -62,6 +69,11 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
         encode(value)
 }
 
+/**
+ * Decodes a set of components from this [PersistentDataContainer].
+ *
+ * @see decode
+ */
 public fun PersistentDataContainer.decodeComponents(): Set<GearyComponent> =
     // only include keys that start with the component prefix and remove it to get the serial name
     keys.filter { it.key.startsWith(COMPONENT_PREFIX) }
@@ -71,21 +83,3 @@ public fun PersistentDataContainer.decodeComponents(): Set<GearyComponent> =
         }
         .mapNotNull { decode(it) }
         .toSet()
-
-internal fun PersistentDataContainer.keysFrom(plugin: Plugin): List<NamespacedKey> {
-    val pluginNamespace = NamespacedKey(plugin, "").namespace
-    return keys.filter { it.namespace == pluginNamespace }
-}
-
-public fun String.toMCKey(): NamespacedKey {
-    val split = split(':')
-    if (split.size != 2)
-        error("Malformatted key, must only contain one : that splits namespace and key.")
-
-    val (namespace, key) = split
-
-    @Suppress("DEPRECATION") // deprecated just to discourage using instantiating without plugin reference
-    return NamespacedKey(namespace, key)
-}
-
-public fun NamespacedKey.toSerialName(): String = "$namespace:$key"
