@@ -10,6 +10,12 @@ import org.bukkit.entity.LivingEntity
 import org.bukkit.potion.PotionEffect
 import kotlin.random.Random
 
+/**
+ * Applies potion effects to the target entity with a certain (optional) chance.
+ *
+ * @param effects The potion effects to apply.
+ * @param applyChance Chance of applying the effects.
+ */
 @Serializable
 @SerialName("geary:apply_potion_effects")
 public data class ApplyPotionAction(

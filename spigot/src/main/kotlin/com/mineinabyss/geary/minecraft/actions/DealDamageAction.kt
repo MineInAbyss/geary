@@ -7,6 +7,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.entity.LivingEntity
 
+/**
+ * Deals damage to the target entity.
+ *
+ * @param damage The damage amount.
+ */
 @Serializable
 @SerialName("geary:deal_damage")
 public data class DealDamageAction(

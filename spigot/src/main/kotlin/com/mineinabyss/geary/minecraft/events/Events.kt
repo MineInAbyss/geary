@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.minecraft.events
 
-import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.actions.CancelEventAction
 import com.mineinabyss.geary.ecs.actions.GearyAction
+import com.mineinabyss.geary.ecs.autoscan.AutoscanComponent
 import com.mineinabyss.geary.ecs.components.get
 import com.mineinabyss.geary.ecs.serialization.FlatSerializer
 import com.mineinabyss.geary.ecs.serialization.FlatWrap
@@ -13,9 +13,10 @@ import org.bukkit.event.Cancellable
 import org.bukkit.event.Event
 
 @Serializable(with = EventComponentSerializer::class)
+@AutoscanComponent
 public data class Events(
     override val wrapped: Map<String, List<GearyAction>>
-) : GearyComponent, FlatWrap<Map<String, List<GearyAction>>>
+) : FlatWrap<Map<String, List<GearyAction>>>
 
 private object EventComponentSerializer : FlatSerializer<Events, Map<String, List<GearyAction>>>(
     "geary:events", serializer(), { Events(it) }
