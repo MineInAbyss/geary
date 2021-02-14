@@ -12,13 +12,16 @@ import kotlinx.serialization.serializer
 import org.bukkit.event.Cancellable
 import org.bukkit.event.Event
 
+/**
+ * Stores a map of strings to actions which fire based on different game events.
+ */
 @Serializable(with = EventComponentSerializer::class)
 @AutoscanComponent
 public data class Events(
     override val wrapped: Map<String, List<GearyAction>>
 ) : FlatWrap<Map<String, List<GearyAction>>>
 
-private object EventComponentSerializer : FlatSerializer<Events, Map<String, List<GearyAction>>>(
+public object EventComponentSerializer : FlatSerializer<Events, Map<String, List<GearyAction>>>(
     "geary:events", serializer(), { Events(it) }
 )
 

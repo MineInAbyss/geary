@@ -42,12 +42,17 @@ public open class GearyEngine : TickingEngine() {
             .filter { currentTick % it.interval == 0L }
             .forEach {
                 try {
-                    it.tick()
+                    it.runSystem()
                 } catch (e: Exception) {
                     logError("Error while running system ${it.javaClass.name}")
                     e.printStackTrace()
                 }
             }
+    }
+
+    /** Describes how to individually tick each system */
+    protected open fun TickingSystem.runSystem() {
+        tick()
     }
 
     override fun onStart() {

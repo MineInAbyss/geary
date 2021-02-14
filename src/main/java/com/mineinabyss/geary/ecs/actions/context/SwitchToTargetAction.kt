@@ -1,6 +1,7 @@
-package com.mineinabyss.geary.ecs.actions
+package com.mineinabyss.geary.ecs.actions.context
 
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.actions.GearyAction
 import com.mineinabyss.geary.ecs.components.Target
 import com.mineinabyss.geary.ecs.components.get
 import kotlinx.serialization.SerialName
