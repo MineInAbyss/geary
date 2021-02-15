@@ -2,7 +2,7 @@ package com.mineinabyss.geary.ecs.actions.context
 
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.actions.GearyAction
-import com.mineinabyss.geary.ecs.components.Target
+import com.mineinabyss.geary.ecs.components.Source
 import com.mineinabyss.geary.ecs.components.get
 import com.mineinabyss.geary.ecs.serialization.FlatSerializer
 import com.mineinabyss.geary.ecs.serialization.FlatWrap
@@ -14,17 +14,17 @@ import kotlinx.serialization.serializer
  *
  * @param run The actions to run on the other [GearyEntity].
  */
-@Serializable(with = SwitchToTargetSerializer::class)
-public class SwitchToTargetAction(
+@Serializable(with = SwitchToSourceSerializer::class)
+public class SwitchToSourceAction(
     override val wrapped: List<GearyAction>
 ) : GearyAction(), FlatWrap<List<GearyAction>> {
     override fun runOn(entity: GearyEntity): Boolean {
-        val target = entity.get<Target>()?.entity ?: return false
+        val source = entity.get<Source>()?.entity ?: return false
 
-        return wrapped.count{it.runOn(target)} != 0
+        return wrapped.count{it.runOn(source)} != 0
     }
 }
 
-public object SwitchToTargetSerializer : FlatSerializer<SwitchToTargetAction, List<GearyAction>>(
-    "on.target", serializer(), { SwitchToTargetAction(it) }
+public object SwitchToSourceSerializer : FlatSerializer<SwitchToSourceAction, List<GearyAction>>(
+    "on.source", serializer(), { SwitchToSourceAction(it) }
 )

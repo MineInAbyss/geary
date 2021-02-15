@@ -18,10 +18,12 @@ import org.bukkit.entity.LivingEntity
 @Serializable
 @SerialName("geary:deal_damage")
 public data class DealDamageAction(
-    val damage: @Serializable(with = DoubleRangeSerializer::class) DoubleRange
+    val damage: @Serializable(with = DoubleRangeSerializer::class) DoubleRange,
+    val minHealth: Double = 0.0,
 ) : GearyAction() {
     override fun runOn(entity: GearyEntity): Boolean {
-        entity.toBukkit<LivingEntity>()?.damage(damage.randomOrMin()) ?: return false
+        val bukkit = entity.toBukkit<LivingEntity>() ?: return false
+        bukkit.health = (bukkit.health - damage.randomOrMin()).coerceAtLeast(minHealth)
         return true
     }
 }

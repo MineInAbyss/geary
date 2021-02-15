@@ -2,6 +2,9 @@ package com.mineinabyss.geary.minecraft.actions.context
 
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.actions.GearyAction
+import com.mineinabyss.geary.ecs.components.Source
+import com.mineinabyss.geary.ecs.components.addComponent
+import com.mineinabyss.geary.ecs.components.removeComponent
 import com.mineinabyss.geary.minecraft.actions.AtEntityLocation
 import com.mineinabyss.geary.minecraft.actions.ConfigurableLocation
 import com.mineinabyss.geary.minecraft.components.toBukkit
@@ -40,7 +43,9 @@ public class OnNearbyAction(
             }
             .map { geary(it) }
             .count { target ->
+                target.addComponent(Source(entity))
                 run.count { action -> action.runOn(target) } != 0
+                target.removeComponent<Source>()
             } != 0
     }
 }

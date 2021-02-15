@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.minecraft.store
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
+import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.components.addComponent
@@ -96,6 +97,14 @@ public object BukkitEntityAccess : Listener {
         val gearyEntity = entityMap[entity.uniqueId] ?: return
         unregisterEntity(entity)
         Engine.removeEntity(gearyEntity)
+    }
+
+    //TODO Is there anything we'd actually want to do with the ECS while the player sees their respawn screen?
+    // If so, dont remove them on entity remove event and just refresh the inventory here
+    /** Player death counts as an entity being removed from the world so we should add them back after respawn */
+    @EventHandler
+    public fun PlayerPostRespawnEvent.onPlayerRespawn() {
+        registerEntity(player)
     }
 }
 

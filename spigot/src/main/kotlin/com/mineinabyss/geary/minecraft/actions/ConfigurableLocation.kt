@@ -1,6 +1,8 @@
 package com.mineinabyss.geary.minecraft.actions
 
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.components.Source
+import com.mineinabyss.geary.ecs.components.get
 import com.mineinabyss.geary.ecs.components.with
 import com.mineinabyss.geary.minecraft.components.PlayerComponent
 import com.mineinabyss.geary.minecraft.components.toBukkit
@@ -21,6 +23,16 @@ import org.bukkit.entity.Player
 public sealed class ConfigurableLocation {
     /** Get a location given an [entity] or null if not applicable. */
     public abstract fun get(entity: GearyEntity): Location?
+}
+
+/**
+ * Gets the location of the bukkit entity associated with this entity.
+ */
+@Serializable
+@SerialName("source.location")
+public class AtSourceLocation : ConfigurableLocation() {
+    override fun get(entity: GearyEntity): Location? =
+        entity.get<Source>()?.entity?.toBukkit()?.location
 }
 
 /**

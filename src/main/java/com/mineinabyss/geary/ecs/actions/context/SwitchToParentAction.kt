@@ -3,22 +3,27 @@ package com.mineinabyss.geary.ecs.actions.context
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.actions.GearyAction
 import com.mineinabyss.geary.ecs.components.parent
-import kotlinx.serialization.SerialName
+import com.mineinabyss.geary.ecs.serialization.FlatSerializer
+import com.mineinabyss.geary.ecs.serialization.FlatWrap
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.serializer
 
 /**
  * Executes actions on this entity's parent
  *
  * @param run The actions to run on the parent.
  */
-@Serializable
-@SerialName("on.parent")
+@Serializable(with = SwitchToParentSerializer::class)
 public class SwitchToParentAction(
-    public val run: List<GearyAction>
-) : GearyAction() {
+    override val wrapped: List<GearyAction>
+) : GearyAction(), FlatWrap<List<GearyAction>> {
     override fun runOn(entity: GearyEntity): Boolean {
         val parent = entity.parent ?: return false
 
-        return run.count { it.runOn(parent) } != 0
+        return wrapped.count { it.runOn(parent) } != 0
     }
 }
+
+public object SwitchToParentSerializer : FlatSerializer<SwitchToParentAction, List<GearyAction>>(
+    "on.parent", serializer(), { SwitchToParentAction(it) }
+)

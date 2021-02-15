@@ -1,3 +1,7 @@
+@file:UseSerializers(
+    DoubleRangeSerializer::class
+)
+
 package com.mineinabyss.geary.minecraft.conditions
 
 import com.mineinabyss.geary.ecs.GearyEntity
@@ -5,8 +9,10 @@ import com.mineinabyss.geary.ecs.components.get
 import com.mineinabyss.geary.ecs.components.parent
 import com.mineinabyss.geary.ecs.conditions.GearyCondition
 import com.mineinabyss.geary.minecraft.components.PlayerComponent
+import com.mineinabyss.idofront.serialization.DoubleRangeSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import org.bukkit.entity.Player
 
 /**
@@ -19,8 +25,6 @@ public class PlayerConditions(
     public val isSneaking: Boolean? = null,
     public val isSprinting: Boolean? = null,
 ) : GearyCondition {
-    private infix fun <T> T?.nullOrEquals(other: T?): Boolean =
-        this == null || this == other
 
     override fun conditionsMet(entity: GearyEntity): Boolean {
         val (player) = entity.parent?.get<PlayerComponent>() ?: return false
@@ -31,3 +35,9 @@ public class PlayerConditions(
         isSneaking nullOrEquals player.isSneaking &&
                 isSprinting nullOrEquals player.isSprinting
 }
+
+internal infix fun <T> T?.nullOrEquals(other: T?): Boolean =
+    this == null || this == other
+
+internal inline infix fun <T> T?.nullOr(check: (T) -> Boolean): Boolean =
+    this == null || check(this)
