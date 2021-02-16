@@ -38,3 +38,10 @@ public fun NamespacedKey.addComponentPrefix(): NamespacedKey {
     @Suppress("DEPRECATION")
     return NamespacedKey(namespace, "$COMPONENT_PREFIX${key}")
 }
+
+public fun NamespacedKey.removeComponentPrefix(): NamespacedKey {
+    if (!key.startsWith(COMPONENT_PREFIX)) return this
+
+    @Suppress("DEPRECATION")
+    return NamespacedKey(namespace, key.removePrefix(COMPONENT_PREFIX))
+}
