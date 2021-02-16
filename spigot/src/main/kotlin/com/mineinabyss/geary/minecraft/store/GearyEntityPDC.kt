@@ -10,6 +10,7 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataHolder
 
 
+/** Encodes this [GearyEntityType]'s persisting components to a [PersistentDataContainer]. */
 public fun GearyEntityType.encodeComponentsTo(pdc: PersistentDataContainer) {
     pdc.encodeComponents(instantiatePersistingComponents())
 }
