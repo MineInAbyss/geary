@@ -16,12 +16,12 @@ import kotlinx.serialization.Serializable
 @SerialName("geary:cooldowns")
 @AutoscanComponent
 public class CooldownManager {
-    private val completionTime: MutableMap<String, Long> = mutableMapOf()
-    public val incompleteCooldowns: Map<String, Long> get() = completionTime.filterValues { it > System.currentTimeMillis() }
+    private val completionTime: MutableMap<String, Cooldown> = mutableMapOf()
+    public val incompleteCooldowns: Map<String, Cooldown> get() = completionTime.filterValues { it.endTime > System.currentTimeMillis() }
 
     /** @return Whether a certain cooldown is complete. */
     public fun isDone(key: String): Boolean {
-        return (completionTime[key] ?: return true) <= System.currentTimeMillis()
+        return (completionTime[key]?.endTime ?: return true) <= System.currentTimeMillis()
     }
 
     /**
@@ -67,11 +67,18 @@ public class CooldownManager {
      * @param length The length of this cooldown in milliseconds.
      * */
     public fun start(key: String, length: Long) {
-        completionTime[key] = System.currentTimeMillis() + length
+        completionTime[key] = Cooldown(length)
     }
 
     /** Clears the cooldown for a [key]. */
     public fun reset(key: String) {
         completionTime -= key
     }
+}
+
+@Serializable
+public class Cooldown(
+    public val length: Long
+) {
+    public val endTime: Long = System.currentTimeMillis() + length
 }
