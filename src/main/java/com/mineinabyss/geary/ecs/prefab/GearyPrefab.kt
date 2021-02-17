@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.ecs.types
+package com.mineinabyss.geary.ecs.prefab
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
@@ -6,15 +6,14 @@ import com.mineinabyss.geary.ecs.autoscan.ExcludeAutoscan
 import com.mineinabyss.geary.ecs.components.addComponents
 import com.mineinabyss.geary.ecs.components.addPersistingComponents
 import com.mineinabyss.geary.ecs.engine.ComponentClass
+import com.mineinabyss.geary.ecs.prefab.GearyPrefab.Companion.serializer
 import com.mineinabyss.geary.ecs.serialization.Formats
-import com.mineinabyss.geary.ecs.types.GearyEntityType.Companion.serializer
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlin.reflect.KClass
 
 /**
  * A prefab of sorts for entities. This is what we use to read config files to create entity types from. Since different
@@ -37,49 +36,17 @@ import kotlin.reflect.KClass
  *
  * The class is also serializable as a [GearyComponent] and is registered into the ECS in this way. This means when
  * we can persist an entity type directly on an entity as though it's a component, in which case it will be serialized
- * as a string reference `plugin:typename`, which it then uses to find the entity type in [EntityTypeManager].
+ * as a string reference `plugin:typename`, which it then uses to find the entity type in [PrefabManager].
  */
 @Serializable
 @SerialName("geary:type")
 @ExcludeAutoscan
-public abstract class GearyEntityType {
-    /** Resulting set will be added to the list of instance components, but won't be serialized. */
-    protected open fun MutableSet<GearyComponent>.addComponents() {}
+public class GearyPrefab {
+    private val instanceComponents: Set<@Polymorphic GearyComponent> = setOf()
+    private val persistingComponents: Set<@Polymorphic GearyComponent> = setOf()
+    private val staticComponents: Set<@Polymorphic GearyComponent> = setOf()
 
-    /** Resulting set will be added to the list of persisting components and will be encoded to the entity's
-     * [PersistentDataContainer] if applicable. */
-    protected open fun MutableSet<GearyComponent>.addPersistingComponents() {}
-
-    /** Resulting set will be added to the list of static components, but won't be serialized. */
-    protected open fun MutableSet<GearyComponent>.addStaticComponents() {}
-
-    @SerialName("instanceComponents")
-    private val _instanceComponents = mutableSetOf<@Polymorphic GearyComponent>()
-
-    @SerialName("persistingComponents")
-    private val _persistingComponents = mutableSetOf<@Polymorphic GearyComponent>()
-
-    @SerialName("staticComponents")
-    private val _staticComponents = mutableSetOf<@Polymorphic GearyComponent>()
-
-
-    private val instanceComponents: Set<GearyComponent> by lazy {
-        _instanceComponents.apply { addComponents() }.toSet()
-    }
-
-    private val persistingComponents: Set<GearyComponent> by lazy {
-        _persistingComponents.apply { addPersistingComponents() }.toSet()
-    }
-
-    private val staticComponents: Set<GearyComponent> by lazy {
-        _staticComponents.apply { addStaticComponents() }.toSet()
-    }
-
-    protected abstract val types: GearyEntityTypes<*>
-
-    @Transient
-    public lateinit var name: String
-        internal set
+    public val name: String by lazy { PrefabManager.getNameForPrefab(this) }
 
     @Serializable
     private data class ComponentDeepCopy(
@@ -116,27 +83,22 @@ public abstract class GearyEntityType {
 
     /** Checks whether this entity type has a static component of type [T]. */
     public inline fun <reified T : GearyComponent> has(): Boolean = staticComponentMap.containsKey(T::class)
+}
 
-    /**
-     * Allows us to serialize entity types to a reference to ones actually registered in the system.
-     * This is used to load the static entity type when we decode components from an in-game entity.
-     */
-    public class ByReferenceSerializer<T : GearyEntityType>(
-        kclass: KClass<T>
-    ) : KSerializer<T> {
-        override val descriptor: SerialDescriptor =
-            PrimitiveSerialDescriptor("geary:${kclass.simpleName!!}".toLowerCase(), PrimitiveKind.STRING)
+/**
+ * Allows us to serialize entity types to a reference to ones actually registered in the system.
+ * This is used to load the static entity type when we decode components from an in-game entity.
+ */
+public object PrefabByReferenceSerializer : KSerializer<GearyPrefab> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("geary:prefab", PrimitiveKind.STRING)
 
-        @Suppress("UNCHECKED_CAST")
-        override fun deserialize(decoder: Decoder): T {
-            val (plugin, type) = decoder.decodeString().split(':')
-            return (EntityTypeManager[plugin, type]
-                ?: error("Type $plugin:$type not found while deserializing")) as? T
-                ?: error("Found an entity type with the same name but different class. Were conflicting ones registered?")
-        }
+    @Suppress("UNCHECKED_CAST")
+    override fun deserialize(decoder: Decoder): GearyPrefab {
+        val (plugin, prefab) = decoder.decodeString().split(':')
+        return (PrefabManager[prefab] ?: error("Error deserializing, $plugin:$prefab is not a registered prefab"))
+    }
 
-        override fun serialize(encoder: Encoder, value: T) {
-            encoder.encodeString("${value.types.plugin}:${value.name}")
-        }
+    override fun serialize(encoder: Encoder, value: GearyPrefab) {
+        encoder.encodeString(value.name)
     }
 }

@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.minecraft
 
 import com.mineinabyss.geary.ecs.engine.Engine
+import com.mineinabyss.geary.ecs.prefab.GearyPrefab
 import com.mineinabyss.geary.ecs.systems.PassiveActionsSystem
-import com.mineinabyss.geary.ecs.types.GearyEntityType
 import com.mineinabyss.geary.minecraft.components.PlayerComponent
 import com.mineinabyss.geary.minecraft.dsl.attachToGeary
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
@@ -36,7 +36,7 @@ public class GearyPlugin : JavaPlugin() {
         )
 
         // This will also register a serializer for GearyEntityType
-        attachToGeary<GearyEntityType> {
+        attachToGeary<GearyPrefab> {
             autoscanComponents()
             autoscanConditions()
             autoscanActions()

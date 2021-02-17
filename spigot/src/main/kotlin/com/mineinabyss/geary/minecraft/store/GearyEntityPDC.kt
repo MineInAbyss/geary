@@ -4,14 +4,14 @@ import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.components.addPersistingComponent
 import com.mineinabyss.geary.ecs.components.addPersistingComponents
 import com.mineinabyss.geary.ecs.components.getPersistingComponents
+import com.mineinabyss.geary.ecs.prefab.GearyPrefab
 import com.mineinabyss.geary.ecs.type
-import com.mineinabyss.geary.ecs.types.GearyEntityType
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataHolder
 
 
-/** Encodes this [GearyEntityType]'s persisting components to a [PersistentDataContainer]. */
-public fun GearyEntityType.encodeComponentsTo(pdc: PersistentDataContainer) {
+/** Encodes this [GearyPrefab]'s persisting components to a [PersistentDataContainer]. */
+public fun GearyPrefab.encodeComponentsTo(pdc: PersistentDataContainer) {
     pdc.encodeComponents(instantiatePersistingComponents())
 }
 
@@ -25,7 +25,7 @@ public fun GearyEntity.decodeComponentsFrom(pdc: PersistentDataContainer) {
     val components = pdc.decodeComponents()
 
     //if there's an entity type component on the PDC, we need to add it before we try and decode components from it.
-    components.asSequence().filterIsInstance<GearyEntityType>().firstOrNull()?.let {
+    components.asSequence().filterIsInstance<GearyPrefab>().firstOrNull()?.let {
         addPersistingComponent(it)
     }
     type?.decodeComponentsTo(this)

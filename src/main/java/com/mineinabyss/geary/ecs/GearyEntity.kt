@@ -2,7 +2,7 @@ package com.mineinabyss.geary.ecs
 
 import com.mineinabyss.geary.ecs.components.get
 import com.mineinabyss.geary.ecs.engine.Engine
-import com.mineinabyss.geary.ecs.types.GearyEntityType
+import com.mineinabyss.geary.ecs.prefab.GearyPrefab
 
 
 /**
@@ -20,8 +20,8 @@ public interface GearyEntity {
     public operator fun component1(): GearyEntityId = gearyId
 }
 
-/** The [GearyEntityType] associated with this entity. */
-public val GearyEntity.type: GearyEntityType? get() = get<GearyEntityType>()
+/** The [GearyPrefab] associated with this entity. */
+public val GearyEntity.type: GearyPrefab? get() = get<GearyPrefab>()
 
 /** Remove this entity from the ECS. */
 public fun GearyEntity.remove() {

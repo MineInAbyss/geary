@@ -7,11 +7,10 @@ import com.mineinabyss.geary.ecs.autoscan.AutoscanComponent
 import com.mineinabyss.geary.ecs.autoscan.ExcludeAutoscan
 import com.mineinabyss.geary.ecs.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.engine.Engine
+import com.mineinabyss.geary.ecs.prefab.GearyPrefab
+import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.systems.TickingSystem
-import com.mineinabyss.geary.ecs.types.EntityTypeManager
-import com.mineinabyss.geary.ecs.types.GearyEntityType
-import com.mineinabyss.geary.ecs.types.GearyEntityTypes
 import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
 import com.mineinabyss.idofront.messaging.logVal
 import com.mineinabyss.idofront.messaging.logWarn
@@ -38,11 +37,11 @@ internal annotation class GearyExtensionDSL
 @GearyExtensionDSL
 public class GearyExtension(
     public val plugin: Plugin,
-    types: GearyEntityTypes<out GearyEntityType>?,
+    types: PrefabManager<out GearyPrefab>?,
 ) {
     init {
         if (types != null)
-            EntityTypeManager.add(plugin.name, types)
+            PrefabManager.add(plugin.name, types)
     }
 
     /**
@@ -297,10 +296,10 @@ public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KC
 /**
  * Entry point to register a new [Plugin] with the Geary ECS.
  *
- * @param types The subclass of [GearyEntityTypes] associated with this plugin.
+ * @param types The subclass of [PrefabManager] associated with this plugin.
  */
-public inline fun <reified T : GearyEntityType> Plugin.attachToGeary(
-    types: GearyEntityTypes<T>? = null,
+public inline fun <reified T : GearyPrefab> Plugin.attachToGeary(
+    types: PrefabManager<T>? = null,
     init: GearyExtension.() -> Unit
 ) {
     //TODO support plugins being re-registered after a reload
@@ -309,7 +308,7 @@ public inline fun <reified T : GearyEntityType> Plugin.attachToGeary(
             // Whenever we're using this serial module to deserialize our components we want to access them by
             // reference through geary, not by using the actual EntityType's serializer like we would when
             // reading config files.
-            component(GearyEntityType.ByReferenceSerializer(T::class))
+            component(GearyPrefab.ByReferenceSerializer(T::class))
         }
     }.apply(init)
 }
