@@ -12,6 +12,7 @@ import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.systems.TickingSystem
 import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
+import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.messaging.logVal
 import com.mineinabyss.idofront.messaging.logWarn
 import kotlinx.serialization.*
@@ -23,6 +24,7 @@ import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.ClasspathHelper
 import org.reflections.util.ConfigurationBuilder
 import org.reflections.util.FilterBuilder
+import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.full.hasAnnotation
 
@@ -36,14 +38,8 @@ internal annotation class GearyExtensionDSL
  */
 @GearyExtensionDSL
 public class GearyExtension(
-    public val plugin: Plugin,
-    types: PrefabManager<out GearyPrefab>?,
+    public val plugin: Plugin
 ) {
-    init {
-        if (types != null)
-            PrefabManager.add(plugin.name, types)
-    }
-
     /**
      * Registers serializers for [GearyComponent]s on the classpath of [plugin]'s [ClassLoader].
      *
@@ -289,6 +285,25 @@ public class GearyExtension(
             BukkitEntityAccess.bukkitEntityAccessExtensions += getter
         }
     }
+
+    public fun loadPrefabs(from: File, run: ((String, GearyPrefab) -> Unit)? = null) {
+        from.walk().filter { it.isFile }.forEach { file ->
+            val name = file.nameWithoutExtension
+            try {
+                val format = when(val ext = file.extension) {
+                    "yml" -> Formats.yamlFormat
+                    "json" -> Formats.jsonFormat
+                    else -> error("Unknown file format $ext")
+                }
+                val type = format.decodeFromString(GearyPrefab.serializer(), file.readText())
+                PrefabManager.registerPrefab(name, type)
+                run?.invoke(name, type)
+            } catch (e: Exception) {
+                logError("Error deserializing prefab: $name from ${file.path}")
+                e.printStackTrace()
+            }
+        }
+    }
 }
 
 public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>) -> Unit
@@ -298,17 +313,7 @@ public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KC
  *
  * @param types The subclass of [PrefabManager] associated with this plugin.
  */
-public inline fun <reified T : GearyPrefab> Plugin.attachToGeary(
-    types: PrefabManager<T>? = null,
-    init: GearyExtension.() -> Unit
-) {
-    //TODO support plugins being re-registered after a reload
-    GearyExtension(this, types).apply {
-        components {
-            // Whenever we're using this serial module to deserialize our components we want to access them by
-            // reference through geary, not by using the actual EntityType's serializer like we would when
-            // reading config files.
-            component(GearyPrefab.ByReferenceSerializer(T::class))
-        }
-    }.apply(init)
+//TODO support plugins being re-registered after a reload
+public inline fun Plugin.attachToGeary(init: GearyExtension.() -> Unit) {
+    GearyExtension(this).apply(init)
 }

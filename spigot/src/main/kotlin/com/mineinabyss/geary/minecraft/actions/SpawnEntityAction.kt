@@ -1,14 +1,12 @@
 package com.mineinabyss.geary.minecraft.actions
 
-import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.actions.GearyAction
-import com.mineinabyss.geary.minecraft.spawnGeary
-import kotlinx.serialization.Polymorphic
+import com.mineinabyss.geary.ecs.prefab.GearyPrefab
+import com.mineinabyss.geary.minecraft.spawning.spawnGeary
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.Location
-import org.bukkit.entity.Entity
 import org.bukkit.entity.EntityType
 
 /**
@@ -21,11 +19,11 @@ import org.bukkit.entity.EntityType
 @SerialName("geary:spawn")
 public data class SpawnEntityAction(
     val type: EntityType,
-    val components: List<@Polymorphic GearyComponent> = listOf(),
+    val prefab: GearyPrefab? = null,
     val at: ConfigurableLocation = AtEntityLocation()
 ) : GearyAction() {
-    public fun spawnAt(location: Location): Entity? {
-        return location.spawnGeary(type, components)
+    public fun spawnAt(location: Location): GearyEntity? {
+        return location.spawnGeary(type, prefab)
     }
 
     override fun runOn(entity: GearyEntity): Boolean {

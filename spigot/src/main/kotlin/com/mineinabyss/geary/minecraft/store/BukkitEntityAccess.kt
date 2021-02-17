@@ -13,6 +13,9 @@ import com.mineinabyss.geary.ecs.engine.entity
 import com.mineinabyss.geary.minecraft.components.BukkitEntityComponent
 import com.mineinabyss.geary.minecraft.components.toBukkit
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
+import com.mineinabyss.geary.minecraft.events.GearyMinecraftLoadEvent
+import com.mineinabyss.geary.minecraft.hasComponentsEncoded
+import com.mineinabyss.idofront.events.call
 import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -42,7 +45,7 @@ public object BukkitEntityAccess : Listener {
         //if the entity is already registered, return it
         entityMap[entity.uniqueId]?.let { return it }
 
-        val createdEntity = gearyEntity ?: Engine.entity {
+        val createdEntity: GearyEntity = gearyEntity ?: Engine.entity {
             addComponent(BukkitEntityComponent(entity.uniqueId, entity))
             addComponents(
                 onBukkitEntityRegister.flatMap { mapping ->
@@ -50,6 +53,11 @@ public object BukkitEntityAccess : Listener {
                 }
             )
         }
+
+        val pdc = entity.persistentDataContainer
+        if (pdc.hasComponentsEncoded)
+            createdEntity.decodeComponentsFrom(pdc)
+
         entityMap[entity.uniqueId] = createdEntity
 
         return createdEntity
@@ -108,10 +116,16 @@ public object BukkitEntityAccess : Listener {
     }
 }
 
-//TODO Decide whether we stick with this naming scheme
-public fun geary(entity: Entity): GearyEntity = BukkitEntityAccess.getEntity(entity)
+public fun geary(entity: Entity): GearyEntity = BukkitEntityAccess.getEntity(entity).apply {
+    GearyMinecraftLoadEvent(this).call()
+}
 
-public inline fun geary(entity: Entity, run: GearyEntity.() -> Unit): GearyEntity = geary(entity).apply(run)
+// Separate function because inline `run` cannot be nullable
+public inline fun geary(entity: Entity, init: GearyEntity.() -> Unit): GearyEntity = geary(entity).apply {
+    init()
+    // We want this to run after potential spawn events defined in init
+    GearyMinecraftLoadEvent(this).call()
+}
 
 public fun gearyOrNull(entity: Entity): GearyEntity? = BukkitEntityAccess.getEntityOrNull(entity)
 

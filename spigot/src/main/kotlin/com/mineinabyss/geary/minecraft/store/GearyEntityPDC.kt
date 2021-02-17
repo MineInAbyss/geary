@@ -24,7 +24,7 @@ public fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
 public fun GearyEntity.decodeComponentsFrom(pdc: PersistentDataContainer) {
     val components = pdc.decodeComponents()
 
-    //if there's an entity type component on the PDC, we need to add it before we try and decode components from it.
+    //if there's a prefab reference on the PDC, we need to add it before we try and decode components from it.
     components.asSequence().filterIsInstance<GearyPrefab>().firstOrNull()?.let {
         addPersistingComponent(it)
     }

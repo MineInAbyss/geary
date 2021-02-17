@@ -4,7 +4,7 @@ import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
-import com.mineinabyss.geary.minecraft.isGearyEntity
+import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import org.bukkit.NamespacedKey
@@ -27,6 +27,7 @@ public fun <T : GearyComponent> PersistentDataContainer.encode(
     key: NamespacedKey = Formats.getSerialNameFor(value::class)?.toComponentKey()
         ?: error("SerialName  not registered for ${value::class.simpleName}"),
 ) {
+    hasComponentsEncoded = true
     val encoded = cborFormat.encodeToByteArray(serializer, value)
     this[key, BYTE_ARRAY] = encoded
 }
@@ -61,7 +62,7 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
  * @see encode
  */
 public fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>) {
-    isGearyEntity = true
+    hasComponentsEncoded = true
     //remove all keys present on the PDC so we only end up with the new list of components being encoded
     keys.filter { it.namespace == "geary" && it != SpigotEngine.componentsKey }.forEach { remove(it) }
 
