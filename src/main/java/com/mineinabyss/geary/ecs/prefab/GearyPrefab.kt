@@ -40,6 +40,7 @@ import kotlinx.serialization.serializer
 @SerialName("geary:type")
 @ExcludeAutoscan
 public class GearyPrefab(
+    //TODO prefabComponents (only exist on prefab, not instances)
     public val spawn: @Polymorphic GearyComponent? = null,
     private val instanceComponents: Set<@Polymorphic GearyComponent> = setOf(),
     private val persistingComponents: Set<@Polymorphic GearyComponent> = setOf(),
