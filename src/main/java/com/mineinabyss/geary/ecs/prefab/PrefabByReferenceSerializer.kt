@@ -1,5 +1,8 @@
 package com.mineinabyss.geary.ecs.prefab
 
+import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.components.PrefabKey
+import com.mineinabyss.geary.ecs.components.get
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -11,16 +14,19 @@ import kotlinx.serialization.encoding.Encoder
  * Allows us to serialize entity types to a reference to ones actually registered in the system.
  * This is used to load the static entity type when we decode components from an in-game entity.
  */
-public object PrefabByReferenceSerializer : KSerializer<GearyPrefab> {
+public object PrefabByReferenceSerializer : KSerializer<GearyEntity> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("geary:prefab", PrimitiveKind.STRING)
 
     @Suppress("UNCHECKED_CAST")
-    override fun deserialize(decoder: Decoder): GearyPrefab {
-        val (plugin, prefab) = decoder.decodeString().split(':')
-        return (PrefabManager[prefab] ?: error("Error deserializing, $plugin:$prefab is not a registered prefab"))
+    override fun deserialize(decoder: Decoder): GearyEntity {
+        val prefabKey = decoder.decodeSerializableValue(PrefabKey.serializer())
+        return (PrefabManager[prefabKey] ?: error("Error deserializing, $prefabKey is not a registered prefab"))
     }
 
-    override fun serialize(encoder: Encoder, value: GearyPrefab) {
-        encoder.encodeString(value.name)
+    override fun serialize(encoder: Encoder, value: GearyEntity) {
+        encoder.encodeSerializableValue(
+            PrefabKey.serializer(),
+            value.get<PrefabKey>() ?: error("Could not encode prefab entity without a prefab key component")
+        )
     }
 }

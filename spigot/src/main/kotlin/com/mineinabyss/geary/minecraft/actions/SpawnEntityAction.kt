@@ -2,7 +2,7 @@ package com.mineinabyss.geary.minecraft.actions
 
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.actions.GearyAction
-import com.mineinabyss.geary.ecs.prefab.GearyPrefab
+import com.mineinabyss.geary.ecs.components.GearyPrefab
 import com.mineinabyss.geary.minecraft.spawning.spawnGeary
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

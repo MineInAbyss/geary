@@ -1,8 +1,17 @@
 package com.mineinabyss.geary.ecs
 
+import com.mineinabyss.geary.ecs.components.GearyPrefab
+import com.mineinabyss.geary.ecs.components.addPersistingComponents
 import com.mineinabyss.geary.ecs.components.get
+import com.mineinabyss.geary.ecs.components.getPersistingComponents
 import com.mineinabyss.geary.ecs.engine.Engine
-import com.mineinabyss.geary.ecs.prefab.GearyPrefab
+import com.mineinabyss.geary.ecs.engine.entity
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.serializer
 
 
 /**
@@ -18,6 +27,21 @@ public interface GearyEntity {
     public val gearyId: GearyEntityId
 
     public operator fun component1(): GearyEntityId = gearyId
+}
+
+public object GearyEntitySerializer : KSerializer<GearyEntity> {
+    private val serializer = serializer<Set<@Contextual GearyComponent>>()
+    override val descriptor: SerialDescriptor = serializer.descriptor
+
+    override fun serialize(encoder: Encoder, value: GearyEntity) {
+        encoder.encodeSerializableValue(serializer, value.getPersistingComponents())
+    }
+
+    override fun deserialize(decoder: Decoder): GearyEntity {
+        return Engine.entity {
+            addPersistingComponents(decoder.decodeSerializableValue(serializer))
+        }
+    }
 }
 
 /** The [GearyPrefab] associated with this entity. */

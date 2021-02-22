@@ -1,12 +1,11 @@
-package com.mineinabyss.geary.ecs.prefab
+package com.mineinabyss.geary.ecs.components
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.autoscan.ExcludeAutoscan
-import com.mineinabyss.geary.ecs.components.addComponents
-import com.mineinabyss.geary.ecs.components.addPersistingComponents
+import com.mineinabyss.geary.ecs.components.GearyPrefab.Companion.serializer
 import com.mineinabyss.geary.ecs.engine.ComponentClass
-import com.mineinabyss.geary.ecs.prefab.GearyPrefab.Companion.serializer
+import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
@@ -37,17 +36,16 @@ import kotlinx.serialization.serializer
  * as a string reference `plugin:typename`, which it then uses to find the entity type in [PrefabManager].
  */
 @Serializable
-@SerialName("geary:type")
+@SerialName("geary:prefab")
 @ExcludeAutoscan
 public class GearyPrefab(
-    //TODO prefabComponents (only exist on prefab, not instances)
-    public val spawn: @Polymorphic GearyComponent? = null,
+    @SerialName("instance")
     private val instanceComponents: Set<@Polymorphic GearyComponent> = setOf(),
+    @SerialName("persisting")
     private val persistingComponents: Set<@Polymorphic GearyComponent> = setOf(),
+    @SerialName("static")
     private val staticComponents: Set<@Polymorphic GearyComponent> = setOf(),
 ) {
-    public val name: String by lazy { PrefabManager.getNameForPrefab(this) }
-
     @Serializable
     private data class ComponentDeepCopy(
         val instance: Set<@Polymorphic GearyComponent>,

@@ -1,10 +1,10 @@
 package com.mineinabyss.geary.minecraft.store
 
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.components.GearyPrefab
 import com.mineinabyss.geary.ecs.components.addPersistingComponent
 import com.mineinabyss.geary.ecs.components.addPersistingComponents
 import com.mineinabyss.geary.ecs.components.getPersistingComponents
-import com.mineinabyss.geary.ecs.prefab.GearyPrefab
 import com.mineinabyss.geary.ecs.type
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataHolder

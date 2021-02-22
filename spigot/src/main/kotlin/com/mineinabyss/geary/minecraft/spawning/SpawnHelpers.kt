@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.minecraft.spawning
 
 import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.prefab.GearyPrefab
+import com.mineinabyss.geary.ecs.components.GearyPrefab
 import com.mineinabyss.geary.minecraft.events.GearyMinecraftSpawnEvent
 import com.mineinabyss.geary.minecraft.store.*
 import com.mineinabyss.idofront.events.call

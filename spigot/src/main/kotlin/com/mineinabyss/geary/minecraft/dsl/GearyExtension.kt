@@ -2,12 +2,13 @@ package com.mineinabyss.geary.minecraft.dsl
 
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.GearyEntitySerializer
 import com.mineinabyss.geary.ecs.actions.GearyAction
 import com.mineinabyss.geary.ecs.autoscan.AutoscanComponent
 import com.mineinabyss.geary.ecs.autoscan.ExcludeAutoscan
+import com.mineinabyss.geary.ecs.components.PrefabKey
 import com.mineinabyss.geary.ecs.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.engine.Engine
-import com.mineinabyss.geary.ecs.prefab.GearyPrefab
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.systems.TickingSystem
@@ -286,7 +287,7 @@ public class GearyExtension(
         }
     }
 
-    public fun loadPrefabs(from: File, run: ((String, GearyPrefab) -> Unit)? = null) {
+    public fun loadPrefabs(from: File, run: ((String, GearyEntity) -> Unit)? = null) {
         from.walk().filter { it.isFile }.forEach { file ->
             val name = file.nameWithoutExtension
             try {
@@ -295,8 +296,8 @@ public class GearyExtension(
                     "json" -> Formats.jsonFormat
                     else -> error("Unknown file format $ext")
                 }
-                val type = format.decodeFromString(GearyPrefab.serializer(), file.readText())
-                PrefabManager.registerPrefab(name, type)
+                val type = format.decodeFromString(GearyEntitySerializer, file.readText())
+                PrefabManager.registerPrefab(PrefabKey(plugin.name, name), type)
                 run?.invoke(name, type)
             } catch (e: Exception) {
                 logError("Error deserializing prefab: $name from ${file.path}")
@@ -305,7 +306,6 @@ public class GearyExtension(
         }
     }
 }
-
 public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>) -> Unit
 
 /**
