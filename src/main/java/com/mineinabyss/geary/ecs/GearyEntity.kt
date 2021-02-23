@@ -14,10 +14,11 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.serializer
 
 
-/**
- * Type alias for entity IDs.
- */
+/** Type alias for entity IDs. */
 public typealias GearyEntityId = Int
+
+/** Type alias for component IDs */
+public typealias GearyComponentId = GearyEntityId
 
 /**
  * Some extensions may want to represent existing classes as entities in the ECS without having to convert to and from

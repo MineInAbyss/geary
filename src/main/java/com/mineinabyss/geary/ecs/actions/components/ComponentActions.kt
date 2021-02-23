@@ -5,6 +5,7 @@ import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.actions.GearyAction
 import com.mineinabyss.geary.ecs.components.addComponents
 import com.mineinabyss.geary.ecs.engine.Engine
+import com.mineinabyss.geary.ecs.engine.componentId
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -15,7 +16,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("add")
 public class AddComponentAction(
-        private val components: Set<@Polymorphic GearyComponent>
+    private val components: Set<@Polymorphic GearyComponent>
 ) : GearyAction() {
     override fun runOn(entity: GearyEntity): Boolean {
         entity.addComponents(components)
@@ -28,7 +29,7 @@ public class AddComponentAction(
 public data class RemoveComponentAction(override val components: Set<String>) : ComponentAction() {
     override fun runOn(entity: GearyEntity): Boolean {
         componentClasses.forEach {
-            Engine.removeComponentFor(it, entity.gearyId)
+            Engine.removeComponentFor(componentId(it), entity.gearyId)
         }
         return true
     }
@@ -39,7 +40,7 @@ public data class RemoveComponentAction(override val components: Set<String>) : 
 public class DisableComponentAction(override val components: Set<String>) : ComponentAction() {
     override fun runOn(entity: GearyEntity): Boolean {
         componentClasses.forEach {
-            Engine.disableComponentFor(it, entity.gearyId)
+            Engine.disableComponentFor(componentId(it), entity.gearyId)
         }
         return true
     }
@@ -50,7 +51,7 @@ public class DisableComponentAction(override val components: Set<String>) : Comp
 public data class EnableComponentAction(override val components: Set<String>) : ComponentAction() {
     override fun runOn(entity: GearyEntity): Boolean {
         componentClasses.forEach {
-            Engine.enableComponentFor(it, entity.gearyId)
+            Engine.enableComponentFor(componentId(it), entity.gearyId)
         }
         return true
     }

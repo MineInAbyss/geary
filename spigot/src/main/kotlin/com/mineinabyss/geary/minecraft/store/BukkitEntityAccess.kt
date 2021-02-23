@@ -10,7 +10,6 @@ import com.mineinabyss.geary.ecs.components.get
 import com.mineinabyss.geary.ecs.components.has
 import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.engine.entity
-import com.mineinabyss.geary.minecraft.components.BukkitEntityComponent
 import com.mineinabyss.geary.minecraft.components.toBukkit
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
 import com.mineinabyss.geary.minecraft.events.GearyMinecraftLoadEvent
@@ -46,7 +45,7 @@ public object BukkitEntityAccess : Listener {
         entityMap[entity.uniqueId]?.let { return it }
 
         val createdEntity: GearyEntity = gearyEntity ?: Engine.entity {
-            addComponent(BukkitEntityComponent(entity.uniqueId, entity))
+            addComponent<Entity>(entity)
             addComponents(
                 onBukkitEntityRegister.flatMap { mapping ->
                     mutableListOf<GearyComponent>().apply { mapping(entity) }

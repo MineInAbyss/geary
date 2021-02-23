@@ -5,11 +5,12 @@ package com.mineinabyss.geary.ecs.components
 import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.engine.Engine
+import com.mineinabyss.geary.ecs.engine.componentId
 import kotlin.reflect.KClass
 
 /** Adds a component of type [T] to this entity */
-public inline fun <reified T : GearyComponent> GearyEntity.addComponent(component: T): T =
-    Engine.addComponentFor(T::class, gearyId, component)
+public fun <T : GearyComponent> GearyEntity.addComponent(component: T): T =
+    Engine.addComponentFor(gearyId, component)
 
 /** Adds a list of [components] to this entity */
 public inline fun GearyEntity.addComponents(components: Collection<GearyComponent>) {
@@ -48,7 +49,7 @@ public fun GearyEntity.addPersistingComponents(components: Set<GearyComponent>) 
  * @return Whether the component was present before removal.
  */
 public inline fun <reified T : GearyComponent> GearyEntity.removeComponent(): Boolean =
-    Engine.removeComponentFor(T::class, gearyId)
+    Engine.removeComponentFor(componentId<T>(), gearyId)
 
 /** Gets a component of type [T] or adds a [default] if no component was present. */
 public inline fun <reified T : GearyComponent> GearyEntity.getOrAdd(default: () -> T): T =
@@ -59,7 +60,7 @@ public inline fun <reified T : GearyComponent> GearyEntity.getOrAddPersisting(de
     get<T>() ?: addPersistingComponent(default())
 
 /** Gets a component of type [T] on this entity. */
-public inline fun <reified T : GearyComponent> GearyEntity.get(): T? = Engine.getComponentFor(T::class, gearyId)
+public inline fun <reified T : GearyComponent> GearyEntity.get(): T? = Engine.getComponentFor(componentId<T>(), gearyId)
 
 /** Gets all the active components on this entity. */
 public inline fun GearyEntity.getComponents(): Set<GearyComponent> = Engine.getComponentsFor(gearyId)
@@ -77,31 +78,31 @@ public inline fun <reified T : GearyComponent> GearyEntity.with(let: (T) -> Unit
 
 /** Checks whether this entity holds a component of type [T], without regards for whether or not it's active. */
 public inline fun <reified T : GearyComponent> GearyEntity.holds(): Boolean =
-    Engine.holdsComponentFor(T::class, gearyId)
+    Engine.holdsComponentFor(componentId<T>(), gearyId)
 
 /** Checks whether this entity has an active component of type [T] */
-public inline fun <reified T : GearyComponent> GearyEntity.has(): Boolean = Engine.hasComponentFor(T::class, gearyId)
+public inline fun <reified T : GearyComponent> GearyEntity.has(): Boolean = Engine.hasComponentFor(componentId<T>(), gearyId)
 
 /** Checks whether an entity holds all of a list of [components].
  * @see holds */
 public inline fun GearyEntity.holdsAll(components: Collection<KClass<out GearyComponent>>): Boolean =
-    components.all { Engine.holdsComponentFor(it, gearyId) }
+    components.all { Engine.holdsComponentFor(componentId(it), gearyId) }
 
 /** Checks whether an entity has all of a list of [components].
  * @see has */
 public inline fun GearyEntity.hasAll(components: Collection<KClass<out GearyComponent>>): Boolean =
-    components.all { Engine.hasComponentFor(it, gearyId) }
+    components.all { Engine.hasComponentFor(componentId(it), gearyId) }
 
 /** Enables a component of type [T] on this entity.
  * @see Engine.enableComponentFor */
 public inline fun <reified T : GearyComponent> GearyEntity.enable() {
-    Engine.enableComponentFor(T::class, gearyId)
+    Engine.enableComponentFor(componentId<T>(), gearyId)
 }
 
 /** Disables a component of type [T] on this entity.
  * @see Engine.disableComponentFor */
 public inline fun <reified T : GearyComponent> GearyEntity.disable() {
-    Engine.disableComponentFor(T::class, gearyId)
+    Engine.disableComponentFor(componentId<T>(), gearyId)
 }
 
 /**

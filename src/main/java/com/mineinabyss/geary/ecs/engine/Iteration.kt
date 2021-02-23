@@ -24,8 +24,10 @@ public inline fun Engine.forEach(
     andNot: Array<out ComponentClass> = emptyArray(),
     run: GearyEntity.(List<GC>) -> Unit
 ) {
-    getBitsMatching(*components, andNot = andNot).forEachBit { index ->
-        geary(index).run(components.map { getComponentFor(it, index) ?: return@forEachBit })
+    val componentIds = components.map { componentId(it) }.toIntArray()
+    val andNotIds = andNot.map { componentId(it) }.toIntArray()
+    getBitsMatching(*componentIds, andNot = andNotIds).forEachBit { index ->
+        geary(index).run(componentIds.map { getComponentFor(it, index) ?: return@forEachBit })
     }
 }
 

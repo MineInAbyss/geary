@@ -4,7 +4,6 @@ import com.mineinabyss.geary.ecs.GearyComponent
 import com.mineinabyss.geary.ecs.GearyEntity
 import com.mineinabyss.geary.ecs.autoscan.ExcludeAutoscan
 import com.mineinabyss.geary.ecs.components.GearyPrefab.Companion.serializer
-import com.mineinabyss.geary.ecs.engine.ComponentClass
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlinx.serialization.Polymorphic
@@ -71,14 +70,4 @@ public class GearyPrefab(
     }
 
     public fun instantiatePersistingComponents(): Set<GearyComponent> = deepCopied.persist + this
-
-    public val staticComponentMap: Map<ComponentClass, GearyComponent> by lazy {
-        staticComponents.associateBy { it::class }
-    }
-
-    /** Gets a static component of type [T] from this entity type. */
-    public inline fun <reified T : GearyComponent> get(): T? = staticComponentMap[T::class] as? T
-
-    /** Checks whether this entity type has a static component of type [T]. */
-    public inline fun <reified T : GearyComponent> has(): Boolean = staticComponentMap.containsKey(T::class)
 }
