@@ -244,6 +244,8 @@ public class GearyExtension(
         serializer: KSerializer<T>
     ) {
         val serialName = serializer.descriptor.serialName
+        //TODO make it more explicitly clear this function registers new components as entities
+        Engine.getComponentIdForClass(kClass)
 
         if (!Formats.isRegistered(serialName)) {
             Formats.registerSerialName(serialName, kClass)

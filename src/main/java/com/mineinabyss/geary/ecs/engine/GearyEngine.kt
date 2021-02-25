@@ -1,22 +1,15 @@
 package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.*
-import com.mineinabyss.geary.ecs.actions.components.Conditions
-import com.mineinabyss.geary.ecs.components.ComponentName
-import com.mineinabyss.geary.ecs.components.addComponent
-import com.mineinabyss.geary.ecs.components.parent
-import com.mineinabyss.geary.ecs.components.removeChildren
+import com.mineinabyss.geary.ecs.components.*
+import com.mineinabyss.geary.ecs.engine.types.GearyTypeMap
+import com.mineinabyss.geary.ecs.engine.types.ID_MASK
 import com.mineinabyss.geary.ecs.systems.TickingSystem
 import com.mineinabyss.idofront.messaging.logError
-import com.zaxxer.sparsebits.SparseBitSet
 import net.onedaybeard.bitvector.BitVector
-import net.onedaybeard.bitvector.bitsOf
 import org.clapper.util.misc.SparseArrayList
 import java.util.*
 import kotlin.reflect.KClass
-import kotlin.reflect.jvm.jvmName
-
-internal typealias ComponentClass = KClass<out GearyComponent>
 
 /**
  * The default implementation of Geary's Engine.
@@ -35,17 +28,24 @@ internal typealias ComponentClass = KClass<out GearyComponent>
  * currently quite inefficient, but optional.
  */
 public open class GearyEngine : TickingEngine() {
-    private val componentNames = mutableMapOf<String, GearyEntityId>()
+    private val typeMap: GearyTypeMap = GearyTypeMap()
+    private val classToComponentMap = mutableMapOf<KClass<*>, GearyEntityId>()
+
+    public fun GearyEntityId.toIntId(): Int = (ID_MASK and this).toInt()
 
     override fun getComponentIdForClass(kClass: KClass<*>): GearyEntityId {
-        val name = kClass.jvmName
-        return componentNames.getOrPut(name) {
+        return classToComponentMap.getOrPut(kClass) {
             entity {
-                addComponent(ComponentName(name))
                 //TODO add some components for new components here
             }.gearyId
         }
     }
+
+    //TODO use archetypes instead
+    //TODO system for reusing deleted entities
+    protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
+
+    override fun addSystem(system: TickingSystem): Boolean = registeredSystems.add(system)
 
     //TODO support suspending functions for systems
     // perhaps async support in the future
@@ -71,140 +71,104 @@ public open class GearyEngine : TickingEngine() {
         TODO("Implement a system for ticking independent of spigot")
     }
 
-    private var currId: GearyEntityId = 0
+    private var currId: GearyEntityId = 0uL
 
     //TODO there's likely a more performant option
     private val removedEntities = Stack<GearyEntityId>()
 
-    //TODO use archetypes instead
-    //TODO system for reusing deleted entities
-    protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
-
     @Synchronized
     override fun getNextId(): GearyEntityId = if (removedEntities.isNotEmpty()) removedEntities.pop() else ++currId
 
-    override fun addSystem(system: TickingSystem): Boolean = registeredSystems.add(system)
-
-    //TODO get a more memory efficient list, right now this is literally just an ArrayList that auto expands
-    private val components = mutableMapOf<GearyComponentId, SparseArrayList<GearyComponent>>()
-    internal val bitsets = mutableMapOf<GearyComponentId, BitVector>()
+    private val components: MutableMap<GearyComponentId, SparseList<GearyComponent>> = mutableMapOf()
 
     override fun getComponentsFor(id: GearyEntityId): Set<GearyComponent> =
-        components.mapNotNullTo(mutableSetOf()) { (_, value) -> value.getOrNull(id) }
+        components.mapNotNullTo(mutableSetOf()) { (_, value) -> value[id.toIntId()] }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : GearyComponent> getComponentFor(component: GearyComponentId, id: GearyEntityId): T? =
+    override fun <T : GearyComponent> getComponentFor(entity: GearyEntityId, component: GearyComponentId): T? =
         runCatching {
             //TODO this cast will succeed even when it shouldn't because of type erasure with generics
             // consider using reflective typeOf<T>
-            components[component]?.get(id) as? T
+            components[component]?.get(entity.toIntId()) as? T
         }.getOrNull()
 
-    override fun holdsComponentFor(component: GearyComponentId, id: GearyEntityId): Boolean =
-        components[component]?.get(id) != null
+    override fun holdsComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean =
+        components[component]?.get(entity.toIntId()) != null
 
-    override fun hasComponentFor(component: GearyComponentId, id: GearyEntityId): Boolean =
-        bitsets[component]?.contains(id) ?: false
+    override fun hasComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean =
+        typeMap.has(entity, component)
 
-    override fun removeComponentFor(component: GearyComponentId, id: GearyEntityId): Boolean {
-        val bitset = bitsets[component] ?: return false
-        if (bitset[id]) {
-            bitset[id] = false
-            components[component]?.set(id, null)
-        }
-        return true
-    }
-
-    override fun <T : GearyComponent> addComponentFor(id: GearyEntityId, component: T): T {
+    override fun <T : GearyComponent> addComponentFor(entity: GearyEntityId, component: T): T {
         val componentId = getComponentIdForClass(component::class)
-        components.getOrPut(componentId, { SparseArrayList() })[id] = component
-        bitsets.getOrPut(componentId, { bitsOf() }).set(id)
+        typeMap.set(entity, componentId)
+        components.getOrPut(componentId, { SparseList() })[entity.toIntId()] = component
         return component
     }
 
-    override fun addEntityFor(id: GearyEntityId, componentId: GearyComponentId) {
-        TODO("What do we actually represent entities as within the ECS")
+    override fun removeComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean {
+        val removed = typeMap.unset(entity, component)
+        components[component]?.remove(entity.toIntId())
+        return removed
     }
 
-    override fun enableComponentFor(component: GearyComponentId, id: GearyEntityId) {
-        if (holdsComponentFor(component, id))
-            bitsets[component]?.set(id, true)
+    override fun setFor(entity: GearyEntityId, component: GearyComponentId) {
+        typeMap.set(entity, component)
     }
 
-    override fun disableComponentFor(component: GearyComponentId, id: GearyEntityId) {
-        bitsets[component]?.set(id, false)
-    }
-
-
-    override fun getBitsMatching(
-        vararg components: GearyComponentId,
-        andNot: IntArray,
-        checkConditions: Boolean
-    ): BitVector {
-        //copy one component's bitset and go through the others, keeping only bits present in all sets
-        val allowed = components
-            //if a set isn't present, there's 0 matches
-            .mapTo(mutableListOf()) { (bitsets[it] ?: return bitsOf()) }
-            //only copy the first bitset, all further operations only mutate it
-            .also { list -> list[0] = list[0].copy() }
-            .reduce { a, b -> a.and(b).let { a } }
-
-        //remove any bits present in any bitsets from andNot
-        val matchingBits =
-            if (andNot.isEmpty())
-                allowed
-            else andNot
-                .map { (bitsets[it]) }
-                .filterNotNull()
-                .fold(allowed) { a, b -> a.andNot(b).let { a } }
-
-        if (checkConditions) {
-            val conditional = bitsets[componentId<Conditions>()] ?: matchingBits
-            if (conditional.isEmpty) return matchingBits
-
-            // get all entities in the original bitset with conditional component
-            // then set their bit in the original bitset to whether or not its conditions are met
-            val conditionComponents = this.components[componentId<Conditions>()]
-            matchingBits.copy().apply { and(conditional) }.forEachBit { i ->
-                (conditionComponents?.get(i) as? Conditions)?.conditionsMet(components, geary(i))?.let { result ->
-                    matchingBits[i] = result
-                }
-            }
-        }
-        return matchingBits
+    override fun unsetFor(entity: GearyEntityId, component: GearyComponentId) {
+        typeMap.unset(entity, component)
     }
 
     //TODO might be a smarter way of storing these as an implicit list within a larger list of entities eventually
     override fun removeEntity(entity: GearyEntity) {
-        val (id) = entity
+        val (entityId) = entity
 
         //clear relationship with parent and children
         //TODO add option to recursively remove children in the future
+        //TODO change when we update parent child relationships
         entity.apply {
             parent = null
             removeChildren()
         }
 
-        //clear all components
-        bitsets.mapNotNull { (kclass, bitset) ->
-            if (bitset[id]) {
-                bitset[id] = false
-                components[kclass]
-            } else
-                null
-        }.forEach { it[id] = null }
+        typeMap[entityId].forEach { componentId ->
+            components[componentId]!!.remove(entityId.toIntId())
+        }
+        typeMap.remove(entityId)
 
         //add current id into queue for reuse
-        removedEntities.push(id)
+        removedEntities.push(entityId)
     }
-}
 
-internal inline fun SparseBitSet.forEachBit(block: (Int) -> Unit) {
-    var i = 0
-    while (i >= 0) {
-        i = nextSetBit(i + 1)
-        block(i)
+    override fun getFamily(
+        vararg with: ComponentClass,
+        andNot: Array<out ComponentClass>
+    ): List<Pair<GearyEntityId, List<Any>>> {
+        val list = mutableListOf<Pair<GearyEntityId, List<Any>>>()
+
+        //TODO better access here + try to cache components[componentId()]
+        val withComponents = with.map { components[componentId(it)]!! }.sortedBy { it.size }
+        val andNotComponents = andNot.map { components[componentId(it)]!! }.sortedByDescending { it.size }
+
+        withComponents.first().apply {
+            packed.forEachIndexed forEachEntity@{ packedIndex, component ->
+                val entity = unpackedIndices[packedIndex]
+
+                //FIXME the return order here will be wrong since we are sorting by size
+                val retrieved = mutableListOf<Any>(component)
+                for (i in 1 until withComponents.size) {
+                    retrieved.add(withComponents[i][entity] ?: return@forEachEntity)
+                }
+
+                //TODO there might be a smarter order to start checking not components to reduce the iteration size greatly
+                if (andNotComponents.all { it[entity] == null })
+                    //TODO what do we actually use for the index inside our bitsets
+                    list.add(entity.toULong() to retrieved)
+            }
+        }
+        return list
     }
+
+    public fun countEntitiesOfType(type: String): Int = TODO()
+
 }
-
-

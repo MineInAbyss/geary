@@ -1,13 +1,14 @@
 package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.components.ComponentClass
 import com.mineinabyss.geary.ecs.geary
 import com.mineinabyss.geary.ecs.GearyComponent as GC
 
 //TODO support component families with infix functions
 
 /**
- * Iterate over all entities in the [Engine] that match a list of [components] and not [andNot].
+ * Iterate over all entities in the [Engine] that match a list of [with] and not [andNot].
  *
  * There are versions of this function that use reified types as components and automatically cast them to the
  * appropriate types. You can also use destructure within the passed parameters as shown below.
@@ -20,14 +21,12 @@ import com.mineinabyss.geary.ecs.GearyComponent as GC
  * ```
  */
 public inline fun Engine.forEach(
-    vararg components: ComponentClass,
+    vararg with: ComponentClass,
     andNot: Array<out ComponentClass> = emptyArray(),
     run: GearyEntity.(List<GC>) -> Unit
 ) {
-    val componentIds = components.map { componentId(it) }.toIntArray()
-    val andNotIds = andNot.map { componentId(it) }.toIntArray()
-    getBitsMatching(*componentIds, andNot = andNotIds).forEachBit { index ->
-        geary(index).run(componentIds.map { getComponentFor(it, index) ?: return@forEachBit })
+    getFamily(*with, *andNot).forEach { (entityId, retreived) ->
+        geary(entityId).run(retreived)
     }
 }
 

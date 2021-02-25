@@ -29,7 +29,7 @@ public class AddComponentAction(
 public data class RemoveComponentAction(override val components: Set<String>) : ComponentAction() {
     override fun runOn(entity: GearyEntity): Boolean {
         componentClasses.forEach {
-            Engine.removeComponentFor(componentId(it), entity.gearyId)
+            Engine.removeComponentFor(entity.gearyId, componentId(it))
         }
         return true
     }
@@ -40,7 +40,7 @@ public data class RemoveComponentAction(override val components: Set<String>) : 
 public class DisableComponentAction(override val components: Set<String>) : ComponentAction() {
     override fun runOn(entity: GearyEntity): Boolean {
         componentClasses.forEach {
-            Engine.disableComponentFor(componentId(it), entity.gearyId)
+            Engine.unsetFor(entity.gearyId, componentId(it))
         }
         return true
     }
@@ -51,7 +51,7 @@ public class DisableComponentAction(override val components: Set<String>) : Comp
 public data class EnableComponentAction(override val components: Set<String>) : ComponentAction() {
     override fun runOn(entity: GearyEntity): Boolean {
         componentClasses.forEach {
-            Engine.enableComponentFor(componentId(it), entity.gearyId)
+            Engine.setFor(entity.gearyId, componentId(it))
         }
         return true
     }

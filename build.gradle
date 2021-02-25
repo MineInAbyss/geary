@@ -39,8 +39,12 @@ allprojects {
     compileKotlin {
         kotlinOptions {
             jvmTarget = "1.8"
-            freeCompilerArgs += "-Xinline-classes"
-            freeCompilerArgs += "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
+            freeCompilerArgs += [
+                    "-Xinline-classes",
+                    "-Xopt-in=kotlin.RequiresOptIn",
+                    "-Xopt-in=kotlin.ExperimentalUnsignedTypes",
+                    "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
+            ]
         }
     }
     compileTestKotlin { kotlinOptions { jvmTarget = "1.8" } }
@@ -63,6 +67,7 @@ dependencies {
     implementation "net.onedaybeard.bitvector:bitvector-jvm:0.1.4"
     implementation 'com.zaxxer:SparseBitSet:1.1'
     implementation 'org.clapper:javautil:3.2.0'
+    implementation 'fastutil:fastutil:5.0.9'
     implementation('com.uchuhimo:kotlinx-bimap:1.2') {
         exclude group: 'org.jetbrains.kotlin'
     }

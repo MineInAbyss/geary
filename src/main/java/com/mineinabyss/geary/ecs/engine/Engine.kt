@@ -1,10 +1,9 @@
 package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.*
-import com.mineinabyss.geary.ecs.actions.components.Conditions
+import com.mineinabyss.geary.ecs.components.ComponentClass
 import com.mineinabyss.geary.ecs.systems.TickingSystem
 import com.mineinabyss.idofront.plugin.getService
-import net.onedaybeard.bitvector.BitVector
 import kotlin.reflect.KClass
 
 /**
@@ -27,59 +26,43 @@ public interface Engine {
     /** Gets the components for entity of [id]. */
     public fun getComponentsFor(id: GearyEntityId): Set<GearyComponent>
 
-    /** Gets a component of type [T] for entity of [id]. */
-    public fun <T : GearyComponent> getComponentFor(component: GearyComponentId, id: GearyEntityId): T?
+    /** Gets a component of type [T] for entity of [entity]. */
+    public fun <T : GearyComponent> getComponentFor(entity: GearyEntityId, component: GearyComponentId): T?
 
     /**
-     * Checks whether entity of [id] holds a [component type][kClass], without regards for whether or not it's active.
+     * Checks whether entity of [entity] holds a [component type][kClass], without regards for whether or not it's active.
      */
-    public fun holdsComponentFor(component: GearyComponentId, id: GearyEntityId): Boolean
+    public fun holdsComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean
 
-    /** Checks whether entity of [id] has an active [component type][kClass] */
-    public fun hasComponentFor(component: GearyComponentId, id: GearyEntityId): Boolean
+    /** Checks whether entity of [entity] has an active [component type][kClass] */
+    public fun hasComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean
 
     /**
-     * Removes a [component type][kClass] from entity of [id].
+     * Removes a [component type][kClass] from entity of [entity].
      *
      * @return Whether the component was present before removal.
      */
-    public fun removeComponentFor(component: GearyComponentId, id: GearyEntityId): Boolean
+    public fun removeComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean
 
-    /** Adds a [component] of under a [component type][kClass] for entity of [id].  */
-    public fun <T : GearyComponent> addComponentFor(id: GearyEntityId, component: T): T
-
-    /** Adds a [component] of under a [component type][kClass] for entity of [id].  */
-    public fun addEntityFor(id: GearyEntityId, componentId: GearyComponentId)
+    /** Adds a [component] of under a [component type][kClass] for entity of [entity].  */
+    public fun <T : GearyComponent> addComponentFor(entity: GearyEntityId, component: T): T
 
     /**
-     * Enables a [component type][kClass] for entity of [id], meaning it will be found via [getComponentFor],
+     * Enables a [component type][kClass] for entity of [entity], meaning it will be found via [getComponentFor],
      * [hasComponentFor], or when iterating over a family that includes this component.
      */
-    public fun enableComponentFor(component: GearyComponentId, id: GearyEntityId)
+    public fun setFor(entity: GearyEntityId, component: GearyComponentId)
 
     /**
-     * Disables a [component type][kClass] for entity of [id], meaning it will not be found via [getComponentFor],
+     * Disables a [component type][kClass] for entity of [entity], meaning it will not be found via [getComponentFor],
      * [hasComponentFor], or when iterating over a family that includes this component.
      *
      * However, it will be visible via [holdsComponentFor].
      */
-    public fun disableComponentFor(component: GearyComponentId, id: GearyEntityId)
+    public fun unsetFor(entity: GearyEntityId, component: GearyComponentId)
 
     /** Removes an entity from the ECS, freeing up its entity id. */
     public fun removeEntity(entity: GearyEntity)
-
-    /**
-     * Gets a bitset of all entities matching all of the defined [components] and not [andNot].
-     *
-     * @param checkConditions Whether to perform additional checks defined by each component within the [Conditions]
-     * component if it is present on this entity.
-     */
-    //TODO this shouldn't be in interface but currently required for inline functions in [Iteration]
-    public fun getBitsMatching(
-        vararg components: GearyComponentId,
-        andNot: IntArray = IntArray(0),
-        checkConditions: Boolean = true
-    ): BitVector
 
     // Predefined helpers that can be overridden if a faster implementation is possible.
 
@@ -94,6 +77,11 @@ public interface Engine {
     }
 
     public fun getComponentIdForClass(kClass: KClass<*>): GearyEntityId
+
+    public fun getFamily(
+        vararg with: ComponentClass,
+        andNot: Array<out ComponentClass> = emptyArray()
+    ): List<Pair<GearyEntityId, List<Any>>>
 }
 
 public inline fun Engine.entity(run: GearyEntity.() -> Unit): GearyEntity = geary(getNextId(), run)

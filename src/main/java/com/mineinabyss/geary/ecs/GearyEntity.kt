@@ -15,7 +15,8 @@ import kotlinx.serialization.serializer
 
 
 /** Type alias for entity IDs. */
-public typealias GearyEntityId = Int
+@OptIn(ExperimentalUnsignedTypes::class)
+public typealias GearyEntityId = ULong
 
 /** Type alias for component IDs */
 public typealias GearyComponentId = GearyEntityId
@@ -67,3 +68,7 @@ public inline fun geary(id: GearyEntityId, run: GearyEntity.() -> Unit): GearyEn
 /** Gets the entity associated with [id]. */
 @Suppress("NOTHING_TO_INLINE")
 public inline fun geary(id: GearyEntityId): GearyEntity = BoxedEntityID(id)
+
+@Suppress("NOTHING_TO_INLINE")
+public inline fun geary(id: Long): GearyEntity = geary(id.toULong())
+
