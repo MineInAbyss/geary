@@ -15,13 +15,11 @@ import com.uchuhimo.collections.mutableBiMapOf
 public object PrefabManager {
     public val keys: List<PrefabKey> get() = prefabs.keys.toList()
 
-    //TODO we should have our own impl of namespacedkeys that doesn't depend on spigot since we can't use them here
     private val prefabs: MutableBiMap<PrefabKey, GearyEntity> = mutableBiMapOf()
 
     /** Get a prefab by [name]. */
     public operator fun get(name: PrefabKey): GearyEntity? = prefabs[name]
 
-    //TODO perhaps better immutability
     /** Registers a prefab with Geary. */
     public fun registerPrefab(name: PrefabKey, prefab: GearyEntity) {
         prefabs[name] = prefab

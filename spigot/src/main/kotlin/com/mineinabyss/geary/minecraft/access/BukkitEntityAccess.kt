@@ -21,9 +21,10 @@ internal typealias OnEntityUnregister = (GearyEntity, Entity) -> Unit
 
 public object BukkitEntityAccess : Listener {
     private val entityMap = mutableMapOf<UUID, GearyEntity>()
-    internal val bukkitEntityAccessExtensions = mutableSetOf<Entity.() -> GearyEntity?>()
-    internal val onBukkitEntityRegister: MutableList<OnEntityRegister> = mutableListOf()
-    internal val onBukkitEntityUnregister: MutableList<OnEntityUnregister> = mutableListOf()
+
+    //TODO this should be done through events
+    private val onBukkitEntityRegister: MutableList<OnEntityRegister> = mutableListOf()
+    private val onBukkitEntityUnregister: MutableList<OnEntityUnregister> = mutableListOf()
 
     public fun onBukkitEntityRegister(add: OnEntityRegister) {
         onBukkitEntityRegister.add(add)
@@ -66,16 +67,7 @@ public object BukkitEntityAccess : Listener {
         return entityMap.remove(entity.uniqueId)
     }
 
-    public fun getEntityOrNull(entity: Entity): GearyEntity? =
-        entity as? GearyEntity
-        //TODO entity.toNMS() as? GearyEntity ?:
-        //try to find the mob in the map
-            ?: entityMap[entity.uniqueId]
-            //try to get first non null mapping in registered extensions
-            ?: bukkitEntityAccessExtensions
-                .asSequence()
-                .map { it(entity) }
-                .firstOrNull { it != null }
+    public fun getEntityOrNull(entity: Entity): GearyEntity? = entityMap[entity.uniqueId]
 
     public fun <T : Entity> getEntity(entity: T): GearyEntity =
         getEntityOrNull(entity) ?: registerEntity(entity)
@@ -95,9 +87,9 @@ public object BukkitEntityAccess : Listener {
     /** Remove entities from ECS when they are removed from Bukkit for any reason (Uses PaperMC event) */
     @EventHandler
     public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
-        val gearyEntity = entityMap[entity.uniqueId] ?: return
+        val gearyEntity = getEntityOrNull(entity) ?: return
         unregisterEntity(entity)
-        Engine.removeEntity(gearyEntity)
+        gearyEntity.remove()
     }
 
     //TODO Is there anything we'd actually want to do with the ECS while the player sees their respawn screen?

@@ -22,7 +22,7 @@ import kotlin.reflect.KClass
 public inline class GearyEntity(public val id: GearyEntityId) {
     /** Remove this entity from the ECS. */
     public fun remove() {
-        Engine.removeEntity(this)
+        Engine.removeEntity(id)
     }
 
     /** Adds a component of type [T] to this entity */

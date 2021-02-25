@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.*
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.*
 import com.mineinabyss.geary.ecs.engine.types.GearyTypeMap
@@ -34,7 +34,7 @@ public open class GearyEngine : TickingEngine() {
 
     public fun GearyEntityId.toIntId(): Int = (ID_MASK and this).toInt()
 
-    override fun getComponentIdForClass(kClass: KClass<*>): GearyEntityId {
+    override fun getComponentIdForClass(kClass: KClass<*>): GearyComponentId {
         return classToComponentMap.getOrPut(kClass) {
             entity {
                 //TODO add some components for new components here
@@ -82,8 +82,8 @@ public open class GearyEngine : TickingEngine() {
 
     private val components: MutableMap<GearyComponentId, SparseList<GearyComponent>> = mutableMapOf()
 
-    override fun getComponentsFor(id: GearyEntityId): Set<GearyComponent> =
-        components.mapNotNullTo(mutableSetOf()) { (_, value) -> value[id.toIntId()] }
+    override fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent> =
+        components.mapNotNullTo(mutableSetOf()) { (_, value) -> value[entity.toIntId()] }
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : GearyComponent> getComponentFor(entity: GearyEntityId, component: GearyComponentId): T? =
@@ -121,30 +121,28 @@ public open class GearyEngine : TickingEngine() {
     }
 
     //TODO might be a smarter way of storing these as an implicit list within a larger list of entities eventually
-    override fun removeEntity(entity: GearyEntity) {
-        val (entityId) = entity
-
+    override fun removeEntity(entity: GearyEntityId) {
         //clear relationship with parent and children
         //TODO add option to recursively remove children in the future
         //TODO change when we update parent child relationships
-        entity.apply {
+        geary(entity).apply {
             parent = null
         }
 
-        typeMap[entityId].forEach { componentId ->
-            components[componentId]!!.remove(entityId.toIntId())
+        typeMap[entity].forEach { componentId ->
+            components[componentId]!!.remove(entity.toIntId())
         }
-        typeMap.remove(entityId)
+        typeMap.remove(entity)
 
         //add current id into queue for reuse
-        removedEntities.push(entityId)
+        removedEntities.push(entity)
     }
 
     override fun getFamily(
         vararg with: ComponentClass,
         andNot: Array<out ComponentClass>
-    ): List<Pair<GearyEntityId, List<Any>>> {
-        val list = mutableListOf<Pair<GearyEntityId, List<Any>>>()
+    ): List<Pair<GearyEntityId, List<GearyComponent>>> {
+        val list = mutableListOf<Pair<GearyEntityId, List<GearyComponent>>>()
 
         //TODO better access here + try to cache components[componentId()]
         val withComponents = with.map { components[componentId(it)]!! }.sortedBy { it.size }
@@ -155,7 +153,7 @@ public open class GearyEngine : TickingEngine() {
                 val entity = unpackedIndices[packedIndex]
 
                 //FIXME the return order here will be wrong since we are sorting by size
-                val retrieved = mutableListOf<Any>(component)
+                val retrieved = mutableListOf<GearyComponent>(component)
                 for (i in 1 until withComponents.size) {
                     retrieved.add(withComponents[i][entity] ?: return@forEachEntity)
                 }

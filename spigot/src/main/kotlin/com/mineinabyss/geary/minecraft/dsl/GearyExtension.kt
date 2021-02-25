@@ -278,15 +278,6 @@ public class GearyExtension(
                 if (entity is T) list(gearyEntity, entity)
             }
         }
-
-        /**
-         * Additional ways of getting a [GearyEntity] given a spigot [Entity]. Will try one by one until a conversion
-         * is not null. There is currently no priority system.
-         */
-        //TODO priority system
-        public fun entityConversion(getter: Entity.() -> GearyEntity?) {
-            BukkitEntityAccess.bukkitEntityAccessExtensions += getter
-        }
     }
 
     public fun loadPrefabs(from: File, run: ((String, GearyEntity) -> Unit)? = null) {
