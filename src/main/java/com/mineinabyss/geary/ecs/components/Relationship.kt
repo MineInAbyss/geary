@@ -2,7 +2,7 @@ package com.mineinabyss.geary.ecs.components
 
 //TODO add documentation and maybe split into two files
 
-import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 
 /**
  * A component holding the children entities of this entity.
@@ -25,7 +25,7 @@ public fun GearyEntity.addChild(child: GearyEntity) {
 }
 
 /** Adds a [Children] component, adding the [children] to it. Also sets the parents of [children] to this entity. */
-public fun GearyEntity.addChildren(vararg children: GearyEntity) {
+public fun GearyEntity.addChildren(children: Array<GearyEntity>) {
     getOrAdd { Children() }.apply {
         ids.addAll(children)
     }
@@ -44,7 +44,7 @@ public fun GearyEntity.removeChild(child: GearyEntity) {
 }
 
 /** Removes [children], also removing their parents. */
-public fun GearyEntity.removeChildren(vararg children: GearyEntity) {
+public fun GearyEntity.removeChildren(children: Array<GearyEntity>) {
     children.forEach { it.unsafeParent = null }
     get<Children>()?.ids?.removeAll(children)
 }

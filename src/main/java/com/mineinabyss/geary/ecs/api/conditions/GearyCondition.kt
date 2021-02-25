@@ -1,6 +1,6 @@
-package com.mineinabyss.geary.ecs.conditions
+package com.mineinabyss.geary.ecs.api.conditions
 
-import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 
 /**
  * A serializable condition that can be checked against a certain entity.

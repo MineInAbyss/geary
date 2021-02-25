@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.minecraft.events
 
-import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 

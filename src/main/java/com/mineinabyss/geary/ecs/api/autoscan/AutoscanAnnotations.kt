@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.ecs.autoscan
+package com.mineinabyss.geary.ecs.api.autoscan
 
 import com.mineinabyss.geary.ecs.GearyComponent
 

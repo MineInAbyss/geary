@@ -1,9 +1,8 @@
 package com.mineinabyss.geary.ecs.prefab
 
-import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.components.GearyPrefab
 import com.mineinabyss.geary.ecs.components.PrefabKey
-import com.mineinabyss.geary.ecs.components.addComponent
 import com.mineinabyss.geary.ecs.prefab.PrefabManager.keys
 import com.uchuhimo.collections.MutableBiMap
 import com.uchuhimo.collections.mutableBiMapOf

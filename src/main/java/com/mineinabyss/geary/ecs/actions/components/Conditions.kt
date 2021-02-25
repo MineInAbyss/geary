@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.ecs.actions.components
 
 import com.mineinabyss.geary.ecs.GearyComponentId
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.autoscan.AutoscanComponent
-import com.mineinabyss.geary.ecs.conditions.GearyCondition
+import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
+import com.mineinabyss.geary.ecs.api.conditions.GearyCondition
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.engine.componentId
 import com.mineinabyss.geary.ecs.serialization.FlatSerializer
 import com.mineinabyss.geary.ecs.serialization.FlatWrap

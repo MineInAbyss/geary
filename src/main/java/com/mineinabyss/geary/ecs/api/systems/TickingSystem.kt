@@ -1,6 +1,6 @@
-package com.mineinabyss.geary.ecs.systems
+package com.mineinabyss.geary.ecs.api.systems
 
-import com.mineinabyss.geary.ecs.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.engine.forEach
 
 /**

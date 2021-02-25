@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.minecraft
 
-import com.mineinabyss.geary.ecs.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL

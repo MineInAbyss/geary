@@ -1,11 +1,11 @@
 package com.mineinabyss.geary.minecraft
 
-import com.mineinabyss.geary.ecs.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.systems.PassiveActionsSystem
+import com.mineinabyss.geary.minecraft.access.BukkitEntityAccess
 import com.mineinabyss.geary.minecraft.components.PlayerComponent
 import com.mineinabyss.geary.minecraft.dsl.attachToGeary
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
-import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService

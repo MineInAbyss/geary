@@ -1,18 +1,18 @@
 package com.mineinabyss.geary.minecraft.dsl
 
 import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.GearyEntitySerializer
-import com.mineinabyss.geary.ecs.actions.GearyAction
-import com.mineinabyss.geary.ecs.autoscan.AutoscanComponent
-import com.mineinabyss.geary.ecs.autoscan.ExcludeAutoscan
+import com.mineinabyss.geary.ecs.api.actions.GearyAction
+import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
+import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoscan
+import com.mineinabyss.geary.ecs.api.conditions.GearyCondition
+import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.PrefabKey
-import com.mineinabyss.geary.ecs.conditions.GearyCondition
-import com.mineinabyss.geary.ecs.engine.Engine
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
-import com.mineinabyss.geary.ecs.systems.TickingSystem
-import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
+import com.mineinabyss.geary.ecs.serialization.GearyEntitySerializer
+import com.mineinabyss.geary.minecraft.access.BukkitEntityAccess
 import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.messaging.logVal
 import com.mineinabyss.idofront.messaging.logWarn
@@ -293,7 +293,7 @@ public class GearyExtension(
         from.walk().filter { it.isFile }.forEach { file ->
             val name = file.nameWithoutExtension
             try {
-                val format = when(val ext = file.extension) {
+                val format = when (val ext = file.extension) {
                     "yml" -> Formats.yamlFormat
                     "json" -> Formats.jsonFormat
                     else -> error("Unknown file format $ext")

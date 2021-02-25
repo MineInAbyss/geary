@@ -1,8 +1,9 @@
 package com.mineinabyss.geary.ecs.engine
 
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.components.ComponentClass
-import com.mineinabyss.geary.ecs.geary
+import com.mineinabyss.geary.ecs.ComponentClass
+import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.GearyComponent as GC
 
 //TODO support component families with infix functions

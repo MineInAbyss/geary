@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.ecs.components
 
 import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.autoscan.ExcludeAutoscan
+import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoscan
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.components.GearyPrefab.Companion.serializer
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats

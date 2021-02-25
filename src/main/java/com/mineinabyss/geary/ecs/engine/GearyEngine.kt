@@ -1,10 +1,11 @@
 package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.*
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.*
 import com.mineinabyss.geary.ecs.engine.types.GearyTypeMap
 import com.mineinabyss.geary.ecs.engine.types.ID_MASK
-import com.mineinabyss.geary.ecs.systems.TickingSystem
 import com.mineinabyss.idofront.messaging.logError
 import net.onedaybeard.bitvector.BitVector
 import org.clapper.util.misc.SparseArrayList
@@ -37,7 +38,7 @@ public open class GearyEngine : TickingEngine() {
         return classToComponentMap.getOrPut(kClass) {
             entity {
                 //TODO add some components for new components here
-            }.gearyId
+            }.id
         }
     }
 
@@ -128,7 +129,6 @@ public open class GearyEngine : TickingEngine() {
         //TODO change when we update parent child relationships
         entity.apply {
             parent = null
-            removeChildren()
         }
 
         typeMap[entityId].forEach { componentId ->

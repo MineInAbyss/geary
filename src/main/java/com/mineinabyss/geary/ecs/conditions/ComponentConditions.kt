@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.ecs.conditions
 
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.components.hasAll
+import com.mineinabyss.geary.ecs.api.conditions.GearyCondition
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

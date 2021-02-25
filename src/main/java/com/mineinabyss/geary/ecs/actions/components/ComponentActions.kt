@@ -1,10 +1,9 @@
 package com.mineinabyss.geary.ecs.actions.components
 
 import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.actions.GearyAction
-import com.mineinabyss.geary.ecs.components.addComponents
-import com.mineinabyss.geary.ecs.engine.Engine
+import com.mineinabyss.geary.ecs.api.actions.GearyAction
+import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.engine.componentId
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
@@ -29,7 +28,7 @@ public class AddComponentAction(
 public data class RemoveComponentAction(override val components: Set<String>) : ComponentAction() {
     override fun runOn(entity: GearyEntity): Boolean {
         componentClasses.forEach {
-            Engine.removeComponentFor(entity.gearyId, componentId(it))
+            Engine.removeComponentFor(entity.id, componentId(it))
         }
         return true
     }
@@ -40,7 +39,7 @@ public data class RemoveComponentAction(override val components: Set<String>) : 
 public class DisableComponentAction(override val components: Set<String>) : ComponentAction() {
     override fun runOn(entity: GearyEntity): Boolean {
         componentClasses.forEach {
-            Engine.unsetFor(entity.gearyId, componentId(it))
+            Engine.unsetFor(entity.id, componentId(it))
         }
         return true
     }
@@ -51,7 +50,7 @@ public class DisableComponentAction(override val components: Set<String>) : Comp
 public data class EnableComponentAction(override val components: Set<String>) : ComponentAction() {
     override fun runOn(entity: GearyEntity): Boolean {
         componentClasses.forEach {
-            Engine.setFor(entity.gearyId, componentId(it))
+            Engine.setFor(entity.id, componentId(it))
         }
         return true
     }

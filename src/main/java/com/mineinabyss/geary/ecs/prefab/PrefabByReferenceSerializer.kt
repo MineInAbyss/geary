@@ -1,8 +1,7 @@
 package com.mineinabyss.geary.ecs.prefab
 
-import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.components.PrefabKey
-import com.mineinabyss.geary.ecs.components.get
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor

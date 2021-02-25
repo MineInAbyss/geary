@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.minecraft.components
 
-import com.mineinabyss.geary.ecs.autoscan.AutoscanComponent
+import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
 import com.mineinabyss.idofront.serialization.UUIDSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

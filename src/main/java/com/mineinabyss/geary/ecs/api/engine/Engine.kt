@@ -1,8 +1,8 @@
-package com.mineinabyss.geary.ecs.engine
+package com.mineinabyss.geary.ecs.api.engine
 
 import com.mineinabyss.geary.ecs.*
-import com.mineinabyss.geary.ecs.components.ComponentClass
-import com.mineinabyss.geary.ecs.systems.TickingSystem
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.idofront.plugin.getService
 import kotlin.reflect.KClass
 
@@ -83,12 +83,3 @@ public interface Engine {
         andNot: Array<out ComponentClass> = emptyArray()
     ): List<Pair<GearyEntityId, List<Any>>>
 }
-
-public inline fun Engine.entity(run: GearyEntity.() -> Unit): GearyEntity = geary(getNextId(), run)
-
-public inline fun <reified T> componentId(): GearyEntityId = componentId(T::class)
-
-public fun componentId(component: GearyComponent): GearyEntityId = componentId(component::class)
-
-public fun componentId(kClass: KClass<*>): GearyEntityId = Engine.getComponentIdForClass(kClass)
-

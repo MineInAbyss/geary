@@ -1,20 +1,14 @@
-package com.mineinabyss.geary.minecraft.store
+package com.mineinabyss.geary.minecraft.access
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.components.addComponent
-import com.mineinabyss.geary.ecs.components.addComponents
-import com.mineinabyss.geary.ecs.components.get
-import com.mineinabyss.geary.ecs.components.has
-import com.mineinabyss.geary.ecs.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.engine.entity
-import com.mineinabyss.geary.minecraft.components.toBukkit
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
-import com.mineinabyss.geary.minecraft.events.GearyMinecraftLoadEvent
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
-import com.mineinabyss.idofront.events.call
+import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
 import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -114,24 +108,3 @@ public object BukkitEntityAccess : Listener {
         registerEntity(player)
     }
 }
-
-public fun geary(entity: Entity): GearyEntity = BukkitEntityAccess.getEntity(entity).apply {
-    GearyMinecraftLoadEvent(this).call()
-}
-
-// Separate function because inline `run` cannot be nullable
-public inline fun geary(entity: Entity, init: GearyEntity.() -> Unit): GearyEntity = geary(entity).apply {
-    init()
-    // We want this to run after potential spawn events defined in init
-    GearyMinecraftLoadEvent(this).call()
-}
-
-public fun gearyOrNull(entity: Entity): GearyEntity? = BukkitEntityAccess.getEntityOrNull(entity)
-
-//TODO add the rest of the GearyEntity operations here
-public inline fun <reified T : GearyComponent> Entity.get(): T? = gearyOrNull(this)?.get()
-
-public inline fun <reified T : GearyComponent> Entity.with(let: (T) -> Unit): Unit? =
-    gearyOrNull(this)?.get<T>()?.let(let)
-
-public inline fun <reified T : GearyComponent> Entity.has(): Boolean = gearyOrNull(this)?.has<T>() ?: false
