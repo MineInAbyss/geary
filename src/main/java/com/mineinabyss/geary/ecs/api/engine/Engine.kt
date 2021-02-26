@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.ecs.api.engine
 
 import com.mineinabyss.geary.ecs.*
+import com.mineinabyss.geary.ecs.api.systems.Family
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.idofront.plugin.getService
 import kotlin.reflect.KClass
@@ -58,10 +59,7 @@ public interface Engine {
     public fun getComponentIdForClass(kClass: KClass<*>): GearyComponentId
 
     /** Allows iteration over all [GearyEntityId]s that match the given family of components. */
-    public fun getFamily(
-        vararg with: ComponentClass,
-        andNot: Array<out ComponentClass> = emptyArray()
-    ): List<Pair<GearyEntityId, List<GearyComponent>>>
+    public fun getFamily(family: Family): List<Pair<GearyEntityId, List<GearyComponent>>>
 
     // Predefined helpers that can be overridden if a faster implementation is possible.
 

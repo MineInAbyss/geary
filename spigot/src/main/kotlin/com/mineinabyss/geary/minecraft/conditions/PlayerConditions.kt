@@ -6,7 +6,7 @@ package com.mineinabyss.geary.minecraft.conditions
 
 import com.mineinabyss.geary.ecs.api.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.components.parent
+import com.mineinabyss.geary.ecs.entities.parent
 import com.mineinabyss.geary.minecraft.components.PlayerComponent
 import com.mineinabyss.idofront.serialization.DoubleRangeSerializer
 import kotlinx.serialization.SerialName

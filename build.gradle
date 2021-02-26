@@ -30,7 +30,7 @@ allprojects {
     }
 
     dependencies {
-        compileOnly platform("com.mineinabyss:kotlinspice:$kotlin_version-10")
+        compileOnly platform("com.mineinabyss:kotlinspice:$kotlin_version-11")
         compileOnly "org.jetbrains.kotlinx:kotlinx-serialization-cbor"
 
         implementation "com.mineinabyss:idofront:0.5.6"

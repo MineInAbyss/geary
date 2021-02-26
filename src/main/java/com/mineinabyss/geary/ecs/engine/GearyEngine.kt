@@ -2,10 +2,12 @@ package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.*
 import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.systems.Family
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.*
+import com.mineinabyss.geary.ecs.engine.types.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.types.GearyTypeMap
-import com.mineinabyss.geary.ecs.engine.types.ID_MASK
+import com.mineinabyss.geary.ecs.entities.children
 import com.mineinabyss.idofront.messaging.logError
 import net.onedaybeard.bitvector.BitVector
 import org.clapper.util.misc.SparseArrayList
@@ -29,10 +31,19 @@ import kotlin.reflect.KClass
  * currently quite inefficient, but optional.
  */
 public open class GearyEngine : TickingEngine() {
-    private val typeMap: GearyTypeMap = GearyTypeMap()
+    internal val typeMap: GearyTypeMap = GearyTypeMap()
+    private val components: MutableMap<GearyComponentId, SparseList<GearyComponent>> = mutableMapOf()
+    private var currId: GearyEntityId = 0uL
+
+    public fun getComponentArrayFor(component: GearyComponentId): SparseList<GearyComponent> =
+        components.getOrPut(component, { SparseList() })
+
+    //TODO there's likely a more performant option
+    private val removedEntities = Stack<GearyEntityId>()
+
     private val classToComponentMap = mutableMapOf<KClass<*>, GearyEntityId>()
 
-    public fun GearyEntityId.toIntId(): Int = (ID_MASK and this).toInt()
+    public fun GearyEntityId.toIntId(): Int = (ENTITY_MASK and this).toInt()
 
     override fun getComponentIdForClass(kClass: KClass<*>): GearyComponentId {
         return classToComponentMap.getOrPut(kClass) {
@@ -72,32 +83,12 @@ public open class GearyEngine : TickingEngine() {
         TODO("Implement a system for ticking independent of spigot")
     }
 
-    private var currId: GearyEntityId = 0uL
-
-    //TODO there's likely a more performant option
-    private val removedEntities = Stack<GearyEntityId>()
 
     @Synchronized
     override fun getNextId(): GearyEntityId = if (removedEntities.isNotEmpty()) removedEntities.pop() else ++currId
 
-    private val components: MutableMap<GearyComponentId, SparseList<GearyComponent>> = mutableMapOf()
-
     override fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent> =
         components.mapNotNullTo(mutableSetOf()) { (_, value) -> value[entity.toIntId()] }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : GearyComponent> getComponentFor(entity: GearyEntityId, component: GearyComponentId): T? =
-        runCatching {
-            //TODO this cast will succeed even when it shouldn't because of type erasure with generics
-            // consider using reflective typeOf<T>
-            components[component]?.get(entity.toIntId()) as? T
-        }.getOrNull()
-
-    override fun holdsComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean =
-        components[component]?.get(entity.toIntId()) != null
-
-    override fun hasComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean =
-        typeMap.has(entity, component)
 
     override fun <T : GearyComponent> addComponentFor(entity: GearyEntityId, component: T): T {
         val componentId = getComponentIdForClass(component::class)
@@ -120,13 +111,25 @@ public open class GearyEngine : TickingEngine() {
         typeMap.unset(entity, component)
     }
 
-    //TODO might be a smarter way of storing these as an implicit list within a larger list of entities eventually
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : GearyComponent> getComponentFor(entity: GearyEntityId, component: GearyComponentId): T? =
+        runCatching {
+            //TODO this cast will succeed even when it shouldn't because of type erasure with generics
+            // consider using reflective typeOf<T>
+            components[component]?.get(entity.toIntId()) as? T
+        }.getOrNull()
+
+    override fun holdsComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean =
+        components[component]?.get(entity.toIntId()) != null
+
+    override fun hasComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean =
+        typeMap.has(entity, component)
+
+    //TODO might be a smarter way of storing removed entities as an implicit list within a larger list of entities eventually
     override fun removeEntity(entity: GearyEntityId) {
-        //clear relationship with parent and children
-        //TODO add option to recursively remove children in the future
-        //TODO change when we update parent child relationships
+        // remove all children of this entity from the ECS as well
         geary(entity).apply {
-            parent = null
+            children.forEach { it.remove() }
         }
 
         typeMap[entity].forEach { componentId ->
@@ -138,15 +141,11 @@ public open class GearyEngine : TickingEngine() {
         removedEntities.push(entity)
     }
 
-    override fun getFamily(
-        vararg with: ComponentClass,
-        andNot: Array<out ComponentClass>
-    ): List<Pair<GearyEntityId, List<GearyComponent>>> {
+    override fun getFamily(family: Family): List<Pair<GearyEntityId, List<GearyComponent>>> {
         val list = mutableListOf<Pair<GearyEntityId, List<GearyComponent>>>()
 
-        //TODO better access here + try to cache components[componentId()]
-        val withComponents = with.map { components[componentId(it)]!! }.sortedBy { it.size }
-        val andNotComponents = andNot.map { components[componentId(it)]!! }.sortedByDescending { it.size }
+        val withComponents = family.match.map { it.componentArray }.sortedBy { it.size }
+        val andNotComponents = family.andNot.map { it.componentArray }.sortedByDescending { it.size }
 
         withComponents.first().apply {
             packed.forEachIndexed forEachEntity@{ packedIndex, component ->
@@ -160,7 +159,7 @@ public open class GearyEngine : TickingEngine() {
 
                 //TODO there might be a smarter order to start checking not components to reduce the iteration size greatly
                 if (andNotComponents.all { it[entity] == null })
-                    //TODO what do we actually use for the index inside our bitsets
+                //TODO what do we actually use for the index inside our bitsets
                     list.add(entity.toULong() to retrieved)
             }
         }
@@ -168,5 +167,4 @@ public open class GearyEngine : TickingEngine() {
     }
 
     public fun countEntitiesOfType(type: String): Int = TODO()
-
 }

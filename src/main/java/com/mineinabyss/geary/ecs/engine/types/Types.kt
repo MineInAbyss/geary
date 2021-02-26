@@ -2,6 +2,9 @@ package com.mineinabyss.geary.ecs.engine.types
 
 import com.mineinabyss.geary.ecs.GearyComponentId
 import com.mineinabyss.geary.ecs.GearyEntityId
+import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.engine.GearyEngine
 import java.util.*
 
 public typealias GearyType = SortedSet<GearyComponentId>
@@ -24,3 +27,5 @@ internal class GearyTypeMap {
 
     fun remove(entity: GearyEntityId) = typeMap.remove(entity)
 }
+
+public val GearyEntity.type: GearyType get() = (Engine as GearyEngine).typeMap[id]

@@ -66,7 +66,10 @@ public inline class GearyEntity(public val id: GearyEntityId) {
      * @return Whether the component was present before removal.
      */
     public inline fun <reified T : GearyComponent> removeComponent(): Boolean =
-        Engine.removeComponentFor(id, componentId<T>())
+        removeComponent(componentId<T>())
+
+    public inline fun removeComponent(component: GearyComponentId): Boolean =
+        Engine.removeComponentFor(id, component)
 
     /** Gets a component of type [T] or adds a [default] if no component was present. */
     public inline fun <reified T : GearyComponent> getOrAdd(default: () -> T): T =
