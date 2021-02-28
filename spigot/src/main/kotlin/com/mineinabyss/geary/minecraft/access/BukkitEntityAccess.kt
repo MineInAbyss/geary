@@ -40,7 +40,7 @@ public object BukkitEntityAccess : Listener {
         entityMap[entity.uniqueId]?.let { return it }
 
         val createdEntity: GearyEntity = gearyEntity ?: Engine.entity {
-            set(entity)
+            set<Entity>(entity)
             setAll(
                 onBukkitEntityRegister.flatMap { mapping ->
                     mutableListOf<GearyComponent>().apply { mapping(entity) }

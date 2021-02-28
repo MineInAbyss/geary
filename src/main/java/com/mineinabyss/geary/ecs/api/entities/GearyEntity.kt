@@ -26,8 +26,8 @@ public inline class GearyEntity(public val id: GearyEntityId) {
     }
 
     /** Sets a component that holds data for this entity */
-    public fun set(component: GearyComponent) {
-        Engine.setComponentFor(id, componentId(component::class), component)
+    public inline fun <reified T: GearyComponent> set(component: T) {
+        Engine.setComponentFor(id, componentId(T::class), component)
     }
 
     @Deprecated("Likely unintentionally using list as a single component", ReplaceWith("setAll()"))

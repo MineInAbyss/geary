@@ -59,6 +59,7 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     }
 
     public inner class AccessorReader<T : GearyComponent>(private val index: Int) : ReadOnlyProperty<Any?, T> {
+        //TODO implement contracts for smart cast if Kotlin ever does so for lazy (this should essentially be identical)
         override fun getValue(thisRef: Any?, property: KProperty<*>): T {
             return currComponents[index] as T
         }
