@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.minecraft.engine
 
 import co.aikar.timings.Timings
-import com.mineinabyss.geary.ecs.GearyEntityId
+import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.engine.GearyEngine
@@ -28,7 +28,7 @@ public class SpigotEngine : GearyEngine() {
         }.getOrThrow()
     }
 
-    override fun onStart() {
+    override fun scheduleSystemTicking() {
         //tick all systems every interval ticks
         geary.schedule {
             repeating(1)

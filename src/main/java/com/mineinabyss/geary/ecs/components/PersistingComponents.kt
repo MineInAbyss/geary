@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.ecs.components
 
-import com.mineinabyss.geary.ecs.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyComponent
 
 /**
  * A component that holds a list of components to be persisted.

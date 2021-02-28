@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.ecs.serialization
 
-import com.mineinabyss.geary.ecs.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.engine.entity
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
@@ -20,7 +20,7 @@ public object GearyEntitySerializer : KSerializer<GearyEntity> {
 
     override fun deserialize(decoder: Decoder): GearyEntity {
         return Engine.entity {
-            addPersistingComponents(decoder.decodeSerializableValue(serializer))
+            setAllPersisting(decoder.decodeSerializableValue(serializer))
         }
     }
 }

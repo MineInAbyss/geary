@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.minecraft.dsl
 
-import com.mineinabyss.geary.ecs.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.actions.GearyAction
 import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
 import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoscan
@@ -207,14 +207,14 @@ public class GearyExtension(
         serializers { polymorphic(GearyAction::class) { init() } }
     }
 
-    /** Registers a list of [systems]. */
-    public fun systems(vararg systems: TickingSystem) {
-        Engine.addSystems(*systems)
-    }
-
     /** Registers a [system]. */
     public fun system(system: TickingSystem) {
-        Engine.addSystems(system)
+        Engine.addSystem(system)
+    }
+
+    /** Registers a list of [systems]. */
+    public fun systems(vararg systems: TickingSystem) {
+        systems.forEach { system(it) }
     }
 
     /** Adds a serializable action. */

@@ -31,7 +31,7 @@ public class CooldownAction(
     private val name = _name ?: run.hashCode().toString()
 
     override fun runOn(entity: GearyEntity): Boolean {
-        val cooldowns = entity.getOrAddPersisting { CooldownManager() }
+        val cooldowns = entity.getOrSetPersisting { CooldownManager() }
 
         // restart cooldown if any of the actions ran successfully
         //TODO maybe it's worth storing under hashCode but having a separate field for display name

@@ -1,16 +1,18 @@
-package com.mineinabyss.geary.ecs.engine
+package com.mineinabyss.geary.ecs.api.engine
 
-import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.GearyEntityId
-import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.GearyComponentId
+import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
 import kotlin.reflect.KClass
 
 public inline fun Engine.entity(run: GearyEntity.() -> Unit): GearyEntity = geary(getNextId(), run)
 
-public inline fun <reified T> componentId(): GearyEntityId = componentId(T::class)
+public inline fun <reified T> componentId(): GearyComponentId = componentId(T::class)
 
-public fun componentId(component: GearyComponent): GearyEntityId = componentId(component::class)
+@Deprecated("Should not be getting an id for an id!", ReplaceWith("componentId(component)"))
+public fun componentId(id: KClass<out GearyComponentId>): Nothing = error("Trying to access id for component id")
 
-public fun componentId(kClass: KClass<*>): GearyEntityId = Engine.getComponentIdForClass(kClass)
+public fun componentId(kClass: KClass<*>): GearyComponentId = Engine.getComponentIdForClass(kClass)
+
+public val GearyEntity.type: GearyType get() = Engine.getType(id)

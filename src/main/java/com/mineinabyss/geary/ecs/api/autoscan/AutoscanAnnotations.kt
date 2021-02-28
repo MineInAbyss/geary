@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.ecs.api.autoscan
 
-import com.mineinabyss.geary.ecs.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyComponent
 
 /**
  * Excludes this class from having its serializer automatically registered for polymorphic serialization

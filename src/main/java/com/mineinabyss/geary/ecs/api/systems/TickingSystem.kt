@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.ecs.api.systems
 
-import com.mineinabyss.geary.ecs.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import kotlin.reflect.KProperty
@@ -18,7 +18,7 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     private val match = mutableListOf<Accessor<*>>()
 
     public fun tick() {
-        Engine.getFamily(Family(match))
+//TODO        Engine.getFamily(Family(match))
     }
 
 

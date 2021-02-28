@@ -2,32 +2,52 @@ package com.mineinabyss.geary.ecs.entities
 
 //TODO add documentation and maybe split into two files
 
-import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
-import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.engine.types.CHILDOF
 import com.mineinabyss.geary.ecs.engine.types.ENTITY_MASK
-import com.mineinabyss.geary.ecs.engine.types.type
+import com.mineinabyss.geary.ecs.engine.types.INSTANCEOF
 
-/** Adds a [Children] component, adding the [child] to it. Also sets the parent of [child] to this entity.  */
-public fun GearyEntity.addChild(child: GearyEntity) {
-    set(child.id or CHILDOF)
+/** Adds a [parent] entity to this entity.  */
+public fun GearyEntity.addParent(parent: GearyEntity) {
+    add(parent.id or CHILDOF)
 }
 
-/** Adds a [Children] component, adding the [children] to it. Also sets the parents of [children] to this entity. */
+/** Adds a list of [parents] entities to this entity. */
+public fun GearyEntity.addParents(parents: Array<GearyEntity>) {
+    parents.forEach { addParent(it) }
+}
+
+/** Removes a [parent], also unlinking this child from that parent. */
+public fun GearyEntity.removeParent(parent: GearyEntity) {
+    remove(parent.id or CHILDOF)
+}
+
+/** Removes all of this entity's parents, also unlinking this child from them. */
+public fun GearyEntity.clearParents() {
+    parents.forEach { remove(it.id) }
+}
+
+/** Adds a [child] entity to this entity.  */
+public fun GearyEntity.addChild(child: GearyEntity) {
+    child.addParent(this)
+}
+
+/** Adds a list of [children] entities to this entity. */
 public fun GearyEntity.addChildren(children: Array<GearyEntity>) {
     children.forEach { addChild(it) }
 }
 
-/** Removes a [child], also removing its parent. */
+/** Removes a [child], also unlinking this parent from that child. */
 public fun GearyEntity.removeChild(child: GearyEntity) {
-    unset(child.id or CHILDOF)
+    child.removeParent(this)
 }
 
-/** Removes all of this entity's children, also removing their parents. */
-public fun GearyEntity.clearParents(): Boolean =
-    type.removeAll(parents.map { it.id })
+/** Removes all of this entity's children, also unlinking this parent from them. */
+public fun GearyEntity.clearChildren() {
+    children.forEach { remove(it.id) }
+}
 
 public val GearyEntity.parent: GearyEntity?
     get() = type.firstOrNull { id and CHILDOF != 0uL }?.let { geary(it) }
@@ -41,9 +61,16 @@ public val GearyEntity.parents: Set<GearyEntity>
     }
 
 public val GearyEntity.children: Set<GearyEntity>
-    get() =
-        //TODO use family access here
-        (Engine as GearyEngine).getComponentArrayFor(CHILDOF or id)
-            .unpackedIndices
-            .map { geary(it.toULong()) }
-            .toSet()
+    get() = TODO("Implement family access")
+//(Engine as GearyEngine).getFamily(CHILDOF or id)
+
+
+/** Adds a [prefab] entity to this entity.  */
+public fun GearyEntity.addPrefab(prefab: GearyEntity) {
+    add(prefab.id or INSTANCEOF)
+}
+
+/** Adds a [prefab] entity to this entity.  */
+public fun GearyEntity.removePrefab(prefab: GearyEntity) {
+    remove(prefab.id or INSTANCEOF)
+}

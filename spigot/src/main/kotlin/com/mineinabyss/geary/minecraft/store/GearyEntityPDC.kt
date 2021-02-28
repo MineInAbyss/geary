@@ -21,12 +21,12 @@ public fun GearyEntity.decodeComponentsFrom(pdc: PersistentDataContainer) {
 
     //if there's a prefab reference on the PDC, we need to add it before we try and decode components from it.
     components.asSequence().filterIsInstance<GearyPrefab>().firstOrNull()?.let {
-        addPersistingComponent(it)
+        setPersisting(it)
     }
 
     //TODO figure out decoding components when a parent is present
 //    type?.decodeComponentsTo(this)
 
     //components written to this entity's PDC will override the ones defined in type
-    addPersistingComponents(components)
+    setAllPersisting(components)
 }

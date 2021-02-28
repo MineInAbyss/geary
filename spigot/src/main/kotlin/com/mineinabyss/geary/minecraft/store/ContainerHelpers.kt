@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.minecraft.store
 
-import com.mineinabyss.geary.ecs.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.idofront.items.editItemMeta
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataHolder

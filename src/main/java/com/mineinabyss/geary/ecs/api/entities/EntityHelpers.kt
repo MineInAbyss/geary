@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.ecs.api.entities
 
-import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.GearyEntityId
+import com.mineinabyss.geary.ecs.api.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyEntityId
 
 /** Gets the entity associated with [id] and runs code on it. */
 public inline fun geary(id: GearyEntityId, run: GearyEntity.() -> Unit): GearyEntity =
@@ -21,14 +21,14 @@ public inline fun <reified T : GearyComponent> GearyEntity?.swapComponent(with: 
     val otherComponent = with?.get<T>()
 
     if (component != null)
-        with?.addComponent(component)
+        with?.set(component)
     else
-        with?.removeComponent<T>()
+        with?.remove<T>()
 
     if (otherComponent != null)
-        this?.addComponent(otherComponent)
+        this?.set(otherComponent)
     else
-        this?.removeComponent<T>()
+        this?.remove<T>()
 
     return component != null || otherComponent != null
 }

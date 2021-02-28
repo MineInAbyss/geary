@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.ecs
+package com.mineinabyss.geary.ecs.api
 
 import kotlinx.serialization.Polymorphic
 import kotlin.reflect.KClass
@@ -19,3 +19,5 @@ public typealias GearyEntityId = ULong
 public typealias GearyComponentId = GearyEntityId
 
 internal typealias ComponentClass = KClass<out GearyComponent>
+
+public typealias GearyType = List<GearyComponentId>

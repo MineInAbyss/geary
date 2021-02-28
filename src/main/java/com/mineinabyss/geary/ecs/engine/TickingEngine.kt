@@ -10,10 +10,10 @@ public abstract class TickingEngine: Engine {
 
     public fun start() {
         if(!started) {
-            onStart()
+            scheduleSystemTicking()
             started = true
         }
     }
 
-    public abstract fun onStart()
+    public abstract fun scheduleSystemTicking()
 }

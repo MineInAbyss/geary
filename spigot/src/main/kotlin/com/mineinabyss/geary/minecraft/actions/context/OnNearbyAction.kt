@@ -41,9 +41,9 @@ public class OnNearbyAction(
             }
             .map { geary(it) }
             .count { target ->
-                target.addComponent(Source(entity))
+                target.set(Source(entity))
                 run.count { action -> action.runOn(target) } != 0
-                target.removeComponent<Source>()
+                target.remove<Source>()
             } != 0
     }
 }

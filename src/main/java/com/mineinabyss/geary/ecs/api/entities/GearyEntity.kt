@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.ecs.api.entities
 
-import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.GearyComponentId
-import com.mineinabyss.geary.ecs.GearyEntityId
+import com.mineinabyss.geary.ecs.api.ComponentClass
+import com.mineinabyss.geary.ecs.api.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyComponentId
+import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.components.*
-import com.mineinabyss.geary.ecs.engine.componentId
-import kotlin.reflect.KClass
 
 /**
  * A wrapper around [GearyEntityId] that gets inlined to just a long (no performance degradation since no boxing occurs).
@@ -21,22 +21,34 @@ import kotlin.reflect.KClass
 @Suppress("NOTHING_TO_INLINE")
 public inline class GearyEntity(public val id: GearyEntityId) {
     /** Remove this entity from the ECS. */
-    public fun remove() {
+    public fun removeEntity() {
         Engine.removeEntity(id)
     }
 
-    /** Adds a component of type [T] to this entity */
-    public fun <T : GearyComponent> addComponent(component: T): T =
-        Engine.addComponentFor(id, component)
-
-    /** Adds a list of [components] to this entity */
-    public inline fun addComponents(components: Collection<GearyComponent>) {
-        Engine.addComponentsFor(id, components.toSet())
+    /** Sets a component that holds data for this entity */
+    public fun set(component: GearyComponent) {
+        Engine.setComponentFor(id, componentId(component::class), component)
     }
 
-    /** Adds a list of [components] to this entity */
-    public inline fun addComponents(vararg components: GearyComponent) {
-        addComponents(components.toSet())
+    @Deprecated("Likely unintentionally using list as a single component", ReplaceWith("setAll()"))
+    public fun set(components: Collection<GearyComponent>): Unit = set(component = components)
+
+    /** Sets components that hold data for this entity */
+    public fun setAll(components: Collection<GearyComponent>) {
+        components.forEach { set(it) }
+    }
+
+    /** Adds a list of [component] to this entity */
+    public inline fun add(component: GearyComponentId) {
+        Engine.addComponentFor(id, component)
+    }
+
+    public inline fun <reified T : GearyComponent> add() {
+        add(componentId<T>())
+    }
+
+    public inline fun addAll(components: Collection<GearyComponentId>) {
+        components.forEach { add(it) }
     }
 
     /**
@@ -44,20 +56,19 @@ public inline class GearyEntity(public val id: GearyEntityId) {
      *
      * Ex. for bukkit entities this is done through a [PersistentDataContainer].
      */
-    public inline fun <reified T : GearyComponent> addPersistingComponent(component: T): T {
-        addComponent(component)
-        getOrAdd { PersistingComponents() }.add(component)
-        return component
+    public inline fun setPersisting(component: GearyComponent) {
+        set(component)
+        //TODO persisting components should store a list of ComponentIDs
+        //TODO is this possible to do nicely with traits?
+        getOrSet { PersistingComponents() }.add(component)
     }
 
-    /**
-     * Adds a list of persisting [components]
-     * @see addPersistingComponent
-     */
-    public inline fun addPersistingComponents(components: Set<GearyComponent>) {
-        if (components.isEmpty()) return //avoid adding a persisting components component if there are none to add
-        addComponents(components)
-        getOrAdd { PersistingComponents() }.addAll(components)
+    @Deprecated("Likely unintentionally using list as a single component", ReplaceWith("setAllPersisting()"))
+    public fun setPersisting(components: Collection<GearyComponent>): Unit = setPersisting(component = components)
+
+    public inline fun setAllPersisting(components: Collection<GearyComponent>) {
+        setAll(components)
+        getOrSet { PersistingComponents() }.addAll(components)
     }
 
     /**
@@ -65,23 +76,33 @@ public inline class GearyEntity(public val id: GearyEntityId) {
      *
      * @return Whether the component was present before removal.
      */
-    public inline fun <reified T : GearyComponent> removeComponent(): Boolean =
-        removeComponent(componentId<T>())
+    public inline fun <reified T : GearyComponent> remove(): Boolean =
+        remove(componentId<T>())
 
-    public inline fun removeComponent(component: GearyComponentId): Boolean =
+    public inline fun remove(kClass: ComponentClass): Boolean =
+        remove(componentId(kClass))
+
+    public inline fun remove(component: GearyComponentId): Boolean =
         Engine.removeComponentFor(id, component)
 
-    /** Gets a component of type [T] or adds a [default] if no component was present. */
-    public inline fun <reified T : GearyComponent> getOrAdd(default: () -> T): T =
-        get<T>() ?: addComponent(default())
-
-    /** Gets a persisting component of type [T] or adds a [default] if no component was present. */
-    public inline fun <reified T : GearyComponent> getOrAddPersisting(default: () -> T): T =
-        get<T>() ?: addPersistingComponent(default())
+    public inline fun removeAll(components: Collection<GearyComponentId>): Boolean =
+        components.any { remove(it) }
 
     /** Gets a component of type [T] on this entity. */
     public inline fun <reified T : GearyComponent> get(): T? =
-        Engine.getComponentFor(id, componentId<T>())
+        get(componentId<T>()) as? T
+
+    /** Gets a [component] which holds data from this entity. Use [has] if the component is not to hold data. */
+    public inline fun get(component: GearyComponentId): GearyComponent? =
+        Engine.getComponentFor(id, component)
+
+    /** Gets a component of type [T] or adds a [default] if no component was present. */
+    public inline fun <reified T : GearyComponent> getOrSet(default: () -> T): T =
+        get<T>() ?: default().also { set(it) }
+
+    /** Gets a persisting component of type [T] or adds a [default] if no component was present. */
+    public inline fun <reified T : GearyComponent> getOrSetPersisting(default: () -> T): T =
+        get<T>() ?: default().also { setPersisting(id) }
 
     /** Gets all the active components on this entity. */
     public inline fun getComponents(): Set<GearyComponent> = Engine.getComponentsFor(id)
@@ -97,45 +118,18 @@ public inline class GearyEntity(public val id: GearyEntityId) {
     /** Runs something on a component on this entity of type [T] if present. */
     public inline fun <reified T : GearyComponent> with(let: (T) -> Unit): Unit? = get<T>()?.let(let)
 
-    /** Checks whether this entity holds a component of type [T], without regards for whether or not it's active. */
-    public inline fun <reified T : GearyComponent> holds(): Boolean =
-        Engine.holdsComponentFor(id, componentId<T>())
+    /** Checks whether this entity has a component of type [T], regardless of whether or not it holds data. */
+    public inline fun <reified T : GearyComponent> has(): Boolean = has(componentId<T>())
 
-    /** Checks whether this entity has an active component of type [T] */
-    public inline fun <reified T : GearyComponent> has(): Boolean = Engine.hasComponentFor(
-        id,
-        componentId<T>()
-    )
+    /** Checks whether this entity has a [component], regardless of whether or not it holds data. */
+    public inline fun has(component: GearyComponentId): Boolean =
+        Engine.hasComponentFor(id, component)
 
-    /** Checks whether an entity holds all of a list of [components].
-     * @see holds */
-    public inline fun holdsAll(components: Collection<KClass<out GearyComponent>>): Boolean =
-        components.all { Engine.holdsComponentFor(id, componentId(it)) }
 
     /** Checks whether an entity has all of a list of [components].
      * @see has */
-    public inline fun hasAll(components: Collection<KClass<out GearyComponent>>): Boolean =
-        components.all { Engine.hasComponentFor(id, componentId(it)) }
-
-    /** Enables a component of type [T] on this entity.
-     * @see Engine.setFor */
-    public inline fun <reified T : GearyComponent> set() {
-        set(componentId<T>())
-    }
-
-    public inline fun set(component: GearyComponentId) {
-        Engine.setFor(id, component)
-    }
-
-    /** Disables a component of type [T] on this entity.
-     * @see Engine.unsetFor */
-    public inline fun <reified T : GearyComponent> unset() {
-        unset(componentId<T>())
-    }
-
-    public inline fun unset(component: GearyComponentId) {
-        Engine.unsetFor(id, component)
-    }
+    public inline fun hasAll(components: Collection<ComponentClass>): Boolean =
+        components.all { has(componentId(it)) }
 
     public operator fun component1(): GearyEntityId = id
 }

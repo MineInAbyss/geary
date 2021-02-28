@@ -23,7 +23,7 @@ public object PrefabManager {
     /** Registers a prefab with Geary. */
     public fun registerPrefab(name: PrefabKey, prefab: GearyEntity) {
         prefabs[name] = prefab
-        prefab.addComponent(name)
+        prefab.set(name)
     }
 
     /** Clears all stored [prefabs], but not [persistentTypes] */

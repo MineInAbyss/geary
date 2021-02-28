@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.ecs.components
 
-import com.mineinabyss.geary.ecs.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoscan
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.components.GearyPrefab.Companion.serializer
@@ -65,8 +65,8 @@ public class GearyPrefab(
     public fun decodeComponentsTo(entity: GearyEntity) {
         val (instance, persist) = deepCopied
         //order of addition determines which group overrides which
-        entity.addComponents(staticComponents + instance + this)
-        entity.addPersistingComponents(persist)
+        entity.setAll(staticComponents + instance + this)
+        entity.setAllPersisting(persist)
     }
 
     public fun instantiatePersistingComponents(): Set<GearyComponent> = deepCopied.persist + this

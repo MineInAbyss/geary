@@ -2,10 +2,10 @@ package com.mineinabyss.geary.minecraft.access
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
-import com.mineinabyss.geary.ecs.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.engine.entity
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
@@ -40,8 +40,8 @@ public object BukkitEntityAccess : Listener {
         entityMap[entity.uniqueId]?.let { return it }
 
         val createdEntity: GearyEntity = gearyEntity ?: Engine.entity {
-            addComponent<Entity>(entity)
-            addComponents(
+            set(entity)
+            setAll(
                 onBukkitEntityRegister.flatMap { mapping ->
                     mutableListOf<GearyComponent>().apply { mapping(entity) }
                 }
@@ -89,7 +89,7 @@ public object BukkitEntityAccess : Listener {
     public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
         val gearyEntity = getEntityOrNull(entity) ?: return
         unregisterEntity(entity)
-        gearyEntity.remove()
+        gearyEntity.removeEntity()
     }
 
     //TODO Is there anything we'd actually want to do with the ECS while the player sees their respawn screen?
