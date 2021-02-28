@@ -4,6 +4,8 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.engine.types.HOLDS_DATA
 
 public class Archetype(
@@ -17,7 +19,7 @@ public class Archetype(
 
     public val size: Int get() = ids.size
 
-    private val ids: MutableList<GearyEntityId> = mutableListOf()
+    internal val ids: MutableList<GearyEntityId> = mutableListOf()
 
     private val componentData: List<MutableList<GearyComponent>> = dataHoldingType.map { mutableListOf() }
 
@@ -133,4 +135,20 @@ public class Archetype(
         componentData.forEach { it.removeLastOrNull() }
         //TODO move iterators back one index so they dont just skip the entity we replaced
     }
+
+    internal class ArchetypeIterator(
+        private val archetype: Archetype,
+        private val type: GearyType
+    ) : Iterator<Pair<GearyEntity, List<GearyComponent>>> {
+        val typeIndices = type.map { archetype.indexOf(it) }
+        private var row = 0
+        override fun hasNext() = row < archetype.size
+        override fun next(): Pair<GearyEntity, List<GearyComponent>> {
+            return geary(archetype.ids[row]) to typeIndices.map {
+                 archetype.componentData[it][row]
+            }
+        }
+    }
+
+
 }

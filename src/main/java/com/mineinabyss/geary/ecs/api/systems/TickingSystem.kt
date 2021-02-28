@@ -1,8 +1,14 @@
 package com.mineinabyss.geary.ecs.api.systems
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.engine.Archetype
+import com.mineinabyss.geary.ecs.engine.plusSorted
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 /**
@@ -13,20 +19,51 @@ import kotlin.reflect.KProperty
  * @see [Engine.forEach]
  */
 public abstract class TickingSystem(public val interval: Long = 1) {
-    public abstract fun GearyEntity.tick()
+    private val match = mutableListOf<GearyComponentId>()
+    public val family: Family = Family(match)
+    internal val matchedArchetypes = mutableListOf<Archetype>()
+    private var currComponents = listOf<GearyComponent>()
 
-    private val match = mutableListOf<Accessor<*>>()
+    private var accessorIndex = 0
 
     public fun tick() {
-//TODO        Engine.getFamily(Family(match))
+        matchedArchetypes.forEach { arc ->
+            Archetype.ArchetypeIterator(arc, family.type).forEach { (entity, components) ->
+                currComponents = components
+                entity.tick()
+            }
+        }
     }
 
+    public abstract fun GearyEntity.tick()
 
-    public operator fun <T : GearyComponent> Accessor<T>.provideDelegate(
+    protected fun registerAccessor(component: GearyComponentId) {
+        match.plusSorted(component)
+    }
+
+    protected operator fun <T : GearyComponent> Accessor<T>.provideDelegate(
         thisRef: Any?,
         property: KProperty<*>
     ): AccessorReader<T> {
-        match += this
-        return AccessorReader(this)
+        val componentId =  componentId(kClass)
+
+        registerAccessor(componentId)
+
+        return AccessorReader(accessorIndex++)
     }
+
+    protected inline fun <reified T: GearyComponent> has(): GearyComponentId {
+        val componentId =  componentId<T>()
+        registerAccessor(componentId)
+        return componentId
+    }
+
+    public inner class AccessorReader<T : GearyComponent>(private val index: Int) : ReadOnlyProperty<Any?, T> {
+        override fun getValue(thisRef: Any?, property: KProperty<*>): T {
+            return currComponents[index] as T
+        }
+    }
+
+    public class Trait<T : GearyComponent>(kClass: KClass<T>) : Accessor<T>(kClass)
+
 }
