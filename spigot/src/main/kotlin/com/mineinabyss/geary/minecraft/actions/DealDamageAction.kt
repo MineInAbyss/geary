@@ -23,8 +23,8 @@ public data class DealDamageAction(
 ) : GearyAction() {
     override fun runOn(entity: GearyEntity): Boolean {
         val bukkit = entity.toBukkit<LivingEntity>() ?: return false
-        val ignoreArmor = false;
-        bukkit.health = (bukkit.health - damage.randomOrMin()).coerceAtLeast(minHealth)
+        val ignoreArmor = false
+        if (ignoreArmor) bukkit.health = (bukkit.health - damage.randomOrMin()).coerceAtLeast(minHealth) else bukkit.damage(damage.randomOrMin());
         return true
     }
 }
