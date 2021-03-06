@@ -6,7 +6,6 @@ import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
-import com.mineinabyss.geary.ecs.engine.types.HOLDS_DATA
 
 public class Archetype(
     public val type: GearyType,

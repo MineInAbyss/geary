@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.minecraft
 
 import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.systems.ExpiringComponentSystem
 import com.mineinabyss.geary.ecs.systems.PassiveActionsSystem
 import com.mineinabyss.geary.minecraft.access.BukkitEntityAccess
 import com.mineinabyss.geary.minecraft.components.PlayerComponent
@@ -41,7 +42,9 @@ public class GearyPlugin : JavaPlugin() {
             autoscanActions()
 
             systems(
-                PassiveActionsSystem
+                PassiveActionsSystem,
+                ExpiringComponentSystem,
+
             )
 
             bukkitEntityAccess {

@@ -70,7 +70,8 @@ public class GearyExtension(
     @InternalSerializationApi
     public fun autoscanActions(init: AutoScanner.() -> Unit = {}) {
         autoscan<GearyAction>(init) { kClass, serializer ->
-            action(kClass, serializer)
+            if (serializer != null)
+                action(kClass, serializer)
         }
     }
 
@@ -103,7 +104,10 @@ public class GearyExtension(
     @InternalSerializationApi
     public inline fun <reified T : Any> autoscan(
         init: AutoScanner.() -> Unit = {},
-        noinline addSubclass: SerializerRegistry<T> = { kClass, serializer -> subclass(kClass, serializer) }
+        noinline addSubclass: SerializerRegistry<T> = { kClass, serializer ->
+            if (serializer != null)
+                subclass(kClass, serializer)
+        }
     ) {
         AutoScanner().apply(init).registerSerializers(T::class, addSubclass)
     }
@@ -175,7 +179,10 @@ public class GearyExtension(
         @InternalSerializationApi
         public fun <T : Any> registerSerializers(
             kClass: KClass<T>,
-            addSubclass: SerializerRegistry<T> = { kClass, serializer -> subclass(kClass, serializer) },
+            addSubclass: SerializerRegistry<T> = { kClass, serializer ->
+                if (serializer != null)
+                    subclass(kClass, serializer)
+            },
         ) {
             val reflections = getReflections() ?: return
             this@GearyExtension.serializers {
@@ -186,7 +193,7 @@ public class GearyExtension(
                         .filter { !it.hasAnnotation<ExcludeAutoscan>() }
                         .filterIsInstance<KClass<T>>()
                         .map {
-                            this@polymorphic.addSubclass(it, it.serializer())
+                            this@polymorphic.addSubclass(it, it.serializerOrNull())
                             it.simpleName
                         }
                         .joinToString()
@@ -241,12 +248,12 @@ public class GearyExtension(
      */
     public fun <T : GearyComponent> PolymorphicModuleBuilder<T>.component(
         kClass: KClass<T>,
-        serializer: KSerializer<T>
+        serializer: KSerializer<T>?
     ) {
-        val serialName = serializer.descriptor.serialName
         //TODO make it more explicitly clear this function registers new components as entities
         Engine.getComponentIdForClass(kClass)
 
+        val serialName = serializer?.descriptor?.serialName ?: return
         if (!Formats.isRegistered(serialName)) {
             Formats.registerSerialName(serialName, kClass)
             subclass(kClass, serializer)
@@ -290,7 +297,9 @@ public class GearyExtension(
                     else -> error("Unknown file format $ext")
                 }
                 val type = format.decodeFromString(GearyEntitySerializer, file.readText())
-                PrefabManager.registerPrefab(PrefabKey(plugin.name, name), type)
+                val key = PrefabKey(plugin.name, name)
+                type.set(key)
+                PrefabManager.registerPrefab(key, type)
                 run?.invoke(name, type)
             } catch (e: Exception) {
                 logError("Error deserializing prefab: $name from ${file.path}")
@@ -299,7 +308,7 @@ public class GearyExtension(
         }
     }
 }
-public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>) -> Unit
+public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>?) -> Unit
 
 /**
  * Entry point to register a new [Plugin] with the Geary ECS.

@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalUnsignedTypes::class)
 
-package com.mineinabyss.geary.ecs.engine.types
+package com.mineinabyss.geary.ecs.engine
 
 public val INSTANCEOF: ULong = 1uL shl 63
 public val CHILDOF: ULong = 1uL shl 62

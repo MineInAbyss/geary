@@ -88,14 +88,14 @@ public open class GearyEngine : TickingEngine() {
 
     override fun addComponentFor(entity: GearyEntityId, component: GearyComponentId) {
         getOrAddRecord(entity).apply {
-            val record = archetype.addComponent(entity, this, component)
+            val record = archetype.addComponent(entity, this, HOLDS_DATA.inv() and component)
             typeMap[entity] = record ?: return
         }
     }
 
     override fun setComponentFor(entity: GearyEntityId, component: GearyComponentId, data: GearyComponent) {
         getOrAddRecord(entity).apply {
-            val record = archetype.setComponent(entity, this, component, data)
+            val record = archetype.setComponent(entity, this, HOLDS_DATA or component, data)
             typeMap[entity] = record ?: return
         }
     }
