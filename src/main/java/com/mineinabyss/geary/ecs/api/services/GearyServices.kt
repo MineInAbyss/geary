@@ -5,7 +5,7 @@ import kotlin.reflect.KClass
 public object GearyServices {
     private val serviceGetters = mutableListOf<GearyServiceProvider>()
 
-    internal fun setServiceProvider(serviceProvider: GearyServiceProvider) {
+    public fun setServiceProvider(serviceProvider: GearyServiceProvider) {
         serviceGetters.clear()
         registerServiceProvider(serviceProvider)
     }
