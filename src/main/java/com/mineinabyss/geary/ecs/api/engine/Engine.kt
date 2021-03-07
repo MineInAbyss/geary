@@ -5,8 +5,8 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
+import com.mineinabyss.geary.ecs.api.services.gearyService
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
-import com.mineinabyss.idofront.plugin.getService
 import kotlin.reflect.KClass
 
 /**
@@ -15,8 +15,7 @@ import kotlin.reflect.KClass
  * Its companion object gets a service via Bukkit as its implementation.
  */
 public interface Engine {
-    //TODO stop relying on spigot here for service
-    public companion object : Engine by getService()
+    public companion object : Engine by gearyService()
 
     /** Get the next free ID for use with the ECS. */
     public fun getNextId(): GearyEntityId

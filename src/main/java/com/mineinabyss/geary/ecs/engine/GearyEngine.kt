@@ -31,7 +31,7 @@ import kotlin.reflect.KClass
  * currently quite inefficient, but optional.
  */
 public open class GearyEngine : TickingEngine() {
-    private val typeMap = mutableMapOf<GearyEntityId, Record>()
+    internal val typeMap = mutableMapOf<GearyEntityId, Record>()
     private var currId: GearyEntityId = 0uL
 
     //TODO there's likely a more performant option
@@ -102,17 +102,20 @@ public open class GearyEngine : TickingEngine() {
 
     override fun removeComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean {
         return getRecord(entity)?.apply {
-            val record = archetype.removeComponent(entity, this, component)
+            val record = archetype.removeComponent(entity, this, component or HOLDS_DATA)
+                ?: archetype.removeComponent(entity, this, component)
             typeMap[entity] = record ?: return false
         } != null
     }
 
-    @Suppress("UNCHECKED_CAST")
     override fun getComponentFor(entity: GearyEntityId, component: GearyComponentId): GearyComponent? =
-        getRecord(entity)?.apply { archetype[row, component] }
+        getRecord(entity)?.run { archetype[row, component or HOLDS_DATA] }
 
     override fun hasComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean =
-        getRecord(entity)?.archetype?.type?.contains(component) ?: false
+        getRecord(entity)?.archetype?.type?.run {
+            //       component  or the version with the HOLDS_DATA bit flipped
+            contains(component) || contains(component xor HOLDS_DATA)
+        } ?: false
 
     //TODO might be a smarter way of storing removed entities as an implicit list within a larger list of entities eventually
     override fun removeEntity(entity: GearyEntityId) {
@@ -133,5 +136,6 @@ public open class GearyEngine : TickingEngine() {
     public override fun getType(entity: GearyEntityId): GearyType = typeMap[entity]?.archetype?.type ?: emptyList()
 
     private fun getRecord(entity: GearyEntityId) = typeMap[entity]
-    private fun getOrAddRecord(entity: GearyEntityId) = typeMap.getOrPut(entity, { Record(root, -1) })
+    private fun getOrAddRecord(entity: GearyEntityId) =
+        typeMap.getOrPut(entity, { root.addEntityWithData(entity, listOf()) })
 }

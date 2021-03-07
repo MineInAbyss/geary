@@ -34,6 +34,7 @@ allprojects {
         compileOnly "org.jetbrains.kotlinx:kotlinx-serialization-cbor"
 
         implementation "com.mineinabyss:idofront:0.5.6"
+
     }
 
     compileKotlin {
@@ -72,9 +73,18 @@ dependencies {
         exclude group: 'org.jetbrains.kotlin'
     }
 
+    testImplementation(platform('org.junit:junit-bom:5.7.1'))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testImplementation 'io.kotest:kotest-runner-junit5:4.4.2'
+    testImplementation 'io.kotest:kotest-property:4.4.2'
+    testImplementation "io.mockk:mockk:1.10.6"
 //    kapt 'com.bennyhuo.kotlin:deepcopy-compiler:1.3.72'
 //    implementation 'com.bennyhuo.kotlin:deepcopy-runtime:1.3.72'
 //    implementation 'net.onedaybeard.artemis:artemis-odb:2.3.0'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 publishing {

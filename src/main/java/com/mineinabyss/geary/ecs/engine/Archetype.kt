@@ -7,7 +7,7 @@ import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
 
-public class Archetype(
+public data class Archetype(
     public val type: GearyType,
 ) {
     /** Component ids in the type that are to hold data */
@@ -84,7 +84,15 @@ public class Archetype(
         component: GearyComponentId,
         data: GearyComponent
     ): Record? {
-        if (component and HOLDS_DATA != 0uL) return null
+        // if component should NOT hold data, stop here
+        if (component and HOLDS_DATA == 0uL) return null
+
+        //if component was added but not set, remove the old component before adding this one
+        val addId = component and HOLDS_DATA.inv()
+        if (addId in type) {
+            val removedRecord = removeComponent(entity, record, addId)!!
+            return removedRecord.archetype.setComponent(entity, removedRecord, component, data)
+        }
 
         //If component already in this type, just update the data
         val addIndex = indexOf(component)
@@ -99,7 +107,6 @@ public class Archetype(
             add(newCompIndex, data)
         }
 
-        removeEntity(record.row)
         return moveTo.addEntityWithData(entity, componentData).also { removeEntity(record.row) }
     }
 
@@ -144,10 +151,8 @@ public class Archetype(
         override fun hasNext() = row < archetype.size
         override fun next(): Pair<GearyEntity, List<GearyComponent>> {
             return geary(archetype.ids[row]) to typeIndices.map {
-                 archetype.componentData[it][row]
+                archetype.componentData[it][row]
             }
         }
     }
-
-
 }
