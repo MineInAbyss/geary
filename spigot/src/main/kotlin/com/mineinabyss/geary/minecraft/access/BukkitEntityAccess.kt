@@ -6,9 +6,13 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.components.PrefabKey
+import com.mineinabyss.geary.ecs.entities.addPrefab
+import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
+import org.bukkit.craftbukkit.v1_16_R2.entity.CraftEntity
 import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -39,7 +43,8 @@ public object BukkitEntityAccess : Listener {
         //if the entity is already registered, return it
         entityMap[entity.uniqueId]?.let { return it }
 
-        val createdEntity: GearyEntity = gearyEntity ?: Engine.entity {
+        val gearyEntity: GearyEntity = gearyEntity ?: Engine.entity {}
+        gearyEntity.apply {
             set<Entity>(entity)
             setAll(
                 onBukkitEntityRegister.flatMap { mapping ->
@@ -47,14 +52,21 @@ public object BukkitEntityAccess : Listener {
                 }
             )
         }
+        //TODO use mobzy api once ready
+        val typeName = (entity as CraftEntity).handle.entityType.f().removePrefix("entity.minecraft.")
+
+        //TODO extension function to get prefab key from entity, including correct namespace
+        PrefabManager[PrefabKey("Mobzy", typeName)]?.let {
+            gearyEntity.addPrefab(it)
+        }
 
         val pdc = entity.persistentDataContainer
         if (pdc.hasComponentsEncoded)
-            createdEntity.decodeComponentsFrom(pdc)
+            gearyEntity.decodeComponentsFrom(pdc)
 
-        entityMap[entity.uniqueId] = createdEntity
+        entityMap[entity.uniqueId] = gearyEntity
 
-        return createdEntity
+        return gearyEntity
     }
 
     private fun unregisterEntity(entity: Entity): GearyEntity? {

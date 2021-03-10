@@ -6,6 +6,7 @@ import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.systems.SystemManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.entities.children
 import com.mineinabyss.idofront.messaging.logError
@@ -50,7 +51,10 @@ public open class GearyEngine : TickingEngine() {
     //TODO Proper pipeline with different stages
     protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
 
-    override fun addSystem(system: TickingSystem): Boolean = registeredSystems.add(system)
+    override fun addSystem(system: TickingSystem): Boolean {
+        SystemManager.registerSystem(system)
+        return registeredSystems.add(system)
+    }
 
     //TODO support suspending functions for systems
     // perhaps async support in the future

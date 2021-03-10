@@ -14,7 +14,7 @@ public data class Archetype(
     private val dataHoldingType = type.filter { it and HOLDS_DATA != 0uL }
 
     //TODO find internal index more efficiently, currently O(N)
-    private fun indexOf(id: GearyComponentId): Int = type.indexOf(id)
+    private fun indexOf(id: GearyComponentId): Int = dataHoldingType.indexOf(id)
 
     public val size: Int get() = ids.size
 
@@ -146,13 +146,15 @@ public data class Archetype(
         private val archetype: Archetype,
         private val type: GearyType
     ) : Iterator<Pair<GearyEntity, List<GearyComponent>>> {
-        val typeIndices = type.map { archetype.indexOf(it) }
+        private val typeDataIndices = type
+            .filter{ it and HOLDS_DATA != 0uL }
+            .map { archetype.indexOf(it) }
         private var row = 0
         override fun hasNext() = row < archetype.size
         override fun next(): Pair<GearyEntity, List<GearyComponent>> {
-            return geary(archetype.ids[row]) to typeIndices.map {
+            return geary(archetype.ids[row]) to typeDataIndices.map {
                 archetype.componentData[it][row]
-            }
+            }.also { row++ }
         }
     }
 }

@@ -4,6 +4,7 @@ import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
@@ -62,5 +63,22 @@ internal class GearyEngineTest {
             add<String>()
             set("Test")
         }.type.getArchetype() shouldBe root + (componentId<String>() or HOLDS_DATA)
+    }
+
+    @Test
+    fun getComponents() {
+        Engine.entity {
+            set("Test")
+            set(1)
+            add<Long>()
+        }.getComponents().shouldContainExactly("Test", 1)
+    }
+
+    @Test
+    fun setAll() {
+        Engine.entity {
+            setAll(listOf("Test", 1))
+            add<Long>()
+        }.getComponents().shouldContainExactly("Test", 1)
     }
 }

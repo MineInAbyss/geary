@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.components.*
+import kotlin.reflect.KClass
 
 /**
  * A wrapper around [GearyEntityId] that gets inlined to just a long (no performance degradation since no boxing occurs).
@@ -26,8 +27,8 @@ public inline class GearyEntity(public val id: GearyEntityId) {
     }
 
     /** Sets a component that holds data for this entity */
-    public inline fun <reified T: GearyComponent> set(component: T) {
-        Engine.setComponentFor(id, componentId(T::class), component)
+    public inline fun <reified T: GearyComponent> set(component: T, kClass: KClass<out T> = T::class) {
+        Engine.setComponentFor(id, componentId(kClass), component)
     }
 
     @Deprecated("Likely unintentionally using list as a single component", ReplaceWith("setAll()"))
@@ -35,7 +36,7 @@ public inline class GearyEntity(public val id: GearyEntityId) {
 
     /** Sets components that hold data for this entity */
     public fun setAll(components: Collection<GearyComponent>) {
-        components.forEach { set(it) }
+        components.forEach { set(it, it::class) }
     }
 
     /** Adds a list of [component] to this entity */

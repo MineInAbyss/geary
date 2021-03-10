@@ -7,15 +7,16 @@ import com.mineinabyss.geary.ecs.api.GearyType
 public fun family(init: FamilyBuilder.() -> Unit): Family = FamilyBuilder().apply(init).build()
 
 public class FamilyBuilder {
-    private var match: List<GearyComponentId> = listOf()
-    private var andNot: List<GearyComponentId> = listOf()
+    public var match: MutableList<GearyComponentId> = mutableListOf()
+    public var andNot: MutableList<GearyComponentId> = mutableListOf()
+
 
     public fun match(vararg accessors: GearyComponentId) {
-        match = accessors.toList()
+        match = accessors.toMutableList()
     }
 
     public fun andNot(vararg accessors: GearyComponentId) {
-        andNot = accessors.toList()
+        andNot = accessors.toMutableList()
     }
 
     public fun build(): Family {

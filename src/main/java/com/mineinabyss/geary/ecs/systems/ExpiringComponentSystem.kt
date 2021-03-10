@@ -8,9 +8,9 @@ public object ExpiringComponentSystem : TickingSystem() {
 
     override fun GearyEntity.tick() {
         //TODO implement once traits are in
-        /*if (expiry.trait.timeOver()) {
-            removeComponent(expiry.component)
-            removeComponent(expiry.trait)
-        }*/
+//        if (expiry.data.timeOver()) {
+//            remove(expiry.component.id)
+//            remove(expiry.trait.id)
+//        }
     }
 }

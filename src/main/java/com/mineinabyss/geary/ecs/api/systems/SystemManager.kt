@@ -9,10 +9,12 @@ internal object SystemManager {
     private val archetypes = mutableListOf<Archetype>()
 
     fun registerSystem(system: TickingSystem) {
+        system.matchedArchetypes += getArchetypesMatching(system.family)
         systems += system
     }
 
     fun assignArchetypeToSystems(archetype: Archetype) {
+        archetypes += archetype
         systems.filter { archetype.type in it.family }.forEach {
             it.matchedArchetypes += archetype
         }
