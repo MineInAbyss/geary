@@ -5,7 +5,6 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '6.1.0'
     id 'org.jetbrains.kotlin.jvm'
     id 'org.jetbrains.kotlin.plugin.serialization'
-    id 'io.github.0ffz.github-packages' version '1.2.0'
 }
 
 allprojects {
@@ -26,14 +25,14 @@ allprojects {
     repositories {
         mavenCentral()
         jcenter()
-        maven githubPackage.invoke("MineInAbyss/KotlinSpice")
+        maven { url 'https://repo.mineinabyss.com/releases'}
     }
 
     dependencies {
-        compileOnly platform("com.mineinabyss:kotlinspice:$kotlin_version-11")
+        compileOnly platform("com.mineinabyss:kotlinspice:$kotlin_version+")
         compileOnly "org.jetbrains.kotlinx:kotlinx-serialization-cbor"
 
-        implementation "com.mineinabyss:idofront:0.5.6"
+        implementation "com.mineinabyss:idofront:0.5.8"
 
     }
 
@@ -89,10 +88,16 @@ test {
 
 publishing {
     repositories {
-        maven githubPackagePublish.invoke("MineInAbyss/Geary")
+        maven {
+            url = "https://repo.mineinabyss.com/releases"
+            credentials {
+                username = findProperty('mineinabyssMavenUsername')
+                password = findProperty('mineinabyssMavenPassword')
+            }
+        }
     }
     publications {
-        gpr(MavenPublication) {
+        maven(MavenPublication) {
             artifactId = "geary"
             from components.java
         }
