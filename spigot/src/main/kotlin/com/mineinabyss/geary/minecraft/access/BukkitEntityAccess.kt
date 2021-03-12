@@ -10,8 +10,10 @@ import com.mineinabyss.geary.ecs.components.PrefabKey
 import com.mineinabyss.geary.ecs.entities.addPrefab
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
+import com.mineinabyss.geary.minecraft.events.GearyMinecraftLoadEvent
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
+import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.nms.entity.typeName
 import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
@@ -63,6 +65,8 @@ public object BukkitEntityAccess : Listener {
             gearyEntity.decodeComponentsFrom(pdc)
 
         entityMap[entity.uniqueId] = gearyEntity
+
+        GearyMinecraftLoadEvent(gearyEntity).call()
 
         return gearyEntity
     }

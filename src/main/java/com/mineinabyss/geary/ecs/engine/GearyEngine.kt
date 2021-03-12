@@ -82,7 +82,7 @@ public open class GearyEngine : TickingEngine() {
 
 
     @Synchronized
-    override fun getNextId(): GearyEntityId = if (removedEntities.isNotEmpty()) removedEntities.pop() else ++currId
+    override fun getNextId(): GearyEntityId = if (removedEntities.isNotEmpty()) removedEntities.pop() else currId++
 
     override fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent> =
         getRecord(entity)?.run {
@@ -138,6 +138,10 @@ public open class GearyEngine : TickingEngine() {
     }
 
     public override fun getType(entity: GearyEntityId): GearyType = typeMap[entity]?.archetype?.type ?: emptyList()
+
+    override fun setRecord(entity: GearyEntityId, record: Record) {
+        typeMap[entity] = record
+    }
 
     private fun getRecord(entity: GearyEntityId) = typeMap[entity]
     private fun getOrAddRecord(entity: GearyEntityId) =

@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.engine.type
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -80,5 +81,31 @@ internal class GearyEngineTest {
             setAll(listOf("Test", 1))
             add<Long>()
         }.getComponents().shouldContainExactly("Test", 1)
+    }
+
+    @Nested
+    inner class EntityRemoval {
+        @Test
+        fun `entity removal and reuse`() {
+            //TODO I hate having to do an offset like this, figure out how to reset this Engine singleton via reflection
+            val offset = Engine.getNextId() + 1uL
+            repeat(10) {
+                Engine.entity {
+                    add(100uL)
+                }
+            }
+
+            // We filled up ids 0..9, so next should be at 10
+            Engine.getNextId() shouldBe offset + 10uL
+
+            (0..9).forEach {
+                Engine.removeEntity(offset + it.toULong())
+            }
+
+            // Since we removed the first 10 entities, the last entity we removed (at 9) should be the next one that's
+            // ready to be freed up, then 8, etc...
+            Engine.getNextId() shouldBe offset + 9uL
+            Engine.getNextId() shouldBe offset + 8uL
+        }
     }
 }

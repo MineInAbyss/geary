@@ -4,6 +4,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
+import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
 
@@ -135,10 +136,13 @@ public data class Archetype(
 
     @Synchronized
     internal fun removeEntity(row: Int) {
-        ids[row] = ids.last()
+        val replacement = ids.last()
+        ids[row] = replacement
         componentData.forEach { it[row] = componentData.last() }
         ids.removeLastOrNull()
         componentData.forEach { it.removeLastOrNull() }
+        //TODO I'd like this to perhaps be independent of engine in case we ever want more than one at a time
+        Engine.setRecord(replacement, Record(this, row))
         //TODO move iterators back one index so they dont just skip the entity we replaced
     }
 

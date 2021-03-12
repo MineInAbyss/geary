@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.services.gearyService
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
+import com.mineinabyss.geary.ecs.engine.Record
 import kotlin.reflect.KClass
 
 /**
@@ -49,4 +50,6 @@ public interface Engine {
     public fun getComponentIdForClass(kClass: KClass<*>): GearyComponentId
 
     public fun getType(entity: GearyEntityId): GearyType
+
+    public fun setRecord(entity: GearyEntityId, record: Record)
 }

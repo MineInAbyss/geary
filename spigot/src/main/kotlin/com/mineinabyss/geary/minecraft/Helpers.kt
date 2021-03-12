@@ -3,9 +3,12 @@ package com.mineinabyss.geary.minecraft
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.components.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
+import com.mineinabyss.geary.minecraft.access.geary
 import com.mineinabyss.geary.minecraft.components.BukkitEntityType
 import com.mineinabyss.geary.minecraft.config.GearyConfig
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
+import com.mineinabyss.geary.minecraft.events.GearyMinecraftSpawnEvent
+import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.nms.aliases.NMSEntityType
 import com.mineinabyss.idofront.nms.spawnEntity
@@ -41,11 +44,12 @@ public fun Location.spawnGeary(prefab: PrefabKey): Entity? {
 }
 
 public fun Location.spawnGeary(prefab: GearyEntity): Entity? {
-    prefab.get<NMSEntityType<*>>()?.let { type ->
-        return spawnEntity(type, spawnReason = CreatureSpawnEvent.SpawnReason.CUSTOM)
-    }
-    prefab.get<BukkitEntityType>()?.type?.let { type ->
-        return spawn(type)
-    }
-    return null
+    val entity = prefab.get<NMSEntityType<*>>()?.let { type ->
+        spawnEntity(type, spawnReason = CreatureSpawnEvent.SpawnReason.CUSTOM)
+    } ?: prefab.get<BukkitEntityType>()?.type?.let { type ->
+        spawn(type)
+    } ?: return null
+
+    GearyMinecraftSpawnEvent(geary(entity)).call()
+    return entity
 }
