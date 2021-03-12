@@ -12,7 +12,7 @@ import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
-import org.bukkit.craftbukkit.v1_16_R2.entity.CraftEntity
+import com.mineinabyss.idofront.nms.entity.typeName
 import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -39,11 +39,11 @@ public object BukkitEntityAccess : Listener {
     }
 
 
-    public fun <T : Entity> registerEntity(entity: T, gearyEntity: GearyEntity? = null): GearyEntity {
+    public fun <T : Entity> registerEntity(entity: T, attachTo: GearyEntity? = null): GearyEntity {
         //if the entity is already registered, return it
         entityMap[entity.uniqueId]?.let { return it }
 
-        val gearyEntity: GearyEntity = gearyEntity ?: Engine.entity {}
+        val gearyEntity: GearyEntity = attachTo ?: Engine.entity {}
         gearyEntity.apply {
             set<Entity>(entity)
             setAll(
@@ -52,11 +52,9 @@ public object BukkitEntityAccess : Listener {
                 }
             )
         }
-        //TODO use mobzy api once ready
-        val typeName = (entity as CraftEntity).handle.entityType.f().removePrefix("entity.minecraft.")
 
         //TODO extension function to get prefab key from entity, including correct namespace
-        PrefabManager[PrefabKey("Mobzy", typeName)]?.let {
+        PrefabManager[PrefabKey("Mobzy", entity.typeName)]?.let {
             gearyEntity.addPrefab(it)
         }
 

@@ -30,6 +30,7 @@ dependencies {
     // For now leave as compile only since this dep is always present and having 2 copies was causing issues.
     compileOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
+    implementation "com.mineinabyss:idofront-nms:0.5.8"
 //    compileOnly "org.spigotmc:spigot-api:$server_version"
     compileOnly "com.github.okkero:skedule"
 

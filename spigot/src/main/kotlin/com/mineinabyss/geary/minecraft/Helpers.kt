@@ -1,13 +1,18 @@
 package com.mineinabyss.geary.minecraft
 
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.components.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
+import com.mineinabyss.geary.minecraft.components.BukkitEntityType
 import com.mineinabyss.geary.minecraft.config.GearyConfig
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
 import com.mineinabyss.idofront.messaging.broadcast
-import net.minecraft.server.v1_16_R2.EntityTypes
+import com.mineinabyss.idofront.nms.aliases.NMSEntityType
+import com.mineinabyss.idofront.nms.spawnEntity
+import com.mineinabyss.idofront.spawning.spawn
 import org.bukkit.Location
 import org.bukkit.entity.Entity
+import org.bukkit.event.entity.CreatureSpawnEvent
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.java.JavaPlugin
@@ -32,6 +37,15 @@ public var PersistentDataContainer.hasComponentsEncoded: Boolean
     }
 
 public fun Location.spawnGeary(prefab: PrefabKey): Entity? {
-    val type = PrefabManager[prefab]?.get<EntityTypes<*>>()
-    return TODO()
+    return spawnGeary(PrefabManager[prefab] ?: return null)
+}
+
+public fun Location.spawnGeary(prefab: GearyEntity): Entity? {
+    prefab.get<NMSEntityType<*>>()?.let { type ->
+        return spawnEntity(type, spawnReason = CreatureSpawnEvent.SpawnReason.CUSTOM)
+    }
+    prefab.get<BukkitEntityType>()?.type?.let { type ->
+        return spawn(type)
+    }
+    return null
 }
