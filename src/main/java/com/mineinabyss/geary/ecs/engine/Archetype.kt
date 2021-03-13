@@ -30,14 +30,13 @@ public data class Archetype(
         return componentData[compIndex][row]
     }
 
-
     //edges
     //TODO can we use a smarter structure than map here?
     internal val add = mutableMapOf<GearyComponentId, Archetype>()
     internal val remove = mutableMapOf<GearyComponentId, Archetype>()
 
     public operator fun plus(id: GearyComponentId): Archetype {
-        return add[id] ?: type.plusSorted(id).getArchetype()
+        return add[id] ?: type.plus(id).getArchetype()
     }
 
     public operator fun minus(id: GearyComponentId): Archetype {
@@ -122,8 +121,10 @@ public data class Archetype(
         val moveTo = this - component
 
         val componentData = mutableListOf<GearyComponent>()
+
+        val skipData = indexOf(component)
         this.componentData.forEachIndexed { i, it ->
-            if (type[i] != component)
+            if (i != skipData)
                 componentData.add(it[record.row])
         }
 
@@ -151,7 +152,7 @@ public data class Archetype(
         private val type: GearyType
     ) : Iterator<Pair<GearyEntity, List<GearyComponent>>> {
         private val typeDataIndices = type
-            .filter{ it and HOLDS_DATA != 0uL }
+            .filter { it and HOLDS_DATA != 0uL }
             .map { archetype.indexOf(it) }
         private var row = 0
         override fun hasNext() = row < archetype.size

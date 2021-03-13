@@ -63,7 +63,7 @@ public val GearyEntity.parents: Set<GearyEntity>
     }
 
 public val GearyEntity.children: List<GearyEntity>
-    get() = SystemManager.getEntitiesMatching(Family(listOf(CHILDOF or id)))
+    get() = SystemManager.getEntitiesMatching(Family(sortedSetOf(CHILDOF or id)))
 
 
 /** Adds a [prefab] entity to this entity.  */

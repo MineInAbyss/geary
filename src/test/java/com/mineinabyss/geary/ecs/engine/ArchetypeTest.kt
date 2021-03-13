@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.api.GearyComponentId
+import com.mineinabyss.geary.ecs.api.GearyType
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -11,12 +12,12 @@ internal class ArchetypeTest {
     inner class MovingBetweenArchetypes {
         @Test
         fun `empty type equals empty archetype`() {
-            listOf<GearyComponentId>().getArchetype() shouldBe root
+            GearyType().getArchetype() shouldBe root
         }
 
         @Test
         fun `get type equals archetype adding`() {
-            root + 1u + 2u + 3u - 1u + 1u shouldBe listOf<GearyComponentId>(1u, 2u, 3u).getArchetype()
+            root + 1u + 2u + 3u - 1u + 1u shouldBe sortedSetOf<GearyComponentId>(1u, 2u, 3u).getArchetype()
         }
 
         @Test

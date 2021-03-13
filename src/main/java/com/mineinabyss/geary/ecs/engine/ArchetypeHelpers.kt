@@ -13,14 +13,17 @@ public fun GearyType.getArchetype(): Archetype {
 }
 
 private fun createArchetype(prevNode: Archetype, componentEdge: GearyComponentId): Archetype {
-    val arc = Archetype(prevNode.type.plusSorted(componentEdge))
+    val arc = Archetype(prevNode.type.plus(componentEdge))
     arc.remove[componentEdge] = prevNode
     prevNode.add[componentEdge] = arc
     SystemManager.assignArchetypeToSystems(arc)
     return arc
 }
 
-internal val root: Archetype = Archetype(listOf())
+internal val root: Archetype = Archetype(GearyType())
 
-//TODO this should be using binary search to find where to add the component. Find a sorted immutable list.
-public fun GearyType.plusSorted(id: GearyComponentId): GearyType = (this + id).sorted()
+public fun GearyType.plus(id: GearyComponentId): GearyType =
+    GearyType(this).apply { add(id) }
+
+public fun GearyType.minus(id: GearyComponentId): GearyType =
+    GearyType(this).apply { remove(id) }

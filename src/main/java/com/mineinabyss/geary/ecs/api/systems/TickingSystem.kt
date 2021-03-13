@@ -28,7 +28,7 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     private var accessorIndex = 0
 
     //idea is match works as a builder and family becomes immutable upon first access
-    public val family: Family by lazy { Family(match.toList()) } //TODO make gearytype sortedSet
+    public val family: Family by lazy { Family(match) } //TODO make gearytype sortedSet
 
     public fun tick() {
         matchedArchetypes.forEach { arc ->
