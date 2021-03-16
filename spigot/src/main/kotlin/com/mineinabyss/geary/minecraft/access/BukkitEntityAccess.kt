@@ -103,6 +103,8 @@ public object BukkitEntityAccess : Listener {
     public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
         val gearyEntity = getEntityOrNull(entity) ?: return
         unregisterEntity(entity)
+        //FIXME this gets called before saveData so the entity cannot be accessed from there
+        // perhaps we could save data here?
         gearyEntity.removeEntity()
     }
 

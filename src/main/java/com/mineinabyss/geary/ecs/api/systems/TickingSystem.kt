@@ -21,11 +21,11 @@ import kotlin.reflect.KProperty
  */
 public abstract class TickingSystem(public val interval: Long = 1) {
     private val match = sortedSetOf<GearyComponentId>()
+    private val dataHolding = sortedSetOf<GearyComponentId>()
     internal val matchedArchetypes = mutableListOf<Archetype>()
     private var currComponents = listOf<GearyComponent>()
 
     private val traits = sortedSetOf<GearyComponentId>()
-    private var accessorIndex = 0
 
     //idea is match works as a builder and family becomes immutable upon first access
     public val family: Family by lazy { Family(match) } //TODO make gearytype sortedSet
@@ -51,11 +51,12 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     public inline fun <reified T : GearyComponent> get(): Accessor<T> = Accessor(T::class)
 
     public inner class Accessor<T : GearyComponent>(kClass: KClass<T>) : ReadOnlyProperty<Any?, T> {
-        private val index: Int = accessorIndex++
+        private val componentId = componentId(kClass) or HOLDS_DATA
+        private val index: Int by lazy { dataHolding.indexOf(componentId) }
 
         init {
-            val componentId = componentId(kClass) or HOLDS_DATA
             registerAccessor(componentId)
+            dataHolding.add(componentId)
         }
 
         //TODO implement contracts for smart cast if Kotlin ever does so for lazy (this should essentially be identical)
