@@ -27,7 +27,7 @@ public inline class GearyEntity(public val id: GearyEntityId) {
     }
 
     /** Sets a component that holds data for this entity */
-    public inline fun <reified T: GearyComponent> set(component: T, kClass: KClass<out T> = T::class) {
+    public inline fun <reified T : GearyComponent> set(component: T, kClass: KClass<out T> = T::class) {
         Engine.setComponentFor(id, componentId(kClass), component)
     }
 
@@ -112,6 +112,7 @@ public inline class GearyEntity(public val id: GearyEntityId) {
     public inline fun getPersistingComponents(): Set<GearyComponent> =
         get<PersistingComponents>()?.persisting?.intersect(getComponents()) ?: emptySet()
 
+    //TODO update javadoc
     /** Gets all the active non-persisting components on this entity. */
     public inline fun getInstanceComponents(): Set<GearyComponent> =
         getComponents() - (get<PersistingComponents>()?.persisting ?: emptySet())

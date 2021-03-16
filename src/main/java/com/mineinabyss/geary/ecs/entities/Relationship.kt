@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.api.systems.Family
 import com.mineinabyss.geary.ecs.api.systems.SystemManager
+import com.mineinabyss.geary.ecs.components.CopyToInstances
 import com.mineinabyss.geary.ecs.engine.CHILDOF
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.INSTANCEOF
@@ -70,6 +71,9 @@ public val GearyEntity.children: List<GearyEntity>
 public fun GearyEntity.addPrefab(prefab: GearyEntity) {
     add(prefab.id or INSTANCEOF)
     setAll(prefab.getComponents())
+    prefab.with<CopyToInstances> {
+        it.decodeComponentsTo(this)
+    }
 }
 
 /** Adds a [prefab] entity to this entity.  */

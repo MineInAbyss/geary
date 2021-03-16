@@ -1,14 +1,7 @@
 package com.mineinabyss.geary.minecraft.store
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.components.GearyPrefab
 import org.bukkit.persistence.PersistentDataContainer
-
-
-/** Encodes this [GearyPrefab]'s persisting components to a [PersistentDataContainer]. */
-public fun GearyPrefab.encodeComponentsTo(pdc: PersistentDataContainer) {
-    pdc.encodeComponents(instantiatePersistingComponents())
-}
 
 /** Encodes this entity's persisting components into a [PersistentDataContainer] */
 public fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
