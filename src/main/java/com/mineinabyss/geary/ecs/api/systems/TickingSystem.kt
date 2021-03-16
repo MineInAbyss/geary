@@ -31,14 +31,12 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     public val family: Family by lazy { Family(match) } //TODO make gearytype sortedSet
 
     public fun tick() {
-        matchedArchetypes.forEach { arc ->
-            traits.map {  }
+        // If any archetypes get added here while running through the system we dont want those entities to be iterated
+        // right now, since they are most likely the entities involved with the current tick. To avoid this and
+        // concurrent modifications, we make a copy of the list before iterating.
+        matchedArchetypes.toList().forEach { arc ->
             Archetype.ArchetypeIterator(arc, family.type).forEach { (entity, components) ->
                 currComponents = components
-                traits.forEach { trait ->
-
-                    entity.tick()
-                }
                 entity.tick()
             }
         }

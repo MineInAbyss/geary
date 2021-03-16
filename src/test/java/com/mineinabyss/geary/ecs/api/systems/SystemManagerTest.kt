@@ -71,4 +71,31 @@ internal class SystemManagerTest {
             system.tick()
         }
     }
+
+    @Nested
+    inner class ConcurrentModificationTests {
+        var ran = 0
+        val removingSystem = object : TickingSystem() {
+            val string by get<String>()
+
+            override fun GearyEntity.tick() {
+                remove<String>()
+                getComponents() shouldBe setOf()
+                ran++
+            }
+        }
+
+        init {
+            SystemManager.registerSystem(removingSystem)
+        }
+
+//        @Test
+        fun `concurrent modification`() {
+            val entities = (0 until 10).map { Engine.entity { set("Test") } }
+            val total = SystemManager.getEntitiesMatching(Family(sortedSetOf(componentId<String>() or HOLDS_DATA))).count()
+            removingSystem.tick()
+            ran shouldBe total
+            entities.map { it.getComponents() } shouldBe entities.map { setOf() }
+        }
+    }
 }

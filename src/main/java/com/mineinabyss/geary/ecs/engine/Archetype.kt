@@ -139,7 +139,7 @@ public data class Archetype(
     internal fun removeEntity(row: Int) {
         val replacement = ids.last()
         ids[row] = replacement
-        componentData.forEach { it[row] = componentData.last() }
+        componentData.forEach { it[row] = it.last() }
         ids.removeLastOrNull()
         componentData.forEach { it.removeLastOrNull() }
         //TODO I'd like this to perhaps be independent of engine in case we ever want more than one at a time
