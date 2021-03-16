@@ -13,6 +13,7 @@ import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
 import com.mineinabyss.geary.minecraft.events.GearyMinecraftLoadEvent
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
+import com.mineinabyss.geary.minecraft.store.encodeComponents
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.nms.entity.typeName
 import org.bukkit.entity.Entity
@@ -102,9 +103,9 @@ public object BukkitEntityAccess : Listener {
     @EventHandler
     public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
         val gearyEntity = getEntityOrNull(entity) ?: return
+        //TODO some way of knowing if this entity is permanently removed
+        entity.encodeComponents(gearyEntity.getPersistingComponents())
         unregisterEntity(entity)
-        //FIXME this gets called before saveData so the entity cannot be accessed from there
-        // perhaps we could save data here?
         gearyEntity.removeEntity()
     }
 
