@@ -153,6 +153,7 @@ public data class Archetype(
         if (lastIndex != row) {
             //TODO I'd like this to perhaps be independent of engine in case we ever want more than one at a time
             Engine.setRecord(replacement, Record(this, row))
+            movedRows.remove(lastIndex)
             movedRows.add(row)
         }
     }
@@ -161,6 +162,9 @@ public data class Archetype(
         private val archetype: Archetype,
         private val type: GearyType
     ) : Iterator<Pair<GearyEntity, List<GearyComponent>>> {
+        init {
+            archetype.movedRows.clear()
+        }
         private val typeDataIndices = type
             .filter { it and HOLDS_DATA != 0uL }
             .map { archetype.indexOf(it) }
