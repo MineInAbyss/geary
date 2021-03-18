@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
+import java.util.*
 
 public data class Archetype(
     public val type: GearyType,
@@ -14,13 +15,13 @@ public data class Archetype(
     /** Component ids in the type that are to hold data */
     private val dataHoldingType = type.filter { it and HOLDS_DATA != 0uL }
 
-    //TODO find internal index more efficiently, currently O(N)
     private fun indexOf(id: GearyComponentId): Int = dataHoldingType.indexOf(id)
 
     public val size: Int get() = ids.size
 
     internal val ids: MutableList<GearyEntityId> = mutableListOf()
 
+    //TODO Use a hashmap here and make sure errors still get thrown if component ids are ever wrong
     private val componentData: List<MutableList<GearyComponent>> = dataHoldingType.map { mutableListOf() }
 
     public operator fun get(row: Int, component: GearyComponentId): GearyComponent? {
@@ -30,8 +31,6 @@ public data class Archetype(
         return componentData[compIndex][row]
     }
 
-    //edges
-    //TODO can we use a smarter structure than map here?
     internal val add = mutableMapOf<GearyComponentId, Archetype>()
     internal val remove = mutableMapOf<GearyComponentId, Archetype>()
 
@@ -135,16 +134,27 @@ public data class Archetype(
     internal fun getComponents(row: Int): ArrayList<GearyComponent> =
         componentData.mapTo(arrayListOf()) { it[row] }
 
+    //TODO stuff should only be added here if we are currently iterating
+    /** Map of elements moved during a component removal. Represents the resulting row to original row. */
+    private val movedRows = mutableSetOf<Int>()
+
     @Synchronized
     internal fun removeEntity(row: Int) {
         val replacement = ids.last()
+        val lastIndex = ids.lastIndex
         ids[row] = replacement
-        componentData.forEach { it[row] = it.last() }
+
+        if (lastIndex != row)
+            componentData.forEach { it[row] = it.last() }
+
         ids.removeLastOrNull()
         componentData.forEach { it.removeLastOrNull() }
-        //TODO I'd like this to perhaps be independent of engine in case we ever want more than one at a time
-        Engine.setRecord(replacement, Record(this, row))
-        //TODO move iterators back one index so they dont just skip the entity we replaced
+
+        if (lastIndex != row) {
+            //TODO I'd like this to perhaps be independent of engine in case we ever want more than one at a time
+            Engine.setRecord(replacement, Record(this, row))
+            movedRows.add(row)
+        }
     }
 
     internal class ArchetypeIterator(
@@ -155,11 +165,22 @@ public data class Archetype(
             .filter { it and HOLDS_DATA != 0uL }
             .map { archetype.indexOf(it) }
         private var row = 0
-        override fun hasNext() = row < archetype.size
+        override fun hasNext(): Boolean {
+            return (row < archetype.size || archetype.movedRows.isNotEmpty())
+                .also { if (!it) archetype.movedRows.clear() }
+        }
+
         override fun next(): Pair<GearyEntity, List<GearyComponent>> {
-            return geary(archetype.ids[row]) to typeDataIndices.map {
-                archetype.componentData[it][row]
-            }.also { row++ }
+            //TODO is there a more efficient way of taking any element from the set and removing it?
+            val destinationRow = archetype.movedRows.firstOrNull() ?: return getAtIndex(row++)
+            archetype.movedRows.remove(destinationRow)
+            return getAtIndex(destinationRow)
+        }
+
+        private fun getAtIndex(index: Int): Pair<GearyEntity, List<GearyComponent>> {
+            return geary(archetype.ids[index]) to typeDataIndices.map {
+                archetype.componentData[it][index]
+            }
         }
     }
 }
