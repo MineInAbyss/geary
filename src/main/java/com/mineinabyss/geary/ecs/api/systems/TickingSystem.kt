@@ -8,6 +8,7 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
+import java.util.*
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -25,7 +26,8 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     internal val matchedArchetypes = mutableListOf<Archetype>()
     private var currComponents = listOf<GearyComponent>()
 
-    private val traits = sortedSetOf<GearyComponentId>()
+    /** Map of a trait component's id to its associated component id. */
+    private var traits = mapOf<GearyComponentId, GearyComponentId>()
 
     //idea is match works as a builder and family becomes immutable upon first access
     public val family: Family by lazy { Family(match) } //TODO make gearytype sortedSet
@@ -73,13 +75,13 @@ public abstract class TickingSystem(public val interval: Long = 1) {
         public val component: GearyEntity
     )
 
-    public class TraitAccessor<T : GearyComponent>(kClass: KClass<T>) :
-        ReadOnlyProperty<Any?, Trait<T>> {
-        init {
-
-        }
+    public inner class TraitAccessor<T : GearyComponent>(kClass: KClass<T>) : ReadOnlyProperty<Any?, Trait<T>> {
+        private val traitId = componentId(kClass)
+        private val traitAccessor = Accessor(kClass)
+        private val index: Int by lazy { dataHolding.indexOf(traitId) }
 
         override fun getValue(thisRef: Any?, property: KProperty<*>): Trait<T> {
+//            return Trait(traitAccessor.getValue(thisRef, property), )
             TODO()
         }
     }

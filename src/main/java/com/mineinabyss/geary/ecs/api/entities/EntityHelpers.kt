@@ -13,6 +13,10 @@ public inline fun geary(id: GearyEntityId, run: GearyEntity.() -> Unit): GearyEn
 @Suppress("NOTHING_TO_INLINE")
 public inline fun geary(id: GearyEntityId): GearyEntity = GearyEntity(id)
 
+/** Gets the entity associated with [id]. */
+@Suppress("NOTHING_TO_INLINE")
+public inline fun geary(id: Long): GearyEntity = GearyEntity(id.toULong())
+
 /**
  * Swaps components of type [T] on two entities.
  *

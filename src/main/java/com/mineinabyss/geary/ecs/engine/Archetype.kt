@@ -135,6 +135,7 @@ public data class Archetype(
         componentData.mapTo(arrayListOf()) { it[row] }
 
     //TODO stuff should only be added here if we are currently iterating
+    //TODO really try to use a stack here, the main thing stopping that is repeating elements.
     /** Map of elements moved during a component removal. Represents the resulting row to original row. */
     private val movedRows = mutableSetOf<Int>()
 

@@ -6,6 +6,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.components.PrefabKey
 import com.mineinabyss.geary.ecs.entities.addPrefab
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
@@ -16,6 +17,7 @@ import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
 import com.mineinabyss.geary.minecraft.store.encodeComponents
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.nms.entity.typeName
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap
 import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -27,7 +29,8 @@ internal typealias OnEntityRegister = MutableList<GearyComponent>.(Entity) -> Un
 internal typealias OnEntityUnregister = (GearyEntity, Entity) -> Unit
 
 public object BukkitEntityAccess : Listener {
-    private val entityMap = mutableMapOf<UUID, GearyEntity>()
+    private val entityMap = Object2LongOpenHashMap<UUID>()
+    private fun <T> Object2LongOpenHashMap<T>.getOrNull(key: T): Long? = getOrDefault(key, null)
 
     //TODO this should be done through events
     private val onBukkitEntityRegister: MutableList<OnEntityRegister> = mutableListOf()
@@ -44,7 +47,7 @@ public object BukkitEntityAccess : Listener {
 
     public fun <T : Entity> registerEntity(entity: T, attachTo: GearyEntity? = null): GearyEntity {
         //if the entity is already registered, return it
-        entityMap[entity.uniqueId]?.let { return it }
+        entityMap.getOrNull(entity.uniqueId)?.let { return geary(it) }
 
         val gearyEntity: GearyEntity = attachTo ?: Engine.entity {}
         gearyEntity.apply {
@@ -65,7 +68,7 @@ public object BukkitEntityAccess : Listener {
         if (pdc.hasComponentsEncoded)
             gearyEntity.decodeComponentsFrom(pdc)
 
-        entityMap[entity.uniqueId] = gearyEntity
+        entityMap[entity.uniqueId] = gearyEntity.id.toLong()
 
         GearyMinecraftLoadEvent(gearyEntity).call()
 
@@ -73,16 +76,16 @@ public object BukkitEntityAccess : Listener {
     }
 
     private fun unregisterEntity(entity: Entity): GearyEntity? {
-        val gearyEntity = entityMap[entity.uniqueId] ?: return null
+        val gearyEntity = geary(entityMap.getOrNull(entity.uniqueId) ?: return null)
 
         for (extension in onBukkitEntityUnregister) {
             extension(gearyEntity, entity)
         }
-
-        return entityMap.remove(entity.uniqueId)
+        if (!entityMap.containsKey(entity.uniqueId)) return null
+        return geary(entityMap.removeLong(entity.uniqueId))
     }
 
-    public fun getEntityOrNull(entity: Entity): GearyEntity? = entityMap[entity.uniqueId]
+    public fun getEntityOrNull(entity: Entity): GearyEntity? = entityMap.getOrNull(entity.uniqueId)?.let { geary(it) }
 
     public fun <T : Entity> getEntity(entity: T): GearyEntity =
         getEntityOrNull(entity) ?: registerEntity(entity)
