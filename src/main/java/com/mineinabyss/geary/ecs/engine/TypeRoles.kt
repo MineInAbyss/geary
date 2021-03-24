@@ -12,4 +12,6 @@ public val HOLDS_DATA: ULong = 1uL shl 60
 //8
 //No more bits that can be used
 
-public val ENTITY_MASK: ULong = (0b11111111uL shl 56).inv()
+public val ENTITY_MASK: ULong = 0x00FFFFFFFFFFFFFFuL
+public val TRAIT_MASK: ULong = 0xFFFFFFFF00000000uL
+public val COMP_MASK: ULong = 0x00000000FFFFFFFFuL

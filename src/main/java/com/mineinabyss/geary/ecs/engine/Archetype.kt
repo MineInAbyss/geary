@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.systems.Family
 import java.util.*
 
 public data class Archetype(
@@ -14,6 +15,19 @@ public data class Archetype(
 ) {
     /** Component ids in the type that are to hold data */
     private val dataHoldingType = type.filter { it and HOLDS_DATA != 0uL }
+
+    /** Map of trait id without the last 32 bits defining a component to a list of associated component ids */
+    private val traits: Map<GearyComponentId, List<GearyComponentId>> = dataHoldingType
+        .filter { it and TRAIT != 0uL }
+        .groupBy { it and TRAIT_MASK }
+        .mapValues { entry -> entry.value.map { it and COMP_MASK } }
+
+
+    public fun matchedTraits(family: Family): Map<GearyComponentId, List<GearyComponentId>> {
+        return family.traits
+            .filter { it in traits }
+            .associateWith { traits[it]!! } //TODO handle null error
+    }
 
     private fun indexOf(id: GearyComponentId): Int = dataHoldingType.indexOf(id)
 
@@ -161,12 +175,13 @@ public data class Archetype(
 
     internal class ArchetypeIterator(
         private val archetype: Archetype,
-        private val type: GearyType
+        private val family: Family
     ) : Iterator<Pair<GearyEntity, List<GearyComponent>>> {
         init {
             archetype.movedRows.clear()
         }
-        private val typeDataIndices = type
+
+        private val typeDataIndices = family.match
             .filter { it and HOLDS_DATA != 0uL }
             .map { archetype.indexOf(it) }
         private var row = 0

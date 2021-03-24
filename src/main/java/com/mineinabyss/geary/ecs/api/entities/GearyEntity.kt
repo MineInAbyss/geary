@@ -32,11 +32,16 @@ public inline class GearyEntity(public val id: GearyEntityId) {
     }
 
     @Deprecated("Likely unintentionally using list as a single component", ReplaceWith("setAll()"))
-    public fun set(components: Collection<GearyComponent>): Unit = set(component = components)
+    public fun set(components: Collection<GearyComponent>): Unit =
+        error("Trying to set a collection with set method instead of setAll")
 
     /** Sets components that hold data for this entity */
     public fun setAll(components: Collection<GearyComponent>) {
         components.forEach { set(it, it::class) }
+    }
+
+    public inline fun <reified T : GearyComponent, reified C : GearyComponent> setTrait(traitData: T) {
+        Engine.setTraitFor(id, componentId<T>(), componentId<C>(), traitData)
     }
 
     /** Adds a list of [component] to this entity */

@@ -8,6 +8,7 @@ import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.api.systems.SystemManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
+import com.mineinabyss.geary.ecs.api.systems.traitFor
 import com.mineinabyss.geary.ecs.entities.children
 import com.mineinabyss.idofront.messaging.logError
 import net.onedaybeard.bitvector.BitVector
@@ -102,6 +103,15 @@ public open class GearyEngine : TickingEngine() {
             val record = archetype.setComponent(entity, this, HOLDS_DATA or component, data)
             typeMap[entity] = record ?: return
         }
+    }
+
+    override fun setTraitFor(
+        entity: GearyEntityId,
+        trait: GearyComponentId,
+        forComponent: GearyComponentId,
+        data: GearyComponent
+    ) {
+        setComponentFor(entity, traitFor(trait, forComponent), data)
     }
 
     override fun removeComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean {

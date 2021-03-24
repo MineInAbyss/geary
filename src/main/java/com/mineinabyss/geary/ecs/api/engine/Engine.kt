@@ -39,6 +39,8 @@ public interface Engine {
     /** Associates this component's data with this entity. */
     public fun setComponentFor(entity: GearyEntityId, component: GearyComponentId, data: GearyComponent)
 
+    public fun setTraitFor(entity: GearyEntityId, trait: GearyComponentId, forComponent: GearyComponentId, data: GearyComponent)
+
     /** Removes a [component] from an [entity] and clears any data previously associated with it. */
     public fun removeComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean
 
