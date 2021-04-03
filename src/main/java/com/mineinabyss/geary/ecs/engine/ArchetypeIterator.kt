@@ -23,10 +23,9 @@ internal class ArchetypeIterator(
 
     private val matchedRelations = archetype.matchedRelationsFor(family)
 
-    /** List of (all combinations of (trait ids to a specific component from that trait)) that should be iterated over.*/
     private val relationCombinations: List<RelationCombination> =
         matchedRelations.values.fold(emptyList()) { curr, components: List<Relation> ->
-            val componentIndices = components.map { archetype.indexOf(it.component) }
+            val componentIndices = components.map { archetype.indexOf(it.id) }
 
             if (curr.isEmpty())
                 listOf(RelationCombination(components, componentIndices.toIntArray()))
@@ -63,7 +62,7 @@ internal class ArchetypeIterator(
         return if (matchedRelations.isNotEmpty()) {
             if (!relationCombinationsIterator.hasNext()) {
                 relationCombinationsIterator = relationCombinations.iterator()
-                componentData = getAtIndex(row++)
+                componentData = getAtIndex(destinationRow)
             }
             val combination = relationCombinationsIterator.next()
             val relationData = combination.componentIndices.map { index ->
@@ -71,7 +70,7 @@ internal class ArchetypeIterator(
             }
             ArchetypeIterationResult(entity, componentData, combination.relations.map { it.component }, relationData)
         } else {
-            componentData = getAtIndex(row++)
+            componentData = getAtIndex(destinationRow)
             ArchetypeIterationResult(entity, componentData)
         }
     }

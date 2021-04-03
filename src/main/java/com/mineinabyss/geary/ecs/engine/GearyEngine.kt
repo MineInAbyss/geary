@@ -100,18 +100,21 @@ public open class GearyEngine : TickingEngine() {
 
     override fun setComponentFor(entity: GearyEntityId, component: GearyComponentId, data: GearyComponent) {
         getOrAddRecord(entity).apply {
-            val record = archetype.setComponent(entity, this, HOLDS_DATA or component, data)
+            // Only add HOLDS_DATA if this isn't a relation. All relations implicitly hold data currently and that bit
+            // corresponds to the component part of the relation.
+            val markData = if(component and RELATION == 0uL) HOLDS_DATA else 0uL
+            val record = archetype.setComponent(entity, this, markData or component, data)
             typeMap[entity] = record ?: return
         }
     }
 
     override fun setRelationFor(
         entity: GearyEntityId,
-        trait: GearyComponentId,
+        parent: GearyComponentId,
         forComponent: GearyComponentId,
         data: GearyComponent
     ) {
-        setComponentFor(entity, Relation(trait, forComponent).id, data)
+        setComponentFor(entity, Relation(parent, forComponent).id, data)
     }
 
     override fun removeComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean {

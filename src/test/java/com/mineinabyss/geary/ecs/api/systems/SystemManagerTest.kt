@@ -12,7 +12,6 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -105,18 +104,17 @@ internal class SystemManagerTest {
         }
     }
     @Test
-    fun traits() {
+    fun relations() {
         var ran = 0
         val system = object : TickingSystem() {
             val expiry by relation<Expiry>()
             override fun GearyEntity.tick() {
                 ran++
-                expiry.relation.id and RELATION_PARENT_MASK shouldBe family.relations.first()
-                get(expiry.component.id) shouldNotBe null
+                family.relations.map { it.id } shouldContain expiry.relation.id
                 (expiry.data is Expiry) shouldBe true
             }
         }
-        system.family.relations shouldBe sortedSetOf(Relation(componentId<Expiry>(), 0uL))
+        system.family.relations shouldBe sortedSetOf(Relation(parent = componentId<Expiry>()))
         SystemManager.registerSystem(system)
         val entity = Engine.entity {
             setRelation<Expiry, String>(Expiry(3000))

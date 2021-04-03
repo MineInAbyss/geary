@@ -16,7 +16,7 @@ internal class FamilyTest {
     }
 
     @Test
-    fun `contains trait`() {
+    fun `contains relation`() {
         val family = Family(relations = sortedSetOf(Relation(15uL, 0uL)))
 
         (sortedSetOf(Relation(14uL, 1uL).id, 1uL) in family) shouldBe false

@@ -13,15 +13,16 @@ public data class Archetype(
     public val type: GearyType,
 ) {
     /** Component ids in the type that are to hold data */
-    private val dataHoldingType = type.filter { it and HOLDS_DATA != 0uL }
+    // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
+    private val dataHoldingType = type.filter { it and HOLDS_DATA != 0uL || it and RELATION != 0uL }
 
-    /** Map of trait id without the last 32 bits defining a component to a list of associated component ids */
+    /** Map of relation parent id to a list of relations with that parent */
     private val relations: Map<GearyComponentId, List<Relation>> = type
         .filter { it and RELATION != 0uL }
         .map { Relation(it) }
         .groupBy { it.parent }
 
-    /** @return Map of incomplete trait (without component) to a list of the full component id for that trait*/
+    /** @return This Archetype's [relations] that are also a part of this family's relations. */
     public fun matchedRelationsFor(family: Family): Map<GearyComponentId, List<Relation>> = family.relations
         .map { it.parent }
         .filter { it in relations }
@@ -96,7 +97,7 @@ public data class Archetype(
         data: GearyComponent
     ): Record? {
         // if component should NOT hold data, stop here
-        if (component and HOLDS_DATA == 0uL) return null
+        if (component and (HOLDS_DATA or RELATION) == 0uL) return null
 
         //if component was added but not set, remove the old component before adding this one
         val addId = component and HOLDS_DATA.inv()

@@ -32,20 +32,20 @@ internal class ArchetypeTest {
     }
 
     @Test
-    fun matchedTraits() {
+    fun matchedRelations() {
         val arc = Archetype(
             sortedSetOf(
                 Relation(10uL, 1uL or HOLDS_DATA).id,
                 Relation(10uL, 2uL or HOLDS_DATA).id,
             )
         )
-        val traitId = Relation(10uL, 0uL or HOLDS_DATA)
-        val matched = arc.matchedRelationsFor(Family(relations = sortedSetOf(traitId)))
-        matched shouldContainKey traitId.id
-        matched[traitId.id].shouldContainExactly(1uL, 2uL)
+        val relation = Relation(10uL, 0uL or HOLDS_DATA)
+        val matched = arc.matchedRelationsFor(Family(relations = sortedSetOf(relation)))
+        matched shouldContainKey relation.parent
+        matched[relation.parent]?.map { it.component }.shouldContainExactly(1uL or HOLDS_DATA, 2uL or HOLDS_DATA)
 
-        val wrongTrait = Relation(11uL, 0uL or HOLDS_DATA)
-        val matched2 = arc.matchedRelationsFor(Family(relations = sortedSetOf(wrongTrait)))
-        matched2 shouldNotContainKey wrongTrait.id
+        val wrongRelation = Relation(11uL, 0uL or HOLDS_DATA)
+        val matched2 = arc.matchedRelationsFor(Family(relations = sortedSetOf(wrongRelation)))
+        matched2 shouldNotContainKey wrongRelation.id
     }
 }

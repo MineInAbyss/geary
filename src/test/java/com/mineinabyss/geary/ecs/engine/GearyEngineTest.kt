@@ -4,6 +4,7 @@ import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
+import com.mineinabyss.geary.ecs.api.relations.Relation
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -81,6 +82,17 @@ internal class GearyEngineTest {
             setAll(listOf("Test", 1))
             add<Long>()
         }.getComponents().shouldContainExactly("Test", 1)
+    }
+
+    @Test
+    fun setRelation() {
+        val entity = Engine.entity {
+            setRelation<String, Int>("String to int relation")
+        }
+        entity.type.shouldContainExactly(
+            Relation(componentId<String>(), componentId<Int>()).id
+        )
+        entity.getComponents().shouldContainExactly("String to int relation")
     }
 
     @Nested

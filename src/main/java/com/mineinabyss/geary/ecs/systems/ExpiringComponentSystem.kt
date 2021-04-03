@@ -8,7 +8,6 @@ public object ExpiringComponentSystem : TickingSystem() {
     private val expiry by relation<Expiry>()
 
     override fun GearyEntity.tick() {
-        //TODO implement once traits are in
         if (expiry.data.timeOver()) {
             remove(expiry.component.id)
             remove(expiry.relation.id)

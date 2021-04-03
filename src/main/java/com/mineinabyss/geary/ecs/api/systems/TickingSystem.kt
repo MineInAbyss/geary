@@ -40,9 +40,10 @@ public abstract class TickingSystem(public val interval: Long = 1) {
         // right now, since they are most likely the entities involved with the current tick. To avoid this and
         // concurrent modifications, we make a copy of the list before iterating.
         matchedArchetypes.toList().forEach { arc ->
-            ArchetypeIterator(arc, family).forEach { (entity, components, traits) ->
+            ArchetypeIterator(arc, family).forEach { (entity, components, relationIds, relationData) ->
                 currComponents = components
-                currRelationIds = traits
+                currRelationIds = relationIds
+                currRelationData = relationData
 
                 entity.tick()
             }
@@ -75,7 +76,7 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     }
 
     public inline fun <reified T : GearyComponent> relation(): RelationAccessor<T> =
-        RelationAccessor(Relation(componentId<T>()))
+        RelationAccessor(Relation(parent = componentId<T>()))
 
     public class RelationData<T : GearyComponent>(
         public val data: T,
@@ -90,12 +91,11 @@ public abstract class TickingSystem(public val interval: Long = 1) {
             relationsKey.add(relation)
         }
 
-        private val dataIndex: Int = dataKey.indexOf(relation.component)
         private val relationIndex: Int = relationsKey.indexOf(relation)
 
         override fun getValue(thisRef: Any?, property: KProperty<*>): RelationData<T> =
             RelationData(
-                currRelationData[dataIndex] as T,
+                currRelationData[relationIndex] as T,
                 geary(relation.id),
                 geary(currRelationIds[relationIndex])
             )

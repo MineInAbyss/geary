@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.components.*
+import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import kotlin.reflect.KClass
 
 /**
@@ -40,8 +41,12 @@ public inline class GearyEntity(public val id: GearyEntityId) {
         components.forEach { set(it, it::class) }
     }
 
-    public inline fun <reified T : GearyComponent, reified C : GearyComponent> setRelation(traitData: T) {
-        Engine.setRelationFor(id, componentId<T>(), componentId<C>(), traitData)
+    public inline fun <reified T : GearyComponent, reified C : GearyComponent> setRelation(parentData: T) {
+        Engine.setRelationFor(id, componentId<T>(), componentId<C>(), parentData)
+    }
+
+    public inline fun <reified T : GearyComponent, reified C : GearyComponent> setRelationWithData(parentData: T) {
+        Engine.setRelationFor(id, componentId<T>(), componentId<C>() or HOLDS_DATA, parentData)
     }
 
     /** Adds a list of [component] to this entity */
@@ -65,7 +70,7 @@ public inline class GearyEntity(public val id: GearyEntityId) {
     public inline fun setPersisting(component: GearyComponent) {
         set(component)
         //TODO persisting components should store a list of ComponentIDs
-        //TODO is this possible to do nicely with traits?
+        //TODO is this possible to do nicely with relations?
         getOrSet { PersistingComponents() }.add(component)
     }
 
