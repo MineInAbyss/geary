@@ -6,9 +6,9 @@ import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.systems.SystemManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
-import com.mineinabyss.geary.ecs.api.systems.traitFor
 import com.mineinabyss.geary.ecs.entities.children
 import com.mineinabyss.idofront.messaging.logError
 import net.onedaybeard.bitvector.BitVector
@@ -105,13 +105,13 @@ public open class GearyEngine : TickingEngine() {
         }
     }
 
-    override fun setTraitFor(
+    override fun setRelationFor(
         entity: GearyEntityId,
         trait: GearyComponentId,
         forComponent: GearyComponentId,
         data: GearyComponent
     ) {
-        setComponentFor(entity, traitFor(trait, forComponent), data)
+        setComponentFor(entity, Relation(trait, forComponent).id, data)
     }
 
     override fun removeComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean {

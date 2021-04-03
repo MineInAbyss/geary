@@ -5,8 +5,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.systems.Family
 import java.util.*
 
@@ -17,26 +16,25 @@ public data class Archetype(
     private val dataHoldingType = type.filter { it and HOLDS_DATA != 0uL }
 
     /** Map of trait id without the last 32 bits defining a component to a list of associated component ids */
-    private val traits: Map<GearyComponentId, List<GearyComponentId>> = dataHoldingType
-        .filter { it and TRAIT != 0uL }
-        .groupBy { it and TRAIT_MASK }
-        .mapValues { entry -> entry.value.map { it and COMP_MASK } }
+    private val relations: Map<GearyComponentId, List<Relation>> = type
+        .filter { it and RELATION != 0uL }
+        .map { Relation(it) }
+        .groupBy { it.parent }
 
+    /** @return Map of incomplete trait (without component) to a list of the full component id for that trait*/
+    public fun matchedRelationsFor(family: Family): Map<GearyComponentId, List<Relation>> = family.relations
+        .map { it.parent }
+        .filter { it in relations }
+        .associateWith { relations[it]!! } //TODO handle null error
 
-    public fun matchedTraits(family: Family): Map<GearyComponentId, List<GearyComponentId>> {
-        return family.traits
-            .filter { it in traits }
-            .associateWith { traits[it]!! } //TODO handle null error
-    }
-
-    private fun indexOf(id: GearyComponentId): Int = dataHoldingType.indexOf(id)
+    internal fun indexOf(id: GearyComponentId): Int = dataHoldingType.indexOf(id)
 
     public val size: Int get() = ids.size
 
     internal val ids: MutableList<GearyEntityId> = mutableListOf()
 
     //TODO Use a hashmap here and make sure errors still get thrown if component ids are ever wrong
-    private val componentData: List<MutableList<GearyComponent>> = dataHoldingType.map { mutableListOf() }
+    internal val componentData: List<MutableList<GearyComponent>> = dataHoldingType.map { mutableListOf() }
 
     public operator fun get(row: Int, component: GearyComponentId): GearyComponent? {
         val compIndex = indexOf(component)
@@ -151,7 +149,7 @@ public data class Archetype(
     //TODO stuff should only be added here if we are currently iterating
     //TODO really try to use a stack here, the main thing stopping that is repeating elements.
     /** Map of elements moved during a component removal. Represents the resulting row to original row. */
-    private val movedRows = mutableSetOf<Int>()
+    internal val movedRows = mutableSetOf<Int>()
 
     @Synchronized
     internal fun removeEntity(row: Int) {
@@ -170,37 +168,6 @@ public data class Archetype(
             Engine.setRecord(replacement, Record(this, row))
             movedRows.remove(lastIndex)
             movedRows.add(row)
-        }
-    }
-
-    internal class ArchetypeIterator(
-        private val archetype: Archetype,
-        private val family: Family
-    ) : Iterator<Pair<GearyEntity, List<GearyComponent>>> {
-        init {
-            archetype.movedRows.clear()
-        }
-
-        private val typeDataIndices = family.match
-            .filter { it and HOLDS_DATA != 0uL }
-            .map { archetype.indexOf(it) }
-        private var row = 0
-        override fun hasNext(): Boolean {
-            return (row < archetype.size || archetype.movedRows.isNotEmpty())
-                .also { if (!it) archetype.movedRows.clear() }
-        }
-
-        override fun next(): Pair<GearyEntity, List<GearyComponent>> {
-            //TODO is there a more efficient way of taking any element from the set and removing it?
-            val destinationRow = archetype.movedRows.firstOrNull() ?: return getAtIndex(row++)
-            archetype.movedRows.remove(destinationRow)
-            return getAtIndex(destinationRow)
-        }
-
-        private fun getAtIndex(index: Int): Pair<GearyEntity, List<GearyComponent>> {
-            return geary(archetype.ids[index]) to typeDataIndices.map {
-                archetype.componentData[it][index]
-            }
         }
     }
 }

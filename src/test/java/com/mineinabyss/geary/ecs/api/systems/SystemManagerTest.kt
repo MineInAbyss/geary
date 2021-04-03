@@ -5,12 +5,14 @@ import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.components.Expiry
 import com.mineinabyss.geary.ecs.engine.*
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -106,23 +108,26 @@ internal class SystemManagerTest {
     fun traits() {
         var ran = 0
         val system = object : TickingSystem() {
-            val expiry by trait<Expiry>()
+            val expiry by relation<Expiry>()
             override fun GearyEntity.tick() {
                 ran++
+                expiry.relation.id and RELATION_PARENT_MASK shouldBe family.relations.first()
+                get(expiry.component.id) shouldNotBe null
+                (expiry.data is Expiry) shouldBe true
             }
         }
-        system.family.traits shouldBe sortedSetOf(traitFor(componentId<Expiry>()) or HOLDS_DATA)
+        system.family.relations shouldBe sortedSetOf(Relation(componentId<Expiry>(), 0uL))
         SystemManager.registerSystem(system)
         val entity = Engine.entity {
-            setTrait<Expiry, String>(Expiry(3000))
+            setRelation<Expiry, String>(Expiry(3000))
             add<String>()
         }
         val entity2 = Engine.entity {
-            setTrait<Expiry, Int>(Expiry(3000))
+            setRelation<Expiry, Int>(Expiry(3000))
             add<Int>()
         }
         val entity3 = Engine.entity {
-            setTrait<String, Expiry>("")
+            setRelation<String, Expiry>("")
             add<Expiry>()
         }
         system.matchedArchetypes.shouldContainAll(entity.type.getArchetype(), entity2.type.getArchetype())

@@ -6,7 +6,9 @@ import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.engine.Archetype
+import com.mineinabyss.geary.ecs.engine.ArchetypeIterator
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import java.util.*
 import kotlin.properties.ReadOnlyProperty
@@ -21,39 +23,27 @@ import kotlin.reflect.KProperty
  */
 public abstract class TickingSystem(public val interval: Long = 1) {
     private val match = sortedSetOf<GearyComponentId>()
-    private val dataHolding = sortedSetOf<GearyComponentId>()
-    private val traitIds = sortedSetOf<GearyComponentId>()
+    private val dataKey = sortedSetOf<GearyComponentId>()
+    private val relationsKey = sortedSetOf<Relation>()
 
     internal val matchedArchetypes = mutableListOf<Archetype>()
     private var currComponents = listOf<GearyComponent>()
-
-    /** Map of a trait's id without the last 32 bits defining components to its currently iterated component id. */
-    private var traits = mapOf<GearyComponentId, GearyComponentId>()
+    private var currRelationIds = listOf<GearyComponentId>()
+    /** The data of the current component associated with each relation */
+    private var currRelationData = listOf<GearyComponent>()
 
     //idea is match works as a builder and family becomes immutable upon first access
-    public val family: Family by lazy { Family(match, traitIds) } //TODO make gearytype sortedSet
+    public val family: Family by lazy { Family(match, relationsKey) } //TODO make gearytype sortedSet
 
     public fun tick() {
         // If any archetypes get added here while running through the system we dont want those entities to be iterated
         // right now, since they are most likely the entities involved with the current tick. To avoid this and
         // concurrent modifications, we make a copy of the list before iterating.
         matchedArchetypes.toList().forEach { arc ->
-            val matchedTraits = arc.matchedTraits(family)
-            val iterateTraits = matchedTraits.isNotEmpty()
-
-            //TODO definitely could be done cleaner
-            if (iterateTraits) {
-                //TODO support multiple traits by iterating on all combinations of unique traits
-                val (traitId, traitComponents) = matchedTraits.entries.first()
-                Archetype.ArchetypeIterator(arc, family).forEach { (entity, components) ->
-                    currComponents = components
-                    traitComponents.forEach { compId ->
-                        traits = mapOf(traitId to compId)
-                        entity.tick()
-                    }
-                }
-            } else Archetype.ArchetypeIterator(arc, family).forEach { (entity, components) ->
+            ArchetypeIterator(arc, family).forEach { (entity, components, traits) ->
                 currComponents = components
+                currRelationIds = traits
+
                 entity.tick()
             }
         }
@@ -70,12 +60,13 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     public inner class Accessor<T : GearyComponent>(
         private val componentId: GearyComponentId
     ) : ReadOnlyProperty<Any?, T> {
-        private val index: Int by lazy { dataHolding.indexOf(componentId) }
-
         init {
             registerAccessor(componentId)
-            dataHolding.add(componentId)
+            dataKey.add(componentId)
         }
+
+        private val index: Int = dataKey.indexOf(componentId)
+
 
         //TODO implement contracts for smart cast if Kotlin ever does so for lazy (this should essentially be identical)
         override fun getValue(thisRef: Any?, property: KProperty<*>): T {
@@ -83,30 +74,31 @@ public abstract class TickingSystem(public val interval: Long = 1) {
         }
     }
 
-    public inline fun <reified T : GearyComponent> trait(): TraitAccessor<T> =
-        TraitAccessor(traitFor(componentId<T>()) or HOLDS_DATA)
+    public inline fun <reified T : GearyComponent> relation(): RelationAccessor<T> =
+        RelationAccessor(Relation(componentId<T>()))
 
-    public class Trait<T : GearyComponent>(
+    public class RelationData<T : GearyComponent>(
         public val data: T,
-        public val trait: GearyEntity,
+        public val relation: GearyEntity,
         public val component: GearyEntity
     )
 
-    public inner class TraitAccessor<T : GearyComponent>(
-        private val traitId: GearyComponentId
-    ) : ReadOnlyProperty<Any?, Trait<T>> {
+    public inner class RelationAccessor<T : GearyComponent>(
+        private val relation: Relation
+    ) : ReadOnlyProperty<Any?, RelationData<T>> {
         init {
-            traitIds.add(traitId)
+            relationsKey.add(relation)
         }
 
-        override fun getValue(thisRef: Any?, property: KProperty<*>): Trait<T> {
-            val traitComponentId = traits[traitId] ?: TODO("Proper error")
-            val fullId = traitFor(traitId, traitComponentId)
-            //TODO dont get indexOf every time
-            val index: Int by lazy { dataHolding.indexOf(fullId) }
+        private val dataIndex: Int = dataKey.indexOf(relation.component)
+        private val relationIndex: Int = relationsKey.indexOf(relation)
 
-            return Trait(currComponents[index] as T, geary(traitId), geary(fullId))
-        }
+        override fun getValue(thisRef: Any?, property: KProperty<*>): RelationData<T> =
+            RelationData(
+                currRelationData[dataIndex] as T,
+                geary(relation.id),
+                geary(currRelationIds[relationIndex])
+            )
     }
 
     protected inline fun <reified T : GearyComponent> has(): GearyEntity {

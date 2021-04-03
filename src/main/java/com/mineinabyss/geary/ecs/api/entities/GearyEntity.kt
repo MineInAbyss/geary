@@ -40,8 +40,8 @@ public inline class GearyEntity(public val id: GearyEntityId) {
         components.forEach { set(it, it::class) }
     }
 
-    public inline fun <reified T : GearyComponent, reified C : GearyComponent> setTrait(traitData: T) {
-        Engine.setTraitFor(id, componentId<T>(), componentId<C>(), traitData)
+    public inline fun <reified T : GearyComponent, reified C : GearyComponent> setRelation(traitData: T) {
+        Engine.setRelationFor(id, componentId<T>(), componentId<C>(), traitData)
     }
 
     /** Adds a list of [component] to this entity */

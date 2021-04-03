@@ -5,13 +5,13 @@ import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.Expiry
 
 public object ExpiringComponentSystem : TickingSystem() {
-    private val expiry by trait<Expiry>()
+    private val expiry by relation<Expiry>()
 
     override fun GearyEntity.tick() {
         //TODO implement once traits are in
         if (expiry.data.timeOver()) {
             remove(expiry.component.id)
-            remove(expiry.trait.id)
+            remove(expiry.relation.id)
         }
     }
 }

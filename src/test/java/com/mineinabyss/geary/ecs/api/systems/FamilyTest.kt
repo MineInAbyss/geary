@@ -2,15 +2,14 @@
 
 package com.mineinabyss.geary.ecs.api.systems
 
+import com.mineinabyss.geary.ecs.api.relations.Relation
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 internal class FamilyTest {
     @Test
     fun contains() {
-        val family = family {
-            match = sortedSetOf(1uL, 2uL, 3uL)
-        }
+        val family = Family(match = sortedSetOf(1uL, 2uL, 3uL))
         (sortedSetOf(1uL, 2uL) in family) shouldBe false
         (sortedSetOf(1uL, 2uL, 3uL) in family) shouldBe true
         (sortedSetOf(1uL, 2uL, 3uL, 4uL) in family) shouldBe true
@@ -18,10 +17,10 @@ internal class FamilyTest {
 
     @Test
     fun `contains trait`() {
-        val family = Family(traits = sortedSetOf(traitFor(15uL)))
+        val family = Family(relations = sortedSetOf(Relation(15uL, 0uL)))
 
-        (sortedSetOf(traitFor(14uL, 1uL), 1uL) in family) shouldBe false
-        (sortedSetOf(traitFor(15uL, 1uL)) in family) shouldBe false
-        (sortedSetOf(traitFor(15uL, 1uL), 1uL) in family) shouldBe true
+        (sortedSetOf(Relation(14uL, 1uL).id, 1uL) in family) shouldBe false
+        (sortedSetOf(Relation(15uL, 1uL).id) in family) shouldBe false
+        (sortedSetOf(Relation(15uL, 1uL).id, 1uL) in family) shouldBe true
     }
 }
