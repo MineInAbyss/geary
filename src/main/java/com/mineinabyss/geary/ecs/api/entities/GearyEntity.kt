@@ -6,7 +6,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.components.*
+import com.mineinabyss.geary.ecs.components.PersistingComponents
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import kotlin.reflect.KClass
 
@@ -65,7 +65,7 @@ public inline class GearyEntity(public val id: GearyEntityId) {
     /**
      * Adds a persisting [component] to this entity, which will be serialized in some way if possible.
      *
-     * Ex. for bukkit entities this is done through a [PersistentDataContainer].
+     * Ex. for bukkit entities this is done through a PersistentDataContainer.
      */
     public inline fun setPersisting(component: GearyComponent) {
         set(component)

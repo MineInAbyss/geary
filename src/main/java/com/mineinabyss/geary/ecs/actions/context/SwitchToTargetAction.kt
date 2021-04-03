@@ -9,9 +9,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 
 /**
- * Used to execute actions on a different [GearyEntity].
+ * Runs a list of actions on the target of the given entity.
  *
- * @param run The actions to run on the other [GearyEntity].
+ * @param wrapped The list of actions to run.
  */
 @Serializable(with = SwitchToTargetSerializer::class)
 public class SwitchToTargetAction(

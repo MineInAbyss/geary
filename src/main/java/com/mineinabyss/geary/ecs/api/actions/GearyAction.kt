@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.ecs.api.actions
 
+import com.mineinabyss.geary.ecs.actions.ConditionalAction
+import com.mineinabyss.geary.ecs.actions.CooldownAction
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import kotlinx.serialization.Serializable
 
@@ -13,7 +15,7 @@ import kotlinx.serialization.Serializable
  * when an event occurs. Because ktx.serialization has very clean support for nesting serializable classes, the
  * goal is to encourage using composition to turn simple one-off actions into highly configurable ones with little work.
  *
- * We provide several useful serializable classes such as [ConfigurableLocation] to help with this. As well, there are
+ * We provide several useful serializable classes such as ConfigurableLocation to help with this. As well, there are
  * many builtin classes such as [CooldownAction] or [ConditionalAction] which can be nested by the end user for even
  * more simple customization that doesn't need to be thought of ahead of time.
  */
@@ -21,4 +23,3 @@ import kotlinx.serialization.Serializable
 public abstract class GearyAction {
     public abstract fun runOn(entity: GearyEntity): Boolean
 }
-

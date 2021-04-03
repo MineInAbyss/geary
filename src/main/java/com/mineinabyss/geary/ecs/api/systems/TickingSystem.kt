@@ -2,7 +2,6 @@ package com.mineinabyss.geary.ecs.api.systems
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
-import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
@@ -10,7 +9,6 @@ import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.ArchetypeIterator
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
-import java.util.*
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -19,7 +17,7 @@ import kotlin.reflect.KProperty
  *
  * @param interval How often to run this system in ticks.
  *
- * @see [Engine.forEach]
+ * @see [ArchetypeIterator]
  */
 public abstract class TickingSystem(public val interval: Long = 1) {
     private val match = sortedSetOf<GearyComponentId>()

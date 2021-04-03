@@ -9,9 +9,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 
 /**
- * Executes actions on this entity's parent
+ * Runs a list of actions on the parent of the given entity.
  *
- * @param run The actions to run on the parent.
+ * @param wrapped The list of actions to run.
  */
 @Serializable(with = SwitchToParentSerializer::class)
 public class SwitchToParentAction(

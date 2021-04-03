@@ -310,11 +310,7 @@ public class GearyExtension(
 }
 public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>?) -> Unit
 
-/**
- * Entry point to register a new [Plugin] with the Geary ECS.
- *
- * @param types The subclass of [PrefabManager] associated with this plugin.
- */
+/** Entry point to register a new [Plugin] with the Geary ECS. */
 //TODO support plugins being re-registered after a reload
 public inline fun Plugin.attachToGeary(init: GearyExtension.() -> Unit) {
     GearyExtension(this).apply(init)
