@@ -1,9 +1,10 @@
 package com.mineinabyss.geary.minecraft.engine
 
 import co.aikar.timings.Timings
-import com.mineinabyss.geary.ecs.GearyEntity
+import com.mineinabyss.geary.ecs.api.GearyEntityId
+import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.engine.GearyEngine
-import com.mineinabyss.geary.ecs.systems.TickingSystem
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
 import com.mineinabyss.geary.minecraft.geary
 import com.mineinabyss.idofront.events.call
@@ -27,7 +28,7 @@ public class SpigotEngine : GearyEngine() {
         }.getOrThrow()
     }
 
-    override fun onStart() {
+    override fun scheduleSystemTicking() {
         //tick all systems every interval ticks
         geary.schedule {
             repeating(1)
@@ -38,8 +39,8 @@ public class SpigotEngine : GearyEngine() {
         }
     }
 
-    override fun removeEntity(entity: GearyEntity) {
-        GearyEntityRemoveEvent(entity).call()
+    override fun removeEntity(entity: GearyEntityId) {
+        GearyEntityRemoveEvent(geary(entity)).call()
         super.removeEntity(entity)
     }
 }

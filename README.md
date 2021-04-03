@@ -1,3 +1,7 @@
+[![Java CI with Gradle](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml/badge.svg)](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml)
+[![Package](https://badgen.net/maven/v/metadata-url/repo.mineinabyss.com/releases/com/mineinabyss/geary/maven-metadata.xml)](https://repo.mineinabyss.com/releases/com/mineinabyss/geary)
+[![Wiki](https://badgen.net/badge/color/Project%20Wiki/purple?icon=wiki&label)](https://github.com/MineInAbyss/Geary/wiki)
+
 # Geary
 
 ### Overview
@@ -44,6 +48,18 @@ We are looking at libraries that provide a DSL for component data migrations. We
 - We have [Github packages](https://github.com/MineInAbyss/Geary/packages) set up for use with gradle/maven, however the API isn't properly maintained yet. Many things will change as the ECS is being built.
 - We'll eventually make a wiki with API documentation. In the meantime, you can ask questions in `#plugin-dev` on our [Discord](https://discord.gg/QXPCk2y) server.
 
-## Setup and Contributions
+### Gradle
+```groovy
+repositories {
+    maven  { url 'https://repo.mineinabyss.com/releases' }
+}
 
-Please read our [Setup and Contribution guide](https://github.com/MineInAbyss/MineInAbyss/wiki/Setup-and-Contribution-Guide).
+dependencies {
+    compileOnly 'com.mineinabyss:geary:<version>'
+    // Use the line below if you want both geary and spigot specific stuff
+    compileOnly 'com.mineinabyss:geary-spigot:<version>'
+}
+```
+
+## Contributing
+Please read our [Setup and Contribution guide](https://github.com/MineInAbyss/MineInAbyss/wiki/Setup-and-Contribution-Guide) for more info.

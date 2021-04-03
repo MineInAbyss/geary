@@ -2,7 +2,7 @@ package com.mineinabyss.geary.ecs.serialization
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
-import com.mineinabyss.geary.ecs.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.uchuhimo.collections.MutableBiMap
 import com.uchuhimo.collections.mutableBiMapOf
 import kotlinx.serialization.DeserializationStrategy

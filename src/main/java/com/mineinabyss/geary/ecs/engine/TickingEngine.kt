@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.ecs.engine
 
+import com.mineinabyss.geary.ecs.api.engine.Engine
+
 public abstract class TickingEngine: Engine {
     private var started: Boolean = false
     /** Ticks the entire engine. Implementations may call at different speeds. */
@@ -8,10 +10,10 @@ public abstract class TickingEngine: Engine {
 
     public fun start() {
         if(!started) {
-            onStart()
+            scheduleSystemTicking()
             started = true
         }
     }
 
-    public abstract fun onStart()
+    public abstract fun scheduleSystemTicking()
 }

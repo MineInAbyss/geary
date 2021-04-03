@@ -1,16 +1,15 @@
 package com.mineinabyss.geary.ecs.actions.components
 
-import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.autoscan.AutoscanComponent
-import com.mineinabyss.geary.ecs.conditions.GearyCondition
-import com.mineinabyss.geary.ecs.engine.ComponentClass
+import com.mineinabyss.geary.ecs.api.GearyComponentId
+import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
+import com.mineinabyss.geary.ecs.api.conditions.GearyCondition
+import com.mineinabyss.geary.ecs.api.engine.componentId
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.serialization.FlatSerializer
 import com.mineinabyss.geary.ecs.serialization.FlatWrap
 import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
-import kotlin.reflect.KClass
 
 /**
  * A component that holds a map of component serial names to a list of [GearyCondition]s that need to be met for those
@@ -21,15 +20,15 @@ import kotlin.reflect.KClass
 public class Conditions(
     override val wrapped: Map<String, List<GearyCondition>>
 ) : FlatWrap<Map<String, List<GearyCondition>>> {
-    private val wrappedClasses: Map<KClass<out GearyComponent>, List<GearyCondition>> =
-        wrapped.mapKeys { (serialName, _) -> Formats.getClassFor(serialName) }
+    private val wrappedClasses: Map<GearyComponentId, List<GearyCondition>> =
+        wrapped.mapKeys { (serialName, _) -> componentId(Formats.getClassFor(serialName)) }
 
     /**
-     * Whether the conditions for a list of [component classes][kClasses] are met for an [entity].
+     * Whether the conditions for a list of [component classes][componentIds] are met for an [entity].
      * If a component doesn't have any conditions registered here, we consider them met.
      */
-    public fun conditionsMet(kClasses: Array<out ComponentClass>, entity: GearyEntity): Boolean {
-        return kClasses.all { component ->
+    public fun conditionsMet(componentIds: IntArray, entity: GearyEntity): Boolean {
+        return componentIds.all { component ->
             wrappedClasses[component]?.all { it.conditionsMet(entity) } ?: true
         }
     }

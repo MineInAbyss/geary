@@ -1,14 +1,12 @@
 package com.mineinabyss.geary.minecraft.actions.context
 
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.actions.GearyAction
+import com.mineinabyss.geary.ecs.api.actions.GearyAction
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.components.Source
-import com.mineinabyss.geary.ecs.components.addComponent
-import com.mineinabyss.geary.ecs.components.removeComponent
+import com.mineinabyss.geary.minecraft.access.geary
+import com.mineinabyss.geary.minecraft.access.toBukkit
 import com.mineinabyss.geary.minecraft.actions.AtEntityLocation
 import com.mineinabyss.geary.minecraft.actions.ConfigurableLocation
-import com.mineinabyss.geary.minecraft.components.toBukkit
-import com.mineinabyss.geary.minecraft.store.geary
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -43,9 +41,9 @@ public class OnNearbyAction(
             }
             .map { geary(it) }
             .count { target ->
-                target.addComponent(Source(entity))
+                target.set(Source(entity))
                 run.count { action -> action.runOn(target) } != 0
-                target.removeComponent<Source>()
+                target.remove<Source>()
             } != 0
     }
 }

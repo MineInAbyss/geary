@@ -1,22 +1,20 @@
 package com.mineinabyss.geary.ecs.engine
 
-import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.GearyEntityId
-import com.mineinabyss.geary.ecs.actions.components.Conditions
-import com.mineinabyss.geary.ecs.components.parent
-import com.mineinabyss.geary.ecs.components.removeChildren
-import com.mineinabyss.geary.ecs.geary
-import com.mineinabyss.geary.ecs.systems.TickingSystem
+import com.mineinabyss.geary.ecs.api.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyComponentId
+import com.mineinabyss.geary.ecs.api.GearyEntityId
+import com.mineinabyss.geary.ecs.api.GearyType
+import com.mineinabyss.geary.ecs.api.engine.entity
+import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.api.systems.SystemManager
+import com.mineinabyss.geary.ecs.api.systems.TickingSystem
+import com.mineinabyss.geary.ecs.entities.children
 import com.mineinabyss.idofront.messaging.logError
-import com.zaxxer.sparsebits.SparseBitSet
 import net.onedaybeard.bitvector.BitVector
-import net.onedaybeard.bitvector.bitsOf
 import org.clapper.util.misc.SparseArrayList
 import java.util.*
 import kotlin.reflect.KClass
-
-internal typealias ComponentClass = KClass<out GearyComponent>
 
 /**
  * The default implementation of Geary's Engine.
@@ -35,6 +33,30 @@ internal typealias ComponentClass = KClass<out GearyComponent>
  * currently quite inefficient, but optional.
  */
 public open class GearyEngine : TickingEngine() {
+    internal val typeMap = mutableMapOf<GearyEntityId, Record>()
+    private var currId: GearyEntityId = 0uL
+
+    //TODO there's likely a more performant option
+    private val removedEntities = Stack<GearyEntityId>()
+
+    private val classToComponentMap = mutableMapOf<KClass<*>, GearyEntityId>()
+
+    override fun getComponentIdForClass(kClass: KClass<*>): GearyComponentId {
+        return classToComponentMap.getOrPut(kClass) {
+            entity {
+                //TODO add some components for new components here
+            }.id
+        }
+    }
+
+    //TODO Proper pipeline with different stages
+    protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
+
+    override fun addSystem(system: TickingSystem): Boolean {
+        SystemManager.registerSystem(system)
+        return registeredSystems.add(system)
+    }
+
     //TODO support suspending functions for systems
     // perhaps async support in the future
     override fun tick(currentTick: Long) {
@@ -55,137 +77,86 @@ public open class GearyEngine : TickingEngine() {
         tick()
     }
 
-    override fun onStart() {
+    override fun scheduleSystemTicking() {
         TODO("Implement a system for ticking independent of spigot")
     }
 
-    private var currId: GearyEntityId = 0
-
-    //TODO there's likely a more performant option
-    private val removedEntities = Stack<GearyEntityId>()
-
-    //TODO use archetypes instead
-    //TODO system for reusing deleted entities
-    protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
 
     @Synchronized
-    override fun getNextId(): GearyEntityId = if (removedEntities.isNotEmpty()) removedEntities.pop() else ++currId
+    override fun getNextId(): GearyEntityId = if (removedEntities.isNotEmpty()) removedEntities.pop() else currId++
 
-    override fun addSystem(system: TickingSystem): Boolean = registeredSystems.add(system)
+    override fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent> =
+        getRecord(entity)?.run {
+            archetype.getComponents(row).toSet()
+        } ?: emptySet()
 
-    //TODO get a more memory efficient list, right now this is literally just an ArrayList that auto expands
-    private val components = mutableMapOf<ComponentClass, SparseArrayList<GearyComponent>>()
-    internal val bitsets = mutableMapOf<ComponentClass, BitVector>()
 
-    override fun getComponentsFor(id: GearyEntityId): Set<GearyComponent> =
-        components.mapNotNullTo(mutableSetOf()) { (_, value) -> value.getOrNull(id) }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : GearyComponent> getComponentFor(kClass: KClass<T>, id: GearyEntityId): T? = runCatching {
-        //TODO this cast will succeed even when it shouldn't because of type erasure with generics
-        // consider using reflective typeOf<T>
-        components[kClass]?.get(id) as? T
-    }.getOrNull()
-
-    override fun holdsComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean =
-        components[kClass]?.get(id) != null
-
-    override fun hasComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean =
-        bitsets[kClass]?.contains(id) ?: false
-
-    override fun removeComponentFor(kClass: ComponentClass, id: GearyEntityId): Boolean {
-        val bitset = bitsets[kClass] ?: return false
-        if (bitset[id]) {
-            bitset[id] = false
-            components[kClass]?.set(id, null)
+    override fun addComponentFor(entity: GearyEntityId, component: GearyComponentId) {
+        getOrAddRecord(entity).apply {
+            val record = archetype.addComponent(entity, this, HOLDS_DATA.inv() and component)
+            typeMap[entity] = record ?: return
         }
-        return true
     }
 
-    override fun <T : GearyComponent> addComponentFor(kClass: KClass<out T>, id: GearyEntityId, component: T): T {
-        components.getOrPut(kClass, { SparseArrayList() })[id] = component
-        bitsets.getOrPut(kClass, { bitsOf() }).set(id)
-        return component
-    }
-
-    override fun enableComponentFor(kClass: ComponentClass, id: GearyEntityId) {
-        if (holdsComponentFor(kClass, id))
-            bitsets[kClass]?.set(id, true)
-    }
-
-    override fun disableComponentFor(kClass: ComponentClass, id: GearyEntityId) {
-        bitsets[kClass]?.set(id, false)
-    }
-
-
-    override fun getBitsMatching(
-        vararg components: ComponentClass,
-        andNot: Array<out ComponentClass>,
-        checkConditions: Boolean
-    ): BitVector {
-        //copy one component's bitset and go through the others, keeping only bits present in all sets
-        val allowed = components
-            //if a set isn't present, there's 0 matches
-            .mapTo(mutableListOf()) { (bitsets[it] ?: return bitsOf()) }
-            //only copy the first bitset, all further operations only mutate it
-            .also { list -> list[0] = list[0].copy() }
-            .reduce { a, b -> a.and(b).let { a } }
-
-        //remove any bits present in any bitsets from andNot
-        val matchingBits =
-            if (andNot.isEmpty())
-                allowed
-            else andNot
-                .mapNotNull { (bitsets[it]) }
-                .fold(allowed) { a, b -> a.andNot(b).let { a } }
-
-        if (checkConditions) {
-            val conditional = bitsets[Conditions::class] ?: matchingBits
-            if (conditional.isEmpty) return matchingBits
-
-            // get all entities in the original bitset with conditional component
-            // then set their bit in the original bitset to whether or not its conditions are met
-            val conditionComponents = this.components[Conditions::class]
-            matchingBits.copy().apply { and(conditional) }.forEachBit { i ->
-                (conditionComponents?.get(i) as? Conditions)?.conditionsMet(components, geary(i))?.let { result ->
-                    matchingBits[i] = result
-                }
-            }
+    override fun setComponentFor(entity: GearyEntityId, component: GearyComponentId, data: GearyComponent) {
+        getOrAddRecord(entity).apply {
+            // Only add HOLDS_DATA if this isn't a relation. All relations implicitly hold data currently and that bit
+            // corresponds to the component part of the relation.
+            val markData = if(component and RELATION == 0uL) HOLDS_DATA else 0uL
+            val record = archetype.setComponent(entity, this, markData or component, data)
+            typeMap[entity] = record ?: return
         }
-        return matchingBits
     }
 
-    //TODO might be a smarter way of storing these as an implicit list within a larger list of entities eventually
-    override fun removeEntity(entity: GearyEntity) {
-        val (id) = entity
+    override fun setRelationFor(
+        entity: GearyEntityId,
+        parent: GearyComponentId,
+        forComponent: GearyComponentId,
+        data: GearyComponent
+    ) {
+        setComponentFor(entity, Relation(parent, forComponent).id, data)
+    }
 
-        //clear relationship with parent and children
-        //TODO add option to recursively remove children in the future
-        entity.apply {
-            parent = null
-            removeChildren()
+    override fun removeComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean {
+        return getRecord(entity)?.apply {
+            val record = archetype.removeComponent(entity, this, component or HOLDS_DATA)
+                ?: archetype.removeComponent(entity, this, component)
+            typeMap[entity] = record ?: return false
+        } != null
+    }
+
+    override fun getComponentFor(entity: GearyEntityId, component: GearyComponentId): GearyComponent? =
+        getRecord(entity)?.run { archetype[row, component or HOLDS_DATA] }
+
+    override fun hasComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean =
+        getRecord(entity)?.archetype?.type?.run {
+            //       component  or the version with the HOLDS_DATA bit flipped
+            contains(component) || contains(component xor HOLDS_DATA)
+        } ?: false
+
+    //TODO might be a smarter way of storing removed entities as an implicit list within a larger list of entities eventually
+    override fun removeEntity(entity: GearyEntityId) {
+        // remove all children of this entity from the ECS as well
+        geary(entity).apply {
+            children.forEach { it.removeEntity() }
         }
 
-        //clear all components
-        bitsets.mapNotNull { (kclass, bitset) ->
-            if (bitset[id]) {
-                bitset[id] = false
-                components[kclass]
-            } else
-                null
-        }.forEach { it[id] = null }
+        getRecord(entity)?.apply {
+            archetype.removeEntity(row)
+        }
+        typeMap.remove(entity)
 
         //add current id into queue for reuse
-        removedEntities.push(id)
+        removedEntities.push(entity)
     }
-}
 
-internal inline fun SparseBitSet.forEachBit(block: (Int) -> Unit) {
-    var i = 0
-    while (i >= 0) {
-        i = nextSetBit(i + 1)
-        block(i)
+    public override fun getType(entity: GearyEntityId): GearyType = typeMap[entity]?.archetype?.type ?: GearyType()
+
+    override fun setRecord(entity: GearyEntityId, record: Record) {
+        typeMap[entity] = record
     }
+
+    private fun getRecord(entity: GearyEntityId) = typeMap[entity]
+    private fun getOrAddRecord(entity: GearyEntityId) =
+        typeMap.getOrPut(entity, { root.addEntityWithData(entity, listOf()) })
 }
-
-

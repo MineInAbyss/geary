@@ -1,12 +1,14 @@
 package com.mineinabyss.geary.minecraft
 
-import com.mineinabyss.geary.ecs.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.services.GearyServiceProvider
+import com.mineinabyss.geary.ecs.api.services.GearyServices
+import com.mineinabyss.geary.ecs.systems.ExpiringComponentSystem
 import com.mineinabyss.geary.ecs.systems.PassiveActionsSystem
-import com.mineinabyss.geary.ecs.types.GearyEntityType
+import com.mineinabyss.geary.minecraft.access.BukkitEntityAccess
 import com.mineinabyss.geary.minecraft.components.PlayerComponent
 import com.mineinabyss.geary.minecraft.dsl.attachToGeary
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
-import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
@@ -15,6 +17,7 @@ import kotlinx.serialization.InternalSerializationApi
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
+import kotlin.reflect.KClass
 import kotlin.time.ExperimentalTime
 
 public class GearyPlugin : JavaPlugin() {
@@ -25,6 +28,11 @@ public class GearyPlugin : JavaPlugin() {
         logger.info("On enable has been called")
         saveDefaultConfig()
         reloadConfig()
+        GearyServices.setServiceProvider(object: GearyServiceProvider{
+            override fun <T : Any> getService(service: KClass<T>): T? {
+                return Bukkit.getServer().servicesManager.load(service.java)
+            }
+        })
 
         registerService<Engine>(SpigotEngine().apply { start() })
 
@@ -36,13 +44,15 @@ public class GearyPlugin : JavaPlugin() {
         )
 
         // This will also register a serializer for GearyEntityType
-        attachToGeary<GearyEntityType> {
+        attachToGeary {
             autoscanComponents()
             autoscanConditions()
             autoscanActions()
 
             systems(
-                PassiveActionsSystem
+                PassiveActionsSystem,
+                ExpiringComponentSystem,
+
             )
 
             bukkitEntityAccess {

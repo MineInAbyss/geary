@@ -1,18 +1,19 @@
 package com.mineinabyss.geary.minecraft.dsl
 
-import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.actions.GearyAction
-import com.mineinabyss.geary.ecs.autoscan.AutoscanComponent
-import com.mineinabyss.geary.ecs.autoscan.ExcludeAutoscan
-import com.mineinabyss.geary.ecs.conditions.GearyCondition
-import com.mineinabyss.geary.ecs.engine.Engine
+import com.mineinabyss.geary.ecs.api.GearyComponent
+import com.mineinabyss.geary.ecs.api.actions.GearyAction
+import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
+import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoscan
+import com.mineinabyss.geary.ecs.api.conditions.GearyCondition
+import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.systems.TickingSystem
+import com.mineinabyss.geary.ecs.components.PrefabKey
+import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
-import com.mineinabyss.geary.ecs.systems.TickingSystem
-import com.mineinabyss.geary.ecs.types.EntityTypeManager
-import com.mineinabyss.geary.ecs.types.GearyEntityType
-import com.mineinabyss.geary.ecs.types.GearyEntityTypes
-import com.mineinabyss.geary.minecraft.store.BukkitEntityAccess
+import com.mineinabyss.geary.ecs.serialization.GearyEntitySerializer
+import com.mineinabyss.geary.minecraft.access.BukkitEntityAccess
+import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.messaging.logVal
 import com.mineinabyss.idofront.messaging.logWarn
 import kotlinx.serialization.*
@@ -24,6 +25,7 @@ import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.ClasspathHelper
 import org.reflections.util.ConfigurationBuilder
 import org.reflections.util.FilterBuilder
+import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.full.hasAnnotation
 
@@ -37,14 +39,8 @@ internal annotation class GearyExtensionDSL
  */
 @GearyExtensionDSL
 public class GearyExtension(
-    public val plugin: Plugin,
-    types: GearyEntityTypes<out GearyEntityType>?,
+    public val plugin: Plugin
 ) {
-    init {
-        if (types != null)
-            EntityTypeManager.add(plugin.name, types)
-    }
-
     /**
      * Registers serializers for [GearyComponent]s on the classpath of [plugin]'s [ClassLoader].
      *
@@ -74,7 +70,8 @@ public class GearyExtension(
     @InternalSerializationApi
     public fun autoscanActions(init: AutoScanner.() -> Unit = {}) {
         autoscan<GearyAction>(init) { kClass, serializer ->
-            action(kClass, serializer)
+            if (serializer != null)
+                action(kClass, serializer)
         }
     }
 
@@ -107,7 +104,10 @@ public class GearyExtension(
     @InternalSerializationApi
     public inline fun <reified T : Any> autoscan(
         init: AutoScanner.() -> Unit = {},
-        noinline addSubclass: SerializerRegistry<T> = { kClass, serializer -> subclass(kClass, serializer) }
+        noinline addSubclass: SerializerRegistry<T> = { kClass, serializer ->
+            if (serializer != null)
+                subclass(kClass, serializer)
+        }
     ) {
         AutoScanner().apply(init).registerSerializers(T::class, addSubclass)
     }
@@ -179,7 +179,10 @@ public class GearyExtension(
         @InternalSerializationApi
         public fun <T : Any> registerSerializers(
             kClass: KClass<T>,
-            addSubclass: SerializerRegistry<T> = { kClass, serializer -> subclass(kClass, serializer) },
+            addSubclass: SerializerRegistry<T> = { kClass, serializer ->
+                if (serializer != null)
+                    subclass(kClass, serializer)
+            },
         ) {
             val reflections = getReflections() ?: return
             this@GearyExtension.serializers {
@@ -190,7 +193,7 @@ public class GearyExtension(
                         .filter { !it.hasAnnotation<ExcludeAutoscan>() }
                         .filterIsInstance<KClass<T>>()
                         .map {
-                            this@polymorphic.addSubclass(it, it.serializer())
+                            this@polymorphic.addSubclass(it, it.serializerOrNull())
                             it.simpleName
                         }
                         .joinToString()
@@ -211,14 +214,14 @@ public class GearyExtension(
         serializers { polymorphic(GearyAction::class) { init() } }
     }
 
-    /** Registers a list of [systems]. */
-    public fun systems(vararg systems: TickingSystem) {
-        Engine.addSystems(*systems)
-    }
-
     /** Registers a [system]. */
     public fun system(system: TickingSystem) {
-        Engine.addSystems(system)
+        Engine.addSystem(system)
+    }
+
+    /** Registers a list of [systems]. */
+    public fun systems(vararg systems: TickingSystem) {
+        systems.forEach { system(it) }
     }
 
     /** Adds a serializable action. */
@@ -245,10 +248,12 @@ public class GearyExtension(
      */
     public fun <T : GearyComponent> PolymorphicModuleBuilder<T>.component(
         kClass: KClass<T>,
-        serializer: KSerializer<T>
+        serializer: KSerializer<T>?
     ) {
-        val serialName = serializer.descriptor.serialName
+        //TODO make it more explicitly clear this function registers new components as entities
+        Engine.getComponentIdForClass(kClass)
 
+        val serialName = serializer?.descriptor?.serialName ?: return
         if (!Formats.isRegistered(serialName)) {
             Formats.registerSerialName(serialName, kClass)
             subclass(kClass, serializer)
@@ -280,36 +285,33 @@ public class GearyExtension(
                 if (entity is T) list(gearyEntity, entity)
             }
         }
+    }
 
-        /**
-         * Additional ways of getting a [GearyEntity] given a spigot [Entity]. Will try one by one until a conversion
-         * is not null. There is currently no priority system.
-         */
-        //TODO priority system
-        public fun entityConversion(getter: Entity.() -> GearyEntity?) {
-            BukkitEntityAccess.bukkitEntityAccessExtensions += getter
+    public fun loadPrefabs(from: File, run: ((String, GearyEntity) -> Unit)? = null) {
+        from.walk().filter { it.isFile }.forEach { file ->
+            val name = file.nameWithoutExtension
+            try {
+                val format = when (val ext = file.extension) {
+                    "yml" -> Formats.yamlFormat
+                    "json" -> Formats.jsonFormat
+                    else -> error("Unknown file format $ext")
+                }
+                val type = format.decodeFromString(GearyEntitySerializer, file.readText())
+                val key = PrefabKey(plugin.name, name)
+                type.set(key)
+                PrefabManager.registerPrefab(key, type)
+                run?.invoke(name, type)
+            } catch (e: Exception) {
+                logError("Error deserializing prefab: $name from ${file.path}")
+                e.printStackTrace()
+            }
         }
     }
 }
+public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>?) -> Unit
 
-public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>) -> Unit
-
-/**
- * Entry point to register a new [Plugin] with the Geary ECS.
- *
- * @param types The subclass of [GearyEntityTypes] associated with this plugin.
- */
-public inline fun <reified T : GearyEntityType> Plugin.attachToGeary(
-    types: GearyEntityTypes<T>? = null,
-    init: GearyExtension.() -> Unit
-) {
-    //TODO support plugins being re-registered after a reload
-    GearyExtension(this, types).apply {
-        components {
-            // Whenever we're using this serial module to deserialize our components we want to access them by
-            // reference through geary, not by using the actual EntityType's serializer like we would when
-            // reading config files.
-            component(GearyEntityType.ByReferenceSerializer(T::class))
-        }
-    }.apply(init)
+/** Entry point to register a new [Plugin] with the Geary ECS. */
+//TODO support plugins being re-registered after a reload
+public inline fun Plugin.attachToGeary(init: GearyExtension.() -> Unit) {
+    GearyExtension(this).apply(init)
 }

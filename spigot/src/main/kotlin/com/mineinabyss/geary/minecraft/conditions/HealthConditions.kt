@@ -4,9 +4,9 @@
 
 package com.mineinabyss.geary.minecraft.conditions
 
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.conditions.GearyCondition
-import com.mineinabyss.geary.minecraft.components.toBukkit
+import com.mineinabyss.geary.ecs.api.conditions.GearyCondition
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.minecraft.access.toBukkit
 import com.mineinabyss.idofront.serialization.DoubleRangeSerializer
 import com.mineinabyss.idofront.util.DoubleRange
 import kotlinx.serialization.SerialName

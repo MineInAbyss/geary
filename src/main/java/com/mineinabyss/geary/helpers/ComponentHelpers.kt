@@ -1,11 +1,8 @@
 package com.mineinabyss.geary.helpers
 
-import com.mineinabyss.geary.ecs.GearyComponent
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.components.getInstanceComponents
-import com.mineinabyss.geary.ecs.components.getPersistingComponents
+import com.mineinabyss.geary.ecs.api.GearyComponent
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.serialization.Formats
-import com.mineinabyss.geary.ecs.type
 
 /** Gets the serial name of this component as registered in [Formats] */
 public val GearyComponent.serialName: String?
@@ -16,7 +13,7 @@ private val Collection<GearyComponent>.names: String get() = mapNotNull { it.ser
 /** Neatly lists all the components on this entity. */
 public fun GearyEntity.listComponents(): String {
     return """
-        Static: ${type?.staticComponentMap?.values?.names}
+        Static: ${TODO()}
         Instance: ${getInstanceComponents().names}
         Persisting: ${getPersistingComponents().names}
     """.trimIndent()

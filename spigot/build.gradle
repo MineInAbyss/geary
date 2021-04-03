@@ -13,10 +13,10 @@ repositories {
     mavenCentral()
     jcenter()
     maven { url 'https://papermc.io/repo/repository/maven-public/' }
+    maven { url 'https://repo.codemc.io/repository/nms/' }
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
-    maven { url 'http://nexus.okkero.com/repository/maven-releases/' }
     maven { url("https://dl.bintray.com/korlibs/korlibs") }
-    maven githubPackage.invoke("MineInAbyss/Idofront")
+    maven { url 'https://jitpack.io' }
 }
 
 
@@ -24,13 +24,15 @@ dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     //TODO decide whether we stick with spigot or not since paper adds some nice things
     compileOnly "com.destroystokyo.paper:paper-api:$server_version"
+    compileOnly "com.destroystokyo.paper:paper:$server_version" // NMS
     implementation "org.reflections:reflections:0.9.12"
     //TODO I'd like to use kotlinspice here but not sure how to best add dependencies that need to be shaded.
     // For now leave as compile only since this dep is always present and having 2 copies was causing issues.
-    compileOnly "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
+    compileOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
+    implementation "com.mineinabyss:idofront-nms:0.5.8"
 //    compileOnly "org.spigotmc:spigot-api:$server_version"
-    compileOnly "com.okkero.skedule:skedule"
+    compileOnly "com.github.okkero:skedule"
 
     api project(":")
 }
@@ -48,10 +50,16 @@ build.dependsOn shadowJar
 
 publishing {
     repositories {
-        maven githubPackagePublish.invoke("MineInAbyss/Geary")
+        maven {
+            url = "https://repo.mineinabyss.com/releases"
+            credentials {
+                username = findProperty('mineinabyssMavenUsername')
+                password = findProperty('mineinabyssMavenPassword')
+            }
+        }
     }
     publications {
-        gpr(MavenPublication) {
+        maven(MavenPublication) {
             artifactId = "geary-spigot"
             from components.java
         }

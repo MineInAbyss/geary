@@ -1,17 +1,17 @@
 package com.mineinabyss.geary.ecs.actions.context
 
-import com.mineinabyss.geary.ecs.GearyEntity
-import com.mineinabyss.geary.ecs.actions.GearyAction
-import com.mineinabyss.geary.ecs.components.parent
+import com.mineinabyss.geary.ecs.api.actions.GearyAction
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.entities.parent
 import com.mineinabyss.geary.ecs.serialization.FlatSerializer
 import com.mineinabyss.geary.ecs.serialization.FlatWrap
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 
 /**
- * Executes actions on this entity's parent
+ * Runs a list of actions on the parent of the given entity.
  *
- * @param run The actions to run on the parent.
+ * @param wrapped The list of actions to run.
  */
 @Serializable(with = SwitchToParentSerializer::class)
 public class SwitchToParentAction(
