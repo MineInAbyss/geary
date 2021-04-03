@@ -29,18 +29,23 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     internal val matchedArchetypes = mutableListOf<Archetype>()
     private var currComponents = listOf<GearyComponent>()
     private var currRelationIds = listOf<GearyComponentId>()
+
     /** The data of the current component associated with each relation */
     private var currRelationData = listOf<GearyComponent>()
 
     //idea is match works as a builder and family becomes immutable upon first access
     public val family: Family by lazy { Family(match, relationsKey) } //TODO make gearytype sortedSet
 
+    private val archetypeIterators = mutableMapOf<Archetype, ArchetypeIterator>()
+
     public fun tick() {
         // If any archetypes get added here while running through the system we dont want those entities to be iterated
         // right now, since they are most likely the entities involved with the current tick. To avoid this and
         // concurrent modifications, we make a copy of the list before iterating.
         matchedArchetypes.toList().forEach { arc ->
-            ArchetypeIterator(arc, family).forEach { (entity, components, relationIds, relationData) ->
+            val iterator = archetypeIterators.getOrPut(arc, { ArchetypeIterator(arc, family) })
+            iterator.reset()
+            iterator.forEach { (entity, components, relationIds, relationData) ->
                 currComponents = components
                 currRelationIds = relationIds
                 currRelationData = relationData

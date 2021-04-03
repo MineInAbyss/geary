@@ -78,6 +78,16 @@ internal class ArchetypeIterator(
     private fun getAtIndex(index: Int) = dataIndices.map {
         archetype.componentData[it][index]
     }
+
+    /**
+     * Resets this iterator. Useful as creating it every time is relatively expensive,
+     * as we need to do slow indexOf operations.
+     */
+    internal fun reset() {
+        row = 0
+        relationCombinationsIterator = relationCombinations.iterator()
+        componentData = listOf()
+    }
 }
 
 public class RelationCombination(
