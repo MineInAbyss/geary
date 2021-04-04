@@ -1,14 +1,14 @@
 [![Java CI with Gradle](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml/badge.svg)](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml)
 [![Package](https://badgen.net/maven/v/metadata-url/repo.mineinabyss.com/releases/com/mineinabyss/geary/maven-metadata.xml)](https://repo.mineinabyss.com/releases/com/mineinabyss/geary)
 [![Wiki](https://badgen.net/badge/color/Project%20Wiki/purple?icon=wiki&label)](https://github.com/MineInAbyss/Geary/wiki)
+[![Contribute](https://shields.io/badge/Contribute-e57be5?logo=github%20sponsors&style=flat&logoColor=white)](https://github.com/MineInAbyss/MineInAbyss/wiki/Setup-and-Contribution-Guide)
+
 
 # Geary
 
 ### Overview
 
-Geary is a Spigot plugin that adds an Engine for an Entity Component System (ECS). The engine implementation is currently using bitsets and could be more optimized, especially for iterating systems, though relative to Minecraft's already poor performance this is insignificant. We add some features unique to our situation with Minecraft, like the ability to encode components directly to a Persistent Data Container.
-
-Geary is also written in and for Kotlin, reducing boilerplate code for end users. We also didn't want to make a wrapper around existing Java libraries because of increased code complexity and maintenance efforts.
+Geary is an Entity Component System (ECS) written in and for Kotlin designed for Minecraft server plugins. The engine design is inspired by [flecs](https://github.com/SanderMertens/flecs) and uses archetypes for data storage.
 
 We have two Spigot plugins using this ECS to add Minecraft-specific functionality:
 - [Mobzy](https://github.com/MineInAbyss/Mobzy) - Custom NMS entities that bridge ECS and Minecraft's very inheritance based entities.
@@ -20,28 +20,41 @@ We have two Spigot plugins using this ECS to add Minecraft-specific functionalit
 
 All components are serialized through kotlinx.serialization, a reflectionless serialization library which allows us to store them in many formats, including JSON, Yaml, CBOR, and [many more](https://github.com/Kotlin/kotlinx.serialization/blob/master/formats/README.md). Use whatever you prefer!
 
-Both Mobzy and Looty use this to allow for config-based entity creation, and store components directly in Bukkit's Persistent Data Containers using CBOR.
+Both Mobzy and Looty use this to allow for config-based entity creation, and store components directly in Bukkit's Persistent Data Containers using CBOR. Notably, tile entities and chunks also contain Persistent Data Containers, which we plan to make use of in the future.
 
 ### Nice Kotlin syntax
 
-Idiomatic Kotlin syntax for instantiating entities, iterating over them in systems, and creating components. We generally try to make use of Kotlin specific features like reified types, and we use a DSL to let third party plugins get set up with Geary.
-
-## Planned 
+Idiomatic Kotlin syntax for instantiating entities, iterating over them in systems, and creating components. We generally try to make use of Kotlin specific features like reified types, and we use a DSL to let third party addons get set up with Geary.
 
 ### Prefabs
 
-We plan to build a more extensive prefab system, but currently we have some basic support for this in the form of entity types and static components.
+Prefabs allow you to reuse components between multiple entities of the same type. The addon DSL allows you to specify a folder to automatically load prefabs from. These may be written in YAML, JSON, and eventually any other backend supported by ktx.serialization.
 
-A Geary entity can be created from a GearyEntityType, which will initialize it with new instances of some components, or static components shared between all entities of this type. These static components will persist on the entity but their data won't be written to the entity itself. We avoid unneeded serialization or the need for data migrations in these cases!
+## Planned
+
+### Decoupling from Minecraft
+
+As this project matures, we plan to replace more and more of the Minecraft server with our own code. We hope to do this while maintaining useful features for Bukkit. Our goal is to slowly provide alternatives to some of the more annoying/slow parts of the vanilla server. Currently our plan looks something like this:
+- (Ongoing) Ensure core parts of the ECS can operate without Spigot.
+- (Ongoing) Avoid interacting with NMS and especially its class heirarchy. Components should work without having to create any custom NMS entity types.
+- Support stationary ECS entities that are saved to the chunk and can send the correct packets to players.
+- Full-on custom entities with their own AI and pathfinding system.
+- ECS chunk backend with some basic block behaviours copied from Minecraft. We would like to achieve:
+   - Cubic chunks
+   - Better async support
+   - Custom ECS blocks
 
 ### Data migration
 
 We are looking at libraries that provide a DSL for component data migrations. We plan to allow end users to register a list of migrations with Geary and let Geary ensure these migrations get applied when entities get loaded.
 
+### Queries
+
+A DSL for making in-depth queries to efficiently get exactly the entities you want.
+
 ## Limitations
-- Speed could be greatly improved with some caching and better engine design.
 - There is no proper Java support. We are using many Kotlin-specific libraries and want to make this nice to use in Kotlin first. However, we understand parts of this may be useful for Java plugins as well, and plan to expand some support for them in the future (ex you may have to write components in Kotlin but could still write the rest of your plugin as you prefer).
-- Generic types on components have an unsafe cast done on them, meaning you should always use star projection. However, the need to use generics on components is likely a sign of inheritance which probably has a better alternative in ECS.
+- API changes are still rather common.
 
 ## Usage
 
