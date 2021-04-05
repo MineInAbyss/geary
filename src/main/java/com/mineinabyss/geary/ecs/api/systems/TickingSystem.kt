@@ -21,8 +21,8 @@ import kotlin.reflect.KProperty
  */
 public abstract class TickingSystem(public val interval: Long = 1) {
     private val match = sortedSetOf<GearyComponentId>()
-    private val dataKey = sortedSetOf<GearyComponentId>()
-    private val relationsKey = sortedSetOf<Relation>()
+    private val dataKey = mutableListOf<GearyComponentId>()
+    private val relationsKey = mutableListOf<Relation>()
 
     internal val matchedArchetypes = mutableListOf<Archetype>()
     private var currComponents = listOf<GearyComponent>()
@@ -32,7 +32,7 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     private var currRelationData = listOf<GearyComponent>()
 
     //idea is match works as a builder and family becomes immutable upon first access
-    public val family: Family by lazy { Family(match, relationsKey) } //TODO make gearytype sortedSet
+    public val family: Family by lazy { Family(match, relationsKey.toSortedSet()) } //TODO make gearytype sortedSet
 
     private val archetypeIterators = mutableMapOf<Archetype, ArchetypeIterator>()
 
@@ -41,7 +41,7 @@ public abstract class TickingSystem(public val interval: Long = 1) {
         // right now, since they are most likely the entities involved with the current tick. To avoid this and
         // concurrent modifications, we make a copy of the list before iterating.
         matchedArchetypes.toList().forEach { arc ->
-            val iterator = archetypeIterators.getOrPut(arc, { ArchetypeIterator(arc, family) })
+            val iterator = archetypeIterators.getOrPut(arc, { ArchetypeIterator(arc, dataKey.toList(), relationsKey.toList()) })
             iterator.reset()
             iterator.forEach { (entity, components, relationIds, relationData) ->
                 currComponents = components

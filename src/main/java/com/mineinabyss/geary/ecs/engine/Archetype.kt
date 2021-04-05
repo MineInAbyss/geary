@@ -6,7 +6,6 @@ import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.systems.Family
 import java.util.*
 
 public data class Archetype(
@@ -23,7 +22,7 @@ public data class Archetype(
         .groupBy { it.parent }
 
     /** @return This Archetype's [relations] that are also a part of this family's relations. */
-    public fun matchedRelationsFor(family: Family): Map<GearyComponentId, List<Relation>> = family.relations
+    public fun matchedRelationsFor(matchRelations: Collection<Relation>): Map<GearyComponentId, List<Relation>> = matchRelations
         .map { it.parent }
         .filter { it in relations }
         .associateWith { relations[it]!! } //TODO handle null error

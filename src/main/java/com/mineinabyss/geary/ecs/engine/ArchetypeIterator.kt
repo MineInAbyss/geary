@@ -5,23 +5,23 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.systems.Family
 
 internal class ArchetypeIterator(
     private val archetype: Archetype,
-    private val family: Family
+    private val dataKey: List<GearyComponentId>,
+    private val relationsKey: List<Relation>,
 ) : Iterator<ArchetypeIterationResult> {
     init {
         archetype.movedRows.clear()
     }
 
-    private val dataIndices = family.match
+    private val dataIndices = dataKey
         .filter { it and HOLDS_DATA != 0uL }
         .map { archetype.indexOf(it) }
 
-    private val relationDataIndices = family.relations.map { archetype.indexOf(it.id) }
+    private val relationDataIndices = relationsKey.map { archetype.indexOf(it.id) }
 
-    private val matchedRelations = archetype.matchedRelationsFor(family)
+    private val matchedRelations = archetype.matchedRelationsFor(relationsKey)
 
     private val relationCombinations: List<RelationCombination> =
         matchedRelations.values.fold(emptyList()) { curr, components: List<Relation> ->
