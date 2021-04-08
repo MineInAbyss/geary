@@ -103,13 +103,17 @@ public class GearyExtension(
      */
     @InternalSerializationApi
     public inline fun <reified T : Any> autoscan(
-        init: AutoScanner.() -> Unit = {},
+        crossinline init: AutoScanner.() -> Unit = {},
         noinline addSubclass: SerializerRegistry<T> = { kClass, serializer ->
             if (serializer != null)
                 subclass(kClass, serializer)
         }
     ) {
-        AutoScanner().apply(init).registerSerializers(T::class, addSubclass)
+        startup {
+            GearyLoadPhase.REGISTER_SERIALIZERS {
+                AutoScanner().apply(init).registerSerializers(T::class, addSubclass)
+            }
+        }
     }
 
     private companion object {
@@ -288,24 +292,49 @@ public class GearyExtension(
     }
 
     public fun loadPrefabs(from: File, run: ((String, GearyEntity) -> Unit)? = null) {
-        from.walk().filter { it.isFile }.forEach { file ->
-            val name = file.nameWithoutExtension
-            try {
-                val format = when (val ext = file.extension) {
-                    "yml" -> Formats.yamlFormat
-                    "json" -> Formats.jsonFormat
-                    else -> error("Unknown file format $ext")
+        startup {
+            GearyLoadPhase.LOAD_PREFABS {
+                from.walk().filter { it.isFile }.forEach { file ->
+                    val name = file.nameWithoutExtension
+                    try {
+                        val format = when (val ext = file.extension) {
+                            "yml" -> Formats.yamlFormat
+                            "json" -> Formats.jsonFormat
+                            else -> error("Unknown file format $ext")
+                        }
+                        val type = format.decodeFromString(GearyEntitySerializer, file.readText())
+                        val key = PrefabKey(plugin.name, name)
+                        type.set(key)
+                        PrefabManager.registerPrefab(key, type)
+                        run?.invoke(name, type)
+                    } catch (e: Exception) {
+                        logError("Error deserializing prefab: $name from ${file.path}")
+                        e.printStackTrace()
+                    }
                 }
-                val type = format.decodeFromString(GearyEntitySerializer, file.readText())
-                val key = PrefabKey(plugin.name, name)
-                type.set(key)
-                PrefabManager.registerPrefab(key, type)
-                run?.invoke(name, type)
-            } catch (e: Exception) {
-                logError("Error deserializing prefab: $name from ${file.path}")
-                e.printStackTrace()
             }
         }
+    }
+
+    public class PhaseCreator {
+        public operator fun GearyLoadPhase.invoke(run: () -> Unit) {
+            GearyLoadManager.add(this, run)
+        }
+    }
+
+    /**
+     * Allows defining actions that should run at a specific phase during startup
+     *
+     * Within its context, invoke a [GearyLoadPhase] to run something during it, ex:
+     *
+     * ```
+     * GearyLoadPhase.ENABLE {
+     *     // run code here
+     * }
+     * ```
+     */
+    public inline fun startup(run: PhaseCreator.() -> Unit) {
+        PhaseCreator().apply(run)
     }
 }
 public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>?) -> Unit
