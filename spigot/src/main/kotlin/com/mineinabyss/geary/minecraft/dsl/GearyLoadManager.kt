@@ -15,7 +15,10 @@ public object GearyLoadManager {
     internal fun onEnable() {
         geary.schedule {
             waitFor(1)
-            actions.values.forEach { it.runAll() }
+            actions[GearyLoadPhase.REGISTER_SERIALIZERS]?.runAll()
+            actions[GearyLoadPhase.LOAD_PREFABS]?.runAll()
+            waitFor(1)
+            actions[GearyLoadPhase.ENABLE]?.runAll()
         }
     }
 }
