@@ -54,7 +54,7 @@ public fun GearyEntity.clearChildren() {
 }
 
 public val GearyEntity.parent: GearyEntity?
-    get() = type.firstOrNull { id and CHILDOF != 0uL }?.let { geary(it) }
+    get() = type.firstOrNull { it and CHILDOF != 0uL }?.let { geary(it and ENTITY_MASK) }
 
 public val GearyEntity.parents: Set<GearyEntity>
     get() {
