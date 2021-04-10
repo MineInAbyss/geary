@@ -1,23 +1,23 @@
 package com.mineinabyss.geary.minecraft.store
 
+import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.entities.addPrefab
 import org.bukkit.persistence.PersistentDataContainer
 
 /** Encodes this entity's persisting components into a [PersistentDataContainer] */
 public fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
-    pdc.encodeComponents(getPersistingComponents())
+    pdc.encodeComponents(getPersistingComponents(), type)
 }
 
 /** Decodes a [PersistentDataContainer]'s components, adding them to this entity and its list of persisting components */
 public fun GearyEntity.decodeComponentsFrom(pdc: PersistentDataContainer) {
-    val components = pdc.decodeComponents()
-
-    //TODO implement adding prefabs
-    //if there's a prefab reference on the PDC, we need to add it before we try and decode components from it.
-//    components.asSequence().filterIsInstance<Prefabs>().firstOrNull()?.prefabs?.forEach { addPrefab(it) }
-
-//    type?.decodeComponentsTo(this)
+    val (components, type) = pdc.decodeComponents()
 
     //components written to this entity's PDC will override the ones defined in type
     setAllPersisting(components)
+    for (id in type) {
+        addPrefab(geary(id))
+    }
 }

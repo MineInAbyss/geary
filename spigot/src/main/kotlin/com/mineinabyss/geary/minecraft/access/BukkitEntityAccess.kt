@@ -107,7 +107,7 @@ public object BukkitEntityAccess : Listener {
     public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
         val gearyEntity = getEntityOrNull(entity) ?: return
         //TODO some way of knowing if this entity is permanently removed
-        entity.encodeComponents(gearyEntity.getPersistingComponents())
+        entity.encodeComponents(gearyEntity)
         unregisterEntity(entity)
         gearyEntity.removeEntity()
     }

@@ -1,12 +1,18 @@
 package com.mineinabyss.geary.minecraft.store
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyType
+import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.components.PrefabKey
+import com.mineinabyss.geary.ecs.engine.INSTANCEOF
+import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.builtins.ListSerializer
 import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType.BYTE_ARRAY
@@ -52,7 +58,7 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
     serializer: DeserializationStrategy<T>? = Formats.getSerializerFor(key) as? DeserializationStrategy<T>,
 ): T? {
     serializer ?: return null
-    val encoded = this[key.addComponentPrefix(), BYTE_ARRAY] ?: return null
+    val encoded = this[key, BYTE_ARRAY] ?: return null
     return cborFormat.decodeFromByteArray(serializer, encoded)
 }
 
@@ -61,13 +67,24 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
  *
  * @see encode
  */
-public fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>) {
+public fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>, type: GearyType) {
     hasComponentsEncoded = true
     //remove all keys present on the PDC so we only end up with the new list of components being encoded
     keys.filter { it.namespace == "geary" && it != SpigotEngine.componentsKey }.forEach { remove(it) }
 
     for (value in components)
         encode(value)
+
+    //encode all the prefabs of this type with a key stored under a special key. This could have been done via a
+    // persisting prefab component, but I prefer being explicit and avoiding the possibility of this component
+    // accidentally ending up on the entity itself
+    encode(
+        type.filter { it and INSTANCEOF != 0uL }
+            .map { it and INSTANCEOF.inv() }
+            .mapNotNull { geary(it).get<PrefabKey>() },
+        ListSerializer(PrefabKey.serializer()),
+        "geary:prefabs".toMCKey()
+    )
 }
 
 /**
@@ -75,9 +92,13 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
  *
  * @see decode
  */
-public fun PersistentDataContainer.decodeComponents(): Set<GearyComponent> =
+public fun PersistentDataContainer.decodeComponents(): Pair<Set<GearyComponent>, GearyType> =
     // only include keys that start with the component prefix and remove it to get the serial name
     keys.filter { it.key.startsWith(COMPONENT_PREFIX) }
         .map { it.removeComponentPrefix() }
         .mapNotNull { decode(it) }
-        .toSet()
+        .toSet() to
+            (decode(
+                "geary:prefabs".toMCKey(),
+                ListSerializer(PrefabKey.serializer())
+            ) ?: emptyList()).mapNotNullTo(sortedSetOf()) { PrefabManager[it]?.id }
