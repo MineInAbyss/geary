@@ -84,6 +84,9 @@ internal class ArchetypeIterator(
      * as we need to do slow indexOf operations.
      */
     internal fun reset() {
+        //TODO we should only be adding stuff here if something is currently iterating over this archetype
+        // we'll remove this line eventually
+        archetype.movedRows.clear()
         row = 0
         relationCombinationsIterator = relationCombinations.iterator()
         componentData = listOf()
