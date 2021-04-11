@@ -7,8 +7,8 @@ import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
-import com.mineinabyss.geary.ecs.components.PrefabKey
 import com.mineinabyss.geary.ecs.entities.addPrefab
+import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
 import com.mineinabyss.geary.minecraft.events.GearyMinecraftLoadEvent
@@ -60,7 +60,7 @@ public object BukkitEntityAccess : Listener {
         }
 
         //TODO extension function to get prefab key from entity, including correct namespace
-        PrefabManager[PrefabKey("Mobzy", entity.typeName)]?.let {
+        PrefabManager[PrefabKey("mobzy", entity.typeName)]?.let {
             gearyEntity.addPrefab(it)
         }
 

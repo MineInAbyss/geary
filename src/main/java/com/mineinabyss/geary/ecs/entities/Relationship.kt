@@ -8,10 +8,10 @@ import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.api.systems.Family
 import com.mineinabyss.geary.ecs.api.systems.SystemManager
 import com.mineinabyss.geary.ecs.components.CopyToInstances
-import com.mineinabyss.geary.ecs.components.PrefabKey
 import com.mineinabyss.geary.ecs.engine.CHILDOF
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.INSTANCEOF
+import com.mineinabyss.geary.ecs.prefab.PrefabKey
 
 /** Adds a [parent] entity to this entity.  */
 public fun GearyEntity.addParent(parent: GearyEntity) {

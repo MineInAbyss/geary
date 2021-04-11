@@ -21,6 +21,7 @@ import kotlin.reflect.KClass
  * Thus, there is no longer support for implementing GearyEntity as other classes.
  */
 @Suppress("NOTHING_TO_INLINE")
+//@Serializable
 public inline class GearyEntity(public val id: GearyEntityId) {
     /** Remove this entity from the ECS. */
     public fun removeEntity() {

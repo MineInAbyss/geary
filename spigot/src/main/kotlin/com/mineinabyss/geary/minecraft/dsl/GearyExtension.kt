@@ -8,11 +8,12 @@ import com.mineinabyss.geary.ecs.api.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
-import com.mineinabyss.geary.ecs.components.PrefabKey
+import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.GearyEntitySerializer
 import com.mineinabyss.geary.minecraft.access.BukkitEntityAccess
+import com.mineinabyss.geary.minecraft.components.of
 import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.messaging.logVal
 import com.mineinabyss.idofront.messaging.logWarn
@@ -303,7 +304,7 @@ public class GearyExtension(
                             else -> error("Unknown file format $ext")
                         }
                         val type = format.decodeFromString(GearyEntitySerializer, file.readText())
-                        val key = PrefabKey(plugin.name, name)
+                        val key = PrefabKey.of(plugin, name)
                         type.set(key)
                         PrefabManager.registerPrefab(key, type)
                         run?.invoke(name, type)

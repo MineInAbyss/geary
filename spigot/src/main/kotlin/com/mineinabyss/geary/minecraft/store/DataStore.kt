@@ -3,8 +3,8 @@ package com.mineinabyss.geary.minecraft.store
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.entities.geary
-import com.mineinabyss.geary.ecs.components.PrefabKey
 import com.mineinabyss.geary.ecs.engine.INSTANCEOF
+import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
