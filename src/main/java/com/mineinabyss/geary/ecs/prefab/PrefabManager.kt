@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.ecs.prefab
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.components.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager.keys
 import com.uchuhimo.collections.MutableBiMap
 import com.uchuhimo.collections.mutableBiMapOf
@@ -24,6 +23,9 @@ public object PrefabManager {
         prefabs[name] = prefab
         prefab.set(name)
     }
+
+    public fun getPrefabsFor(namespace: String): List<PrefabKey> =
+        keys.filter { it.plugin == namespace }
 
     /** Clears all stored [prefabs] */
     internal fun clear() {

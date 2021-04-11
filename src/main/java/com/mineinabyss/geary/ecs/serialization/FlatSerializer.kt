@@ -13,7 +13,7 @@ public interface FlatWrap<A> {
 
 /** A wrapper around [SerialDescriptor] that only overrides the [serialName]. */
 @ExperimentalSerializationApi
-private class DescriptorWrapper(override val serialName: String, wrapped: SerialDescriptor) :
+internal class DescriptorWrapper(override val serialName: String, wrapped: SerialDescriptor) :
     SerialDescriptor by wrapped
 
 /**
@@ -21,7 +21,7 @@ private class DescriptorWrapper(override val serialName: String, wrapped: Serial
  * Not technically needed but doing this just in case.
  */
 @ExperimentalSerializationApi
-private class SerializerWrapper<T>(override val descriptor: SerialDescriptor, wrapped: KSerializer<T>) :
+internal class SerializerWrapper<T>(override val descriptor: SerialDescriptor, wrapped: KSerializer<T>) :
     KSerializer<T> by wrapped
 
 /**
