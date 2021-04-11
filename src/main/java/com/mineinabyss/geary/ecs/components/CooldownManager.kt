@@ -17,7 +17,10 @@ import kotlinx.serialization.Serializable
 @AutoscanComponent
 public class CooldownManager {
     private val completionTime: MutableMap<String, Cooldown> = mutableMapOf()
-    public val incompleteCooldowns: Map<String, Cooldown> get() = completionTime.filterValues { it.endTime > System.currentTimeMillis() }
+    public val incompleteCooldowns: Map<String, Cooldown>
+        get() = completionTime.filterValues {
+            it.endTime > System.currentTimeMillis()
+        }
 
     /** @return Whether a certain cooldown is complete. */
     public fun isDone(key: String): Boolean {

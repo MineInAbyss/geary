@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.components.PersistingComponents
+import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import kotlin.reflect.KClass
 
@@ -68,8 +69,8 @@ public inline class GearyEntity(public val id: GearyEntityId) {
      *
      * Ex. for bukkit entities this is done through a PersistentDataContainer.
      */
-    public inline fun setPersisting(component: GearyComponent) {
-        set(component)
+    public inline fun <reified T: GearyComponent> setPersisting(component: T, kClass: KClass<out T> = T::class) {
+        set(component, kClass)
         //TODO persisting components should store a list of ComponentIDs
         //TODO is this possible to do nicely with relations?
         getOrSet { PersistingComponents() }.add(component)
@@ -89,7 +90,7 @@ public inline class GearyEntity(public val id: GearyEntityId) {
      * @return Whether the component was present before removal.
      */
     public inline fun <reified T : GearyComponent> remove(): Boolean =
-        remove(componentId<T>())
+        remove(componentId<T>()) || remove(componentId<T>() and ENTITY_MASK)
 
     public inline fun remove(kClass: ComponentClass): Boolean =
         remove(componentId(kClass))
@@ -114,7 +115,7 @@ public inline class GearyEntity(public val id: GearyEntityId) {
 
     /** Gets a persisting component of type [T] or adds a [default] if no component was present. */
     public inline fun <reified T : GearyComponent> getOrSetPersisting(default: () -> T): T =
-        get<T>() ?: default().also { setPersisting(id) }
+        get<T>() ?: default().also { setPersisting<T>(it) }
 
     /** Gets all the active components on this entity. */
     public inline fun getComponents(): Set<GearyComponent> = Engine.getComponentsFor(id)

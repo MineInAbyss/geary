@@ -24,6 +24,9 @@ public object PrefabManager {
         prefab.set(name)
     }
 
+    public fun getPrefabsFor(namespace: String): List<PrefabKey> =
+        keys.filter { it.plugin == namespace }
+
     /** Clears all stored [prefabs] */
     internal fun clear() {
         prefabs.clear()
