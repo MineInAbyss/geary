@@ -10,9 +10,10 @@ import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
+import com.mineinabyss.idofront.util.toMCKey
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.SetSerializer
 import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType.BYTE_ARRAY
@@ -81,8 +82,9 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
     encode(
         type.filter { it and INSTANCEOF != 0uL }
             .map { it and INSTANCEOF.inv() }
-            .mapNotNull { geary(it).get<PrefabKey>() },
-        ListSerializer(PrefabKey.serializer()),
+            .mapNotNull { geary(it).get<PrefabKey>() }
+            .toSet(),
+        SetSerializer(PrefabKey.serializer()),
         "geary:prefabs".toMCKey()
     )
 }
@@ -100,5 +102,5 @@ public fun PersistentDataContainer.decodeComponents(): Pair<Set<GearyComponent>,
         .toSet() to
             (decode(
                 "geary:prefabs".toMCKey(),
-                ListSerializer(PrefabKey.serializer())
+                SetSerializer(PrefabKey.serializer())
             ) ?: emptyList()).mapNotNullTo(sortedSetOf()) { PrefabManager[it]?.id }

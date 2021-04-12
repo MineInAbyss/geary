@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.minecraft.store
 
+import com.mineinabyss.idofront.util.toMCKey
 import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.plugin.Plugin
@@ -8,18 +9,6 @@ import org.bukkit.plugin.Plugin
 internal fun PersistentDataContainer.keysFrom(plugin: Plugin): List<NamespacedKey> {
     val pluginNamespace = NamespacedKey(plugin, "").namespace
     return keys.filter { it.namespace == pluginNamespace }
-}
-
-/** Converts this string to a [NamespacedKey] where the string must be formatted as `namespace:key` */
-public fun String.toMCKey(): NamespacedKey {
-    val split = split(':')
-    if (split.size != 2)
-        error("Malformatted key, must only contain one : that splits namespace and key.")
-
-    val (namespace, key) = split
-
-    @Suppress("DEPRECATION") // deprecated just to discourage using instantiating without plugin reference
-    return NamespacedKey(namespace, key)
 }
 
 /** Converts this string to a [NamespacedKey] with the [COMPONENT_PREFIX] on its key. */
