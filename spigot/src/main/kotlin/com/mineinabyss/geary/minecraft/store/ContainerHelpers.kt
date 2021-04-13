@@ -19,6 +19,8 @@ public fun PersistentDataHolder.encodeComponents(entity: GearyEntity) {
 public fun ItemStack.decodeComponents(): Pair<Set<GearyComponent>, GearyType> =
     itemMeta.decodeComponents()
 
-public fun ItemStack.encodeComponents(components: Collection<GearyComponent>) {
-    editItemMeta { encodeComponents(components) }
+public fun GearyEntity.encodeComponentsTo(item: ItemStack) {
+    item.editItemMeta {
+        encodeComponentsTo(persistentDataContainer)
+    }
 }

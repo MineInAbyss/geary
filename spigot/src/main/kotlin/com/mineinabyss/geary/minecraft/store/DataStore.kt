@@ -56,7 +56,8 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode():
  */
 public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
     key: NamespacedKey,
-    serializer: DeserializationStrategy<T>? = Formats.getSerializerFor(key) as? DeserializationStrategy<T>,
+    serializer: DeserializationStrategy<T>? =
+        Formats.getSerializerFor(key.removeComponentPrefix()) as? DeserializationStrategy<T>,
 ): T? {
     serializer ?: return null
     val encoded = this[key, BYTE_ARRAY] ?: return null
@@ -97,7 +98,6 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
 public fun PersistentDataContainer.decodeComponents(): Pair<Set<GearyComponent>, GearyType> =
     // only include keys that start with the component prefix and remove it to get the serial name
     keys.filter { it.key.startsWith(COMPONENT_PREFIX) }
-        .map { it.removeComponentPrefix() }
         .mapNotNull { decode(it) }
         .toSet() to
             (decode(
