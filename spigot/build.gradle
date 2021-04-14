@@ -5,6 +5,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'com.github.johnrengelman.shadow'
+    id "org.jetbrains.dokka" version "1.4.30"
 }
 
 apply from: 'https://raw.githubusercontent.com/MineInAbyss/shared-gradle/master/common.gradle'
