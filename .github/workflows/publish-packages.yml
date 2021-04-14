@@ -24,3 +24,13 @@ jobs:
 
       - name: Run gradle publish
         run: gradle publish -PmineinabyssMavenUsername=${{ secrets.MAVEN_PUBLISH_USERNAME }} -PmineinabyssMavenPassword=${{ secrets.MAVEN_PUBLISH_PASSWORD }}
+
+      - name: Generate Dokka
+        run: gradle dokkaHtml
+
+      - name: Publish documentation to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/dokka/html
+          force_orphan: true
