@@ -10,6 +10,6 @@ import org.bukkit.inventory.ItemStack
  * @param slot The slot number of this item in its inventory.
  */
 public data class ItemComponent(
-        var item: ItemStack, //TODO should setter be internal?
-        var slot: Int
+    var item: ItemStack, //TODO should setter be internal?
+    var slot: Int
 )

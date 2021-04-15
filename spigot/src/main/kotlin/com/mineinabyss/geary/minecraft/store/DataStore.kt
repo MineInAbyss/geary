@@ -10,9 +10,10 @@ import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
+import com.mineinabyss.idofront.util.toMCKey
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.SetSerializer
 import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType.BYTE_ARRAY
@@ -55,7 +56,8 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode():
  */
 public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
     key: NamespacedKey,
-    serializer: DeserializationStrategy<T>? = Formats.getSerializerFor(key) as? DeserializationStrategy<T>,
+    serializer: DeserializationStrategy<T>? =
+        Formats.getSerializerFor(key.removeComponentPrefix()) as? DeserializationStrategy<T>,
 ): T? {
     serializer ?: return null
     val encoded = this[key, BYTE_ARRAY] ?: return null
@@ -81,8 +83,9 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
     encode(
         type.filter { it and INSTANCEOF != 0uL }
             .map { it and INSTANCEOF.inv() }
-            .mapNotNull { geary(it).get<PrefabKey>() },
-        ListSerializer(PrefabKey.serializer()),
+            .mapNotNull { geary(it).get<PrefabKey>() }
+            .toSet(),
+        SetSerializer(PrefabKey.serializer()),
         "geary:prefabs".toMCKey()
     )
 }
@@ -95,10 +98,9 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
 public fun PersistentDataContainer.decodeComponents(): Pair<Set<GearyComponent>, GearyType> =
     // only include keys that start with the component prefix and remove it to get the serial name
     keys.filter { it.key.startsWith(COMPONENT_PREFIX) }
-        .map { it.removeComponentPrefix() }
         .mapNotNull { decode(it) }
         .toSet() to
             (decode(
                 "geary:prefabs".toMCKey(),
-                ListSerializer(PrefabKey.serializer())
+                SetSerializer(PrefabKey.serializer())
             ) ?: emptyList()).mapNotNullTo(sortedSetOf()) { PrefabManager[it]?.id }

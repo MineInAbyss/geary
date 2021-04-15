@@ -11,26 +11,16 @@ import com.mineinabyss.geary.ecs.api.systems.SystemManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.entities.children
 import com.mineinabyss.idofront.messaging.logError
-import net.onedaybeard.bitvector.BitVector
-import org.clapper.util.misc.SparseArrayList
 import java.util.*
 import kotlin.reflect.KClass
 
 /**
  * The default implementation of Geary's Engine.
  *
- * This engine currently uses a bitset approach for iterating over entities.
+ * This engine uses [Archetype]s. Each component is an entity itself with an id associated with it.
+ * We keep track of each entity's components in the form of it's [GearyType] stored in the [typeMap].
  *
- * We hold a map of component classes to arrays (currently using [SparseArrayList], where the index represents an entity.
- *
- * Additionally, we hold a similar map but with bitsets (currently using [BitVector]) which allow us to quickly perform
- * a fold operation to find all the entities that match all of the requested components.
- *
- * There is also support for enabling/disabling components without actually removing them by just toggling a bit
- * in the bitset, but not removing it from the matching array.
- *
- * Lastly there's a very basic implementation for only iterating over components with additional conditions. This is
- * currently quite inefficient, but optional.
+ * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */
 public open class GearyEngine : TickingEngine() {
     internal val typeMap = mutableMapOf<GearyEntityId, Record>()
@@ -102,7 +92,7 @@ public open class GearyEngine : TickingEngine() {
         getOrAddRecord(entity).apply {
             // Only add HOLDS_DATA if this isn't a relation. All relations implicitly hold data currently and that bit
             // corresponds to the component part of the relation.
-            val markData = if(component and RELATION == 0uL) HOLDS_DATA else 0uL
+            val markData = if (component and RELATION == 0uL) HOLDS_DATA else 0uL
             val record = archetype.setComponent(entity, this, markData or component, data)
             typeMap[entity] = record ?: return
         }
