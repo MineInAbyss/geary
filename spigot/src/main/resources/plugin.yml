@@ -1,5 +1,5 @@
 name: Geary
-version: @plugin_version@
+version: ${plugin_version}
 author: Offz
 main: com.mineinabyss.geary.minecraft.GearyPlugin
 api-version: 1.16
