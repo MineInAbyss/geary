@@ -11,16 +11,13 @@ plugins {
     kotlin("jvm") version Versions.kotlin
     kotlin("plugin.serialization") version Versions.kotlin
     id("org.jetbrains.dokka") version "1.4.30"
-    id("com.mineinabyss.shared-gradle") version "0.0.2"
+    id("com.mineinabyss.shared-gradle") version "0.0.3"
 }
-
-val pluginVersion: String by project
 
 allprojects {
     apply(plugin = "java")
     apply(plugin = "idea")
     apply(plugin = "org.jetbrains.dokka")
-//    apply(plugin = "maven-publish")
     apply(plugin = "kotlin")
     apply(plugin = "kotlinx-serialization")
 
@@ -30,6 +27,7 @@ allprojects {
 
     repositories {
         mavenCentral()
+        jcenter()
         mineInAbyss()
     }
 
@@ -55,7 +53,6 @@ allprojects {
     }
 }
 
-
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     withSourcesJar()
@@ -64,11 +61,10 @@ java {
 dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
 
+    //provided by Minecraft
+    compileOnly("fastutil:fastutil:5.0.9")
+
     //ecs-related libs
-    implementation("net.onedaybeard.bitvector:bitvector-jvm:0.1.4")
-    implementation("com.zaxxer:SparseBitSet:1.1")
-    implementation("org.clapper:javautil:3.2.0")
-    implementation("fastutil:fastutil:5.0.9")
     implementation("com.uchuhimo:kotlinx-bimap:1.2") {
         exclude(group = "org.jetbrains.kotlin")
     }
