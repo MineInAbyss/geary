@@ -30,7 +30,7 @@ dependencies {
     // For now leave as compile only since this dep is always present and having 2 copies was causing issues.
     compileOnly(kotlin("reflect", version = Versions.kotlin))
 
-    implementation("com.mineinabyss:idofront-nms:0.5.8")
+    implementation("com.mineinabyss:idofront-nms:0.5.9")
     compileOnly("com.github.okkero:skedule")
 
     api(project(":"))
@@ -44,7 +44,7 @@ tasks {
             exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib:.*"))
         }
 
-        relocate("com.mineinabyss.idofront", "$group.$name.idofront".toLowerCase())
+        relocate("com.mineinabyss.idofront", "${project.group}.${project.name}.idofront".toLowerCase())
     }
 
     build {
