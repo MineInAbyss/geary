@@ -1,6 +1,7 @@
 import com.mineinabyss.geary.Deps
 import com.mineinabyss.kotlinSpice
 import com.mineinabyss.mineInAbyss
+import com.mineinabyss.sharedSetup
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -12,7 +13,11 @@ plugins {
     kotlin("jvm") version com.mineinabyss.geary.Deps.kotlinVersion
     kotlin("plugin.serialization") version com.mineinabyss.geary.Deps.kotlinVersion
     id("org.jetbrains.dokka") version "1.4.30"
-    id("com.mineinabyss.shared-gradle") version "0.0.3"
+    id("com.mineinabyss.shared-gradle") version "0.0.4"
+}
+
+sharedSetup {
+    addGithubRunNumber()
 }
 
 allprojects {

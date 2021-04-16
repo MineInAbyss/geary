@@ -1,5 +1,5 @@
 import com.mineinabyss.geary.Deps
-import com.mineinabyss.miaSharedSetup
+import com.mineinabyss.sharedSetup
 
 plugins {
     java
@@ -10,7 +10,7 @@ plugins {
     kotlin("plugin.serialization")
 }
 
-miaSharedSetup()
+sharedSetup()
 
 repositories {
     mavenCentral()

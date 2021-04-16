@@ -7,6 +7,12 @@ pluginManagement {
 
 rootProject.name = "geary"
 
-include("geary-spigot")
+include(
+    "geary-spigot",
+    "geary-core",
+    "geary-components"
+)
 
 project(":geary-spigot").projectDir = file("./spigot")
+project(":geary-core").projectDir = file("./core")
+project(":geary-components").projectDir = file("./components")
