@@ -1,3 +1,4 @@
+import com.mineinabyss.geary.gradle.Deps
 import com.mineinabyss.miaSharedSetup
 
 plugins {
@@ -23,12 +24,12 @@ repositories {
 dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
     //TODO decide whether we stick with spigot or not since paper adds some nice things
-    compileOnly("com.destroystokyo.paper:paper-api:${Versions.server}")
-    compileOnly("com.destroystokyo.paper:paper:${Versions.server}") // NMS
+    compileOnly("com.destroystokyo.paper:paper-api:${Deps.serverVersion}")
+    compileOnly("com.destroystokyo.paper:paper:${Deps.serverVersion}") // NMS
     implementation("org.reflections:reflections:0.9.12")
     //TODO I"d like to use kotlinspice here but not sure how to best add dependencies that need to be shaded.
     // For now leave as compile only since this dep is always present and having 2 copies was causing issues.
-    compileOnly(kotlin("reflect", version = Versions.kotlin))
+    compileOnly(kotlin("reflect", version = Deps.kotlinVersion))
 
     implementation("com.mineinabyss:idofront-nms:0.5.9")
     compileOnly("com.github.okkero:skedule")

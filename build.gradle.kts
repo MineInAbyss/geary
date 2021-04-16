@@ -1,3 +1,4 @@
+import com.mineinabyss.geary.gradle.Deps
 import com.mineinabyss.kotlinSpice
 import com.mineinabyss.mineInAbyss
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -8,8 +9,8 @@ plugins {
     `maven-publish`
 
     id("com.github.johnrengelman.shadow") version "6.1.0"
-    kotlin("jvm") version Versions.kotlin
-    kotlin("plugin.serialization") version Versions.kotlin
+    kotlin("jvm") version com.mineinabyss.geary.gradle.Deps.kotlinVersion
+    kotlin("plugin.serialization") version com.mineinabyss.geary.gradle.Deps.kotlinVersion
     id("org.jetbrains.dokka") version "1.4.30"
     id("com.mineinabyss.shared-gradle") version "0.0.3"
 }
@@ -32,7 +33,7 @@ allprojects {
     }
 
     dependencies {
-        kotlinSpice("${Versions.kotlin}+")
+        kotlinSpice("${Deps.kotlinVersion}+")
         compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-cbor")
 
         implementation("com.mineinabyss:idofront:0.5.8")
@@ -76,8 +77,14 @@ dependencies {
     testImplementation("io.mockk:mockk:1.10.6")
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks {
+    test {
+        useJUnitPlatform()
+    }
+
+    build {
+        dependsOn(project(":geary-spigot").tasks.build)
+    }
 }
 
 publishing {
