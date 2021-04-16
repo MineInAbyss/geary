@@ -1,4 +1,4 @@
-import com.mineinabyss.geary.gradle.Deps
+import com.mineinabyss.geary.Deps
 import com.mineinabyss.miaSharedSetup
 
 plugins {

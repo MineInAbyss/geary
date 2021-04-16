@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.gradle
+package com.mineinabyss.geary
 
 object Deps {
     const val kotlinVersion = "1.4.31"
