@@ -34,7 +34,8 @@ dependencies {
     implementation("com.mineinabyss:idofront-nms:0.5.9")
     compileOnly("com.github.okkero:skedule")
 
-    api(project(":"))
+    api(project(":geary-core"))
+    api(project(":geary-components"))
 }
 
 tasks {
@@ -55,7 +56,6 @@ tasks {
 
 publishing {
     mineInAbyss(project) {
-        artifactId = "geary-spigot"
         from(components["java"])
     }
 }

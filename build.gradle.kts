@@ -13,11 +13,7 @@ plugins {
     kotlin("jvm") version com.mineinabyss.geary.Deps.kotlinVersion
     kotlin("plugin.serialization") version com.mineinabyss.geary.Deps.kotlinVersion
     id("org.jetbrains.dokka") version "1.4.30"
-    id("com.mineinabyss.shared-gradle") version "0.0.4"
-}
-
-sharedSetup {
-    addGithubRunNumber()
+    id("com.mineinabyss.shared-gradle") version "0.0.5"
 }
 
 allprojects {
@@ -25,7 +21,13 @@ allprojects {
     apply(plugin = "idea")
     apply(plugin = "org.jetbrains.dokka")
     apply(plugin = "kotlin")
+    apply(plugin = "maven-publish")
     apply(plugin = "kotlinx-serialization")
+
+    sharedSetup {
+        addGithubRunNumber()
+        applyJavaDefaults()
+    }
 
     kotlin {
         explicitApi()
@@ -38,6 +40,8 @@ allprojects {
     }
 
     dependencies {
+        compileOnly(kotlin("stdlib-jdk8"))
+
         kotlinSpice("${Deps.kotlinVersion}+")
         compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-cbor")
 
@@ -56,45 +60,15 @@ allprojects {
                 )
             }
         }
+
+        test {
+            useJUnitPlatform()
+        }
     }
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    withSourcesJar()
-}
-
-dependencies {
-    compileOnly(kotlin("stdlib-jdk8"))
-
-    //provided by Minecraft
-    compileOnly("fastutil:fastutil:5.0.9")
-
-    //ecs-related libs
-    implementation("com.uchuhimo:kotlinx-bimap:1.2") {
-        exclude(group = "org.jetbrains.kotlin")
-    }
-
-    testImplementation(platform("org.junit:junit-bom:5.7.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("io.kotest:kotest-runner-junit5:4.4.2")
-    testImplementation("io.kotest:kotest-property:4.4.2")
-    testImplementation("io.mockk:mockk:1.10.6")
 }
 
 tasks {
-    test {
-        useJUnitPlatform()
-    }
-
     build {
         dependsOn(project(":geary-spigot").tasks.build)
-    }
-}
-
-publishing {
-    mineInAbyss(project) {
-        artifactId = "geary"
-        from(components["java"])
     }
 }

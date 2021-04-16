@@ -6,7 +6,6 @@ import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.components.Expiry
 import com.mineinabyss.geary.ecs.engine.*
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
@@ -103,30 +102,33 @@ internal class SystemManagerTest {
             entities.map { it.getComponents() } shouldBe entities.map { setOf() }
         }
     }
+
+    private class RelationTestComponent
+
     @Test
     fun relations() {
         var ran = 0
         val system = object : TickingSystem() {
-            val expiry by relation<Expiry>()
+            val expiry by relation<RelationTestComponent>()
             override fun GearyEntity.tick() {
                 ran++
                 family.relations.map { it.id } shouldContain expiry.relation.id
-                (expiry.data is Expiry) shouldBe true
+                (expiry.data is RelationTestComponent) shouldBe true
             }
         }
-        system.family.relations shouldBe sortedSetOf(Relation(parent = componentId<Expiry>()))
+        system.family.relations shouldBe sortedSetOf(Relation(parent = componentId<RelationTestComponent>()))
         SystemManager.registerSystem(system)
         val entity = Engine.entity {
-            setRelation<Expiry, String>(Expiry(3000))
+            setRelation<RelationTestComponent, String>(RelationTestComponent())
             add<String>()
         }
         val entity2 = Engine.entity {
-            setRelation<Expiry, Int>(Expiry(3000))
+            setRelation<RelationTestComponent, Int>(RelationTestComponent())
             add<Int>()
         }
         val entity3 = Engine.entity {
-            setRelation<String, Expiry>("")
-            add<Expiry>()
+            setRelation<String, RelationTestComponent>("")
+            add<RelationTestComponent>()
         }
         system.matchedArchetypes.shouldContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
         system.matchedArchetypes.shouldNotContain(entity3.type.getArchetype())
