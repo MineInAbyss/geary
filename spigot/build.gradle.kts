@@ -2,40 +2,37 @@ import com.mineinabyss.geary.Deps
 import com.mineinabyss.sharedSetup
 
 plugins {
-    java
-    idea
-    `maven-publish`
     id("com.github.johnrengelman.shadow")
-    kotlin("jvm")
-    kotlin("plugin.serialization")
 }
 
 sharedSetup()
 
-repositories {
-    mavenCentral()
-    maven("https://papermc.io/repo/repository/maven-public/")
-    maven("https://repo.codemc.io/repository/nms/")
-    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
-    maven("https://dl.bintray.com/korlibs/korlibs")
-    maven("https://jitpack.io")
+subprojects {
+    repositories {
+        mavenCentral()
+        maven("https://papermc.io/repo/repository/maven-public/")
+        maven("https://repo.codemc.io/repository/nms/")
+    }
+
+    dependencies {
+        //TODO decide whether we stick with spigot or not since paper adds some nice things
+        compileOnly("com.destroystokyo.paper:paper-api:${Deps.serverVersion}")
+        compileOnly("com.destroystokyo.paper:paper:${Deps.serverVersion}") // NMS
+    }
+}
+
+allprojects {
+    publishing {
+        mineInAbyss(project) {
+            from(components["java"])
+        }
+    }
 }
 
 dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
-    //TODO decide whether we stick with spigot or not since paper adds some nice things
-    compileOnly("com.destroystokyo.paper:paper-api:${Deps.serverVersion}")
-    compileOnly("com.destroystokyo.paper:paper:${Deps.serverVersion}") // NMS
-    implementation("org.reflections:reflections:0.9.12")
-    //TODO I"d like to use kotlinspice here but not sure how to best add dependencies that need to be shaded.
-    // For now leave as compile only since this dep is always present and having 2 copies was causing issues.
-    compileOnly(kotlin("reflect", version = Deps.kotlinVersion))
-
-    implementation("com.mineinabyss:idofront-nms:0.5.9")
-    compileOnly("com.github.okkero:skedule")
-
-    api(project(":geary-core"))
-    api(project(":geary-components"))
+    api(project(":geary-spigot:geary-spigot-core"))
+    api(project(":geary-spigot:geary-spigot-components"))
 }
 
 tasks {
@@ -51,11 +48,5 @@ tasks {
 
     build {
         dependsOn(shadowJar)
-    }
-}
-
-publishing {
-    mineInAbyss(project) {
-        from(components["java"])
     }
 }

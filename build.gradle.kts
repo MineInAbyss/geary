@@ -13,7 +13,7 @@ plugins {
     kotlin("jvm") version com.mineinabyss.geary.Deps.kotlinVersion
     kotlin("plugin.serialization") version com.mineinabyss.geary.Deps.kotlinVersion
     id("org.jetbrains.dokka") version "1.4.30"
-    id("com.mineinabyss.shared-gradle") version "0.0.5"
+    id("com.mineinabyss.shared-gradle") version "0.0.6"
 }
 
 allprojects {
@@ -70,5 +70,11 @@ allprojects {
 tasks {
     build {
         dependsOn(project(":geary-spigot").tasks.build)
+    }
+}
+
+publishing {
+    mineInAbyss(project) {
+        from(components["java"])
     }
 }

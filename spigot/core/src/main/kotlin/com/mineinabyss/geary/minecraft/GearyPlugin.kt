@@ -6,7 +6,6 @@ import com.mineinabyss.geary.ecs.api.services.GearyServices
 import com.mineinabyss.geary.ecs.systems.ExpiringComponentSystem
 import com.mineinabyss.geary.ecs.systems.PassiveActionsSystem
 import com.mineinabyss.geary.minecraft.access.BukkitEntityAccess
-import com.mineinabyss.geary.minecraft.components.PlayerComponent
 import com.mineinabyss.geary.minecraft.dsl.GearyLoadManager
 import com.mineinabyss.geary.minecraft.dsl.GearyLoadPhase
 import com.mineinabyss.geary.minecraft.dsl.attachToGeary
@@ -16,7 +15,6 @@ import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
 import kotlinx.serialization.InternalSerializationApi
 import org.bukkit.Bukkit
-import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.reflect.KClass
 import kotlin.time.ExperimentalTime
@@ -54,12 +52,6 @@ public class GearyPlugin : JavaPlugin() {
                 PassiveActionsSystem,
                 ExpiringComponentSystem,
             )
-
-            bukkitEntityAccess {
-                onEntityRegister<Player> { player ->
-                    add(PlayerComponent(player.uniqueId))
-                }
-            }
 
             startup {
                 GearyLoadPhase.ENABLE {

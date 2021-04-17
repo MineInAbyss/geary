@@ -16,6 +16,7 @@ import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
 import com.mineinabyss.geary.minecraft.store.encodeComponents
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.nms.aliases.BukkitEntity
 import com.mineinabyss.idofront.nms.entity.typeName
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap
 import org.bukkit.entity.Entity
@@ -51,7 +52,10 @@ public object BukkitEntityAccess : Listener {
 
         val gearyEntity: GearyEntity = attachTo ?: Engine.entity {}
         gearyEntity.apply {
-            set<Entity>(entity)
+            // allow us to both get the BukkitEntity and specific class (ex Player)
+            set<BukkitEntity>(entity)
+            set<BukkitEntity>(entity, entity::class)
+
             setAll(
                 onBukkitEntityRegister.flatMap { mapping ->
                     mutableListOf<GearyComponent>().apply { mapping(entity) }
