@@ -22,11 +22,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run gradle publish
-        run: gradle publish -PmineinabyssMavenUsername=${{ secrets.MAVEN_PUBLISH_USERNAME }} -PmineinabyssMavenPassword=${{ secrets.MAVEN_PUBLISH_PASSWORD }}
+#      - name: Run gradle publish
+#        run: gradle publish -PmineinabyssMavenUsername=${{ secrets.MAVEN_PUBLISH_USERNAME }} -PmineinabyssMavenPassword=${{ secrets.MAVEN_PUBLISH_PASSWORD }}
 
       - name: Generate Dokka
-        run: gradle dokkaHtmlMultiModule -PjvmArgs="-XX:MaxPermSize=128m"
+        run: gradle dokkaHtmlMultiModule
+        env:
+          GRADLE_OPTS: -Xmx2G
 
       - name: Publish documentation to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
