@@ -27,8 +27,6 @@ jobs:
 
       - name: Generate Dokka
         run: gradle dokkaHtmlMultiModule
-        env:
-          GRADLE_OPTS: -Xmx2G
 
       - name: Publish documentation to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
