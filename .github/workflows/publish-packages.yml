@@ -26,7 +26,7 @@ jobs:
         run: gradle publish -PmineinabyssMavenUsername=${{ secrets.MAVEN_PUBLISH_USERNAME }} -PmineinabyssMavenPassword=${{ secrets.MAVEN_PUBLISH_PASSWORD }}
 
       - name: Generate Dokka
-        run: gradle dokkaHtmlMultimodule
+        run: gradle dokkaHtmlMultiModule -PjvmArgs="-XX:MaxPermSize=128m"
 
       - name: Publish documentation to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
