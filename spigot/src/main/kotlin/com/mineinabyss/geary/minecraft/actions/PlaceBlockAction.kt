@@ -2,11 +2,9 @@ package com.mineinabyss.geary.minecraft.actions
 
 import com.mineinabyss.geary.ecs.api.actions.GearyAction
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.minecraft.components.PlayerComponent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.Material
-import org.bukkit.block.BlockFace
 
 /**
  * Summons a block at given location.
