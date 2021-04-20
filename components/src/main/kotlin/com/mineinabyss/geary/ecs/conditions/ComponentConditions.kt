@@ -11,10 +11,10 @@ import kotlinx.serialization.Serializable
 public class ComponentConditions(
     @SerialName("has")
     public val components: Set<String> = emptySet(),
-): GearyCondition {
+): GearyCondition() {
     //TODO this is getting boilerplatey, reused from ComponentAction
     private val componentClasses by lazy { components.map { Formats.getClassFor(it) } }
 
-    override fun conditionsMet(entity: GearyEntity): Boolean =
-        entity.hasAll(componentClasses)
+    override fun GearyEntity.check(): Boolean =
+        hasAll(componentClasses)
 }

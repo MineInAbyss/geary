@@ -13,7 +13,7 @@ public class ConditionalAction(
     private val run: List<GearyAction>
 ) : GearyAction() {
     override fun runOn(entity: GearyEntity): Boolean {
-        if (conditions.all { it.conditionsMet(entity) }) {
+        if (conditions.all { it.metFor(entity) }) {
             run.forEach { it.runOn(entity) }
             return true
         }

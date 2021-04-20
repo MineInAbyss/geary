@@ -29,7 +29,7 @@ public class Conditions(
      */
     public fun conditionsMet(componentIds: IntArray, entity: GearyEntity): Boolean {
         return componentIds.all { component ->
-            wrappedClasses[component]?.all { it.conditionsMet(entity) } ?: true
+            wrappedClasses[component]?.all { it.metFor(entity) } ?: true
         }
     }
 }
