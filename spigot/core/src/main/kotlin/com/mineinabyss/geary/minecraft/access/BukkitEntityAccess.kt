@@ -54,7 +54,7 @@ public object BukkitEntityAccess : Listener {
         gearyEntity.apply {
             // allow us to both get the BukkitEntity and specific class (ex Player)
             set<BukkitEntity>(entity)
-R            entity.type.entityClass?.kotlin?.let { bukkitClass ->
+            entity.type.entityClass?.kotlin?.let { bukkitClass ->
                 set(entity, bukkitClass)
             }
 
