@@ -21,7 +21,7 @@ import org.bukkit.entity.Player
  */
 //TODO add more!
 @Serializable
-@SerialName("health")
+@SerialName("geary:health")
 public class HealthConditions(
     public val within: DoubleRange? = null,
     public val withinPercent: DoubleRange? = null,

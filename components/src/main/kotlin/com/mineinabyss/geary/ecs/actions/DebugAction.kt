@@ -7,6 +7,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * > debug
+ *
  * An action that will broadcast a debug [msg] when run.
  *
  * @param msg The message to be broadcast.

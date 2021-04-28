@@ -6,6 +6,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * > cancel
+ *
  * An action that cancels the Bukkit event that caused it to run. Always returns true as it is handled elsewhere.
  */
 @Serializable

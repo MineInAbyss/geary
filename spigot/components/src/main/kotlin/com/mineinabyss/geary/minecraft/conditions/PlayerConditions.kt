@@ -17,7 +17,7 @@ import org.bukkit.entity.Player
  */
 //TODO add more!
 @Serializable
-@SerialName("player")
+@SerialName("geary:player")
 public class PlayerConditions(
     public val isSneaking: Boolean? = null,
     public val isSprinting: Boolean? = null,

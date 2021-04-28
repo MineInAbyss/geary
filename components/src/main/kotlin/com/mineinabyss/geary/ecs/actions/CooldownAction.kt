@@ -9,6 +9,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 /**
+ * > cooldown
+ *
  * An action that will start a cooldown, storing it in the entity's [CooldownManager] component.
  *
  * The action will only succeed once the cooldown is over, which will then run a list of actions. If none of the
