@@ -10,10 +10,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * > geary:add
+ *
  * Adds components to the entity this action is run on.
  */
 @Serializable
-@SerialName("add")
+@SerialName("geary:add")
 public class AddComponentAction(
     private val components: Set<@Polymorphic GearyComponent>
 ) : GearyAction() {
@@ -23,31 +25,18 @@ public class AddComponentAction(
     }
 }
 
+/**
+ * > geary:remove
+ *
+ * Removes components by serial name from this entity.
+ */
 @Serializable
-@SerialName("remove")
+@SerialName("geary:remove")
 public data class RemoveComponentAction(override val components: Set<String>) : ComponentAction() {
     override fun GearyEntity.run(): Boolean {
         componentClasses.forEach {
             Engine.removeComponentFor(id, componentId(it))
         }
-        return true
-    }
-}
-
-@Serializable
-@SerialName("disable")
-public class DisableComponentAction(override val components: Set<String>) : ComponentAction() {
-    override fun GearyEntity.run(): Boolean {
-        componentClasses.forEach { remove(it) }
-        return true
-    }
-}
-
-@Serializable
-@SerialName("enable")
-public data class EnableComponentAction(override val components: Set<String>) : ComponentAction() {
-    override fun GearyEntity.run(): Boolean {
-        componentClasses.forEach { remove(it) }
         return true
     }
 }

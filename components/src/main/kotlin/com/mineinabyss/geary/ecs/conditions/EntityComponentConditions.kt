@@ -6,9 +6,14 @@ import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * > geary:entity
+ *
+ * Does checks against the components of an entity. For example, whether it has a list of components.
+ */
 @Serializable
-@SerialName("entity")
-public class ComponentConditions(
+@SerialName("geary:entity")
+public class EntityComponentConditions(
     @SerialName("has")
     public val components: Set<String> = emptySet(),
 ): GearyCondition() {

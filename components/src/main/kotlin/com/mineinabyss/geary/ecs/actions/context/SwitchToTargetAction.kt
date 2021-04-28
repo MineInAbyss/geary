@@ -9,6 +9,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 
 /**
+ * > on.target
+ *
  * Runs a list of actions on the target of the given entity.
  *
  * @param wrapped The list of actions to run.
