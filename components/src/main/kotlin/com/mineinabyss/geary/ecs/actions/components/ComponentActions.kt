@@ -17,8 +17,8 @@ import kotlinx.serialization.Serializable
 public class AddComponentAction(
     private val components: Set<@Polymorphic GearyComponent>
 ) : GearyAction() {
-    override fun runOn(entity: GearyEntity): Boolean {
-        entity.setAll(components)
+    override fun GearyEntity.run(): Boolean {
+        setAll(components)
         return true
     }
 }
@@ -26,9 +26,9 @@ public class AddComponentAction(
 @Serializable
 @SerialName("remove")
 public data class RemoveComponentAction(override val components: Set<String>) : ComponentAction() {
-    override fun runOn(entity: GearyEntity): Boolean {
+    override fun GearyEntity.run(): Boolean {
         componentClasses.forEach {
-            Engine.removeComponentFor(entity.id, componentId(it))
+            Engine.removeComponentFor(id, componentId(it))
         }
         return true
     }
@@ -37,8 +37,8 @@ public data class RemoveComponentAction(override val components: Set<String>) : 
 @Serializable
 @SerialName("disable")
 public class DisableComponentAction(override val components: Set<String>) : ComponentAction() {
-    override fun runOn(entity: GearyEntity): Boolean {
-        componentClasses.forEach { entity.remove(it) }
+    override fun GearyEntity.run(): Boolean {
+        componentClasses.forEach { remove(it) }
         return true
     }
 }
@@ -46,8 +46,8 @@ public class DisableComponentAction(override val components: Set<String>) : Comp
 @Serializable
 @SerialName("enable")
 public data class EnableComponentAction(override val components: Set<String>) : ComponentAction() {
-    override fun runOn(entity: GearyEntity): Boolean {
-        componentClasses.forEach { entity.remove(it) }
+    override fun GearyEntity.run(): Boolean {
+        componentClasses.forEach { remove(it) }
         return true
     }
 }

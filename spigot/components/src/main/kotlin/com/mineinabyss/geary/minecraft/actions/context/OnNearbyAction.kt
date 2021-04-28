@@ -4,11 +4,11 @@ import com.mineinabyss.geary.ecs.api.actions.GearyAction
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.components.Source
 import com.mineinabyss.geary.minecraft.access.geary
-import com.mineinabyss.geary.minecraft.access.toBukkit
-import com.mineinabyss.geary.minecraft.actions.AtEntityLocation
-import com.mineinabyss.geary.minecraft.actions.ConfigurableLocation
+import com.mineinabyss.geary.minecraft.properties.AtEntityLocation
+import com.mineinabyss.geary.minecraft.properties.ConfigurableLocation
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.bukkit.entity.Entity
 
 /**
  * Executes actions on nearby entities.
@@ -28,12 +28,14 @@ public class OnNearbyAction(
     public val onSelf: Boolean = false,
     public val run: List<GearyAction>,
 ) : GearyAction() {
-    override fun runOn(entity: GearyEntity): Boolean {
-        val loc = at.get(entity) ?: return false
+    private val GearyEntity.loc by at
+    private val GearyEntity.bukkitEntity by get<Entity>()
+
+    override fun GearyEntity.run(): Boolean {
         return loc.getNearbyEntities(radius, radius, radius)
             .run {
                 // Ignore self if asked to
-                if (!onSelf) remove(entity.toBukkit())
+                if (!onSelf) remove(bukkitEntity)
 
                 // Take only the max number of entities from the list
                 if (max != null) sortedBy { loc.distanceSquared(it.location) }.take(max)
@@ -41,7 +43,7 @@ public class OnNearbyAction(
             }
             .map { geary(it) }
             .count { target ->
-                target.set(Source(entity))
+                target.set(Source(this))
                 run.count { action -> action.runOn(target) } != 0
                 target.remove<Source>()
             } != 0

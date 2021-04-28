@@ -17,8 +17,8 @@ import kotlinx.serialization.serializer
 public class SwitchToParentAction(
     override val wrapped: List<GearyAction>
 ) : GearyAction(), FlatWrap<List<GearyAction>> {
-    override fun runOn(entity: GearyEntity): Boolean {
-        val parent = entity.parent ?: return false
+    override fun GearyEntity.run(): Boolean {
+        val parent = parent ?: return false
 
         return wrapped.count { it.runOn(parent) } != 0
     }

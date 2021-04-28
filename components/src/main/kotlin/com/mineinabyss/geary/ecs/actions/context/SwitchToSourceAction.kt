@@ -17,8 +17,8 @@ import kotlinx.serialization.serializer
 public class SwitchToSourceAction(
     override val wrapped: List<GearyAction>
 ) : GearyAction(), FlatWrap<List<GearyAction>> {
-    override fun runOn(entity: GearyEntity): Boolean {
-        val source = entity.get<Source>()?.entity ?: return false
+    override fun GearyEntity.run(): Boolean {
+        val source = get<Source>()?.entity ?: return false
 
         return wrapped.count { it.runOn(source) } != 0
     }

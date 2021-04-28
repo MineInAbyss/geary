@@ -22,9 +22,10 @@ public data class ApplyPotionAction(
     val effects: List<@Serializable(with = PotionEffectSerializer::class) PotionEffect>,
     val applyChance: Double = 1.0,
 ) : GearyAction() {
-    override fun runOn(entity: GearyEntity): Boolean {
+    //TODO by toBukkit?
+    override fun GearyEntity.run(): Boolean {
         if (Random.nextDouble() <= applyChance) {
-            entity.toBukkit<LivingEntity>()?.addPotionEffects(effects) ?: return false
+            toBukkit<LivingEntity>()?.addPotionEffects(effects) ?: return false
         }
         return true
     }

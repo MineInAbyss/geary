@@ -17,8 +17,8 @@ import kotlinx.serialization.serializer
 public class SwitchToTargetAction(
     override val wrapped: List<GearyAction>
 ) : GearyAction(), FlatWrap<List<GearyAction>> {
-    override fun runOn(entity: GearyEntity): Boolean {
-        val target = entity.get<Target>()?.entity ?: return false
+    override fun GearyEntity.run(): Boolean {
+        val target = get<Target>()?.entity ?: return false
 
         return wrapped.count { it.runOn(target) } != 0
     }

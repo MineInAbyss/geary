@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("cancel")
 public class CancelEventAction : GearyAction() {
-    override fun runOn(entity: GearyEntity): Boolean {
+    override fun GearyEntity.run(): Boolean {
         return true
     }
 }
