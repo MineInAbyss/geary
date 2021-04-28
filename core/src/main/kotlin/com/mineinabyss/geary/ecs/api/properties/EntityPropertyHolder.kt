@@ -18,7 +18,7 @@ public abstract class EntityPropertyHolder {
     private val extraData = Long2ObjectOpenHashMap<List<Any>>()
     private val extraProperties = mutableListOf<EntityExtension<*>>()
 
-    public val propertiesEmpty: Boolean by lazy { extraData.isEmpty() && dataKey.isEmpty() }
+    public val propertiesEmpty: Boolean by lazy { extraProperties.isEmpty() && dataKey.isEmpty() }
 
     public operator fun <T : Any> EntityExtension<T>.provideDelegate(
         thisRef: Any?,
