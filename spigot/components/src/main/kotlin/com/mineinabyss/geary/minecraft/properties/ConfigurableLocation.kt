@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.minecraft.properties
 
-import com.mineinabyss.geary.ecs.api.properties.EntityProperty
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.properties.EntityProperty
 import com.mineinabyss.geary.ecs.components.Source
 import com.mineinabyss.geary.minecraft.access.toBukkit
 import kotlinx.serialization.SerialName
@@ -21,6 +21,8 @@ import org.bukkit.entity.Player
 public sealed class ConfigurableLocation : EntityProperty<Location>()
 
 /**
+ * > source.location
+ *
  * Gets the location of the bukkit entity associated with this entity.
  */
 @Serializable
@@ -31,6 +33,8 @@ public class AtSourceLocation : ConfigurableLocation() {
 }
 
 /**
+ * > entity.location
+ *
  * Gets the location of the bukkit entity associated with this entity.
  */
 @Serializable
@@ -41,6 +45,8 @@ public class AtEntityLocation : ConfigurableLocation() {
 }
 
 /**
+ * > player.location
+ *
  * Gets the location of the player associated with the entity.
  */
 @Serializable
@@ -51,6 +57,8 @@ public class AtPlayerLocation : ConfigurableLocation() {
 }
 
 /**
+ * > player.target_block
+ *
  * Gets the location of the target block the player associated with the entity is looking at.
  *
  * @param maxDist The maximum distance this can extend.
@@ -60,15 +68,18 @@ public class AtPlayerLocation : ConfigurableLocation() {
 @SerialName("player.target_block")
 public class AtPlayerTargetBlock(
     private val maxDist: Int = 3,
-    private val allowAir: Boolean = true
+    private val allowAir: Boolean = false,
+    private val onFace: Boolean = false,
 ) : ConfigurableLocation() {
     override fun GearyEntity.read(): Location? {
         with<Player> { player ->
-            val block = player.getTargetBlock(maxDist) ?: return null
+            val block = if (onFace)
+                player.getLastTwoTargetBlocks(null, maxDist).first()
+            else
+                player.getTargetBlock(maxDist) ?: return null
             if (!allowAir && block.isEmpty) return null
             return block.location
         }
         return null
     }
-
 }
