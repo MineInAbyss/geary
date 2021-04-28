@@ -1,8 +1,7 @@
 [![Java CI with Gradle](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml/badge.svg)](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml)
 [![Package](https://badgen.net/maven/v/metadata-url/repo.mineinabyss.com/releases/com/mineinabyss/geary/maven-metadata.xml)](https://repo.mineinabyss.com/releases/com/mineinabyss/geary)
-[![Wiki](https://badgen.net/badge/color/Project%20Wiki/purple?icon=wiki&label)](https://github.com/MineInAbyss/Geary/wiki)
-[![Contribute](https://shields.io/badge/Contribute-e57be5?logo=github%20sponsors&style=flat&logoColor=white)](https://github.com/MineInAbyss/MineInAbyss/wiki/Setup-and-Contribution-Guide)
-
+[![Wiki](https://badgen.net/badge/color/Project%20Wiki/purple?icon=wiki&label)](https://wiki.mineinabyss.com/geary)
+[![Contribute](https://shields.io/badge/Contribute-e57be5?logo=github%20sponsors&style=flat&logoColor=white)](https://wiki.mineinabyss.com/contribute)
 
 # Geary
 
@@ -73,6 +72,3 @@ dependencies {
     compileOnly 'com.mineinabyss:geary-spigot:<version>'
 }
 ```
-
-## Contributing
-Please read our [Setup and Contribution guide](https://github.com/MineInAbyss/MineInAbyss/wiki/Setup-and-Contribution-Guide) for more info.
