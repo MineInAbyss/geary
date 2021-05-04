@@ -9,6 +9,7 @@ import org.bukkit.Location
 @Serializable
 @SerialName("geary:time")
 public class TimeCondition(
+    //TODO change to range
     private val min: Long = -1,
     private val max: Long = 10000000,
 ) : GearyCondition() {
@@ -25,5 +26,4 @@ public class TimeCondition(
         else
             time !in max..min
     }
-
 }
