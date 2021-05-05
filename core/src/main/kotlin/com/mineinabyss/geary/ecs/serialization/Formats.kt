@@ -24,8 +24,9 @@ public object Formats {
     private val componentSerialNames: MutableBiMap<String, KClass<out GearyComponent>> = mutableBiMapOf()
     private var module = EmptySerializersModule
 
+    //TODO allow this to work for all registered classes, not just components
     public fun getClassFor(serialName: String): KClass<out GearyComponent> =
-        componentSerialNames[serialName] ?: error("$this is not a valid component name in the registered components")
+        componentSerialNames[serialName] ?: error("$serialName is not a valid component name in the registered components")
 
     public fun isRegistered(serialName: String): Boolean =
         serialName in componentSerialNames
