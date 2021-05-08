@@ -27,8 +27,8 @@ import org.bukkit.event.player.PlayerLoginEvent
 import java.util.*
 import kotlin.collections.set
 
-internal typealias OnEntityRegister = MutableList<GearyComponent>.(Entity) -> Unit
-internal typealias OnEntityUnregister = (GearyEntity, Entity) -> Unit
+internal typealias OnEntityRegister = GearyEntity.(Entity) -> Unit
+internal typealias OnEntityUnregister = GearyEntity.(Entity) -> Unit
 
 public object BukkitEntityAccess : Listener {
     private val entityMap = Object2LongOpenHashMap<UUID>()
