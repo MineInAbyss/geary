@@ -16,7 +16,7 @@ dependencies {
     // For now leave as compile only since this dep is always present and having 2 copies was causing issues.
     compileOnly(kotlin("reflect", version = com.mineinabyss.geary.Deps.kotlinVersion))
 
-    implementation("com.mineinabyss:idofront-nms:0.5.9")
+    implementation("com.mineinabyss:idofront-nms:0.6.13")
     compileOnly("com.github.okkero:skedule")
 
     api(project(":geary-core"))

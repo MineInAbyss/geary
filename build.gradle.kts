@@ -45,7 +45,7 @@ allprojects {
         kotlinSpice("${Deps.kotlinVersion}+")
         compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-cbor")
 
-        implementation("com.mineinabyss:idofront:0.5.9")
+        implementation("com.mineinabyss:idofront:0.6.13")
     }
 
     tasks {
