@@ -105,6 +105,10 @@ public inline class GearyEntity(public val id: GearyEntityId) {
     public inline fun <reified T : GearyComponent> get(): T? =
         get(componentId<T>()) as? T
 
+    /** Gets a component of [kClass]'s type on this entity. */
+    public fun <T : GearyComponent> get(kClass: KClass<out T>): T? =
+        get(componentId(kClass)) as? T
+
     /** Gets a [component] which holds data from this entity. Use [has] if the component is not to hold data. */
     public inline fun get(component: GearyComponentId): GearyComponent? =
         Engine.getComponentFor(id, component)

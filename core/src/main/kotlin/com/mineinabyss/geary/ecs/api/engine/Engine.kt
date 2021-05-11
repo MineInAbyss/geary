@@ -62,5 +62,9 @@ public interface Engine {
 
     //TODO move this somewhere more internal
     /** Updates the record of a given entity*/
+    public fun getRecord(entity: GearyEntityId): Record?
+
+    /** Updates the record of a given entity*/
     public fun setRecord(entity: GearyEntityId, record: Record)
+
 }

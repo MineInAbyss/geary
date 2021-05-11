@@ -21,13 +21,14 @@ import com.mineinabyss.idofront.nms.entity.typeName
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap
 import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerLoginEvent
 import java.util.*
 import kotlin.collections.set
 
-internal typealias OnEntityRegister = MutableList<GearyComponent>.(Entity) -> Unit
-internal typealias OnEntityUnregister = (GearyEntity, Entity) -> Unit
+internal typealias OnEntityRegister = GearyEntity.(Entity) -> Unit
+internal typealias OnEntityUnregister = GearyEntity.(Entity) -> Unit
 
 public object BukkitEntityAccess : Listener {
     private val entityMap = Object2LongOpenHashMap<UUID>()
@@ -54,7 +55,9 @@ public object BukkitEntityAccess : Listener {
         gearyEntity.apply {
             // allow us to both get the BukkitEntity and specific class (ex Player)
             set<BukkitEntity>(entity)
-            set<BukkitEntity>(entity, entity::class)
+            entity.type.entityClass?.kotlin?.let { bukkitClass ->
+                set(entity, bukkitClass)
+            }
 
             setAll(
                 onBukkitEntityRegister.flatMap { mapping ->
@@ -94,20 +97,20 @@ public object BukkitEntityAccess : Listener {
     public fun <T : Entity> getEntity(entity: T): GearyEntity =
         getEntityOrNull(entity) ?: registerEntity(entity)
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public fun GearyEntityRemoveEvent.onEntityRemoved() {
         entity.toBukkit<Entity>()?.let {
             unregisterEntity(it)
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public fun PlayerLoginEvent.onPlayerLogin() {
         registerEntity(player)
     }
 
     /** Remove entities from ECS when they are removed from Bukkit for any reason (Uses PaperMC event) */
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
         val gearyEntity = getEntityOrNull(entity) ?: return
         //TODO some way of knowing if this entity is permanently removed
@@ -119,7 +122,7 @@ public object BukkitEntityAccess : Listener {
     //TODO Is there anything we'd actually want to do with the ECS while the player sees their respawn screen?
     // If so, dont remove them on entity remove event and just refresh the inventory here
     /** Player death counts as an entity being removed from the world so we should add them back after respawn */
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public fun PlayerPostRespawnEvent.onPlayerRespawn() {
         registerEntity(player)
     }

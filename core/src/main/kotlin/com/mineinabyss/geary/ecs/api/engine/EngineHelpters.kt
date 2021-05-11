@@ -8,6 +8,10 @@ import kotlin.reflect.KClass
 
 public inline fun Engine.entity(run: GearyEntity.() -> Unit): GearyEntity = geary(getNextId(), run)
 
+public inline fun Engine.temporaryEntity(run: (GearyEntity) -> Unit) {
+    geary(getNextId(), run).removeEntity()
+}
+
 public inline fun <reified T> componentId(): GearyComponentId = componentId(T::class)
 
 @Deprecated("Should not be getting an id for an id!", ReplaceWith("componentId(component)"))

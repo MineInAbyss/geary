@@ -9,6 +9,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 /**
+ * > cooldown
+ *
  * An action that will start a cooldown, storing it in the entity's [CooldownManager] component.
  *
  * The action will only succeed once the cooldown is over, which will then run a list of actions. If none of the
@@ -30,13 +32,13 @@ public class CooldownAction(
     @Transient
     private val name = _name ?: run.hashCode().toString()
 
-    override fun runOn(entity: GearyEntity): Boolean {
-        val cooldowns = entity.getOrSetPersisting { CooldownManager() }
+    override fun GearyEntity.run(): Boolean {
+        val cooldowns = getOrSetPersisting { CooldownManager() }
 
         // restart cooldown if any of the actions ran successfully
         //TODO maybe it's worth storing under hashCode but having a separate field for display name
         return cooldowns.onCooldownIf(name, length.inMillis) {
-            run.count { it.runOn(entity) } != 0
+            run.count { it.runOn(this) } != 0
         }
     }
 }

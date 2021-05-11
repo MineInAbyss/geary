@@ -9,6 +9,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 
 /**
+ * > on.parent
+ *
  * Runs a list of actions on the parent of the given entity.
  *
  * @param wrapped The list of actions to run.
@@ -17,8 +19,8 @@ import kotlinx.serialization.serializer
 public class SwitchToParentAction(
     override val wrapped: List<GearyAction>
 ) : GearyAction(), FlatWrap<List<GearyAction>> {
-    override fun runOn(entity: GearyEntity): Boolean {
-        val parent = entity.parent ?: return false
+    override fun GearyEntity.run(): Boolean {
+        val parent = parent ?: return false
 
         return wrapped.count { it.runOn(parent) } != 0
     }

@@ -142,11 +142,12 @@ public open class GearyEngine : TickingEngine() {
 
     public override fun getType(entity: GearyEntityId): GearyType = typeMap[entity]?.archetype?.type ?: GearyType()
 
+    public override fun getRecord(entity: GearyEntityId): Record? = typeMap[entity]
+
     override fun setRecord(entity: GearyEntityId, record: Record) {
         typeMap[entity] = record
     }
 
-    private fun getRecord(entity: GearyEntityId) = typeMap[entity]
     private fun getOrAddRecord(entity: GearyEntityId) =
         typeMap.getOrPut(entity, { root.addEntityWithData(entity, listOf()) })
 }

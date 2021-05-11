@@ -5,6 +5,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * > geary:cooldowns
+ *
  * A component that manages cooldowns for an entity. Each cooldown has a unique key, but may be used to keep track of
  * anything. Typically a good idea to persist this component.
  *

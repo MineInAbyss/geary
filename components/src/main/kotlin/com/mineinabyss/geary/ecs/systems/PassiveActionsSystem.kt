@@ -5,7 +5,7 @@ import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.PassiveActionsComponent
 
 /**
- * A system that runs actions every 20 ticks.
+ * A system that runs actions from [PassiveActionsComponent]s every 20 ticks.
  */
 public object PassiveActionsSystem : TickingSystem(interval = 20) {
     private val actions by get<PassiveActionsComponent>()

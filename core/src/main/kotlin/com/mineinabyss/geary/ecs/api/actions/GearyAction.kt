@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.ecs.api.actions
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.properties.EntityPropertyHolder
 import kotlinx.serialization.Serializable
 
 /**
@@ -15,6 +16,9 @@ import kotlinx.serialization.Serializable
  * Please read the wiki for more info on common classes you might want to use for extendable composition.
  */
 @Serializable
-public abstract class GearyAction {
-    public abstract fun runOn(entity: GearyEntity): Boolean
+public abstract class GearyAction : EntityPropertyHolder() {
+    public fun runOn(entity: GearyEntity): Boolean =
+        entity.runWithProperties { run() } ?: false
+
+    protected abstract fun GearyEntity.run(): Boolean
 }

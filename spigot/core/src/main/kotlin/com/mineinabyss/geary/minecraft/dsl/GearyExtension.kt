@@ -17,8 +17,11 @@ import com.mineinabyss.geary.minecraft.components.of
 import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.messaging.logVal
 import com.mineinabyss.idofront.messaging.logWarn
-import kotlinx.serialization.*
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.*
+import kotlinx.serialization.serializerOrNull
 import org.bukkit.entity.Entity
 import org.bukkit.plugin.Plugin
 import org.reflections.Reflections
@@ -278,16 +281,16 @@ public class GearyExtension(
     /** Entry point for extending behaviour regarding how bukkit entities are linked to the ECS. */
     public class BukkitEntityAccessExtension {
         /** Additional things to do or components to be added to an [Entity] of type [T] is registered with the ECS. */
-        public inline fun <reified T : Entity> onEntityRegister(crossinline list: MutableList<GearyComponent>.(T) -> Unit) {
+        public inline fun <reified T : Entity> onEntityRegister(crossinline run: GearyEntity.(T) -> Unit) {
             BukkitEntityAccess.onBukkitEntityRegister { entity ->
-                if (entity is T) list(entity)
+                if (entity is T) run(entity)
             }
         }
 
         /** Additional things to do before an [Entity] of type [T] is removed from the ECS (or Minecraft World). */
-        public inline fun <reified T : Entity> onEntityUnregister(crossinline list: (GearyEntity, T) -> Unit) {
-            BukkitEntityAccess.onBukkitEntityUnregister { gearyEntity, entity ->
-                if (entity is T) list(gearyEntity, entity)
+        public inline fun <reified T : Entity> onEntityUnregister(crossinline run: GearyEntity.(T) -> Unit) {
+            BukkitEntityAccess.onBukkitEntityUnregister { entity ->
+                if (entity is T) run(entity)
             }
         }
     }

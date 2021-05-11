@@ -6,8 +6,6 @@ package com.mineinabyss.geary.minecraft.conditions
 
 import com.mineinabyss.geary.ecs.api.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.entities.parent
-import com.mineinabyss.geary.minecraft.components.PlayerComponent
 import com.mineinabyss.idofront.serialization.DoubleRangeSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -19,18 +17,14 @@ import org.bukkit.entity.Player
  */
 //TODO add more!
 @Serializable
-@SerialName("player")
+@SerialName("geary:player")
 public class PlayerConditions(
     public val isSneaking: Boolean? = null,
     public val isSprinting: Boolean? = null,
-) : GearyCondition {
+) : GearyCondition() {
+    private val GearyEntity.player by get<Player>()
 
-    override fun conditionsMet(entity: GearyEntity): Boolean {
-        val (player) = entity.parent?.get<PlayerComponent>() ?: return false
-        return conditionsMet(player)
-    }
-
-    public fun conditionsMet(player: Player): Boolean =
+    override fun GearyEntity.check(): Boolean =
         isSneaking nullOrEquals player.isSneaking &&
                 isSprinting nullOrEquals player.isSprinting
 }

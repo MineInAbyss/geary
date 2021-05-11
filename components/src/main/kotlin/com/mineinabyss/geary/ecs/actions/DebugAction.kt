@@ -7,6 +7,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * > debug
+ *
  * An action that will broadcast a debug [msg] when run.
  *
  * @param msg The message to be broadcast.
@@ -16,7 +18,7 @@ import kotlinx.serialization.Serializable
 public class DebugAction(
     private val msg: String
 ) : GearyAction() {
-    override fun runOn(entity: GearyEntity): Boolean {
+    override fun GearyEntity.run(): Boolean {
         broadcast(msg)
         return true
     }

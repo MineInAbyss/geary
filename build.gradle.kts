@@ -12,7 +12,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "6.1.0"
     kotlin("jvm") version com.mineinabyss.geary.Deps.kotlinVersion
     kotlin("plugin.serialization") version com.mineinabyss.geary.Deps.kotlinVersion
-    id("org.jetbrains.dokka") version "1.4.30"
+    id("org.jetbrains.dokka") version "1.4.32"
     id("com.mineinabyss.shared-gradle") version "0.0.6"
 }
 
@@ -45,7 +45,7 @@ allprojects {
         kotlinSpice("${Deps.kotlinVersion}+")
         compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-cbor")
 
-        implementation("com.mineinabyss:idofront:0.5.9")
+        implementation("com.mineinabyss:idofront:0.6.13")
     }
 
     tasks {

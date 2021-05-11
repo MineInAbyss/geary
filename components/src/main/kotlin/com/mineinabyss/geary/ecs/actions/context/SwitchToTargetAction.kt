@@ -9,6 +9,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 
 /**
+ * > on.target
+ *
  * Runs a list of actions on the target of the given entity.
  *
  * @param wrapped The list of actions to run.
@@ -17,8 +19,8 @@ import kotlinx.serialization.serializer
 public class SwitchToTargetAction(
     override val wrapped: List<GearyAction>
 ) : GearyAction(), FlatWrap<List<GearyAction>> {
-    override fun runOn(entity: GearyEntity): Boolean {
-        val target = entity.get<Target>()?.entity ?: return false
+    override fun GearyEntity.run(): Boolean {
+        val target = get<Target>()?.entity ?: return false
 
         return wrapped.count { it.runOn(target) } != 0
     }

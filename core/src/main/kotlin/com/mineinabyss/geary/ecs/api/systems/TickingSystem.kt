@@ -59,7 +59,7 @@ public abstract class TickingSystem(public val interval: Long = 1) {
         match.add(component)
     }
 
-    public inline fun <reified T : GearyComponent> get(): Accessor<T> = Accessor(componentId<T>() or HOLDS_DATA)
+    protected inline fun <reified T : GearyComponent> get(): Accessor<T> = Accessor(componentId<T>() or HOLDS_DATA)
 
     public inner class Accessor<T : GearyComponent>(
         private val componentId: GearyComponentId

@@ -2,6 +2,8 @@ package com.mineinabyss.geary.minecraft.actions
 
 import com.mineinabyss.geary.ecs.api.actions.GearyAction
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.minecraft.properties.AtEntityLocation
+import com.mineinabyss.geary.minecraft.properties.ConfigurableLocation
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.Particle
@@ -26,8 +28,9 @@ public data class PlayParticleAction(
     // TODO val data: Any? = null, (many things it could be, see if bukkit already has serializer for it)
     val at: ConfigurableLocation = AtEntityLocation(),
 ) : GearyAction() {
-    override fun runOn(entity: GearyEntity): Boolean {
-        val loc = at.get(entity) ?: return false
+    private val GearyEntity.loc by at
+
+    override fun GearyEntity.run(): Boolean {
         loc.world.spawnParticle(type, loc, count, offsetX, offsetY, offsetZ, speed)
         return true
     }
