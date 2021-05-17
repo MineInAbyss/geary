@@ -126,12 +126,12 @@ public inline class GearyEntity(public val id: GearyEntityId) {
 
     /** Gets all the active persisting components on this entity. */
     public inline fun getPersistingComponents(): Set<GearyComponent> =
-        get<PersistingComponents>()?.persisting?.intersect(getComponents()) ?: emptySet()
+        get<PersistingComponents>()?.components?.intersect(getComponents()) ?: emptySet()
 
     //TODO update javadoc
     /** Gets all the active non-persisting components on this entity. */
     public inline fun getInstanceComponents(): Set<GearyComponent> =
-        getComponents() - (get<PersistingComponents>()?.persisting ?: emptySet())
+        getComponents() - (get<PersistingComponents>()?.components ?: emptySet())
 
     /** Runs something on a component on this entity of type [T] if present. */
     public inline fun <reified T : GearyComponent> with(let: (T) -> Unit): Unit? = get<T>()?.let(let)

@@ -23,6 +23,8 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     private val match = sortedSetOf<GearyComponentId>()
     private val dataKey = mutableListOf<GearyComponentId>()
     private val relationsKey = mutableListOf<Relation>()
+    protected var iteration: Int = 0
+        private set
 
     internal val matchedArchetypes = mutableListOf<Archetype>()
     private var currComponents = listOf<GearyComponent>()
@@ -37,11 +39,13 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     private val archetypeIterators = mutableMapOf<Archetype, ArchetypeIterator>()
 
     public fun tick() {
+        iteration++
         // If any archetypes get added here while running through the system we dont want those entities to be iterated
         // right now, since they are most likely the entities involved with the current tick. To avoid this and
         // concurrent modifications, we make a copy of the list before iterating.
         matchedArchetypes.toList().forEach { arc ->
-            val iterator = archetypeIterators.getOrPut(arc, { ArchetypeIterator(arc, dataKey.toList(), relationsKey.toList()) })
+            val iterator =
+                archetypeIterators.getOrPut(arc, { ArchetypeIterator(arc, dataKey.toList(), relationsKey.toList()) })
             iterator.reset()
             iterator.forEach { (entity, components, relationIds, relationData) ->
                 currComponents = components
@@ -59,6 +63,7 @@ public abstract class TickingSystem(public val interval: Long = 1) {
         match.add(component)
     }
 
+    //TODO getOrNull
     protected inline fun <reified T : GearyComponent> get(): Accessor<T> = Accessor(componentId<T>() or HOLDS_DATA)
 
     public inner class Accessor<T : GearyComponent>(
@@ -108,5 +113,10 @@ public abstract class TickingSystem(public val interval: Long = 1) {
         val componentId = componentId<T>() and HOLDS_DATA.inv()
         registerAccessor(componentId)
         return geary(componentId)
+    }
+
+    protected inline fun <reified T> every(iterations: Int, run: () -> T): T? {
+        if (iteration.mod(iterations) == 0) return run()
+        return null
     }
 }
