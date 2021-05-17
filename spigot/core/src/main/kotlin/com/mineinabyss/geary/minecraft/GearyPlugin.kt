@@ -5,17 +5,22 @@ import com.mineinabyss.geary.ecs.api.services.GearyServiceProvider
 import com.mineinabyss.geary.ecs.api.services.GearyServices
 import com.mineinabyss.geary.ecs.systems.ExpiringComponentSystem
 import com.mineinabyss.geary.ecs.systems.PassiveActionsSystem
-import com.mineinabyss.geary.minecraft.access.BukkitEntityAccess
+import com.mineinabyss.geary.minecraft.access.BukkitAssociations
+import com.mineinabyss.geary.minecraft.access.BukkitEntityAssociations
 import com.mineinabyss.geary.minecraft.dsl.GearyLoadManager
 import com.mineinabyss.geary.minecraft.dsl.GearyLoadPhase
 import com.mineinabyss.geary.minecraft.dsl.attachToGeary
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
+import com.mineinabyss.geary.minecraft.store.FileSystemStore
+import com.mineinabyss.geary.minecraft.store.GearyStore
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
 import kotlinx.serialization.InternalSerializationApi
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
+import kotlin.io.path.Path
+import kotlin.io.path.div
 import kotlin.reflect.KClass
 import kotlin.time.ExperimentalTime
 
@@ -34,12 +39,13 @@ public class GearyPlugin : JavaPlugin() {
         })
 
         registerService<Engine>(SpigotEngine().apply { start() })
+        registerService<GearyStore>(FileSystemStore(dataFolder.toPath() / "serialized"))
 
         // Register commands.
         GearyCommands()
 
         registerEvents(
-            BukkitEntityAccess
+            BukkitEntityAssociations
         )
 
         // This will also register a serializer for GearyEntityType
@@ -55,9 +61,10 @@ public class GearyPlugin : JavaPlugin() {
 
             startup {
                 GearyLoadPhase.ENABLE {
-                    Bukkit.getOnlinePlayers().forEach { player ->
-                        BukkitEntityAccess.registerEntity(player)
-                    }
+                    //TODO register players
+//                    Bukkit.getOnlinePlayers().forEach { player ->
+//                        BukkitAssociations.register(player)
+//                    }
                 }
             }
         }

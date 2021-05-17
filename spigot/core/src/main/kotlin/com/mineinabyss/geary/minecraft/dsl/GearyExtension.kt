@@ -12,7 +12,8 @@ import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.GearyEntitySerializer
-import com.mineinabyss.geary.minecraft.access.BukkitEntityAccess
+import com.mineinabyss.geary.minecraft.access.BukkitAssociations
+import com.mineinabyss.geary.minecraft.access.BukkitEntityAssociations
 import com.mineinabyss.geary.minecraft.components.of
 import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.messaging.logVal
@@ -282,14 +283,14 @@ public class GearyExtension(
     public class BukkitEntityAccessExtension {
         /** Additional things to do or components to be added to an [Entity] of type [T] is registered with the ECS. */
         public inline fun <reified T : Entity> onEntityRegister(crossinline run: GearyEntity.(T) -> Unit) {
-            BukkitEntityAccess.onBukkitEntityRegister { entity ->
+            BukkitEntityAssociations.onBukkitEntityRegister { entity ->
                 if (entity is T) run(entity)
             }
         }
 
         /** Additional things to do before an [Entity] of type [T] is removed from the ECS (or Minecraft World). */
         public inline fun <reified T : Entity> onEntityUnregister(crossinline run: GearyEntity.(T) -> Unit) {
-            BukkitEntityAccess.onBukkitEntityUnregister { entity ->
+            BukkitEntityAssociations.onBukkitEntityUnregister { entity ->
                 if (entity is T) run(entity)
             }
         }
