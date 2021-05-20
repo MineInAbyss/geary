@@ -1,7 +1,5 @@
 package com.mineinabyss.geary.minecraft.store
 
-import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlinx.serialization.BinaryFormat
@@ -21,11 +19,10 @@ public class FileSystemStore(
         )
     }
 
-    override fun decode(uuid: UUID): GearyEntity? {
+    override fun decode(entity: GearyEntity, uuid: UUID) {
         try {
-            val bytes = read(uuid) ?: return null
-
-            return Engine.entity {
+            val bytes = read(uuid) ?: return
+            entity.apply {
                 setAllPersisting(
                     format.decodeFromByteArray(
                         GearyStore.componentsSerializer,
@@ -35,7 +32,7 @@ public class FileSystemStore(
             }
         } catch (e: IOException) {
             e.printStackTrace()
-            return null
+            return
         }
     }
 

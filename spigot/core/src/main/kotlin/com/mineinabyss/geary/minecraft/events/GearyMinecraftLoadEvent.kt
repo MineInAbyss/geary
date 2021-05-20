@@ -13,7 +13,7 @@ import org.bukkit.event.HandlerList
  * Unlike [GearyMinecraftSpawnEvent] this keeps getting called upon subsequent loads of the entity, not just the first
  * creation.
  */
-//TODO implement this event for more than Mobzy mobs.
+//TODO Rename
 public data class GearyMinecraftLoadEvent(
     val entity: GearyEntity
 ) : Event() {

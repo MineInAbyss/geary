@@ -3,6 +3,8 @@ package com.mineinabyss.geary.minecraft.access
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import com.mineinabyss.geary.ecs.api.GearyComponent
+import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.entities.addPrefab
 import com.mineinabyss.geary.ecs.prefab.PrefabKey
@@ -37,8 +39,11 @@ public object BukkitEntityAssociations : Listener {
         onBukkitEntityUnregister.add(add)
     }
 
-    public fun registerEntity(entity: Entity, attachTo: GearyEntity? = null): GearyEntity {
-        val gearyEntity = BukkitAssociations.register(entity.uniqueId, attachTo)
+    public fun registerEntity(entity: Entity): GearyEntity {
+        val uuid = entity.uniqueId
+        BukkitAssociations[uuid]?.let { return it }
+
+        val gearyEntity = Engine.entity()
 
         gearyEntity.apply {
             // allow us to both get the BukkitEntity and specific class (ex Player)
@@ -63,15 +68,13 @@ public object BukkitEntityAssociations : Listener {
         if (pdc.hasComponentsEncoded)
             gearyEntity.decodeComponentsFrom(pdc)
 
-        BukkitAssociations[entity.uniqueId] = gearyEntity
-
-        GearyMinecraftLoadEvent(gearyEntity).call()
+        BukkitAssociations.register(uuid, gearyEntity)
 
         return gearyEntity
     }
 
     private fun unregisterEntity(entity: Entity): GearyEntity? {
-        val gearyEntity = BukkitAssociations.getOrNull(entity.uniqueId) ?: return null
+        val gearyEntity = BukkitAssociations.get(entity.uniqueId) ?: return null
 
         for (extension in onBukkitEntityUnregister) {
             extension(gearyEntity, entity)

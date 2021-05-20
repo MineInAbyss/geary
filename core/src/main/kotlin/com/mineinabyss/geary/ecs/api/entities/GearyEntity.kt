@@ -9,6 +9,7 @@ import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.components.PersistingComponents
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
+import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
 /**
@@ -21,20 +22,23 @@ import kotlin.reflect.KClass
  *
  * Thus, there is no longer support for implementing GearyEntity as other classes.
  */
+@Serializable
+@JvmInline
 @Suppress("NOTHING_TO_INLINE")
-//@Serializable
-public inline class GearyEntity(public val id: GearyEntityId) {
+public value class GearyEntity(public val id: GearyEntityId) {
     /** Remove this entity from the ECS. */
     public fun removeEntity() {
         Engine.removeEntity(id)
     }
 
     /** Sets a component that holds data for this entity */
-    public inline fun <reified T : GearyComponent> set(component: T, kClass: KClass<out T> = T::class) {
+    public inline fun <reified T : GearyComponent> set(component: T, kClass: KClass<out T> = T::class): T {
         Engine.setComponentFor(id, componentId(kClass), component)
+        return component
     }
 
     @Deprecated("Likely unintentionally using list as a single component", ReplaceWith("setAll()"))
+    @Suppress("UNUSED_PARAMETER")
     public fun set(components: Collection<GearyComponent>): Unit =
         error("Trying to set a collection with set method instead of setAll")
 
@@ -69,15 +73,17 @@ public inline class GearyEntity(public val id: GearyEntityId) {
      *
      * Ex. for bukkit entities this is done through a PersistentDataContainer.
      */
-    public inline fun <reified T: GearyComponent> setPersisting(component: T, kClass: KClass<out T> = T::class) {
+    public inline fun <reified T : GearyComponent> setPersisting(component: T, kClass: KClass<out T> = T::class): T {
         set(component, kClass)
         //TODO persisting components should store a list of ComponentIDs
         //TODO is this possible to do nicely with relations?
         getOrSet { PersistingComponents() }.add(component)
+        return component
     }
 
     @Deprecated("Likely unintentionally using list as a single component", ReplaceWith("setAllPersisting()"))
-    public fun setPersisting(components: Collection<GearyComponent>): Unit = setPersisting(component = components)
+    public fun setPersisting(components: Collection<GearyComponent>): Collection<GearyComponent> =
+        setPersisting(component = components)
 
     public inline fun setAllPersisting(components: Collection<GearyComponent>) {
         setAll(components)

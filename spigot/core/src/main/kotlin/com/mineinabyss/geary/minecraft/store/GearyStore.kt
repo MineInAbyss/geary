@@ -18,7 +18,7 @@ public interface GearyStore {
 
     public fun write(entity: GearyEntity, bytes: ByteArray = encode(entity))
 
-    public fun decode(uuid: UUID): GearyEntity?
+    public fun decode(entity: GearyEntity, uuid: UUID)
 
     public fun read(uuid: UUID): ByteArray?
 
