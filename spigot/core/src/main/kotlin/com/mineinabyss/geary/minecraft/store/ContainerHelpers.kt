@@ -9,14 +9,14 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataHolder
 
 
-public fun PersistentDataHolder.decodeComponents(): Pair<Set<GearyComponent>, GearyType> =
+public fun PersistentDataHolder.decodeComponents(): DecodedEntityData =
     persistentDataContainer.decodeComponents()
 
 public fun PersistentDataHolder.encodeComponents(entity: GearyEntity) {
     persistentDataContainer.encodeComponents(entity.getPersistingComponents(), entity.type)
 }
 
-public fun ItemStack.decodeComponents(): Pair<Set<GearyComponent>, GearyType> =
+public fun ItemStack.decodeComponents(): DecodedEntityData =
     itemMeta.decodeComponents()
 
 public fun GearyEntity.encodeComponentsTo(item: ItemStack) {

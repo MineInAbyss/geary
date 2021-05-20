@@ -71,13 +71,18 @@ public object Formats {
         module.getPolymorphic(baseClass = baseClass, serializedClassName = key.toSerialKey())
 
     public inline fun <reified T : GearyComponent> getSerializerFor(): DeserializationStrategy<T>? {
-        val serialName = getSerialNameFor<T>() ?: return null
-
-        @Suppress("UNCHECKED_CAST") // higher level logic ensures this never fails based on how we register serial names
-        return getSerializerFor(serialName, GearyComponent::class) as? DeserializationStrategy<T>
+        return getSerializerFor(T::class) as DeserializationStrategy<T>?
     }
 
-    public inline fun <reified T : GearyComponent> getSerialNameFor(): String? = getSerialNameFor(T::class)
+    public fun getSerializerFor(kClass: KClass<out GearyComponent>): DeserializationStrategy<out GearyComponent>? {
+        val serialName = getSerialNameFor(kClass) ?: return null
+
+        @Suppress("UNCHECKED_CAST") // higher level logic ensures this never fails based on how we register serial names
+        return getSerializerFor(serialName, GearyComponent::class)
+    }
+
+    public inline fun <reified T : GearyComponent> getSerialNameFor(): String? =
+        getSerialNameFor(T::class)
 
     public fun getSerialNameFor(kClass: KClass<out GearyComponent>): String? =
         componentSerialNames.inverse[kClass]

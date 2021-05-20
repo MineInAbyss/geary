@@ -29,8 +29,8 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.has(): Bo
  */
 public fun <T : GearyComponent> PersistentDataContainer.encode(
     value: T,
-    serializer: SerializationStrategy<T> = cborFormat.serializersModule.getPolymorphic(GearyComponent::class, value)
-        ?: error("Serializer not registered for ${value::class.simpleName}"),
+    serializer: SerializationStrategy<T> = ((Formats.getSerializerFor(value::class)
+        ?: error("Serializer not registered for ${value::class.simpleName}")) as SerializationStrategy<T>),
     key: NamespacedKey = Formats.getSerialNameFor(value::class)?.toComponentKey()
         ?: error("SerialName  not registered for ${value::class.simpleName}"),
 ) {
@@ -95,12 +95,13 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
  *
  * @see decode
  */
-public fun PersistentDataContainer.decodeComponents(): Pair<Set<GearyComponent>, GearyType> =
-    // only include keys that start with the component prefix and remove it to get the serial name
-    keys.filter { it.key.startsWith(COMPONENT_PREFIX) }
-        .mapNotNull { decode(it) }
-        .toSet() to
-            (decode(
-                "geary:prefabs".toMCKey(),
-                SetSerializer(PrefabKey.serializer())
-            ) ?: emptyList()).mapNotNullTo(sortedSetOf()) { PrefabManager[it]?.id }
+public fun PersistentDataContainer.decodeComponents(): DecodedEntityData =
+    DecodedEntityData(
+        // only include keys that start with the component prefix and remove it to get the serial name
+        persistingComponents = keys
+            .filter { it.key.startsWith(COMPONENT_PREFIX) }
+            .mapNotNull { decode(it) }
+            .toSet(),
+        type = (decode("geary:prefabs".toMCKey(), SetSerializer(PrefabKey.serializer())) ?: emptyList())
+            .mapNotNullTo(sortedSetOf()) { PrefabManager[it]?.id }
+    )

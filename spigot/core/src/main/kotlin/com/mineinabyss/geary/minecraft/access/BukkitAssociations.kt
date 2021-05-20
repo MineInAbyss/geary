@@ -1,32 +1,43 @@
 package com.mineinabyss.geary.minecraft.access
 
-import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
+import com.mineinabyss.geary.minecraft.events.GearyMinecraftLoadEvent
+import com.mineinabyss.idofront.events.call
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap
+import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
+import org.bukkit.event.Listener
 import java.util.*
 import kotlin.collections.set
 
-public object BukkitAssociations {
+public object BukkitAssociations: Listener {
     private val entityMap = Object2LongOpenHashMap<UUID>()
 
-    public fun getOrNull(uuid: UUID): GearyEntity? {
+    public operator fun get(uuid: UUID): GearyEntity? {
         return geary(entityMap.getOrDefault(uuid, null) ?: return null)
     }
-    
+
     public operator fun contains(uuid: UUID): Boolean = entityMap.contains(uuid)
 
-    public operator fun set(uuid: UUID, entity: GearyEntity) {
+    public fun register(uuid: UUID, entity: GearyEntity) {
         entityMap[uuid] = entity.id.toLong()
+        GearyMinecraftLoadEvent(entity).call()
     }
-    
-    public fun remove(uuid: UUID): GearyEntity = geary(entityMap.removeLong(uuid))
-    
-    public fun register(uuid: UUID, attachTo: GearyEntity? = null): GearyEntity {
-        //if the entity is already registered, return it
-        getOrNull(uuid)?.let { return it }
 
-        return attachTo ?: Engine.entity {}
+    public fun remove(uuid: UUID): GearyEntity = geary(entityMap.removeLong(uuid))
+
+    public inline fun getOrPut(uuid: UUID, run: () -> GearyEntity): GearyEntity {
+        //if the entity is already registered, return it
+        get(uuid)?.let { return it }
+        val entity = run()
+        register(uuid, entity)
+        return entity
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public fun GearyEntityRemoveEvent.onEntityRemoved() {
+        entity.get<UUID>()?.let { remove(it) }
     }
 }
