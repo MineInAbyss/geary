@@ -109,8 +109,8 @@ public abstract class TickingSystem(public val interval: Long = 1) {
             )
     }
 
-    protected inline fun <reified T : GearyComponent> has(): GearyEntity {
-        val componentId = componentId<T>() and HOLDS_DATA.inv()
+    protected inline fun <reified T : GearyComponent> has(set: Boolean = true): GearyEntity {
+        val componentId = componentId<T>().let { if (set) it and HOLDS_DATA.inv() else it }
         registerAccessor(componentId)
         return geary(componentId)
     }
