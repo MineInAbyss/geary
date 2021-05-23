@@ -17,8 +17,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("geary:cooldowns")
 @AutoscanComponent
-public class CooldownManager {
+public data class CooldownManager(
     private val completionTime: MutableMap<String, Cooldown> = mutableMapOf()
+) {
     public val incompleteCooldowns: Map<String, Cooldown>
         get() = completionTime.filterValues {
             it.endTime > System.currentTimeMillis()
