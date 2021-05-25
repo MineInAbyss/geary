@@ -19,18 +19,15 @@ import org.bukkit.event.weather.WeatherEvent
  * @param at The location to change the weather in.
  */
 @Serializable
-@SerialName("geary:weather")
-public class ChangeWeatherAction(
+@SerialName("geary:toggle_storm")
+public class ToggleStormAction(
     private val at: ConfigurableLocation,
 ) : GearyAction() {
     private val GearyEntity.location by at
 
     override fun GearyEntity.run(): Boolean {
-        if (location.world.isClearWeather) {
-            location.world.setStorm(true)
-        } else {
-            location.world.setStorm(false)
-        }
+        val world = location.world
+        world.setStorm(!world.isClearWeather)
         return true
     }
 }
