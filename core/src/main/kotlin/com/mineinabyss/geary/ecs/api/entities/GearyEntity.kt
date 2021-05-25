@@ -87,7 +87,10 @@ public value class GearyEntity(public val id: GearyEntityId) {
 
     public inline fun setAllPersisting(components: Collection<GearyComponent>) {
         setAll(components)
-        getOrSet { PersistingComponents() }.addAll(components)
+        // Get and addAll, or create PersistingComponents, calculating components hash
+        get<PersistingComponents>()?.addAll(components) ?: run {
+            set<PersistingComponents>(PersistingComponents(components.toMutableSet()))
+        }
     }
 
     /**
