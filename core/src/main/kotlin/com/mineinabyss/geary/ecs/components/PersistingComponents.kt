@@ -11,4 +11,10 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 public data class PersistingComponents(
     public val components: MutableSet<GearyComponent> = mutableSetOf(),
     public var hashed: Int = components.hashCode(),
-) : MutableSet<GearyComponent> by components
+) : MutableSet<GearyComponent> by components {
+    public fun updateComponentHash(): Int {
+        val newHashed = components.hashCode()
+        hashed = newHashed
+        return newHashed
+    }
+}
