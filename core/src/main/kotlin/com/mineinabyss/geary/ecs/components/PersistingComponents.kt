@@ -8,6 +8,13 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
  * It's not persisted itself, as we know which components are persistent when deserializing an entity by looking
  * at the ones that were serialized to it.
  */
-public class PersistingComponents(
-    public val persisting: MutableSet<GearyComponent> = mutableSetOf()
-) : MutableSet<GearyComponent> by persisting
+public data class PersistingComponents(
+    public val components: MutableSet<GearyComponent> = mutableSetOf(),
+    public var hashed: Int = components.hashCode(),
+) : MutableSet<GearyComponent> by components {
+    public fun updateComponentHash(): Int {
+        val newHashed = components.hashCode()
+        hashed = newHashed
+        return newHashed
+    }
+}

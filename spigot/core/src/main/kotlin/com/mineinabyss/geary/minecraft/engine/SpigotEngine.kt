@@ -12,6 +12,7 @@ import com.mineinabyss.idofront.nms.aliases.BukkitEntity
 import com.okkero.skedule.schedule
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
+import java.util.*
 
 public class SpigotEngine : GearyEngine() {
     public companion object {
@@ -41,7 +42,7 @@ public class SpigotEngine : GearyEngine() {
     }
 
     override fun removeEntity(entity: GearyEntityId) {
-        if (geary(entity).has<BukkitEntity>())
+        if (geary(entity).has<UUID>())
             GearyEntityRemoveEvent(geary(entity)).call()
         super.removeEntity(entity)
     }

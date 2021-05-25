@@ -1,10 +1,12 @@
 package com.mineinabyss.geary.ecs.serialization
 
+import com.mineinabyss.idofront.serialization.UUIDSerializer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import java.util.*
 
 /** A class that holds only one value that we want to delegate serialization to. */
 public interface FlatWrap<A> {
@@ -13,7 +15,7 @@ public interface FlatWrap<A> {
 
 /** A wrapper around [SerialDescriptor] that only overrides the [serialName]. */
 @ExperimentalSerializationApi
-internal class DescriptorWrapper(override val serialName: String, wrapped: SerialDescriptor) :
+public class DescriptorWrapper(override val serialName: String, wrapped: SerialDescriptor) :
     SerialDescriptor by wrapped
 
 /**
@@ -21,9 +23,11 @@ internal class DescriptorWrapper(override val serialName: String, wrapped: Seria
  * Not technically needed but doing this just in case.
  */
 @ExperimentalSerializationApi
-internal class SerializerWrapper<T>(override val descriptor: SerialDescriptor, wrapped: KSerializer<T>) :
+public class SerializerWrapper<T>(override val descriptor: SerialDescriptor, wrapped: KSerializer<T>) :
     KSerializer<T> by wrapped
 
+public fun <T> KSerializer<T>.withSerialName(name: String): SerializerWrapper<T> =
+    SerializerWrapper(DescriptorWrapper(name, this.descriptor), this)
 /**
  * An abstract serializer for a [FlatWrap] that will use the [wrapped][FlatWrap.wrapped] value's serializer to
  * serialize this class.

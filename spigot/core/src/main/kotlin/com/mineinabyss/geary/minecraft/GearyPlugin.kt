@@ -3,19 +3,27 @@ package com.mineinabyss.geary.minecraft
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.services.GearyServiceProvider
 import com.mineinabyss.geary.ecs.api.services.GearyServices
+import com.mineinabyss.geary.ecs.serialization.Formats
+import com.mineinabyss.geary.ecs.serialization.withSerialName
 import com.mineinabyss.geary.ecs.systems.ExpiringComponentSystem
 import com.mineinabyss.geary.ecs.systems.PassiveActionsSystem
-import com.mineinabyss.geary.minecraft.access.BukkitEntityAccess
+import com.mineinabyss.geary.minecraft.access.BukkitAssociations
+import com.mineinabyss.geary.minecraft.access.BukkitEntityAssociations
 import com.mineinabyss.geary.minecraft.dsl.GearyLoadManager
 import com.mineinabyss.geary.minecraft.dsl.GearyLoadPhase
 import com.mineinabyss.geary.minecraft.dsl.attachToGeary
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
+import com.mineinabyss.geary.minecraft.store.FileSystemStore
+import com.mineinabyss.geary.minecraft.store.GearyStore
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
+import com.mineinabyss.idofront.serialization.UUIDSerializer
 import kotlinx.serialization.InternalSerializationApi
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
+import java.util.*
+import kotlin.io.path.div
 import kotlin.reflect.KClass
 import kotlin.time.ExperimentalTime
 
@@ -39,7 +47,8 @@ public class GearyPlugin : JavaPlugin() {
         GearyCommands()
 
         registerEvents(
-            BukkitEntityAccess
+            BukkitEntityAssociations,
+            BukkitAssociations,
         )
 
         // This will also register a serializer for GearyEntityType
@@ -48,6 +57,12 @@ public class GearyPlugin : JavaPlugin() {
             autoscanConditions()
             autoscanActions()
 
+            components {
+                //TODO move out to a custom components class
+                subclass(UUID::class, UUIDSerializer.withSerialName("geary:uuid"))
+                Formats.registerSerialName("geary:uuid", UUID::class)
+            }
+
             systems(
                 PassiveActionsSystem,
                 ExpiringComponentSystem,
@@ -55,9 +70,11 @@ public class GearyPlugin : JavaPlugin() {
 
             startup {
                 GearyLoadPhase.ENABLE {
-                    Bukkit.getOnlinePlayers().forEach { player ->
-                        BukkitEntityAccess.registerEntity(player)
-                    }
+                    registerService<GearyStore>(FileSystemStore(dataFolder.toPath() / "serialized"))
+                    //TODO register players
+//                    Bukkit.getOnlinePlayers().forEach { player ->
+//                        BukkitAssociations.register(player)
+//                    }
                 }
             }
         }

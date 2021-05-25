@@ -6,6 +6,8 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
 import kotlin.reflect.KClass
 
+public fun Engine.entity(): GearyEntity = geary(getNextId())
+
 public inline fun Engine.entity(run: GearyEntity.() -> Unit): GearyEntity = geary(getNextId(), run)
 
 public inline fun Engine.temporaryEntity(run: (GearyEntity) -> Unit) {
