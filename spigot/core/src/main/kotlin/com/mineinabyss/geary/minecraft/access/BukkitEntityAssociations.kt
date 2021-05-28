@@ -14,6 +14,7 @@ import com.mineinabyss.geary.minecraft.events.GearyMinecraftLoadEvent
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
 import com.mineinabyss.geary.minecraft.store.encodeComponents
+import com.mineinabyss.geary.minecraft.store.encodeComponentsTo
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.nms.aliases.BukkitEntity
 import com.mineinabyss.idofront.nms.entity.typeName
@@ -22,6 +23,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerLoginEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
@@ -82,7 +84,9 @@ public object BukkitEntityAssociations : Listener {
             extension(gearyEntity, entity)
         }
 
-        if (entity.uniqueId !in BukkitAssociations) return null
+        val pdc = entity.persistentDataContainer
+        gearyEntity.encodeComponentsTo(pdc)
+
         return BukkitAssociations.remove(entity.uniqueId)
     }
 
@@ -95,7 +99,7 @@ public object BukkitEntityAssociations : Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public fun PlayerLoginEvent.onPlayerLogin() {
+    public fun PlayerJoinEvent.onPlayerLogin() {
         registerEntity(player)
     }
 

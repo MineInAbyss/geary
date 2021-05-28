@@ -12,7 +12,7 @@ import org.bukkit.event.Listener
 import java.util.*
 import kotlin.collections.set
 
-public object BukkitAssociations: Listener {
+public object BukkitAssociations : Listener {
     private val entityMap = Object2LongOpenHashMap<UUID>()
 
     public operator fun get(uuid: UUID): GearyEntity? {
@@ -26,7 +26,10 @@ public object BukkitAssociations: Listener {
         GearyMinecraftLoadEvent(entity).call()
     }
 
-    public fun remove(uuid: UUID): GearyEntity = geary(entityMap.removeLong(uuid))
+    public fun remove(uuid: UUID): GearyEntity? {
+        if (uuid !in entityMap) return null
+        return geary(entityMap.removeLong(uuid))
+    }
 
     public inline fun getOrPut(uuid: UUID, run: () -> GearyEntity): GearyEntity {
         //if the entity is already registered, return it

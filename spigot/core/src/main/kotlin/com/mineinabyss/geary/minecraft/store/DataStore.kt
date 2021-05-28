@@ -80,14 +80,15 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
     //encode all the prefabs of this type with a key stored under a special key. This could have been done via a
     // persisting prefab component, but I prefer being explicit and avoiding the possibility of this component
     // accidentally ending up on the entity itself
-    encode(
-        type.filter { it and INSTANCEOF != 0uL }
-            .map { it and INSTANCEOF.inv() }
-            .mapNotNull { geary(it).get<PrefabKey>() }
-            .toSet(),
-        SetSerializer(PrefabKey.serializer()),
-        "geary:prefabs".toMCKey()
-    )
+    val prefabs = type.filter { it and INSTANCEOF != 0uL }
+    if (prefabs.isNotEmpty()) {
+        encode(
+            prefabs.mapNotNull { geary(it).get<PrefabKey>() }
+                .toSet(),
+            SetSerializer(PrefabKey.serializer()),
+            "geary:prefabs".toMCKey()
+        )
+    }
 }
 
 /**
