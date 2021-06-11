@@ -2,9 +2,10 @@ package com.mineinabyss.geary.ecs.conditions
 
 import com.mineinabyss.geary.ecs.api.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.serialization.Formats
+import com.mineinabyss.geary.ecs.helper.Components
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 /**
  * > geary:entity
@@ -15,11 +16,11 @@ import kotlinx.serialization.Serializable
 @SerialName("geary:entity")
 public class EntityComponentConditions(
     @SerialName("has")
-    public val components: Set<String> = emptySet(),
+    public val names: Set<String> = emptySet(),
 ): GearyCondition() {
-    //TODO this is getting boilerplatey, reused from ComponentAction
-    private val componentClasses by lazy { components.map { Formats.getClassFor(it) } }
+    @Transient
+    private val _components = Components(names)
 
     override fun GearyEntity.check(): Boolean =
-        hasAll(componentClasses)
+        hasAll(_components.classes)
 }

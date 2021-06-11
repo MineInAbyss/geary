@@ -5,9 +5,11 @@ import com.mineinabyss.geary.ecs.api.actions.GearyAction
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.helper.Components
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 /**
  * > geary:add
@@ -32,9 +34,12 @@ public class AddComponentAction(
  */
 @Serializable
 @SerialName("geary:remove")
-public data class RemoveComponentAction(override val components: Set<String>) : ComponentAction() {
+public data class RemoveComponentAction(private val components: Set<String>) : GearyAction() {
+    @Transient
+    private val _components = Components(components)
+
     override fun GearyEntity.run(): Boolean {
-        componentClasses.forEach {
+        _components.classes.forEach {
             Engine.removeComponentFor(id, componentId(it))
         }
         return true
