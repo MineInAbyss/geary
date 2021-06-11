@@ -5,8 +5,10 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import java.util.*
+
+public typealias Event = GearyEntity.() -> Unit
 
 public data class Archetype(
     public val type: GearyType,
@@ -14,6 +16,7 @@ public data class Archetype(
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
     private val dataHoldingType = type.filter { it and HOLDS_DATA != 0uL || it and RELATION != 0uL }
+    private val events = EventListenerContainer()
 
     /** Map of relation parent id to a list of relations with that parent */
     private val relations: Map<GearyComponentId, List<Relation>> = type
@@ -22,10 +25,11 @@ public data class Archetype(
         .groupBy { it.parent }
 
     /** @return This Archetype's [relations] that are also a part of this family's relations. */
-    public fun matchedRelationsFor(matchRelations: Collection<Relation>): Map<GearyComponentId, List<Relation>> = matchRelations
-        .map { it.parent }
-        .filter { it in relations }
-        .associateWith { relations[it]!! } //TODO handle null error
+    public fun matchedRelationsFor(matchRelations: Collection<Relation>): Map<GearyComponentId, List<Relation>> =
+        matchRelations
+            .map { it.parent }
+            .filter { it in relations }
+            .associateWith { relations[it]!! } //TODO handle null error
 
     internal fun indexOf(id: GearyComponentId): Int = dataHoldingType.indexOf(id)
 
@@ -166,8 +170,10 @@ public data class Archetype(
         if (lastIndex != row) {
             //TODO I'd like this to perhaps be independent of engine in case we ever want more than one at a time
             Engine.setRecord(replacement, Record(this, row))
-            movedRows.remove(lastIndex)
-            movedRows.add(row)
+            //TODO figure out how to make iterators not skip these moved entities
+            // while also supporting several simultaneous iterators
+//            movedRows.remove(lastIndex)
+//            movedRows.add(row)
         }
     }
 }

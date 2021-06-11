@@ -37,7 +37,10 @@ public value class GearyEntity(public val id: GearyEntityId) {
         return component
     }
 
-    @Deprecated("Likely unintentionally using list as a single component", ReplaceWith("setAll()"))
+    @Deprecated(
+        "Likely unintentionally using list as a single component, use set<T: GearyComponent>() if this is intentional.",
+        ReplaceWith("setAll()")
+    )
     @Suppress("UNUSED_PARAMETER")
     public fun set(components: Collection<GearyComponent>): Unit =
         error("Trying to set a collection with set method instead of setAll")

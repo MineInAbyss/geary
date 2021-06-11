@@ -5,6 +5,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import kotlin.properties.ReadOnlyProperty
@@ -32,7 +33,7 @@ public abstract class EntityPropertyHolder {
 
     public inline fun <T> GearyEntity.runWithProperties(run: GearyEntity.() -> T): T? {
         if (propertiesEmpty) return run()
-        if(readProperties(this)) {
+        if (readProperties(this)) {
             return run().also { clear(this) }
         }
         return null

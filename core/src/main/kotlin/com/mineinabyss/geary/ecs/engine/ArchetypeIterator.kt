@@ -5,23 +5,18 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.query.Query
 
-internal class ArchetypeIterator(
+internal data class ArchetypeIterator(
     private val archetype: Archetype,
-    private val dataKey: List<GearyComponentId>,
-    private val relationsKey: List<Relation>,
-) : Iterator<ArchetypeIterationResult> {
-    init {
-        archetype.movedRows.clear()
-    }
+    private val query: Query,
 
-    private val dataIndices = dataKey
+    private val dataIndices: List<Int> = query.dataKey
         .filter { it and HOLDS_DATA != 0uL }
-        .map { archetype.indexOf(it) }
+        .map { archetype.indexOf(it) },
 
-    private val relationDataIndices = relationsKey.map { archetype.indexOf(it.id) }
-
-    private val matchedRelations = archetype.matchedRelationsFor(relationsKey)
+    private val matchedRelations: Map<GearyComponentId, List<Relation>> =
+        archetype.matchedRelationsFor(query.relationsKey),
 
     private val relationCombinations: List<RelationCombination> =
         matchedRelations.values.fold(emptyList()) { curr, components: List<Relation> ->
@@ -42,16 +37,16 @@ internal class ArchetypeIterator(
                 }
             }
         }
+) : Iterator<QueryResult> {
+    var row = 0
 
-    private var row = 0
-
-    override fun hasNext() = (row < archetype.size || archetype.movedRows.isNotEmpty())
-        .also { if (!it) archetype.movedRows.clear() }
+    override fun hasNext() = (row < archetype.size /*|| archetype.movedRows.isNotEmpty()*/)
+//        .also { if (!it) archetype.movedRows.clear() }
 
     private var relationCombinationsIterator: Iterator<RelationCombination> = relationCombinations.iterator()
     private var componentData = listOf<GearyComponent>()
 
-    override fun next(): ArchetypeIterationResult {
+    override fun next(): QueryResult {
         // Find the row we'll be reading data from. If a row was moved due to another row's removal
         //
         //TODO is there a more efficient way of taking any element from the set and removing it?
@@ -68,28 +63,15 @@ internal class ArchetypeIterator(
             val relationData = combination.componentIndices.map { index ->
                 archetype.componentData[index][destinationRow]
             }
-            ArchetypeIterationResult(entity, componentData, combination.relations.map { it.component }, relationData)
+            QueryResult(entity, componentData, combination.relations.map { it.component }, relationData)
         } else {
             componentData = getAtIndex(destinationRow)
-            ArchetypeIterationResult(entity, componentData)
+            QueryResult(entity, componentData)
         }
     }
 
     private fun getAtIndex(index: Int) = dataIndices.map {
         archetype.componentData[it][index]
-    }
-
-    /**
-     * Resets this iterator. Useful as creating it every time is relatively expensive,
-     * as we need to do slow indexOf operations.
-     */
-    internal fun reset() {
-        //TODO we should only be adding stuff here if something is currently iterating over this archetype
-        // we'll remove this line eventually
-        archetype.movedRows.clear()
-        row = 0
-        relationCombinationsIterator = relationCombinations.iterator()
-        componentData = listOf()
     }
 }
 
@@ -98,7 +80,7 @@ public class RelationCombination(
     public val componentIndices: IntArray,
 )
 
-public data class ArchetypeIterationResult(
+public data class QueryResult(
     val entity: GearyEntity,
     val data: List<GearyComponent>,
     val relationCompIds: List<GearyComponentId> = listOf(),

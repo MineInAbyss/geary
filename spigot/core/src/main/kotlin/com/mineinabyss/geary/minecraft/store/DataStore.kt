@@ -61,7 +61,7 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
 ): T? {
     serializer ?: return null
     val encoded = this[key, BYTE_ARRAY] ?: return null
-    return cborFormat.decodeFromByteArray(serializer, encoded)
+    return runCatching { cborFormat.decodeFromByteArray(serializer, encoded) }.getOrNull()
 }
 
 /**
@@ -101,7 +101,9 @@ public fun PersistentDataContainer.decodeComponents(): DecodedEntityData =
         // only include keys that start with the component prefix and remove it to get the serial name
         persistingComponents = keys
             .filter { it.key.startsWith(COMPONENT_PREFIX) }
-            .mapNotNull { decode(it) }
+            .mapNotNull {
+                decode(it)
+            }
             .toSet(),
         type = (decode("geary:prefabs".toMCKey(), SetSerializer(PrefabKey.serializer())) ?: emptyList())
             .mapNotNullTo(sortedSetOf()) { PrefabManager[it]?.id }

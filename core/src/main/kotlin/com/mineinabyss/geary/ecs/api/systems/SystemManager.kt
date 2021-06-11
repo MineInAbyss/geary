@@ -3,19 +3,21 @@ package com.mineinabyss.geary.ecs.api.systems
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.engine.Archetype
+import com.mineinabyss.geary.ecs.query.Query
 
 internal object SystemManager {
-    private val systems = mutableListOf<TickingSystem>()
+    private val queries = mutableListOf<Query>()
     private val archetypes = mutableListOf<Archetype>()
 
-    fun registerSystem(system: TickingSystem) {
+    //TODO should be a subclass for trackable queries
+    fun trackQuery(system: Query) {
         system.matchedArchetypes += getArchetypesMatching(system.family)
-        systems += system
+        queries += system
     }
 
     fun assignArchetypeToSystems(archetype: Archetype) {
         archetypes += archetype
-        systems.filter { archetype.type in it.family }.forEach {
+        queries.filter { archetype.type in it.family }.forEach {
             it.matchedArchetypes += archetype
         }
     }

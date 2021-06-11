@@ -43,7 +43,7 @@ public open class GearyEngine : TickingEngine() {
     protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
 
     override fun addSystem(system: TickingSystem): Boolean {
-        SystemManager.registerSystem(system)
+        SystemManager.trackQuery(system)
         return registeredSystems.add(system)
     }
 
@@ -64,7 +64,7 @@ public open class GearyEngine : TickingEngine() {
 
     /** Describes how to individually tick each system */
     protected open fun TickingSystem.runSystem() {
-        tick()
+        doTick()
     }
 
     override fun scheduleSystemTicking() {
