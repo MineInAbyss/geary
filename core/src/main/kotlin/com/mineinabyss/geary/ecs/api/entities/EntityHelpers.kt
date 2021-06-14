@@ -11,8 +11,13 @@ public inline fun geary(id: GearyEntityId, run: GearyEntity.() -> Unit): GearyEn
     geary(id).apply(run)
 
 /** Gets the entity associated with [id]. */
+//TODO think a bit more about the benefits of automatically adding a mask vs possible bugs with internal code
+// working with relations accidentally using this
 @Suppress("NOTHING_TO_INLINE")
 public inline fun geary(id: GearyEntityId): GearyEntity = GearyEntity(id and ENTITY_MASK)
+
+@Suppress("NOTHING_TO_INLINE")
+public inline fun gearyNoMask(id: GearyEntityId): GearyEntity = GearyEntity(id)
 
 /** Gets the entity associated with [id]. */
 @Suppress("NOTHING_TO_INLINE")

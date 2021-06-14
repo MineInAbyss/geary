@@ -11,6 +11,13 @@ public class Family(
     public val relations: SortedSet<Relation> = sortedSetOf(),
     public val andNot: GearyType = sortedSetOf(),
 ) {
+    public companion object {
+        public fun of(type: GearyType): Family = Family(
+            match = GearyType(type.filter { it and RELATION == 0uL }),
+            relations = type.filter { it and RELATION != 0uL }.map { Relation(it) }.toSortedSet()
+        )
+    }
+
     public operator fun contains(type: GearyType): Boolean =
         match.all { type.hasComponent(it) }
                 && relations.all { type.hasRelation(it) }

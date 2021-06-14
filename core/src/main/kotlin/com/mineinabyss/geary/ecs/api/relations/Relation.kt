@@ -5,7 +5,8 @@ import com.mineinabyss.geary.ecs.engine.RELATION
 import com.mineinabyss.geary.ecs.engine.RELATION_COMPONENT_MASK
 import com.mineinabyss.geary.ecs.engine.RELATION_PARENT_MASK
 
-public inline class Relation(
+@JvmInline
+public value class Relation(
     public val id: GearyComponentId
 ) : Comparable<Relation> {
     public constructor(

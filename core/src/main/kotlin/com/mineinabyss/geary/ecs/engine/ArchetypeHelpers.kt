@@ -16,7 +16,7 @@ private fun createArchetype(prevNode: Archetype, componentEdge: GearyComponentId
     val arc = Archetype(prevNode.type.plus(componentEdge))
     arc.remove[componentEdge] = prevNode
     prevNode.add[componentEdge] = arc
-    SystemManager.assignArchetypeToSystems(arc)
+    SystemManager.registerArchetype(arc)
     return arc
 }
 

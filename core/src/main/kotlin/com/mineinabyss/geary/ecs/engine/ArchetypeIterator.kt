@@ -40,18 +40,26 @@ internal data class ArchetypeIterator(
 ) : Iterator<QueryResult> {
     var row = 0
 
-    override fun hasNext() = (row < archetype.size /*|| archetype.movedRows.isNotEmpty()*/)
-//        .also { if (!it) archetype.movedRows.clear() }
+    override fun hasNext() = (row < archetype.size || movedRows.isNotEmpty())
+        .also { if (!it) archetype.finalizeIterator(this) }
 
     private var relationCombinationsIterator: Iterator<RelationCombination> = relationCombinations.iterator()
     private var componentData = listOf<GearyComponent>()
 
+    /** Set of elements moved during a component removal. Represents the resulting row to original row. */
+    private val movedRows = mutableSetOf<Int>()
+
+    fun addMovedRow(originalRow: Int, resultingRow: Int) {
+        if(resultingRow > row) return
+        movedRows.remove(originalRow)
+        movedRows.add(resultingRow)
+    }
+
     override fun next(): QueryResult {
         // Find the row we'll be reading data from. If a row was moved due to another row's removal
-        //
         //TODO is there a more efficient way of taking any element from the set and removing it?
-        val destinationRow = archetype.movedRows.firstOrNull() ?: row++
-        archetype.movedRows.remove(destinationRow)
+        val destinationRow = movedRows.firstOrNull() ?: row++
+        movedRows.remove(destinationRow)
         val entity = geary(archetype.ids[destinationRow])
 
         return if (matchedRelations.isNotEmpty()) {
