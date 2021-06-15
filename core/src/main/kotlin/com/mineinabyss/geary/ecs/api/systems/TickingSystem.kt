@@ -22,6 +22,7 @@ import kotlin.reflect.KProperty
 public abstract class TickingSystem(public val interval: Long = 1) {
     private val match = sortedSetOf<GearyComponentId>()
     private val dataKey = mutableListOf<GearyComponentId>()
+    private val andNot = sortedSetOf<GearyComponentId>()
     private val relationsKey = mutableListOf<Relation>()
     protected var iteration: Int = 0
         private set
@@ -34,7 +35,7 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     private var currRelationData = listOf<GearyComponent>()
 
     //idea is match works as a builder and family becomes immutable upon first access
-    public val family: Family by lazy { Family(match, relationsKey.toSortedSet()) } //TODO make gearytype sortedSet
+    public val family: Family by lazy { Family(match, relationsKey.toSortedSet(), andNot) } //TODO make gearytype sortedSet
 
     private val archetypeIterators = mutableMapOf<Archetype, ArchetypeIterator>()
 
@@ -61,6 +62,10 @@ public abstract class TickingSystem(public val interval: Long = 1) {
 
     protected fun registerAccessor(component: GearyComponentId) {
         match.add(component)
+    }
+
+    protected fun registerLackOf(component: GearyComponentId) {
+        andNot.add(component)
     }
 
     //TODO getOrNull
@@ -112,6 +117,12 @@ public abstract class TickingSystem(public val interval: Long = 1) {
     protected inline fun <reified T : GearyComponent> has(set: Boolean = true): GearyEntity {
         val componentId = componentId<T>().let { if (set) it and HOLDS_DATA.inv() else it }
         registerAccessor(componentId)
+        return geary(componentId)
+    }
+
+    protected inline fun <reified T : GearyComponent> hasNot(set: Boolean = true): GearyEntity {
+        val componentId = componentId<T>().let { if (set) it and HOLDS_DATA.inv() else it }
+        registerLackOf(componentId)
         return geary(componentId)
     }
 
