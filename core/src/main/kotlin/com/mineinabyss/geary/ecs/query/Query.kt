@@ -18,10 +18,11 @@ import kotlin.reflect.KProperty
 public abstract class Query : Iterable<QueryResult> {
     private val match = sortedSetOf<GearyComponentId>()
     internal val dataKey = mutableListOf<GearyComponentId>()
+    private val andNot = sortedSetOf<GearyComponentId>()
     internal val relationsKey = mutableListOf<Relation>()
 
     //idea is match works as a builder and family becomes immutable upon first access
-    public val family: Family by lazy { Family(match, relationsKey.toSortedSet()) }
+    public val family: Family by lazy { Family(match, relationsKey.toSortedSet(), andNot) }
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
     private val archetypeIterators = mutableMapOf<Archetype, ArchetypeIterator>()
 
@@ -51,6 +52,10 @@ public abstract class Query : Iterable<QueryResult> {
 
     protected fun registerAccessor(component: GearyComponentId) {
         match.add(component)
+    }
+
+    protected fun registerLackOf(component: GearyComponentId) {
+        andNot.add(component)
     }
 
     //TODO getOrNull
@@ -100,8 +105,14 @@ public abstract class Query : Iterable<QueryResult> {
     }
 
     protected inline fun <reified T : GearyComponent> has(set: Boolean = true): GearyEntity {
-        val componentId = componentId<T>().let { if (set) it and HOLDS_DATA.inv() else it }
+        val componentId = componentId<T>().let { if (set) it or HOLDS_DATA else it }
         registerAccessor(componentId)
+        return geary(componentId)
+    }
+
+    protected inline fun <reified T : GearyComponent> lacks(set: Boolean = false): GearyEntity {
+        val componentId = componentId<T>().let { if (set) it or HOLDS_DATA else it }
+        registerLackOf(componentId)
         return geary(componentId)
     }
 }
