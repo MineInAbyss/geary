@@ -34,10 +34,10 @@ internal class SystemManagerTest {
         }
 
         val system = object : TickingSystem() {
-            val string by get<String>()
+            val QueryResult.string by get<String>()
             val int = has<Int>()
 
-            override fun GearyEntity.tick() {
+            override fun QueryResult.tick() {
                 string shouldBe get<String>()
                 entity.has<Int>() shouldBe true
             }
@@ -48,7 +48,7 @@ internal class SystemManagerTest {
         val correctArchetype = root + stringId + intId
 
         init {
-            SystemManager.registerSystem(system)
+            SystemManager.trackQuery(system)
         }
 
         @Test
@@ -71,7 +71,7 @@ internal class SystemManagerTest {
 
         @Test
         fun `accessors in system correctly read data`() {
-            system.tick()
+            system.doTick()
         }
     }
 
@@ -80,16 +80,16 @@ internal class SystemManagerTest {
         var ran = 0
 
         val removingSystem = object : TickingSystem() {
-            val string by get<String>()
+            val QueryResult.string by get<String>()
 
-            override fun GearyEntity.tick() {
-                remove<String>()
+            override fun QueryResult.tick() {
+                entity.remove<String>()
                 ran++
             }
         }
 
         init {
-            SystemManager.registerSystem(removingSystem)
+            SystemManager.trackQuery(removingSystem)
         }
 
         @Test
@@ -97,7 +97,7 @@ internal class SystemManagerTest {
             val entities = (0 until 10).map { Engine.entity { set("Test") } }
             val total =
                 SystemManager.getEntitiesMatching(Family(sortedSetOf(componentId<String>() or HOLDS_DATA))).count()
-            removingSystem.tick()
+            removingSystem.doTick()
             ran shouldBe total
             entities.map { it.getComponents() } shouldBe entities.map { setOf() }
         }
@@ -109,15 +109,15 @@ internal class SystemManagerTest {
     fun relations() {
         var ran = 0
         val system = object : TickingSystem() {
-            val expiry by relation<RelationTestComponent>()
-            override fun GearyEntity.tick() {
+            val QueryResult.expiry by relation<RelationTestComponent>()
+            override fun QueryResult.tick() {
                 ran++
                 //family.relations.map { it.id } shouldContain expiry.relation.id
                 (expiry.data is RelationTestComponent) shouldBe true
             }
         }
         system.family.relations shouldBe sortedSetOf(Relation(parent = componentId<RelationTestComponent>()))
-        SystemManager.registerSystem(system)
+        SystemManager.trackQuery(system)
         val entity = Engine.entity {
             setRelation<RelationTestComponent, String>(RelationTestComponent())
             add<String>()
@@ -133,7 +133,7 @@ internal class SystemManagerTest {
         system.matchedArchetypes.shouldContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
         system.matchedArchetypes.shouldNotContain(entity3.type.getArchetype())
 
-        system.tick()
+        system.doTick()
         ran shouldBe 2
 
     }
