@@ -12,26 +12,32 @@ internal data class ArchetypeIterator(
     private val query: Query,
 
     private val dataIndices: List<Int> = query.dataKey
-        .filter { it and HOLDS_DATA != 0uL }
+        .filter { it.holdsData() }
         .map { archetype.indexOf(it) },
 
-    private val matchedRelations: Map<GearyComponentId, List<Relation>> =
-        archetype.matchedRelationsFor(query.relationsKey),
+    private val matchedRelations: Map<RelationParentId, FullRelations> =
+        archetype.matchedRelationsFor(query.familyBuilder.relations),
 
     private val relationCombinations: List<RelationCombination> =
-        matchedRelations.values.fold(emptyList()) { curr, components: List<Relation> ->
-            val componentIndices = components.map { archetype.indexOf(it.id) }
+        matchedRelations.entries.fold(emptyList()) { combinations: List<RelationCombination>,
+                                                     (key, relations: FullRelations) ->
+            val parentDataIndices = relations.map { archetype.indexOf(it.id) }
+            val componentDataIndices = relations
+                .map { it.component }
+                .filter { it.holdsData() }
+                .map { archetype.indexOf(it) }
 
-            if (curr.isEmpty())
-                listOf(RelationCombination(components, componentIndices.toIntArray()))
+            if (combinations.isEmpty())
+                listOf(RelationCombination(relations, parentDataIndices.toIntArray()))
             else {
                 // Add each individual component to every combination from before. Flatten the resulting list of lists.
-                components.flatMapIndexed { i, relation ->
-                    val compIndex = componentIndices[i]
-                    curr.map { combination ->
+                relations.flatMapIndexed { i, relation ->
+                    val compIndex = parentDataIndices[i]
+                    val componentIndex = componentDataIndices[i]
+                    combinations.map { combination ->
                         RelationCombination(
                             combination.relations + relation,
-                            combination.componentIndices + compIndex
+                            combination.parentDataIndices + compIndex
                         )
                     }
                 }
@@ -50,7 +56,7 @@ internal data class ArchetypeIterator(
     private val movedRows = mutableSetOf<Int>()
 
     fun addMovedRow(originalRow: Int, resultingRow: Int) {
-        if(resultingRow > row) return
+        if (resultingRow > row) return
         movedRows.remove(originalRow)
         movedRows.add(resultingRow)
     }
@@ -68,10 +74,15 @@ internal data class ArchetypeIterator(
                 componentData = getAtIndex(destinationRow)
             }
             val combination = relationCombinationsIterator.next()
-            val relationData = combination.componentIndices.map { index ->
+            val relationData = combination.parentDataIndices.map { index ->
                 archetype.componentData[index][destinationRow]
             }
-            QueryResult(entity, componentData, combination.relations.map { it.component }, relationData)
+            QueryResult(
+                entity,
+                componentData,
+                combination.relations.map { it.component },
+                relationData
+            )
         } else {
             componentData = getAtIndex(destinationRow)
             QueryResult(entity, componentData)
@@ -85,12 +96,12 @@ internal data class ArchetypeIterator(
 
 public class RelationCombination(
     public val relations: List<Relation>,
-    public val componentIndices: IntArray,
+    public val parentDataIndices: IntArray,
 )
 
 public data class QueryResult(
     val entity: GearyEntity,
     val data: List<GearyComponent>,
-    val relationCompIds: List<GearyComponentId> = listOf(),
-    val relationCompData: List<GearyComponent> = listOf(),
+    val relationComponentIds: List<GearyComponentId> = listOf(),
+    val relationData: List<GearyComponent> = listOf(),
 )

@@ -4,6 +4,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.engine.RELATION
+import com.mineinabyss.geary.ecs.engine.isRelation
 import java.util.*
 
 public class Family(
@@ -13,8 +14,8 @@ public class Family(
 ) {
     public companion object {
         public fun of(type: GearyType): Family = Family(
-            match = GearyType(type.filter { it and RELATION == 0uL }),
-            relations = type.filter { it and RELATION != 0uL }.map { Relation(it) }.toSortedSet()
+            match = GearyType(type.filter { !it.isRelation() }),
+            relations = type.filter { it.isRelation() }.map { Relation(it) }.toSortedSet()
         )
     }
 
@@ -24,9 +25,9 @@ public class Family(
                 && andNot.none { type.hasComponent(it) }
 
     private fun GearyType.hasRelation(relation: Relation): Boolean {
-        val components = filter { it and RELATION == 0uL }
+        val components = filter { !it.isRelation() }
         return this
-            .filter { it and RELATION != 0uL }
+            .filter { it.isRelation() }
             .any { item ->
                 val relationInType = Relation(item)
                 relationInType.parent == relation.parent

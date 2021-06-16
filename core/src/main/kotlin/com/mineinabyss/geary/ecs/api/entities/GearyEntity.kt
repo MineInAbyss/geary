@@ -6,7 +6,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.components.PersistingComponents
+import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import kotlinx.serialization.Serializable
@@ -50,12 +50,22 @@ public value class GearyEntity(public val id: GearyEntityId) {
         components.forEach { set(it, it::class) }
     }
 
-    public inline fun <reified T : GearyComponent, reified C : GearyComponent> setRelation(parentData: T) {
-        Engine.setRelationFor(id, componentId<T>(), componentId<C>(), parentData)
+    public inline fun <reified T : GearyComponent, reified C : GearyComponent> setRelation(
+        parentData: T,
+        data: Boolean
+    ) {
+        setRelation(T::class, C::class, parentData, data)
     }
 
-    public inline fun <reified T : GearyComponent, reified C : GearyComponent> setRelationWithData(parentData: T) {
-        Engine.setRelationFor(id, componentId<T>(), componentId<C>() or HOLDS_DATA, parentData)
+    public fun <T : GearyComponent, C : GearyComponent> setRelation(
+        parentKClass: KClass<T>,
+        componentKClass: KClass<C>,
+        parentData: T,
+        holdsData: Boolean
+    ) {
+        val parentId = componentId(parentKClass)
+        val componentId = componentId(componentKClass).let { if (holdsData) it or HOLDS_DATA else it }
+        Engine.setRelationFor(id, parentId, componentId, parentData)
     }
 
     /** Adds a list of [component] to this entity */
@@ -78,9 +88,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
      */
     public inline fun <reified T : GearyComponent> setPersisting(component: T, kClass: KClass<out T> = T::class): T {
         set(component, kClass)
-        //TODO persisting components should store a list of ComponentIDs
-        //TODO is this possible to do nicely with relations?
-        getOrSet { PersistingComponents() }.add(component)
+        setRelation<PersistingComponent, T>(PersistingComponent(), data = true)
         return component
     }
 
@@ -89,11 +97,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
         setPersisting(component = components)
 
     public inline fun setAllPersisting(components: Collection<GearyComponent>) {
-        setAll(components)
-        // Get and addAll, or create PersistingComponents, calculating components hash
-        get<PersistingComponents>()?.addAll(components) ?: run {
-            set<PersistingComponents>(PersistingComponents(components.toMutableSet()))
-        }
+        components.forEach { setPersisting(it, it::class) }
     }
 
     /**

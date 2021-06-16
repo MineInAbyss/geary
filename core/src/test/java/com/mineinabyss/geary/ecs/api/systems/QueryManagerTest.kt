@@ -6,17 +6,15 @@ import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.engine.*
-import com.mineinabyss.geary.ecs.query.Query
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContain
-import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 @ExperimentalUnsignedTypes
-internal class SystemManagerTest {
+internal class QueryManagerTest {
     val engine: GearyEngine = GearyEngine()
 
     init {
@@ -49,7 +47,7 @@ internal class SystemManagerTest {
         val correctArchetype = root + stringId + intId
 
         init {
-            SystemManager.trackQuery(system)
+            QueryManager.trackQuery(system)
         }
 
         @Test
@@ -64,7 +62,7 @@ internal class SystemManagerTest {
 
         @Test
         fun `get entities matching family`() {
-            SystemManager.getEntitiesMatching(system.family).apply {
+            QueryManager.getEntitiesMatching(system.family).apply {
                 shouldContain(entity)
                 shouldNotContain(entity2)
             }
@@ -90,7 +88,7 @@ internal class SystemManagerTest {
         }
 
         init {
-            SystemManager.trackQuery(removingSystem)
+            QueryManager.trackQuery(removingSystem)
         }
 
         //FIXME who needs systems to work properly anyways
@@ -98,7 +96,7 @@ internal class SystemManagerTest {
         fun `concurrent modification`() {
             val entities = (0 until 10).map { Engine.entity { set("Test") } }
             val total =
-                SystemManager.getEntitiesMatching(Family(sortedSetOf(componentId<String>() or HOLDS_DATA))).count()
+                QueryManager.getEntitiesMatching(Family(sortedSetOf(componentId<String>() or HOLDS_DATA))).count()
             removingSystem.doTick()
             ran shouldBe total
             entities.map { it.getComponents() } shouldBe entities.map { setOf() }
@@ -119,7 +117,7 @@ internal class SystemManagerTest {
             }
         }
         system.family.relations shouldBe sortedSetOf(Relation(parent = componentId<RelationTestComponent>()))
-        SystemManager.trackQuery(system)
+        QueryManager.trackQuery(system)
         val entity = Engine.entity {
             setRelation<RelationTestComponent, String>(RelationTestComponent())
             add<String>()

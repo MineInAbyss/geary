@@ -5,6 +5,22 @@ import com.mineinabyss.geary.ecs.engine.RELATION
 import com.mineinabyss.geary.ecs.engine.RELATION_COMPONENT_MASK
 import com.mineinabyss.geary.ecs.engine.RELATION_PARENT_MASK
 
+/**
+ * A combination of two [GearyComponentId]s into one that represents a relation between
+ * the two. Used for "adding a component to another component."
+ *
+ * Data of the [parent]'s type is stored under the relation's full [id] in archetypes.
+ * The [component] points to another component this relation references.
+ *
+ * ```
+ * Parent bits:     0x00FFFFFF00000000
+ * Component bits:  0xFF000000FFFFFFFF
+ * ```
+ *
+ * @property parent The part of the relation which determines the data type of the full relation.
+ * @property component The part of the relation that points to another component on the entity.
+ *
+ */
 @JvmInline
 public value class Relation(
     public val id: GearyComponentId
