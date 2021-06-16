@@ -26,22 +26,6 @@ public open class RelationAccessor<T : GearyComponent>(
         )
 }
 
-public class RelationAccessorWithData<T : GearyComponent>(
-    relation: Relation,
-    query: Query
-) : RelationAccessor<T>(relation, query) {
-    init {
-        query.familyBuilder.relations.add(relation)
-    }
-
-    override fun getValue(thisRef: QueryResult, property: KProperty<*>): RelationData<T> =
-        RelationData(
-            data = thisRef.relationData[relationIndex] as T,
-            relation = gearyNoMask(relation.id),
-            component = gearyNoMask(thisRef.relationComponentIds[relationIndex])
-        )
-}
-
 public class RelationData<T : GearyComponent>(
     public val data: T,
     public val relation: GearyEntity,

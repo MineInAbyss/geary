@@ -8,6 +8,7 @@ import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.services.gearyService
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.engine.Record
+import com.mineinabyss.geary.ecs.engine.RelationParentId
 import kotlin.reflect.KClass
 
 /**
@@ -26,6 +27,9 @@ public interface Engine {
 
     /** Gets a list of all the components [entity] has. */
     public fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent>
+
+    /** Gets a list of all the components [entity] has. */
+    public fun getRelatedComponentsFor(entity: GearyEntityId, relationParentId: RelationParentId): Set<GearyComponent>
 
     /** Gets a [component]'s data from an [entity] or null if not present/the component doesn't hold any data. */
     public fun getComponentFor(entity: GearyEntityId, component: GearyComponentId): GearyComponent?

@@ -24,7 +24,7 @@ public data class Archetype(
     private val events = EventListenerContainer()
 
     /** Map of relation parent id to a list of relations with that parent */
-    private val relations: Map<RelationParentId, FullRelations> = type
+    internal val relations: Map<RelationParentId, FullRelations> = type
         .filter { it.isRelation() }
         .map { Relation(it) }
         .groupBy { it.parent }
@@ -53,7 +53,8 @@ public data class Archetype(
     }
 
     public operator fun contains(component: GearyComponentId): Boolean =
-        component in type || (!component.holdsData() && component or HOLDS_DATA in type)
+        // Check if contains component or the version with the HOLDS_DATA bit flipped
+        component in type || component xor HOLDS_DATA in type
 
     internal val add = mutableMapOf<GearyComponentId, Archetype>()
     internal val remove = mutableMapOf<GearyComponentId, Archetype>()

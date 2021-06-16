@@ -80,6 +80,15 @@ public open class GearyEngine : TickingEngine() {
             archetype.getComponents(row).toSet()
         } ?: emptySet()
 
+    override fun getRelatedComponentsFor(
+        entity: GearyEntityId,
+        relationParentId: RelationParentId
+    ): Set<GearyComponent> = getRecord(entity)?.run {
+        archetype
+            .relations[relationParentId and ENTITY_MASK]
+            ?.mapNotNullTo(mutableSetOf()) { archetype[row, it.component] }
+    } ?: setOf()
+
 
     override fun addComponentFor(entity: GearyEntityId, component: GearyComponentId) {
         getOrAddRecord(entity).apply {
@@ -119,10 +128,7 @@ public open class GearyEngine : TickingEngine() {
         getRecord(entity)?.run { archetype[row, component or HOLDS_DATA] }
 
     override fun hasComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean =
-        getRecord(entity)?.archetype?.type?.run {
-            //       component  or the version with the HOLDS_DATA bit flipped
-            contains(component) || contains(component xor HOLDS_DATA)
-        } ?: false
+        getRecord(entity)?.archetype?.contains(component) ?: false
 
     //TODO might be a smarter way of storing removed entities as an implicit list within a larger list of entities eventually
     override fun removeEntity(entity: GearyEntityId) {

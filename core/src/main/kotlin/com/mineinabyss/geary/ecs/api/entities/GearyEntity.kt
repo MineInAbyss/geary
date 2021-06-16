@@ -9,18 +9,14 @@ import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
+import com.mineinabyss.geary.ecs.engine.RelationParentId
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
 /**
  * A wrapper around [GearyEntityId] that gets inlined to just a long (no performance degradation since no boxing occurs).
+ *
  * Provides some useful functions so we aren't forced to go through [Engine] every time we want to do some things.
- *
- * ### Note
- * Though inline classes can extend interfaces, the underlying type WILL NOT BE INLINED when we try to use methods from
- * said interface. Learn more [here](https://typealias.com/guides/inline-classes-and-autoboxing/).
- *
- * Thus, there is no longer support for implementing GearyEntity as other classes.
  */
 @Serializable
 @JvmInline
@@ -140,14 +136,17 @@ public value class GearyEntity(public val id: GearyEntityId) {
     /** Gets all the active components on this entity. */
     public inline fun getComponents(): Set<GearyComponent> = Engine.getComponentsFor(id)
 
+    public inline fun getComponentsRelatedTo(relationParentId: RelationParentId): Set<GearyComponent> =
+        Engine.getRelatedComponentsFor(id, relationParentId)
+
     /** Gets all the active persisting components on this entity. */
     public inline fun getPersistingComponents(): Set<GearyComponent> =
-        get<PersistingComponents>()?.components?.intersect(getComponents()) ?: emptySet()
+        getComponentsRelatedTo(componentId<PersistingComponent>())
 
     //TODO update javadoc
     /** Gets all the active non-persisting components on this entity. */
     public inline fun getInstanceComponents(): Set<GearyComponent> =
-        getComponents() - (get<PersistingComponents>()?.components ?: emptySet())
+        getComponents() - getPersistingComponents()
 
     /** Runs something on a component on this entity of type [T] if present. */
     public inline fun <reified T : GearyComponent> with(let: (T) -> Unit): Unit? = get<T>()?.let(let)
