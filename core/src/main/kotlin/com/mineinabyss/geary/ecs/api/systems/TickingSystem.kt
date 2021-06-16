@@ -114,14 +114,14 @@ public abstract class TickingSystem(public val interval: Long = 1) {
             )
     }
 
-    protected inline fun <reified T : GearyComponent> has(set: Boolean = true): GearyEntity {
-        val componentId = componentId<T>().let { if (set) it and HOLDS_DATA.inv() else it }
+    protected inline fun <reified T : GearyComponent> has(set: Boolean = false): GearyEntity {
+        val componentId = componentId<T>().let { if (set) it or HOLDS_DATA else it }
         registerAccessor(componentId)
         return geary(componentId)
     }
 
-    protected inline fun <reified T : GearyComponent> hasNot(set: Boolean = true): GearyEntity {
-        val componentId = componentId<T>().let { if (set) it and HOLDS_DATA.inv() else it }
+    protected inline fun <reified T : GearyComponent> hasNot(set: Boolean = false): GearyEntity {
+        val componentId = componentId<T>().let { if (set) it or HOLDS_DATA else it }
         registerLackOf(componentId)
         return geary(componentId)
     }
