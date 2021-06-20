@@ -68,7 +68,7 @@ public object Formats {
         key: String,
         baseClass: KClass<*> = GearyComponent::class
     ): DeserializationStrategy<out GearyComponent>? =
-        module.getPolymorphic(baseClass = baseClass, serializedClassName = key.toSerialKey())
+        module.getPolymorphic(baseClass = baseClass, serializedClassName = key)
 
     public inline fun <reified T : GearyComponent> getSerializerFor(): DeserializationStrategy<T>? {
         return getSerializerFor(T::class) as DeserializationStrategy<T>?
@@ -86,6 +86,4 @@ public object Formats {
 
     public fun getSerialNameFor(kClass: KClass<out GearyComponent>): String? =
         componentSerialNames.inverse[kClass]
-
-    private fun String.toSerialKey(): String = replace("_", ":")
 }
