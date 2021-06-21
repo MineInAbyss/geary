@@ -4,12 +4,13 @@ import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.engine.*
+import com.mineinabyss.geary.ecs.query.Query
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContain
+import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -38,7 +39,7 @@ internal class SystemManagerTest {
             val int = has<Int>()
 
             override fun QueryResult.tick() {
-                string shouldBe get<String>()
+                string shouldBe entity.get<String>()
                 entity.has<Int>() shouldBe true
             }
         }
@@ -92,6 +93,7 @@ internal class SystemManagerTest {
             SystemManager.trackQuery(removingSystem)
         }
 
+        //FIXME who needs systems to work properly anyways
         @Test
         fun `concurrent modification`() {
             val entities = (0 until 10).map { Engine.entity { set("Test") } }
@@ -130,6 +132,7 @@ internal class SystemManagerTest {
             setRelation<String, RelationTestComponent>("")
             add<RelationTestComponent>()
         }
+        Family.of(entity.type).relations.first().parent shouldBe system.family.relations.first().parent
         system.matchedArchetypes.shouldContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
         system.matchedArchetypes.shouldNotContain(entity3.type.getArchetype())
 
@@ -137,4 +140,5 @@ internal class SystemManagerTest {
         ran shouldBe 2
 
     }
+
 }

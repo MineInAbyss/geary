@@ -7,6 +7,8 @@ import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.query.Query
+import java.lang.ref.WeakReference
 
 public typealias Event = GearyEntity.() -> Unit
 
@@ -150,11 +152,6 @@ public data class Archetype(
     internal fun getComponents(row: Int): ArrayList<GearyComponent> =
         componentData.mapTo(arrayListOf()) { it[row] }
 
-    //TODO stuff should only be added here if we are currently iterating
-    //TODO really try to use a stack here, the main thing stopping that is repeating elements.
-    /** Map of elements moved during a component removal. Represents the resulting row to original row. */
-    internal val movedRows = mutableSetOf<Int>()
-
     @Synchronized
     internal fun removeEntity(row: Int) {
         val replacement = ids.last()
@@ -168,12 +165,26 @@ public data class Archetype(
         componentData.forEach { it.removeLastOrNull() }
 
         if (lastIndex != row) {
-            //TODO I'd like this to perhaps be independent of engine in case we ever want more than one at a time
+            runningIterators.retainAll {
+                val iterator = it.get()
+                if(iterator != null){
+                    iterator.addMovedRow(lastIndex, row)
+                    true
+                } else false
+            }
             Engine.setRecord(replacement, Record(this, row))
-            //TODO figure out how to make iterators not skip these moved entities
-            // while also supporting several simultaneous iterators
-//            movedRows.remove(lastIndex)
-//            movedRows.add(row)
         }
+    }
+    private val runningIterators = mutableSetOf<WeakReference<ArchetypeIterator>>()
+    private val queryIterators = mutableMapOf<Query, ArchetypeIterator>()
+
+    internal fun finalizeIterator(iterator:ArchetypeIterator) {
+        runningIterators -= WeakReference(iterator)
+    }
+
+    internal fun iteratorFor(query: Query): ArchetypeIterator {
+        val iterator = queryIterators.getOrPut(query) { ArchetypeIterator(this, query) }.copy()
+        runningIterators += WeakReference(iterator)
+        return iterator
     }
 }

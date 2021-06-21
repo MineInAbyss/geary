@@ -5,6 +5,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.entities.gearyNoMask
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.systems.Family
 import com.mineinabyss.geary.ecs.engine.Archetype
@@ -24,27 +25,33 @@ public abstract class Query : Iterable<QueryResult> {
     //idea is match works as a builder and family becomes immutable upon first access
     public val family: Family by lazy { Family(match, relationsKey.toSortedSet(), andNot) }
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
-    private val archetypeIterators = mutableMapOf<Archetype, ArchetypeIterator>()
 
     public inner class QueryIterator : Iterator<QueryResult> {
         private val archetypes = matchedArchetypes.toList().iterator()
         override fun hasNext(): Boolean {
-            return archetypes.hasNext() || archetypeIterator.hasNext()
+            if (archetypeIterator?.hasNext() == true) return true
+            if (!archetypes.hasNext()) return false
+
+            while (archetypeIterator?.hasNext() == false) {
+                if (!archetypes.hasNext()) return false
+                archetypeIterator = nextIterator()
+            }
+
+            return true
         }
 
-        private var archetypeIterator = nextIterator()
+        private var archetypeIterator: ArchetypeIterator? = null
+
+        init {
+            if (hasNext()) archetypeIterator = nextIterator()
+        }
 
         private fun nextIterator(): ArchetypeIterator {
-            val arc = archetypes.next()
-            return archetypeIterators[arc]?.copy()
-                ?: ArchetypeIterator(arc, this@Query)
-                    .also { archetypeIterators[arc] = it }
+            return archetypes.next().iteratorFor(this@Query)
         }
 
         override fun next(): QueryResult {
-            if (archetypeIterator.hasNext())
-                archetypeIterator = nextIterator()
-            return archetypeIterator.next()
+            return archetypeIterator!!.next()
         }
     }
 
@@ -61,6 +68,10 @@ public abstract class Query : Iterable<QueryResult> {
     //TODO getOrNull
     protected inline fun <reified T : GearyComponent> get(): Accessor<T> = Accessor(componentId<T>() or HOLDS_DATA)
 
+    @Deprecated("Likely trying to access component off entity", ReplaceWith("entity.get()"))
+    protected inline fun <reified T : GearyComponent> QueryResult.get(): Accessor<T> =
+        error("Cannot change query at runtime")
+
     public inner class Accessor<T : GearyComponent>(
         private val componentId: GearyComponentId
     ) : ReadOnlyProperty<QueryResult, T> {
@@ -69,7 +80,7 @@ public abstract class Query : Iterable<QueryResult> {
             dataKey.add(componentId)
         }
 
-        private val index: Int = dataKey.indexOf(componentId)
+        private val index: Int = dataKey.lastIndex
 
 
         //TODO implement contracts for smart cast if Kotlin ever does so for lazy (this should essentially be identical)
@@ -94,13 +105,13 @@ public abstract class Query : Iterable<QueryResult> {
             relationsKey.add(relation)
         }
 
-        private val relationIndex: Int = relationsKey.indexOf(relation)
+        private val relationIndex: Int = relationsKey.lastIndex
 
         override fun getValue(thisRef: QueryResult, property: KProperty<*>): RelationData<T> =
             RelationData(
-                thisRef.relationCompData[relationIndex] as T,
-                geary(relation.id),
-                geary(thisRef.relationCompIds[relationIndex])
+                data = thisRef.relationCompData[relationIndex] as T,
+                relation = gearyNoMask(relation.id),
+                component = gearyNoMask(thisRef.relationCompIds[relationIndex])
             )
     }
 
