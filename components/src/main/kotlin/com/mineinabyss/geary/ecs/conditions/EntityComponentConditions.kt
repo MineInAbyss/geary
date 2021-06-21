@@ -32,5 +32,5 @@ public class EntityHasNoComponentConditions(
     private val componentClasses by lazy { componentNames.toComponentClasses() }
 
     override fun GearyEntity.check(): Boolean =
-        !componentClasses.fold(false) { acc, it -> acc || has(componentId(it)) }
+        !componentClasses.any { has(componentId(it)) }
 }
