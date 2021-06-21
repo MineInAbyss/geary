@@ -115,7 +115,7 @@ public abstract class Query : Iterable<QueryResult> {
             )
     }
 
-    protected inline fun <reified T : GearyComponent> has(set: Boolean = true): GearyEntity {
+    protected inline fun <reified T : GearyComponent> has(set: Boolean = false): GearyEntity {
         val componentId = componentId<T>().let { if (set) it or HOLDS_DATA else it }
         registerAccessor(componentId)
         return geary(componentId)
