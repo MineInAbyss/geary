@@ -6,6 +6,7 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.query.Query
+import com.mineinabyss.geary.ecs.query.RelationLeaf
 
 internal data class ArchetypeIterator(
     private val archetype: Archetype,
@@ -16,7 +17,10 @@ internal data class ArchetypeIterator(
         .map { archetype.indexOf(it) },
 
     private val matchedRelations: Map<RelationParentId, FullRelations> =
-        archetype.matchedRelationsFor(query.familyBuilder.relations),
+        archetype.matchedRelationsFor(query.family.and
+            .filterIsInstance<RelationLeaf>()
+            .map { it.relation }
+        ),
 
     private val relationCombinations: List<RelationCombination> =
         matchedRelations.entries.fold(emptyList()) { combinations: List<RelationCombination>,

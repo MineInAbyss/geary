@@ -5,8 +5,8 @@ package com.mineinabyss.geary.ecs.entities
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
-import com.mineinabyss.geary.ecs.api.systems.Family
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
+import com.mineinabyss.geary.ecs.api.systems.family
 import com.mineinabyss.geary.ecs.components.CopyToInstances
 import com.mineinabyss.geary.ecs.engine.*
 import com.mineinabyss.geary.ecs.prefab.PrefabKey
@@ -63,7 +63,9 @@ public val GearyEntity.parents: Set<GearyEntity>
     }
 
 public val GearyEntity.children: List<GearyEntity>
-    get() = QueryManager.getEntitiesMatching(Family(sortedSetOf(CHILDOF or id)))
+    get() = QueryManager.getEntitiesMatching(family {
+        has(CHILDOF or id)
+    })
 
 public val GearyEntity.prefabs: List<PrefabKey>
     get() = type.filter { it.isInstance() }.mapNotNull { geary(it).get<PrefabKey>() }

@@ -4,12 +4,12 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.RELATION
+import com.mineinabyss.geary.ecs.query.Family
 import com.mineinabyss.geary.ecs.query.Query
+import com.mineinabyss.geary.ecs.query.contains
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import net.onedaybeard.bitvector.BitVector
 import net.onedaybeard.bitvector.bitsOf
-
-
 
 public object QueryManager {
     private val queries = mutableListOf<Query>()
@@ -22,8 +22,7 @@ public object QueryManager {
     }
 
     internal fun registerArchetype(archetype: Archetype) {
-        val family = Family.of(archetype.type)
-        archetypes.add(archetype, family)
+        archetypes.add(archetype, archetype.type)
         queries.filter { archetype.type in it.family }.forEach {
             it.matchedArchetypes += archetype
         }

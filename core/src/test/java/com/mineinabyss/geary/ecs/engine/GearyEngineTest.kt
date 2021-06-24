@@ -87,7 +87,7 @@ internal class GearyEngineTest {
     @Test
     fun setRelation() {
         val entity = Engine.entity {
-            setRelation<String, Int>("String to int relation")
+            setRelation<String, Int>("String to int relation", data = false)
         }
         entity.type.shouldContainExactly(
             Relation(componentId<String>(), componentId<Int>()).id

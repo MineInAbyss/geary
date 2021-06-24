@@ -11,7 +11,6 @@ public class Accessor<T : GearyComponent>(
     query: Query
 ) : ReadOnlyProperty<QueryResult, T> {
     init {
-        query.registerAccessor(componentId)
         query.dataKey.add(componentId)
     }
 

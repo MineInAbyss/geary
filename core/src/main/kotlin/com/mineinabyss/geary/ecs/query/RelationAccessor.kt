@@ -12,11 +12,7 @@ public open class RelationAccessor<T : GearyComponent>(
     private val relation: Relation,
     private val query: Query,
 ) : ReadOnlyProperty<QueryResult, RelationData<T>> {
-    init {
-        query.familyBuilder.relations.add(relation)
-    }
-
-    private val relationIndex: Int = query.familyBuilder.relations.lastIndex
+    private val relationIndex: Int = query.family.and.filterIsInstance<RelationLeaf>().lastIndex
 
     override fun getValue(thisRef: QueryResult, property: KProperty<*>): RelationData<T> =
         RelationData(
