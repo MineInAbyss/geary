@@ -37,8 +37,8 @@ internal class ComponentSparseSet<T> {
             is AndSelector -> family.and.reduceToBits(BitVector::and)
             is AndNotSelector -> family.andNot.reduceToBits(BitVector::andNot)
             is OrSelector -> family.or.reduceToBits(BitVector::or)
-            is ComponentLeaf -> componentMap[family.component] ?: bitsOf()
-            is RelationLeaf -> componentMap[family.relationParent.id or RELATION] ?: bitsOf()
+            is ComponentLeaf -> componentMap[family.component]?.copy() ?: bitsOf()
+            is RelationLeaf -> componentMap[family.relationParent.id or RELATION]?.copy() ?: bitsOf()
         }
     }
 

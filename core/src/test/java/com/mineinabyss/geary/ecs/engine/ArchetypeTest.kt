@@ -40,12 +40,12 @@ internal class ArchetypeTest {
             )
         )
         val relation = RelationParent(10uL)
-        val matched = arc.matchedRelationsFor(sortedSetOf(relation))
+        val matched = arc.matchedRelationsFor(listOf(relation))
         matched shouldContainKey relation
         matched[relation]?.map { it.component }.shouldContainExactly(1uL or HOLDS_DATA, 2uL or HOLDS_DATA)
 
         val wrongRelation = RelationParent(11uL)
-        val matched2 = arc.matchedRelationsFor(sortedSetOf(wrongRelation))
+        val matched2 = arc.matchedRelationsFor(listOf(wrongRelation))
         matched2 shouldNotContainKey wrongRelation
     }
 }

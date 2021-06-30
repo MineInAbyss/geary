@@ -4,10 +4,11 @@ import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
-import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.engine.*
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
@@ -52,7 +53,7 @@ internal class QueryManagerTest {
 
         @Test
         fun `family type is correct`() {
-            system.family.match.getArchetype() shouldBe correctArchetype
+            system.family.match.getArchetype() shouldBe root + stringId
         }
 
         @Test
@@ -63,8 +64,7 @@ internal class QueryManagerTest {
         @Test
         fun `get entities matching family`() {
             QueryManager.getEntitiesMatching(system.family).apply {
-                shouldContain(entity)
-                shouldNotContain(entity2)
+                shouldContainAll(entity, entity2)
             }
         }
 
@@ -97,11 +97,11 @@ internal class QueryManagerTest {
             val entities = (0 until 10).map { Engine.entity { set("Test") } }
             val total =
                 QueryManager.getEntitiesMatching(family {
-                    has<String>()
+                    hasData<String>()
                 }).count()
             removingSystem.doTick()
             ran shouldBe total
-            entities.map { it.getComponents() } shouldBe entities.map { setOf() }
+            entities.map { it.getComponents() } shouldContainExactly entities.map { setOf() }
         }
     }
 
@@ -118,7 +118,7 @@ internal class QueryManagerTest {
                 (expiry.data is RelationTestComponent) shouldBe true
             }
         }
-        system.family.relationParents shouldBe sortedSetOf(Relation.of(parent = componentId<RelationTestComponent>()))
+        system.family.relationParents.shouldContainExactly(RelationParent(componentId<RelationTestComponent>()))
         QueryManager.trackQuery(system)
         val entity = Engine.entity {
             setRelation<RelationTestComponent, String>(RelationTestComponent(), data = false)

@@ -4,6 +4,8 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.relations.toRelation
+import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.query.*
 
 public abstract class FamilyBuilder {
@@ -43,9 +45,16 @@ public abstract class MutableSelector : FamilyBuilder() {
         elements += MutableOrSelector().apply(init)
     }
 
-
+    //TODO version of has that doesnt care about whether data is set
     public inline fun <reified T : GearyComponent> has() {
-        has(componentId<T>())
+        or {
+            has(componentId<T>())
+            has(componentId<T>() xor HOLDS_DATA)
+        }
+    }
+
+    public inline fun <reified T : GearyComponent> hasData() {
+        has(componentId<T>() or HOLDS_DATA)
     }
 
     public fun has(vararg componentIds: GearyComponentId) {
@@ -54,7 +63,11 @@ public abstract class MutableSelector : FamilyBuilder() {
 
     public fun has(componentIds: Collection<GearyComponentId>) {
         componentIds.forEach {
-            elements += MutableComponentLeaf(it)
+            it.toRelation()?.let { relation ->
+                elements += MutableRelationLeaf(relation.parent)
+            } ?: run {
+                elements += MutableComponentLeaf(it)
+            }
         }
     }
 
