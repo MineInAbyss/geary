@@ -4,6 +4,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
@@ -16,7 +17,6 @@ public abstract class Query : Iterable<QueryResult>, MutableAndSelector() {
     public val family: AndSelector by lazy { build() }
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
 
-
     public override fun iterator(): QueryIterator = QueryIterator(this)
 
     //TODO getOrNull
@@ -27,7 +27,7 @@ public abstract class Query : Iterable<QueryResult>, MutableAndSelector() {
     }
 
     public inline fun <reified T : GearyComponent> relation(): RelationAccessor<T> {
-        val relation = Relation(componentId<T>())
+        val relation = RelationParent(componentId<T>())
         has(relation)
         return RelationAccessor(relation, this)
     }

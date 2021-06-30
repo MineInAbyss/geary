@@ -3,6 +3,7 @@ package com.mineinabyss.geary.ecs.engine
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
@@ -34,17 +35,17 @@ internal class ArchetypeTest {
     fun matchedRelations() {
         val arc = Archetype(
             sortedSetOf(
-                Relation(10uL, 1uL or HOLDS_DATA).id,
-                Relation(10uL, 2uL or HOLDS_DATA).id,
+                Relation.of(10uL, 1uL or HOLDS_DATA).id,
+                Relation.of(10uL, 2uL or HOLDS_DATA).id,
             )
         )
-        val relation = Relation(10uL, 0uL or HOLDS_DATA)
+        val relation = RelationParent(10uL)
         val matched = arc.matchedRelationsFor(sortedSetOf(relation))
-        matched shouldContainKey relation.parent
-        matched[relation.parent]?.map { it.component }.shouldContainExactly(1uL or HOLDS_DATA, 2uL or HOLDS_DATA)
+        matched shouldContainKey relation
+        matched[relation]?.map { it.component }.shouldContainExactly(1uL or HOLDS_DATA, 2uL or HOLDS_DATA)
 
-        val wrongRelation = Relation(11uL, 0uL or HOLDS_DATA)
+        val wrongRelation = RelationParent(11uL)
         val matched2 = arc.matchedRelationsFor(sortedSetOf(wrongRelation))
-        matched2 shouldNotContainKey wrongRelation.id
+        matched2 shouldNotContainKey wrongRelation
     }
 }

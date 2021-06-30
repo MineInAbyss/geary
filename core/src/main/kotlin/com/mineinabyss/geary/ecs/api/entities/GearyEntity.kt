@@ -6,10 +6,10 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
+import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
-import com.mineinabyss.geary.ecs.engine.RelationParentId
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
@@ -61,7 +61,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
     ) {
         val parentId = componentId(parentKClass)
         val componentId = componentId(componentKClass).let { if (holdsData) it or HOLDS_DATA else it }
-        Engine.setRelationFor(id, parentId, componentId, parentData)
+        Engine.setRelationFor(id, RelationParent(parentId), componentId, parentData)
     }
 
     /** Adds a list of [component] to this entity */
@@ -136,12 +136,12 @@ public value class GearyEntity(public val id: GearyEntityId) {
     /** Gets all the active components on this entity. */
     public inline fun getComponents(): Set<GearyComponent> = Engine.getComponentsFor(id)
 
-    public inline fun getComponentsRelatedTo(relationParentId: RelationParentId): Set<GearyComponent> =
+    public inline fun getComponentsRelatedTo(relationParentId: RelationParent): Set<GearyComponent> =
         Engine.getRelatedComponentsFor(id, relationParentId)
 
     /** Gets all the active persisting components on this entity. */
     public inline fun getPersistingComponents(): Set<GearyComponent> =
-        getComponentsRelatedTo(componentId<PersistingComponent>())
+        getComponentsRelatedTo(RelationParent(componentId<PersistingComponent>()))
 
     //TODO update javadoc
     /** Gets all the active non-persisting components on this entity. */

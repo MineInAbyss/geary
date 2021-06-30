@@ -3,7 +3,7 @@ package com.mineinabyss.geary.ecs.api.systems
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.query.*
 
 public abstract class FamilyBuilder {
@@ -12,7 +12,7 @@ public abstract class FamilyBuilder {
     public operator fun not(): MutableAndNotSelector = MutableAndNotSelector(mutableListOf(this))
 }
 
-public fun family(init: MutableAndSelector.() -> Unit): Family {
+public fun family(init: MutableAndSelector.() -> Unit): AndSelector {
     return MutableAndSelector().apply(init).build()
 }
 
@@ -23,7 +23,7 @@ public class MutableComponentLeaf(
 }
 
 public class MutableRelationLeaf(
-    public var relation: Relation
+    public var relation: RelationParent
 ) : FamilyBuilder() {
     override fun build(): RelationLeaf = RelationLeaf(relation)
 }
@@ -48,14 +48,18 @@ public abstract class MutableSelector : FamilyBuilder() {
         has(componentId<T>())
     }
 
-    public fun has(vararg componentId: GearyComponentId) {
-        componentId.forEach {
+    public fun has(vararg componentIds: GearyComponentId) {
+        has(componentIds)
+    }
+
+    public fun has(componentIds: Collection<GearyComponentId>) {
+        componentIds.forEach {
             elements += MutableComponentLeaf(it)
         }
     }
 
-    public fun has(componentId: Relation) {
-        elements += MutableRelationLeaf(componentId)
+    public fun has(relationParent: RelationParent) {
+        elements += MutableRelationLeaf(relationParent)
     }
 }
 

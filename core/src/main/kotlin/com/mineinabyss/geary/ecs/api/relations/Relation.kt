@@ -4,6 +4,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.engine.RELATION
 import com.mineinabyss.geary.ecs.engine.RELATION_COMPONENT_MASK
 import com.mineinabyss.geary.ecs.engine.RELATION_PARENT_MASK
+import com.mineinabyss.geary.ecs.engine.isRelation
 
 /**
  * A combination of two [GearyComponentId]s into one that represents a relation between
@@ -22,23 +23,34 @@ import com.mineinabyss.geary.ecs.engine.RELATION_PARENT_MASK
  *
  */
 @JvmInline
-public value class Relation(
+public value class Relation internal constructor(
     public val id: GearyComponentId
 ) : Comparable<Relation> {
     public constructor(
-        parent: GearyComponentId,
-        component: GearyComponentId = 0uL
+        parent: RelationParent,
+        component: GearyComponentId
     ) : this(
-        (parent shl 32 and RELATION_PARENT_MASK)
+        (parent.id shl 32 and RELATION_PARENT_MASK)
                 or (component and RELATION_COMPONENT_MASK)
                 or RELATION
     )
 
-    public val parent: GearyComponentId get() = id and RELATION_PARENT_MASK shr 32
+    public val parent: RelationParent get() = RelationParent(id and RELATION_PARENT_MASK shr 32)
     public val component: GearyComponentId get() = id and RELATION_COMPONENT_MASK and RELATION.inv()
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
 
     override fun toString(): String =
         id.toString(2)
+
+    public companion object {
+        public fun of(parent: GearyComponentId, component: GearyComponentId = 0uL): Relation =
+            Relation(RelationParent(parent), component)
+    }
 }
+
+@JvmInline
+public value class RelationParent(public val id: GearyComponentId)
+
+public fun GearyComponentId.toRelation(): Relation? =
+    Relation(this).takeIf { isRelation() }

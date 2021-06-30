@@ -3,6 +3,7 @@
 package com.mineinabyss.geary.ecs.api.systems
 
 import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.query.contains
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -21,11 +22,11 @@ internal class FamilyTest {
     @Test
     fun `contains relation`() {
         val family = family {
-            has(Relation(15uL, 0uL))
+            has(RelationParent(15uL))
         }
 
-        (sortedSetOf(Relation(14uL, 1uL).id, 1uL) in family) shouldBe false
-        (sortedSetOf(Relation(15uL, 1uL).id) in family) shouldBe false
-        (sortedSetOf(Relation(15uL, 1uL).id, 1uL) in family) shouldBe true
+        (sortedSetOf(Relation.of(14uL, 1uL).id, 1uL) in family) shouldBe false
+        (sortedSetOf(Relation.of(15uL, 1uL).id) in family) shouldBe false
+        (sortedSetOf(Relation.of(15uL, 1uL).id, 1uL) in family) shouldBe true
     }
 }

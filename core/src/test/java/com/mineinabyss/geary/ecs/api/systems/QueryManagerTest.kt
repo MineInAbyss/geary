@@ -96,7 +96,9 @@ internal class QueryManagerTest {
         fun `concurrent modification`() {
             val entities = (0 until 10).map { Engine.entity { set("Test") } }
             val total =
-                QueryManager.getEntitiesMatching(Family(sortedSetOf(componentId<String>() or HOLDS_DATA))).count()
+                QueryManager.getEntitiesMatching(family {
+                    has<String>()
+                }).count()
             removingSystem.doTick()
             ran shouldBe total
             entities.map { it.getComponents() } shouldBe entities.map { setOf() }
@@ -112,25 +114,25 @@ internal class QueryManagerTest {
             val QueryResult.expiry by relation<RelationTestComponent>()
             override fun QueryResult.tick() {
                 ran++
-                family.relations.map { it.id } shouldContain expiry.relation.id
+                family.relationParents.map { it.id } shouldContain expiry.relation.id
                 (expiry.data is RelationTestComponent) shouldBe true
             }
         }
-        system.family.relations shouldBe sortedSetOf(Relation(parent = componentId<RelationTestComponent>()))
+        system.family.relationParents shouldBe sortedSetOf(Relation.of(parent = componentId<RelationTestComponent>()))
         QueryManager.trackQuery(system)
         val entity = Engine.entity {
-            setRelation<RelationTestComponent, String>(RelationTestComponent())
+            setRelation<RelationTestComponent, String>(RelationTestComponent(), data = false)
             add<String>()
         }
         val entity2 = Engine.entity {
-            setRelation<RelationTestComponent, Int>(RelationTestComponent())
+            setRelation<RelationTestComponent, Int>(RelationTestComponent(), data = false)
             add<Int>()
         }
         val entity3 = Engine.entity {
-            setRelation<String, RelationTestComponent>("")
+            setRelation<String, RelationTestComponent>("", data = false)
             add<RelationTestComponent>()
         }
-        Family.of(entity.type).relations.first().parent shouldBe system.family.relations.first().parent
+        family { has(entity.type) }.relationParents.first() shouldBe system.family.relationParents.first()
         system.matchedArchetypes.shouldContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
         system.matchedArchetypes.shouldNotContain(entity3.type.getArchetype())
 

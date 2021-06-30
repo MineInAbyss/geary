@@ -7,13 +7,12 @@ import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.query.Query
 import java.lang.ref.WeakReference
 
 public typealias Event = GearyEntity.() -> Unit
-
-public typealias RelationParentId = GearyComponentId
-public typealias FullRelations = List<Relation>
 
 public data class Archetype(
     public val type: GearyType,
@@ -24,15 +23,13 @@ public data class Archetype(
     private val events = EventListenerContainer()
 
     /** Map of relation parent id to a list of relations with that parent */
-    internal val relations: Map<RelationParentId, FullRelations> = type
-        .filter { it.isRelation() }
-        .map { Relation(it) }
+    internal val relations: Map<RelationParent, List<Relation>> = type
+        .mapNotNull { it.toRelation() }
         .groupBy { it.parent }
 
-    /** @return This Archetype's [relations] that are also a part of this family's relations. */
-    public fun matchedRelationsFor(matchRelations: Collection<Relation>): Map<RelationParentId, FullRelations> =
+    /** @return This Archetype's [relations] that are also a part of [matchRelations]. */
+    public fun matchedRelationsFor(matchRelations: Collection<RelationParent>): Map<RelationParent, List<Relation>> =
         matchRelations
-            .map { it.parent }
             .filter { it in relations }
             .associateWith { relations[it]!! } //TODO handle null error
 

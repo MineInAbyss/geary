@@ -3,16 +3,16 @@ package com.mineinabyss.geary.ecs.query
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.gearyNoMask
-import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.engine.QueryResult
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
 public open class RelationAccessor<T : GearyComponent>(
-    private val relation: Relation,
+    private val relation: RelationParent,
     private val query: Query,
 ) : ReadOnlyProperty<QueryResult, RelationData<T>> {
-    private val relationIndex: Int = query.family.and.filterIsInstance<RelationLeaf>().lastIndex
+    private val relationIndex: Int = query.family.relationParents.lastIndex
 
     override fun getValue(thisRef: QueryResult, property: KProperty<*>): RelationData<T> =
         RelationData(

@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.entities.children
@@ -82,10 +83,10 @@ public open class GearyEngine : TickingEngine() {
 
     override fun getRelatedComponentsFor(
         entity: GearyEntityId,
-        relationParentId: RelationParentId
+        parent: RelationParent
     ): Set<GearyComponent> = getRecord(entity)?.run {
         archetype
-            .relations[relationParentId and ENTITY_MASK]
+            .relations[parent]
             ?.mapNotNullTo(mutableSetOf()) { archetype[row, it.component] }
     } ?: setOf()
 
@@ -109,7 +110,7 @@ public open class GearyEngine : TickingEngine() {
 
     override fun setRelationFor(
         entity: GearyEntityId,
-        parent: GearyComponentId,
+        parent: RelationParent,
         forComponent: GearyComponentId,
         data: GearyComponent
     ) {

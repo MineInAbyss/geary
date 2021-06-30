@@ -4,7 +4,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.engine.RELATION
 import com.mineinabyss.geary.ecs.engine.get
-import com.mineinabyss.geary.ecs.engine.toRelation
+import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.query.*
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import net.onedaybeard.bitvector.BitVector
@@ -17,7 +17,7 @@ internal class ComponentSparseSet<T> {
     private val componentMap = ComponentMap<BitVector>()
 
     fun GearyComponentId.toComponentMapId(): GearyComponentId =
-        this.toRelation()?.parent?.or(RELATION) ?: this
+        toRelation()?.parent?.id?.or(RELATION) ?: this
 
     fun add(element: T, type: GearyType) {
         elements += element
@@ -38,7 +38,7 @@ internal class ComponentSparseSet<T> {
             is AndNotSelector -> family.andNot.reduceToBits(BitVector::andNot)
             is OrSelector -> family.or.reduceToBits(BitVector::or)
             is ComponentLeaf -> componentMap[family.component] ?: bitsOf()
-            is RelationLeaf -> componentMap[family.relation.parent or RELATION] ?: bitsOf()
+            is RelationLeaf -> componentMap[family.relationParent.id or RELATION] ?: bitsOf()
         }
     }
 

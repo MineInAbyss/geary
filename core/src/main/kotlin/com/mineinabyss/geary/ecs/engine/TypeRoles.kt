@@ -3,7 +3,6 @@
 package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.api.GearyComponentId
-import com.mineinabyss.geary.ecs.api.relations.Relation
 
 //can't make const because of the shl
 public val INSTANCEOF: ULong = 1uL shl 63
@@ -20,10 +19,8 @@ public const val ENTITY_MASK: ULong = 0x00FFFFFFFFFFFFFFuL
 public const val RELATION_PARENT_MASK: ULong = 0x00FFFFFF00000000uL
 public const val RELATION_COMPONENT_MASK: ULong = 0xFF000000FFFFFFFFuL
 
-public fun GearyComponentId.isInstance(): Boolean = this or INSTANCEOF != 0uL
-public fun GearyComponentId.isChild(): Boolean = this or CHILDOF != 0uL
-public fun GearyComponentId.isRelation(): Boolean = this or RELATION != 0uL
-public fun GearyComponentId.holdsData(): Boolean = this or HOLDS_DATA != 0uL
+public fun GearyComponentId.isInstance(): Boolean = this and INSTANCEOF != 0uL
+public fun GearyComponentId.isChild(): Boolean = this and CHILDOF != 0uL
+public fun GearyComponentId.isRelation(): Boolean = this and RELATION != 0uL
+public fun GearyComponentId.holdsData(): Boolean = this and HOLDS_DATA != 0uL
 
-public fun GearyComponentId.toRelation(): Relation? =
-    Relation(this).takeIf { isRelation() }
