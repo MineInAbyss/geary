@@ -21,4 +21,4 @@ public fun GearyEntity.decodeComponentsFrom(pdc: PersistentDataContainer) {
     for (id in type) {
         addPrefab(geary(id))
     }
-}
+}//TODO GearyComponentId.getComponentInfo via component on component entity so we can debug easier

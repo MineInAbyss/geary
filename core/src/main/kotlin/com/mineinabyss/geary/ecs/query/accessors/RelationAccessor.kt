@@ -17,7 +17,7 @@ public open class RelationAccessor<T : GearyComponent>(
     private val relationIndex: Int = query.relationParents.lastIndex
 
     private val ArchetypeIterator.matchedRelations: List<Relation>
-            by cached { archetype.relations[relationParent]!! }
+            by cached { archetype.relations[relationParent.id.toLong()]!! }
 
     private val ArchetypeIterator.dataIndices: IntArray
             by cached { matchedRelations.map { archetype.indexOf(it.id) }.toIntArray() }

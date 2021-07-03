@@ -29,7 +29,7 @@ public interface Engine {
     public fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent>
 
     /** Gets a list of all the components [entity] has. */
-    public fun getRelatedComponentsFor(entity: GearyEntityId, relationParentId: RelationParent): Set<GearyComponent>
+    public fun getRelatedComponentsFor(entity: GearyEntityId, relationParent: RelationParent): Set<GearyComponent>
 
     /** Gets a [component]'s data from an [entity] or null if not present/the component doesn't hold any data. */
     public fun getComponentFor(entity: GearyEntityId, component: GearyComponentId): GearyComponent?

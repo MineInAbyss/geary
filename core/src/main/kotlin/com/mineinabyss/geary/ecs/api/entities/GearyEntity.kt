@@ -84,7 +84,12 @@ public value class GearyEntity(public val id: GearyEntityId) {
      */
     public inline fun <reified T : GearyComponent> setPersisting(component: T, kClass: KClass<out T> = T::class): T {
         set(component, kClass)
-        setRelation<PersistingComponent, T>(PersistingComponent(), data = true)
+        setRelation(
+            parentKClass = PersistingComponent::class,
+            componentKClass = kClass,
+            parentData = PersistingComponent(),
+            holdsData = true
+        )
         return component
     }
 

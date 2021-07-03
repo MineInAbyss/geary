@@ -11,6 +11,8 @@ import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
 import com.mineinabyss.geary.ecs.query.Query
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import java.lang.ref.WeakReference
 
 public typealias Event = GearyEntity.() -> Unit
@@ -24,15 +26,15 @@ public data class Archetype(
     private val events = EventListenerContainer()
 
     /** Map of relation parent id to a list of relations with that parent */
-    internal val relations: Map<RelationParent, List<Relation>> = type
+    internal val relations: Long2ObjectOpenHashMap<MutableList<Relation>> = type
         .mapNotNull { it.toRelation() }
-        .groupBy { it.parent }
+        .groupByTo(Long2ObjectOpenHashMap()) { it.parent.id.toLong() }
 
     /** @return This Archetype's [relations] that are also a part of [matchRelations]. */
     public fun matchedRelationsFor(matchRelations: Collection<RelationParent>): Map<RelationParent, List<Relation>> =
         matchRelations
-            .filter { it in relations }
-            .associateWith { relations[it]!! } //TODO handle null error
+            .filter { it.id.toLong() in relations }
+            .associateWith { relations[it.id.toLong()]!! } //TODO handle null error
 
     internal fun indexOf(id: GearyComponentId): Int = dataHoldingType.indexOf(id)
 
