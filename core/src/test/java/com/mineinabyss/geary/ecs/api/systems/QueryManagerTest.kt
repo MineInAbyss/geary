@@ -1,11 +1,13 @@
 package com.mineinabyss.geary.ecs.api.systems
 
+import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.engine.*
+import com.mineinabyss.geary.ecs.engine.iteration.QueryResult
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
@@ -53,7 +55,7 @@ internal class QueryManagerTest {
 
         @Test
         fun `family type is correct`() {
-            system.family.match.getArchetype() shouldBe root + stringId
+            GearyType(system.family.components).getArchetype() shouldBe root + stringId
         }
 
         @Test
@@ -115,7 +117,7 @@ internal class QueryManagerTest {
             override fun QueryResult.tick() {
                 ran++
                 family.relationParents.map { it.id } shouldContain expiry.relation.id
-                (expiry.data is RelationTestComponent) shouldBe true
+                (expiry.parentData is RelationTestComponent) shouldBe true
             }
         }
         system.family.relationParents.shouldContainExactly(RelationParent(componentId<RelationTestComponent>()))

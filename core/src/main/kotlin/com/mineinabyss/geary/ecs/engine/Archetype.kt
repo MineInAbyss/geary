@@ -9,6 +9,7 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.relations.toRelation
+import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
 import com.mineinabyss.geary.ecs.query.Query
 import java.lang.ref.WeakReference
 
