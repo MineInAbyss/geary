@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.ecs.engine.iteration
 
-import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.query.Query
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty

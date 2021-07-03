@@ -24,7 +24,7 @@ public data class ArchetypeIterator(
 
     private var row: Int = 0
 
-    override fun hasNext(): Boolean = (row < archetype.size || movedRows.isNotEmpty())
+    override fun hasNext(): Boolean = (row < archetype.size || movedRows.isNotEmpty() || combinationsIterator?.hasNext() == true)
         .also { if (!it) archetype.finalizeIterator(this) }
 
     /** Set of elements moved during a component removal. Represents the resulting row to original row. */

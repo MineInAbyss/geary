@@ -113,11 +113,11 @@ internal class QueryManagerTest {
     fun relations() {
         var ran = 0
         val system = object : TickingSystem() {
-            val QueryResult.expiry by relation<RelationTestComponent>()
+            val QueryResult.test by relation<RelationTestComponent>()
             override fun QueryResult.tick() {
                 ran++
-                family.relationParents.map { it.id } shouldContain expiry.relation.id
-                (expiry.parentData is RelationTestComponent) shouldBe true
+                family.relationParents.map { it.id } shouldContain test.relation.id
+                (test.parentData is RelationTestComponent) shouldBe true
             }
         }
         system.family.relationParents.shouldContainExactly(RelationParent(componentId<RelationTestComponent>()))
@@ -141,6 +141,36 @@ internal class QueryManagerTest {
         system.doTick()
         ran shouldBe 2
 
+    }
+
+    private class RelationTestComponent1
+    private class RelationTestComponent2
+
+    @Test
+    fun relationPermutations() {
+        var ran = 0
+        val system = object : TickingSystem() {
+            val QueryResult.test1 by relation<RelationTestComponent1>()
+            val QueryResult.test2 by relation<RelationTestComponent2>()
+            override fun QueryResult.tick() {
+                ran++
+                (test1.parentData is RelationTestComponent1) shouldBe true
+                (test2.parentData is RelationTestComponent2) shouldBe true
+            }
+        }
+        QueryManager.trackQuery(system)
+
+        val entity = Engine.entity {
+            setRelation<RelationTestComponent1, String>(RelationTestComponent1(), data = false)
+            setRelation<RelationTestComponent1, Int>(RelationTestComponent1(), data = false)
+            setRelation<RelationTestComponent2, String>(RelationTestComponent2(), data = false)
+            setRelation<RelationTestComponent2, Int>(RelationTestComponent2(), data = false)
+            add<String>()
+        }
+
+        system.doTick()
+
+        ran shouldBe 4
     }
 
 }
