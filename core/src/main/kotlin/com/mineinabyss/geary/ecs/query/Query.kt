@@ -6,11 +6,8 @@ import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
-import com.mineinabyss.geary.ecs.query.accessors.Accessor
 import com.mineinabyss.geary.ecs.engine.iteration.QueryResult
-import com.mineinabyss.geary.ecs.query.accessors.ComponentAccessor
-import com.mineinabyss.geary.ecs.query.accessors.RelationAccessor
-import com.mineinabyss.geary.ecs.query.accessors.RelationWithDataAccessor
+import com.mineinabyss.geary.ecs.query.accessors.*
 
 /**
  * @property family The Query itself is a mutable family builder, [family] is the built, immutable version of it.
@@ -40,6 +37,12 @@ public abstract class Query : Iterable<QueryResult>, MutableAndSelector() {
         val relationParent = RelationParent(componentId<T>())
         has(relationParent, componentMustHoldData = true)
         return RelationWithDataAccessor(this, relationParent)
+    }
+
+    public inline fun <reified T : GearyComponent> allRelationsWithData(): RelationListAccessor<T> {
+        val relationParent = RelationParent(componentId<T>())
+        has(relationParent, componentMustHoldData = true)
+        return RelationListAccessor(this, relationParent)
     }
 
 

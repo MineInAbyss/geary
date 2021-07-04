@@ -6,6 +6,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
+import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
@@ -44,6 +45,10 @@ public value class GearyEntity(public val id: GearyEntityId) {
     /** Sets components that hold data for this entity */
     public fun setAll(components: Collection<GearyComponent>) {
         components.forEach { set(it, it::class) }
+    }
+
+    public inline fun <reified T : GearyComponent> getRelation(component: GearyComponent): T? {
+        return get(Relation(RelationParent(componentId<T>()), componentId(component::class)).id) as? T
     }
 
     public inline fun <reified T : GearyComponent, reified C : GearyComponent> setRelation(

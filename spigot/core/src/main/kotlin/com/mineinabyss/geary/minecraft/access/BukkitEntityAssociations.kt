@@ -10,12 +10,9 @@ import com.mineinabyss.geary.ecs.entities.addPrefab
 import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
-import com.mineinabyss.geary.minecraft.events.GearyMinecraftLoadEvent
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
-import com.mineinabyss.geary.minecraft.store.encodeComponents
 import com.mineinabyss.geary.minecraft.store.encodeComponentsTo
-import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.nms.aliases.BukkitEntity
 import com.mineinabyss.idofront.nms.entity.typeName
 import org.bukkit.entity.Entity
@@ -24,7 +21,6 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerLoginEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
 internal typealias OnEntityRegister = GearyEntity.(Entity) -> Unit
@@ -119,7 +115,7 @@ public object BukkitEntityAssociations : Listener {
     public fun removeEntityAndEncodeComponents(entity: BukkitEntity) {
         val gearyEntity = gearyOrNull(entity) ?: return
         //TODO some way of knowing if this entity is permanently removed
-        entity.encodeComponents(gearyEntity)
+        gearyEntity.encodeComponentsTo(entity)
         unregisterEntity(entity)
         gearyEntity.removeEntity()
     }

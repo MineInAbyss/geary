@@ -37,7 +37,7 @@ public open class RelationWithDataAccessor<T : GearyComponent>(
         }
 }
 
-public class RelationWithData<T : GearyComponent>(
+public data class RelationWithData<T : GearyComponent>(
     public val parentData: T,
     public val componentData: Any,
     public val relation: GearyEntity,
