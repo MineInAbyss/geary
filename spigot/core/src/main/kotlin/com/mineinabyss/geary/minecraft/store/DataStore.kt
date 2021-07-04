@@ -3,7 +3,6 @@ package com.mineinabyss.geary.minecraft.store
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.entities.geary
-import com.mineinabyss.geary.ecs.engine.INSTANCEOF
 import com.mineinabyss.geary.ecs.engine.isInstance
 import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
@@ -78,18 +77,25 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
     for (value in components)
         encode(value)
 
-    //encode all the prefabs of this type with a key stored under a special key. This could have been done via a
-    // persisting prefab component, but I prefer being explicit and avoiding the possibility of this component
-    // accidentally ending up on the entity itself
     val prefabs = type.filter { it.isInstance() }
-    if (prefabs.isNotEmpty()) {
-        encode(
-            prefabs.mapNotNull { geary(it).get<PrefabKey>() }
-                .toSet(),
-            SetSerializer(PrefabKey.serializer()),
-            "geary:prefabs".toMCKey()
-        )
-    }
+    if (prefabs.isNotEmpty())
+        encodePrefabs(prefabs.mapNotNull { geary(it).get<PrefabKey>() })
+}
+
+/**
+ * Encodes a list of [PrefabKey]s under the key `geary:prefabs`. When decoding these will be stored in
+ * [DecodedEntityData.type].
+ */
+public fun PersistentDataContainer.encodePrefabs(keys: Collection<PrefabKey>) {
+    hasComponentsEncoded = true
+
+    // I prefer being explicit with the SetSerializer to avoid any confusion, like a class that looks like a persisting
+    // component that stores a list of prefabs.
+    encode(
+        keys.toSet(),
+        SetSerializer(PrefabKey.serializer()),
+        "geary:prefabs".toMCKey()
+    )
 }
 
 /**
