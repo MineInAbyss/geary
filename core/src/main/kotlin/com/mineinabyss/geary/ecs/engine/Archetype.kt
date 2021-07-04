@@ -11,7 +11,6 @@ import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
 import com.mineinabyss.geary.ecs.query.Query
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import java.lang.ref.WeakReference
 
@@ -26,9 +25,19 @@ public data class Archetype(
     private val events = EventListenerContainer()
 
     /** Map of relation parent id to a list of relations with that parent */
+    //TODO List<Relation>
     internal val relations: Long2ObjectOpenHashMap<MutableList<Relation>> = type
         .mapNotNull { it.toRelation() }
         .groupByTo(Long2ObjectOpenHashMap()) { it.parent.id.toLong() }
+
+    internal val dataHoldingRelations: Long2ObjectOpenHashMap<List<Relation>> by lazy {
+        val map = Long2ObjectOpenHashMap<List<Relation>>()
+        relations.forEach { (key, value) ->
+            val dataHolding = value.filter { it.component.holdsData() }
+            if(dataHolding.isNotEmpty()) map[key] = dataHolding
+        }
+        map
+    }
 
     /** @return This Archetype's [relations] that are also a part of [matchRelations]. */
     public fun matchedRelationsFor(matchRelations: Collection<RelationParent>): Map<RelationParent, List<Relation>> =

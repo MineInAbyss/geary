@@ -19,6 +19,7 @@ public fun family(init: MutableAndSelector.() -> Unit): AndSelector {
     return MutableAndSelector().apply(init).build()
 }
 
+//TODO perhaps different hierarchy for leaves so we don't have to make mutable versions for nothing
 public class MutableComponentLeaf(
     public var component: GearyComponentId
 ) : FamilyBuilder() {
@@ -26,9 +27,10 @@ public class MutableComponentLeaf(
 }
 
 public class MutableRelationLeaf(
-    public var relationParent: RelationParent
+    public var relationParent: RelationParent,
+    public val componentMustHoldData: Boolean = false
 ) : FamilyBuilder() {
-    override fun build(): RelationLeaf = RelationLeaf(relationParent)
+    override fun build(): RelationLeaf = RelationLeaf(relationParent, componentMustHoldData)
 }
 
 public abstract class MutableSelector : FamilyBuilder() {
@@ -93,8 +95,8 @@ public abstract class MutableSelector : FamilyBuilder() {
         }
     }
 
-    public fun has(relationParent: RelationParent) {
-        add(MutableRelationLeaf(relationParent))
+    public fun has(relationParent: RelationParent, componentMustHoldData: Boolean = false) {
+        add(MutableRelationLeaf(relationParent, componentMustHoldData))
     }
 }
 

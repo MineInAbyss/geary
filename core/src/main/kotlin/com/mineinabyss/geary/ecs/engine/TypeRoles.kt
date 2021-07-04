@@ -15,6 +15,7 @@ public val HOLDS_DATA: ULong = 1uL shl 60
 //8
 //No more bits that can be used
 
+public const val TYPE_ROLES_MASK: ULong = 0xFF00000000000000uL
 public const val ENTITY_MASK: ULong = 0x00FFFFFFFFFFFFFFuL
 public const val RELATION_PARENT_MASK: ULong = 0x00FFFFFF00000000uL
 public const val RELATION_COMPONENT_MASK: ULong = 0xFF000000FFFFFFFFuL

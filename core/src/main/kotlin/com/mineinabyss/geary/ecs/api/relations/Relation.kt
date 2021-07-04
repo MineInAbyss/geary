@@ -1,10 +1,8 @@
 package com.mineinabyss.geary.ecs.api.relations
 
+import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
-import com.mineinabyss.geary.ecs.engine.RELATION
-import com.mineinabyss.geary.ecs.engine.RELATION_COMPONENT_MASK
-import com.mineinabyss.geary.ecs.engine.RELATION_PARENT_MASK
-import com.mineinabyss.geary.ecs.engine.isRelation
+import com.mineinabyss.geary.ecs.engine.*
 
 /**
  * A combination of two [GearyComponentId]s into one that represents a relation between
@@ -37,6 +35,7 @@ public value class Relation internal constructor(
 
     public val parent: RelationParent get() = RelationParent(id and RELATION_PARENT_MASK shr 32)
     public val component: GearyComponentId get() = id and RELATION_COMPONENT_MASK and RELATION.inv()
+    public val withoutComponent: GearyComponent get() = id and (TYPE_ROLES_MASK or RELATION_PARENT_MASK)
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
 
@@ -49,6 +48,13 @@ public value class Relation internal constructor(
     }
 }
 
+/**
+ * Data of this parent's type is stored under a [Relation]'s full [id][Relation.id] in archetypes.
+ *
+ * ```
+ * Parent bits:     0x00FFFFFF00000000
+ * ```
+ */
 @JvmInline
 public value class RelationParent(public val id: GearyComponentId)
 

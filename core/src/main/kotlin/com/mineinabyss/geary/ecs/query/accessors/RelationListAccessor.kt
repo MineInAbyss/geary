@@ -8,11 +8,11 @@ import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.engine.iteration.AccessorData
 import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
 import com.mineinabyss.geary.ecs.query.Query
-
-public open class RelationAccessor<T : GearyComponent>(
+/*
+public open class RelationListAccessor<T : GearyComponent>(
     query: Query,
     private val relationParent: RelationParent,
-) : Accessor<RelationData<T>>(query) {
+) : Accessor<List<RelationData<T>>>(query) {
     private val relationIndex: Int = query.relationParents.lastIndex
 
     private val ArchetypeIterator.matchedRelations: List<Relation>
@@ -35,4 +35,4 @@ public class RelationData<T : GearyComponent>(
     public val parentData: T,
     public val relation: GearyEntity,
     public val component: GearyEntity
-)
+)*/

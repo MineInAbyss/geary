@@ -13,6 +13,7 @@ import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -117,7 +118,7 @@ internal class QueryManagerTest {
             override fun QueryResult.tick() {
                 ran++
                 family.relationParents.map { it.id } shouldContain test.relation.id
-                (test.parentData is RelationTestComponent) shouldBe true
+                test.parentData.shouldBeInstanceOf<RelationTestComponent>()
             }
         }
         system.family.relationParents.shouldContainExactly(RelationParent(componentId<RelationTestComponent>()))
@@ -154,8 +155,8 @@ internal class QueryManagerTest {
             val QueryResult.test2 by relation<RelationTestComponent2>()
             override fun QueryResult.tick() {
                 ran++
-                (test1.parentData is RelationTestComponent1) shouldBe true
-                (test2.parentData is RelationTestComponent2) shouldBe true
+                test1.parentData.shouldBeInstanceOf<RelationTestComponent1>()
+                test2.parentData.shouldBeInstanceOf<RelationTestComponent2>()
             }
         }
         QueryManager.trackQuery(system)
@@ -171,6 +172,37 @@ internal class QueryManagerTest {
         system.doTick()
 
         ran shouldBe 4
+    }
+
+    class RelationTestWithData
+
+    @Test
+    fun relationsWithData() {
+        val system = object : TickingSystem() {
+            val QueryResult.withData by relationWithData<RelationTestWithData>()
+
+            override fun QueryResult.tick() {
+                withData.parentData.shouldBeInstanceOf<RelationTestWithData>()
+                withData.componentData shouldBe "Test"
+            }
+        }
+
+        val entity = Engine.entity {
+            setRelation<RelationTestWithData, String>(RelationTestWithData(), data = false)
+            add<String>()
+        }
+
+        val entityWithData = Engine.entity {
+            setRelation<RelationTestWithData, String>(RelationTestWithData(), data = true)
+            set("Test")
+        }
+
+        QueryManager.trackQuery(system)
+
+        system.matchedArchetypes.shouldNotContain(entity.type.getArchetype())
+        system.matchedArchetypes.shouldContain(entityWithData.type.getArchetype())
+
+        system.doTick()
     }
 
 }

@@ -1,5 +1,8 @@
-package com.mineinabyss.geary.ecs.engine.iteration
+package com.mineinabyss.geary.ecs.query.accessors
 
+import com.mineinabyss.geary.ecs.engine.iteration.AccessorData
+import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
+import com.mineinabyss.geary.ecs.engine.iteration.QueryResult
 import com.mineinabyss.geary.ecs.query.Query
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty

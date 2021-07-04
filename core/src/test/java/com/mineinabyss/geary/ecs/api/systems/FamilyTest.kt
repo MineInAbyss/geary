@@ -4,6 +4,7 @@ package com.mineinabyss.geary.ecs.api.systems
 
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.query.contains
 import io.kotest.matchers.sequences.contain
 import io.kotest.matchers.should
@@ -30,5 +31,17 @@ internal class FamilyTest {
         (sortedSetOf(Relation.of(14uL, 1uL).id, 1uL) in family) shouldBe false
         (sortedSetOf(Relation.of(15uL, 1uL).id) in family) shouldBe false
         (sortedSetOf(Relation.of(15uL, 1uL).id, 1uL) in family) shouldBe true
+    }
+
+    @Test
+    fun `contains relation with data`() {
+        val family = family {
+            has(RelationParent(15uL), componentMustHoldData = true)
+        }
+
+        (sortedSetOf(Relation.of(14uL, 1uL).id, 1uL) in family) shouldBe false
+        (sortedSetOf(Relation.of(15uL, 1uL).id) in family) shouldBe false
+        (sortedSetOf(Relation.of(15uL, 1uL).id, 1uL) in family) shouldBe false
+        (sortedSetOf(Relation.of(15uL, 1uL).id, 1uL or HOLDS_DATA) in family) shouldBe true
     }
 }

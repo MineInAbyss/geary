@@ -4,7 +4,6 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.engine.iteration.*
 import com.mineinabyss.geary.ecs.query.Query
-import kotlin.reflect.KProperty
 
 public class ComponentAccessor<T : GearyComponent>(
     query: Query,

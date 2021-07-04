@@ -12,7 +12,8 @@ public class ComponentLeaf(
 ) : Family()
 
 public class RelationLeaf(
-    public val relationParent: RelationParent
+    public val relationParent: RelationParent,
+    public val componentMustHoldData: Boolean = false
 ) : Family()
 
 

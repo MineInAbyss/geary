@@ -4,6 +4,7 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.query.Query
+import com.mineinabyss.geary.ecs.query.accessors.Accessor
 
 public data class ArchetypeIterator(
     public val archetype: Archetype,

@@ -13,7 +13,7 @@ import net.onedaybeard.bitvector.bitsOf
 
 public object QueryManager {
     private val queries = mutableListOf<Query>()
-    private val archetypes = ComponentSparseSet<Archetype>()
+    private val archetypes = ComponentSparseSet()
 
     //TODO should be a subclass for trackable queries
     public fun trackQuery(query: Query) {
