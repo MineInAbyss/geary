@@ -13,6 +13,7 @@ import kotlin.reflect.KProperty
 
 private typealias EntityExtension<T> = GearyEntity.() -> T?
 
+//TODO unify with the Query system
 public abstract class EntityPropertyHolder {
     private val dataMap = Long2ObjectOpenHashMap<List<Any>>()
     private val dataKey = mutableListOf<GearyComponentId>()

@@ -6,7 +6,9 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.components.PersistingComponents
+import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import kotlinx.serialization.Serializable
@@ -14,13 +16,8 @@ import kotlin.reflect.KClass
 
 /**
  * A wrapper around [GearyEntityId] that gets inlined to just a long (no performance degradation since no boxing occurs).
+ *
  * Provides some useful functions so we aren't forced to go through [Engine] every time we want to do some things.
- *
- * ### Note
- * Though inline classes can extend interfaces, the underlying type WILL NOT BE INLINED when we try to use methods from
- * said interface. Learn more [here](https://typealias.com/guides/inline-classes-and-autoboxing/).
- *
- * Thus, there is no longer support for implementing GearyEntity as other classes.
  */
 @Serializable
 @JvmInline
@@ -50,12 +47,26 @@ public value class GearyEntity(public val id: GearyEntityId) {
         components.forEach { set(it, it::class) }
     }
 
-    public inline fun <reified T : GearyComponent, reified C : GearyComponent> setRelation(parentData: T) {
-        Engine.setRelationFor(id, componentId<T>(), componentId<C>(), parentData)
+    public inline fun <reified T : GearyComponent> getRelation(component: GearyComponent): T? {
+        return get(Relation(RelationParent(componentId<T>()), componentId(component::class)).id) as? T
     }
 
-    public inline fun <reified T : GearyComponent, reified C : GearyComponent> setRelationWithData(parentData: T) {
-        Engine.setRelationFor(id, componentId<T>(), componentId<C>() or HOLDS_DATA, parentData)
+    public inline fun <reified T : GearyComponent, reified C : GearyComponent> setRelation(
+        parentData: T,
+        data: Boolean
+    ) {
+        setRelation(T::class, C::class, parentData, data)
+    }
+
+    public fun <T : GearyComponent, C : GearyComponent> setRelation(
+        parentKClass: KClass<T>,
+        componentKClass: KClass<C>,
+        parentData: T,
+        holdsData: Boolean
+    ) {
+        val parentId = componentId(parentKClass)
+        val componentId = componentId(componentKClass).let { if (holdsData) it or HOLDS_DATA else it }
+        Engine.setRelationFor(id, RelationParent(parentId), componentId, parentData)
     }
 
     /** Adds a list of [component] to this entity */
@@ -78,9 +89,12 @@ public value class GearyEntity(public val id: GearyEntityId) {
      */
     public inline fun <reified T : GearyComponent> setPersisting(component: T, kClass: KClass<out T> = T::class): T {
         set(component, kClass)
-        //TODO persisting components should store a list of ComponentIDs
-        //TODO is this possible to do nicely with relations?
-        getOrSet { PersistingComponents() }.add(component)
+        setRelation(
+            parentKClass = PersistingComponent::class,
+            componentKClass = kClass,
+            parentData = PersistingComponent(),
+            holdsData = true
+        )
         return component
     }
 
@@ -89,11 +103,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
         setPersisting(component = components)
 
     public inline fun setAllPersisting(components: Collection<GearyComponent>) {
-        setAll(components)
-        // Get and addAll, or create PersistingComponents, calculating components hash
-        get<PersistingComponents>()?.addAll(components) ?: run {
-            set<PersistingComponents>(PersistingComponents(components.toMutableSet()))
-        }
+        components.forEach { setPersisting(it, it::class) }
     }
 
     /**
@@ -136,14 +146,17 @@ public value class GearyEntity(public val id: GearyEntityId) {
     /** Gets all the active components on this entity. */
     public inline fun getComponents(): Set<GearyComponent> = Engine.getComponentsFor(id)
 
+    public inline fun getComponentsRelatedTo(relationParentId: RelationParent): Set<GearyComponent> =
+        Engine.getRelatedComponentsFor(id, relationParentId)
+
     /** Gets all the active persisting components on this entity. */
     public inline fun getPersistingComponents(): Set<GearyComponent> =
-        get<PersistingComponents>()?.components?.intersect(getComponents()) ?: emptySet()
+        getComponentsRelatedTo(RelationParent(componentId<PersistingComponent>()))
 
     //TODO update javadoc
     /** Gets all the active non-persisting components on this entity. */
     public inline fun getInstanceComponents(): Set<GearyComponent> =
-        getComponents() - (get<PersistingComponents>()?.components ?: emptySet())
+        getComponents() - getPersistingComponents()
 
     /** Runs something on a component on this entity of type [T] if present. */
     public inline fun <reified T : GearyComponent> with(let: (T) -> Unit): Unit? = get<T>()?.let(let)

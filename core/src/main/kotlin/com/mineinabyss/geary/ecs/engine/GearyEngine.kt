@@ -4,13 +4,13 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.geary
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.systems.SystemManager
+import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
-import com.mineinabyss.geary.ecs.components.PersistingComponents
+import com.mineinabyss.geary.ecs.components.ComponentInfo
 import com.mineinabyss.geary.ecs.entities.children
 import com.mineinabyss.idofront.messaging.logError
 import java.util.*
@@ -33,10 +33,17 @@ public open class GearyEngine : TickingEngine() {
 
     private val classToComponentMap = mutableMapOf<KClass<*>, GearyEntityId>()
 
+    init {
+        //Register an entity for the ComponentInfo component, otherwise getComponentIdForClass does a StackOverflow
+        val componentInfo = entity()
+        classToComponentMap[ComponentInfo::class] = componentInfo.id
+//        componentInfo.set(ComponentInfo(ComponentInfo::class)) //FIXME causes an error
+    }
+
     override fun getComponentIdForClass(kClass: KClass<*>): GearyComponentId {
         return classToComponentMap.getOrPut(kClass) {
             entity {
-                //TODO add some components for new components here
+                set(ComponentInfo(kClass))
             }.id
         }
     }
@@ -45,7 +52,7 @@ public open class GearyEngine : TickingEngine() {
     protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
 
     override fun addSystem(system: TickingSystem): Boolean {
-        SystemManager.trackQuery(system)
+        QueryManager.trackQuery(system)
         return registeredSystems.add(system)
     }
 
@@ -82,6 +89,15 @@ public open class GearyEngine : TickingEngine() {
             archetype.getComponents(row).toSet()
         } ?: emptySet()
 
+    override fun getRelatedComponentsFor(
+        entity: GearyEntityId,
+        relationParent: RelationParent
+    ): Set<GearyComponent> = getRecord(entity)?.run {
+        archetype
+            .relations[relationParent.id.toLong()]
+            ?.mapNotNullTo(mutableSetOf()) { archetype[row, it.component] }
+    } ?: setOf()
+
 
     override fun addComponentFor(entity: GearyEntityId, component: GearyComponentId) {
         getOrAddRecord(entity).apply {
@@ -102,7 +118,7 @@ public open class GearyEngine : TickingEngine() {
 
     override fun setRelationFor(
         entity: GearyEntityId,
-        parent: GearyComponentId,
+        parent: RelationParent,
         forComponent: GearyComponentId,
         data: GearyComponent
     ) {
@@ -121,10 +137,7 @@ public open class GearyEngine : TickingEngine() {
         getRecord(entity)?.run { archetype[row, component or HOLDS_DATA] }
 
     override fun hasComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean =
-        getRecord(entity)?.archetype?.type?.run {
-            //       component  or the version with the HOLDS_DATA bit flipped
-            contains(component) || contains(component xor HOLDS_DATA)
-        } ?: false
+        getRecord(entity)?.archetype?.contains(component) ?: false
 
     //TODO might be a smarter way of storing removed entities as an implicit list within a larger list of entities eventually
     override fun removeEntity(entity: GearyEntityId) {
@@ -151,5 +164,5 @@ public open class GearyEngine : TickingEngine() {
     }
 
     private fun getOrAddRecord(entity: GearyEntityId) =
-        typeMap.getOrPut(entity, { root.addEntityWithData(entity, listOf()) })
+        typeMap.getOrPut(entity) { root.addEntityWithData(entity, listOf()) }
 }

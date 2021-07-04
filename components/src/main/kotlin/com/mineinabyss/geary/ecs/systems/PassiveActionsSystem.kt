@@ -1,9 +1,8 @@
 package com.mineinabyss.geary.ecs.systems
 
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.PassiveActionsComponent
-import com.mineinabyss.geary.ecs.engine.QueryResult
+import com.mineinabyss.geary.ecs.engine.iteration.QueryResult
 
 /**
  * A system that runs actions from [PassiveActionsComponent]s every 20 ticks.
