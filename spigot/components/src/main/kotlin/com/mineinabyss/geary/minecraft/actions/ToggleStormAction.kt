@@ -27,7 +27,7 @@ public class ToggleStormAction(
 
     override fun GearyEntity.run(): Boolean {
         val world = location.world
-        world.setStorm(!world.isClearWeather)
+        world.setStorm(!world.hasStorm())
         return true
     }
 }

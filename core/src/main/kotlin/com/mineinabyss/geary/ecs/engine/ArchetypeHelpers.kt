@@ -2,7 +2,7 @@ package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.api.systems.SystemManager
+import com.mineinabyss.geary.ecs.api.systems.QueryManager
 
 public fun GearyType.getArchetype(): Archetype {
     var node = root
@@ -16,7 +16,7 @@ private fun createArchetype(prevNode: Archetype, componentEdge: GearyComponentId
     val arc = Archetype(prevNode.type.plus(componentEdge))
     arc.remove[componentEdge] = prevNode
     prevNode.add[componentEdge] = arc
-    SystemManager.assignArchetypeToSystems(arc)
+    QueryManager.registerArchetype(arc)
     return arc
 }
 

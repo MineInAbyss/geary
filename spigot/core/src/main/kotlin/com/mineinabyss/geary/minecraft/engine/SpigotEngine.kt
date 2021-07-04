@@ -23,7 +23,7 @@ public class SpigotEngine : GearyEngine() {
         // Adds a line in timings report showing which systems take up more time.
         val timing = Timings.ofStart(geary, javaClass.name)
         runCatching {
-            tick()
+            doTick()
         }.apply {
             // We want to stop the timing no matter what, but still propagate error up
             timing.stopTiming()

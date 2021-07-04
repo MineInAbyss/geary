@@ -10,18 +10,18 @@ import com.mineinabyss.geary.ecs.entities.addPrefab
 import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
-import com.mineinabyss.geary.minecraft.events.GearyMinecraftLoadEvent
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
-import com.mineinabyss.geary.minecraft.store.encodeComponents
-import com.mineinabyss.idofront.events.call
+import com.mineinabyss.geary.minecraft.store.encodeComponentsTo
 import com.mineinabyss.idofront.nms.aliases.BukkitEntity
 import com.mineinabyss.idofront.nms.entity.typeName
 import org.bukkit.entity.Entity
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerLoginEvent
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 
 internal typealias OnEntityRegister = GearyEntity.(Entity) -> Unit
 internal typealias OnEntityUnregister = GearyEntity.(Entity) -> Unit
@@ -74,13 +74,15 @@ public object BukkitEntityAssociations : Listener {
     }
 
     private fun unregisterEntity(entity: Entity): GearyEntity? {
-        val gearyEntity = BukkitAssociations.get(entity.uniqueId) ?: return null
+        val gearyEntity = BukkitAssociations[entity.uniqueId] ?: return null
 
         for (extension in onBukkitEntityUnregister) {
             extension(gearyEntity, entity)
         }
 
-        if (entity.uniqueId !in BukkitAssociations) return null
+        val pdc = entity.persistentDataContainer
+        gearyEntity.encodeComponentsTo(pdc)
+
         return BukkitAssociations.remove(entity.uniqueId)
     }
 
@@ -93,25 +95,35 @@ public object BukkitEntityAssociations : Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public fun PlayerLoginEvent.onPlayerLogin() {
+    public fun PlayerJoinEvent.onPlayerLogin() {
         registerEntity(player)
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public fun PlayerQuitEvent.onPlayerLogout() {
+        removeEntityAndEncodeComponents(player)
     }
 
     /** Remove entities from ECS when they are removed from Bukkit for any reason (Uses PaperMC event) */
     @EventHandler(priority = EventPriority.HIGHEST)
     public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
+        // Only remove player from ECS on disconnect, not death
+        if(entity is Player) return
+        removeEntityAndEncodeComponents(entity)
+    }
+
+    public fun removeEntityAndEncodeComponents(entity: BukkitEntity) {
         val gearyEntity = gearyOrNull(entity) ?: return
         //TODO some way of knowing if this entity is permanently removed
-        entity.encodeComponents(gearyEntity)
+        gearyEntity.encodeComponentsTo(entity)
         unregisterEntity(entity)
         gearyEntity.removeEntity()
     }
 
-    //TODO Is there anything we'd actually want to do with the ECS while the player sees their respawn screen?
-    // If so, dont remove them on entity remove event and just refresh the inventory here
     /** Player death counts as an entity being removed from the world so we should add them back after respawn */
     @EventHandler(priority = EventPriority.LOWEST)
     public fun PlayerPostRespawnEvent.onPlayerRespawn() {
-        registerEntity(player)
+        //TODO add Dead component on death and remove it here
+        // Or should we add an inactive component that prevents systems from iterating over dead players?
     }
 }

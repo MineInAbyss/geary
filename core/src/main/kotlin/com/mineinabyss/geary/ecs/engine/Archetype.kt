@@ -5,27 +5,45 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import java.util.*
+import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.relations.toRelation
+import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
+import com.mineinabyss.geary.ecs.query.Query
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
+import java.lang.ref.WeakReference
+
+public typealias Event = GearyEntity.() -> Unit
 
 public data class Archetype(
     public val type: GearyType,
 ) {
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
-    private val dataHoldingType = type.filter { it and HOLDS_DATA != 0uL || it and RELATION != 0uL }
+    private val dataHoldingType = type.filter { it.holdsData() || it.isRelation() }
+    private val events = EventListenerContainer()
 
     /** Map of relation parent id to a list of relations with that parent */
-    private val relations: Map<GearyComponentId, List<Relation>> = type
-        .filter { it and RELATION != 0uL }
-        .map { Relation(it) }
-        .groupBy { it.parent }
+    //TODO List<Relation>
+    internal val relations: Long2ObjectOpenHashMap<MutableList<Relation>> = type
+        .mapNotNull { it.toRelation() }
+        .groupByTo(Long2ObjectOpenHashMap()) { it.parent.id.toLong() }
 
-    /** @return This Archetype's [relations] that are also a part of this family's relations. */
-    public fun matchedRelationsFor(matchRelations: Collection<Relation>): Map<GearyComponentId, List<Relation>> = matchRelations
-        .map { it.parent }
-        .filter { it in relations }
-        .associateWith { relations[it]!! } //TODO handle null error
+    internal val dataHoldingRelations: Long2ObjectOpenHashMap<List<Relation>> by lazy {
+        val map = Long2ObjectOpenHashMap<List<Relation>>()
+        relations.forEach { (key, value) ->
+            val dataHolding = value.filter { it.component.holdsData() }
+            if(dataHolding.isNotEmpty()) map[key] = dataHolding
+        }
+        map
+    }
+
+    /** @return This Archetype's [relations] that are also a part of [matchRelations]. */
+    public fun matchedRelationsFor(matchRelations: Collection<RelationParent>): Map<RelationParent, List<Relation>> =
+        matchRelations
+            .filter { it.id.toLong() in relations }
+            .associateWith { relations[it.id.toLong()]!! } //TODO handle null error
 
     internal fun indexOf(id: GearyComponentId): Int = dataHoldingType.indexOf(id)
 
@@ -43,11 +61,20 @@ public data class Archetype(
         return componentData[compIndex][row]
     }
 
+    public operator fun contains(component: GearyComponentId): Boolean =
+        // Check if contains component or the version with the HOLDS_DATA bit flipped
+        component in type || component xor HOLDS_DATA in type
+
     internal val add = mutableMapOf<GearyComponentId, Archetype>()
     internal val remove = mutableMapOf<GearyComponentId, Archetype>()
 
     public operator fun plus(id: GearyComponentId): Archetype {
-        return add[id] ?: type.plus(id).getArchetype()
+        return add[id] ?: type.let {
+            // Ensure that when adding an ID that holds data, we remove the non-data-holding ID
+            if (id.holdsData() && !id.isRelation())
+                it.minus(id and HOLDS_DATA.inv())
+            else it
+        }.plus(id).getArchetype()
     }
 
     public operator fun minus(id: GearyComponentId): Archetype {
@@ -77,12 +104,10 @@ public data class Archetype(
         record: Record,
         component: GearyComponentId
     ): Record? {
-        // if component should hold data, stop here
-        if (component and HOLDS_DATA != 0uL) return null
         // if already present in this archetype, stop here since we dont need to update any data
-        if (component in type) return null
+        if (contains(component)) return null
 
-        val moveTo = this + component
+        val moveTo = this + (component and HOLDS_DATA.inv())
 
         val componentData = getComponents(record.row)
         return moveTo.addEntityWithData(entity, componentData).also { removeEntity(record.row) }
@@ -95,25 +120,27 @@ public data class Archetype(
         component: GearyComponentId,
         data: GearyComponent
     ): Record? {
-        // if component should NOT hold data, stop here
-        if (component and (HOLDS_DATA or RELATION) == 0uL) return null
+        val isRelation = component.isRelation()
+
+        // Relations should not add the HOLDS_DATA bit since the type roles are of the relation's child
+        val dataComponent = if (isRelation) component else component or HOLDS_DATA
 
         //if component was added but not set, remove the old component before adding this one
-        val addId = component and HOLDS_DATA.inv()
+        val addId = dataComponent and HOLDS_DATA.inv()
         if (addId in type) {
             val removedRecord = removeComponent(entity, record, addId)!!
-            return removedRecord.archetype.setComponent(entity, removedRecord, component, data)
+            return removedRecord.archetype.setComponent(entity, removedRecord, dataComponent, data)
         }
 
         //If component already in this type, just update the data
-        val addIndex = indexOf(component)
+        val addIndex = indexOf(dataComponent)
         if (addIndex != -1) {
             componentData[addIndex][record.row] = data
             return null
         }
 
-        val moveTo = this + component
-        val newCompIndex = moveTo.dataHoldingType.indexOf(component)
+        val moveTo = this + dataComponent
+        val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
         val componentData = getComponents(record.row).apply {
             add(newCompIndex, data)
         }
@@ -146,11 +173,6 @@ public data class Archetype(
     internal fun getComponents(row: Int): ArrayList<GearyComponent> =
         componentData.mapTo(arrayListOf()) { it[row] }
 
-    //TODO stuff should only be added here if we are currently iterating
-    //TODO really try to use a stack here, the main thing stopping that is repeating elements.
-    /** Map of elements moved during a component removal. Represents the resulting row to original row. */
-    internal val movedRows = mutableSetOf<Int>()
-
     @Synchronized
     internal fun removeEntity(row: Int) {
         val replacement = ids.last()
@@ -164,10 +186,27 @@ public data class Archetype(
         componentData.forEach { it.removeLastOrNull() }
 
         if (lastIndex != row) {
-            //TODO I'd like this to perhaps be independent of engine in case we ever want more than one at a time
+            runningIterators.retainAll {
+                val iterator = it.get()
+                if (iterator != null) {
+                    iterator.addMovedRow(lastIndex, row)
+                    true
+                } else false
+            }
             Engine.setRecord(replacement, Record(this, row))
-            movedRows.remove(lastIndex)
-            movedRows.add(row)
         }
+    }
+
+    private val runningIterators = mutableSetOf<WeakReference<ArchetypeIterator>>()
+    private val queryIterators = mutableMapOf<Query, ArchetypeIterator>()
+
+    internal fun finalizeIterator(iterator: ArchetypeIterator) {
+        runningIterators -= WeakReference(iterator)
+    }
+
+    internal fun iteratorFor(query: Query): ArchetypeIterator {
+        val iterator = queryIterators.getOrPut(query) { ArchetypeIterator(this, query) }.copy()
+        runningIterators += WeakReference(iterator)
+        return iterator
     }
 }
