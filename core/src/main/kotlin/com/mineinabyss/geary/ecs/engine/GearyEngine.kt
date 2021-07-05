@@ -52,6 +52,8 @@ public open class GearyEngine : TickingEngine() {
     protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
 
     override fun addSystem(system: TickingSystem): Boolean {
+        // Track systems right at startup since they are likely going to tick very soon anyways and we don't care about
+        // any hiccups at that point.
         QueryManager.trackQuery(system)
         return registeredSystems.add(system)
     }

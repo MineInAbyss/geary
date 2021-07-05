@@ -4,6 +4,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
+import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.iteration.QueryResult
@@ -18,7 +19,15 @@ public abstract class Query : Iterable<QueryResult>, MutableAndSelector() {
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
     internal val accessors = mutableListOf<Accessor<*>>()
 
-    public override fun iterator(): QueryIterator = QueryIterator(this)
+    private var registered = false
+
+    public override fun iterator(): QueryIterator {
+        if(!registered) {
+            QueryManager.trackQuery(this)
+            registered = true
+        }
+        return QueryIterator(this)
+    }
 
     //TODO getOrNull
     protected inline fun <reified T : GearyComponent> get(): ComponentAccessor<T> {
