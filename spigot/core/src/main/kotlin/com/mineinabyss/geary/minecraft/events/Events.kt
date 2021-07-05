@@ -26,9 +26,9 @@ public object EventComponentSerializer : FlatSerializer<Events, Map<String, List
 )
 
 public fun Event.event(entity: GearyEntity?, name: String) {
-    if (entity?.has<EventsDisabledComponent>() == true) return
+    if (entity?.has<EventsDisabledComponent>() != false) return
 
-    entity?.get<Events>()?.wrapped?.get(name)?.forEach {
+    entity.get<Events>()?.wrapped?.get(name)?.forEach {
         it.runOn(entity)
         if (it is CancelEventAction && this is Cancellable)
             isCancelled = true

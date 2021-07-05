@@ -13,9 +13,10 @@ import kotlinx.serialization.Serializable
  * Does checks against the components of an entity. For example, whether it has a list of components.
  */
 @Serializable
-@SerialName("geary:entity_has")
+@SerialName("geary:entity")
 public class EntityComponentConditions(
-    @SerialName("components") public val componentNames: Set<String> = emptySet(),
+    @SerialName("has")
+    public val componentNames: Set<String> = emptySet(),
 ): GearyCondition() {
     private val componentClasses by lazy { componentNames.toComponentClasses() }
 
@@ -25,9 +26,10 @@ public class EntityComponentConditions(
 
 
 @Serializable
-@SerialName("geary:entity_lacks")
+@SerialName("geary:entity_not")
 public class EntityHasNoComponentConditions(
-    @SerialName("components") public val componentNames: Set<String> = emptySet(),
+    @SerialName("has")
+    public val componentNames: Set<String> = emptySet(),
 ) : GearyCondition() {
     private val componentClasses by lazy { componentNames.toComponentClasses() }
 
