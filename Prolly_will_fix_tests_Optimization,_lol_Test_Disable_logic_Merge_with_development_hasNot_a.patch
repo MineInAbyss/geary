@@ -1,0 +1,536 @@
+Index: components/src/main/kotlin/com/mineinabyss/geary/ecs/conditions/EntityComponentConditions.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/src/main/kotlin/com/mineinabyss/geary/ecs/conditions/EntityComponentConditions.kt b/components/src/main/kotlin/com/mineinabyss/geary/ecs/conditions/EntityComponentConditions.kt
+--- a/components/src/main/kotlin/com/mineinabyss/geary/ecs/conditions/EntityComponentConditions.kt	(revision f8ed56d3f9fdaaf3518d02710bb4276ce1d50fdc)
++++ b/components/src/main/kotlin/com/mineinabyss/geary/ecs/conditions/EntityComponentConditions.kt	(revision 04f7c2b8c3122bb3127ba5b5fff16677d458fda1)
+@@ -1,6 +1,7 @@
+ package com.mineinabyss.geary.ecs.conditions
+ 
+ import com.mineinabyss.geary.ecs.api.conditions.GearyCondition
++import com.mineinabyss.geary.ecs.api.engine.componentId
+ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+ import com.mineinabyss.geary.ecs.helper.toComponentClasses
+ import kotlinx.serialization.SerialName
+@@ -12,13 +13,24 @@
+  * Does checks against the components of an entity. For example, whether it has a list of components.
+  */
+ @Serializable
+-@SerialName("geary:entity")
++@SerialName("geary:entity_has")
+ public class EntityComponentConditions(
+-    @SerialName("has")
+-    public val componentNames: Set<String> = emptySet(),
++    @SerialName("components") public val componentNames: Set<String> = emptySet(),
+ ): GearyCondition() {
+     private val componentClasses by lazy { componentNames.toComponentClasses() }
+ 
+     override fun GearyEntity.check(): Boolean =
+         hasAll(componentClasses)
+ }
++
++
++@Serializable
++@SerialName("geary:entity_lacks")
++public class EntityHasNoComponentConditions(
++    @SerialName("components") public val componentNames: Set<String> = emptySet(),
++) : GearyCondition() {
++    private val componentClasses by lazy { componentNames.toComponentClasses() }
++
++    override fun GearyEntity.check(): Boolean =
++        !componentClasses.any { has(componentId(it)) }
++}
+Index: core/src/main/kotlin/com/mineinabyss/geary/ecs/engine/GearyEngine.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/core/src/main/kotlin/com/mineinabyss/geary/ecs/engine/GearyEngine.kt b/core/src/main/kotlin/com/mineinabyss/geary/ecs/engine/GearyEngine.kt
+--- a/core/src/main/kotlin/com/mineinabyss/geary/ecs/engine/GearyEngine.kt	(revision f8ed56d3f9fdaaf3518d02710bb4276ce1d50fdc)
++++ b/core/src/main/kotlin/com/mineinabyss/geary/ecs/engine/GearyEngine.kt	(revision b235c1a117bf1ed2832590346905d9047da587c9)
+@@ -40,7 +40,7 @@
+     }
+ 
+     //TODO Proper pipeline with different stages
+-    protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
++    protected val registeredSystems: MutableList<TickingSystem> = mutableListOf()
+ 
+     override fun addSystem(system: TickingSystem): Boolean {
+         SystemManager.registerSystem(system)
+Index: core/src/main/kotlin/com/mineinabyss/geary/ecs/api/systems/TickingSystem.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/core/src/main/kotlin/com/mineinabyss/geary/ecs/api/systems/TickingSystem.kt b/core/src/main/kotlin/com/mineinabyss/geary/ecs/api/systems/TickingSystem.kt
+--- a/core/src/main/kotlin/com/mineinabyss/geary/ecs/api/systems/TickingSystem.kt	(revision b235c1a117bf1ed2832590346905d9047da587c9)
++++ b/core/src/main/kotlin/com/mineinabyss/geary/ecs/api/systems/TickingSystem.kt	(revision d1dffb09cce08e14aefc4a0c5ef9d239e27f2519)
+@@ -22,6 +22,7 @@
+ public abstract class TickingSystem(public val interval: Long = 1) {
+     private val match = sortedSetOf<GearyComponentId>()
+     private val dataKey = mutableListOf<GearyComponentId>()
++    private val andNot = sortedSetOf<GearyComponentId>()
+     private val relationsKey = mutableListOf<Relation>()
+     protected var iteration: Int = 0
+         private set
+@@ -34,7 +35,7 @@
+     private var currRelationData = listOf<GearyComponent>()
+ 
+     //idea is match works as a builder and family becomes immutable upon first access
+-    public val family: Family by lazy { Family(match, relationsKey.toSortedSet()) } //TODO make gearytype sortedSet
++    public val family: Family by lazy { Family(match, relationsKey.toSortedSet(), andNot) } //TODO make gearytype sortedSet
+ 
+     private val archetypeIterators = mutableMapOf<Archetype, ArchetypeIterator>()
+ 
+@@ -63,6 +64,10 @@
+         match.add(component)
+     }
+ 
++    protected fun registerLackOf(component: GearyComponentId) {
++        andNot.add(component)
++    }
++
+     //TODO getOrNull
+     protected inline fun <reified T : GearyComponent> get(): Accessor<T> = Accessor(componentId<T>() or HOLDS_DATA)
+ 
+@@ -109,11 +114,17 @@
+             )
+     }
+ 
+-    protected inline fun <reified T : GearyComponent> has(set: Boolean = true): GearyEntity {
+-        val componentId = componentId<T>().let { if (set) it and HOLDS_DATA.inv() else it }
++    protected inline fun <reified T : GearyComponent> has(set: Boolean = false): GearyEntity {
++        val componentId = componentId<T>().let { if (set) it or HOLDS_DATA else it }
+         registerAccessor(componentId)
+         return geary(componentId)
+     }
++
++    protected inline fun <reified T : GearyComponent> hasNot(set: Boolean = false): GearyEntity {
++        val componentId = componentId<T>().let { if (set) it or HOLDS_DATA else it }
++        registerLackOf(componentId)
++        return geary(componentId)
++    }
+ 
+     protected inline fun <reified T> every(iterations: Int, run: () -> T): T? {
+         if (iteration.mod(iterations) == 0) return run()
+Index: core/src/test/java/com/mineinabyss/geary/ecs/api/systems/SystemManagerTest.kt
+===================================================================
+diff --git a/core/src/test/java/com/mineinabyss/geary/ecs/api/systems/SystemManagerTest.kt b/core/src/test/java/com/mineinabyss/geary/ecs/api/systems/SystemManagerTest.kt
+--- a/core/src/test/java/com/mineinabyss/geary/ecs/api/systems/SystemManagerTest.kt	(revision d4d9857db082d76bcae344c92f0b8ef78c18ec42)
++++ b/core/src/test/java/com/mineinabyss/geary/ecs/api/systems/SystemManagerTest.kt	(revision 965c9e4efd70293f092fa8b6d07890add93954af)
+@@ -4,12 +4,13 @@
+ import com.mineinabyss.geary.ecs.api.engine.componentId
+ import com.mineinabyss.geary.ecs.api.engine.entity
+ import com.mineinabyss.geary.ecs.api.engine.type
+-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+ import com.mineinabyss.geary.ecs.api.relations.Relation
+ import com.mineinabyss.geary.ecs.engine.*
++import com.mineinabyss.geary.ecs.query.Query
+ import io.kotest.matchers.collections.shouldContain
+ import io.kotest.matchers.collections.shouldContainAll
+ import io.kotest.matchers.collections.shouldNotContain
++import io.kotest.matchers.maps.shouldContainKey
+ import io.kotest.matchers.shouldBe
+ import org.junit.jupiter.api.Nested
+ import org.junit.jupiter.api.Test
+@@ -34,11 +35,11 @@
+         }
+ 
+         val system = object : TickingSystem() {
+-            val string by get<String>()
++            val QueryResult.string by get<String>()
+             val int = has<Int>()
+ 
+-            override fun GearyEntity.tick() {
+-                string shouldBe get<String>()
++            override fun QueryResult.tick() {
++                string shouldBe entity.get<String>()
+                 entity.has<Int>() shouldBe true
+             }
+         }
+@@ -48,7 +49,7 @@
+         val correctArchetype = root + stringId + intId
+ 
+         init {
+-            SystemManager.registerSystem(system)
++            SystemManager.trackQuery(system)
+         }
+ 
+         @Test
+@@ -71,7 +72,7 @@
+ 
+         @Test
+         fun `accessors in system correctly read data`() {
+-            system.tick()
++            system.doTick()
+         }
+     }
+ 
+@@ -80,24 +81,25 @@
+         var ran = 0
+ 
+         val removingSystem = object : TickingSystem() {
+-            val string by get<String>()
++            val QueryResult.string by get<String>()
+ 
+-            override fun GearyEntity.tick() {
+-                remove<String>()
++            override fun QueryResult.tick() {
++                entity.remove<String>()
+                 ran++
+             }
+         }
+ 
+         init {
+-            SystemManager.registerSystem(removingSystem)
++            SystemManager.trackQuery(removingSystem)
+         }
+ 
++        //FIXME who needs systems to work properly anyways
+         @Test
+         fun `concurrent modification`() {
+             val entities = (0 until 10).map { Engine.entity { set("Test") } }
+             val total =
+                 SystemManager.getEntitiesMatching(Family(sortedSetOf(componentId<String>() or HOLDS_DATA))).count()
+-            removingSystem.tick()
++            removingSystem.doTick()
+             ran shouldBe total
+             entities.map { it.getComponents() } shouldBe entities.map { setOf() }
+         }
+@@ -109,15 +111,15 @@
+     fun relations() {
+         var ran = 0
+         val system = object : TickingSystem() {
+-            val expiry by relation<RelationTestComponent>()
+-            override fun GearyEntity.tick() {
++            val QueryResult.expiry by relation<RelationTestComponent>()
++            override fun QueryResult.tick() {
+                 ran++
+                 family.relations.map { it.id } shouldContain expiry.relation.id
+                 (expiry.data is RelationTestComponent) shouldBe true
+             }
+         }
+         system.family.relations shouldBe sortedSetOf(Relation(parent = componentId<RelationTestComponent>()))
+-        SystemManager.registerSystem(system)
++        SystemManager.trackQuery(system)
+         val entity = Engine.entity {
+             setRelation<RelationTestComponent, String>(RelationTestComponent())
+             add<String>()
+@@ -130,11 +132,13 @@
+             setRelation<String, RelationTestComponent>("")
+             add<RelationTestComponent>()
+         }
++        Family.of(entity.type).relations.first().parent shouldBe system.family.relations.first().parent
+         system.matchedArchetypes.shouldContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
+         system.matchedArchetypes.shouldNotContain(entity3.type.getArchetype())
+ 
+-        system.tick()
++        system.doTick()
+         ran shouldBe 2
+ 
+     }
++
+ }
+Index: core/src/main/kotlin/com/mineinabyss/geary/ecs/query/Query.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/core/src/main/kotlin/com/mineinabyss/geary/ecs/query/Query.kt b/core/src/main/kotlin/com/mineinabyss/geary/ecs/query/Query.kt
+--- a/core/src/main/kotlin/com/mineinabyss/geary/ecs/query/Query.kt	(revision 43f9da566b34b448a68bb761c47f0ae0a131a1cd)
++++ b/core/src/main/kotlin/com/mineinabyss/geary/ecs/query/Query.kt	(revision dc09df74edae0625dce959b412b406269694d5a2)
+@@ -5,6 +5,7 @@
+ import com.mineinabyss.geary.ecs.api.engine.componentId
+ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+ import com.mineinabyss.geary.ecs.api.entities.geary
++import com.mineinabyss.geary.ecs.api.entities.gearyNoMask
+ import com.mineinabyss.geary.ecs.api.relations.Relation
+ import com.mineinabyss.geary.ecs.api.systems.Family
+ import com.mineinabyss.geary.ecs.engine.Archetype
+@@ -18,32 +19,39 @@
+ public abstract class Query : Iterable<QueryResult> {
+     private val match = sortedSetOf<GearyComponentId>()
+     internal val dataKey = mutableListOf<GearyComponentId>()
++    private val andNot = sortedSetOf<GearyComponentId>()
+     internal val relationsKey = mutableListOf<Relation>()
+ 
+     //idea is match works as a builder and family becomes immutable upon first access
+-    public val family: Family by lazy { Family(match, relationsKey.toSortedSet()) }
++    public val family: Family by lazy { Family(match, relationsKey.toSortedSet(), andNot) }
+     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
+-    private val archetypeIterators = mutableMapOf<Archetype, ArchetypeIterator>()
+ 
+     public inner class QueryIterator : Iterator<QueryResult> {
+         private val archetypes = matchedArchetypes.toList().iterator()
+         override fun hasNext(): Boolean {
+-            return archetypes.hasNext() || archetypeIterator.hasNext()
+-        }
++            if (archetypeIterator?.hasNext() == true) return true
++            if (!archetypes.hasNext()) return false
++
++            while (archetypeIterator?.hasNext() == false) {
++                if (!archetypes.hasNext()) return false
++                archetypeIterator = nextIterator()
++            }
+ 
+-        private var archetypeIterator = nextIterator()
++            return true
++        }
++
++        private var archetypeIterator: ArchetypeIterator? = null
++
++        init {
++            if (hasNext()) archetypeIterator = nextIterator()
++        }
+ 
+         private fun nextIterator(): ArchetypeIterator {
+-            val arc = archetypes.next()
+-            return archetypeIterators[arc]?.copy()
+-                ?: ArchetypeIterator(arc, this@Query)
+-                    .also { archetypeIterators[arc] = it }
++            return archetypes.next().iteratorFor(this@Query)
+         }
+ 
+         override fun next(): QueryResult {
+-            if (archetypeIterator.hasNext())
+-                archetypeIterator = nextIterator()
+-            return archetypeIterator.next()
++            return archetypeIterator!!.next()
+         }
+     }
+ 
+@@ -53,9 +61,17 @@
+         match.add(component)
+     }
+ 
++    protected fun registerLackOf(component: GearyComponentId) {
++        andNot.add(component)
++    }
++
+     //TODO getOrNull
+     protected inline fun <reified T : GearyComponent> get(): Accessor<T> = Accessor(componentId<T>() or HOLDS_DATA)
+ 
++    @Deprecated("Likely trying to access component off entity", ReplaceWith("entity.get()"))
++    protected inline fun <reified T : GearyComponent> QueryResult.get(): Accessor<T> =
++        error("Cannot change query at runtime")
++
+     public inner class Accessor<T : GearyComponent>(
+         private val componentId: GearyComponentId
+     ) : ReadOnlyProperty<QueryResult, T> {
+@@ -64,7 +80,7 @@
+             dataKey.add(componentId)
+         }
+ 
+-        private val index: Int = dataKey.indexOf(componentId)
++        private val index: Int = dataKey.lastIndex
+ 
+ 
+         //TODO implement contracts for smart cast if Kotlin ever does so for lazy (this should essentially be identical)
+@@ -89,19 +105,25 @@
+             relationsKey.add(relation)
+         }
+ 
+-        private val relationIndex: Int = relationsKey.indexOf(relation)
++        private val relationIndex: Int = relationsKey.lastIndex
+ 
+         override fun getValue(thisRef: QueryResult, property: KProperty<*>): RelationData<T> =
+             RelationData(
+-                thisRef.relationCompData[relationIndex] as T,
+-                geary(relation.id),
+-                geary(thisRef.relationCompIds[relationIndex])
++                data = thisRef.relationCompData[relationIndex] as T,
++                relation = gearyNoMask(relation.id),
++                component = gearyNoMask(thisRef.relationCompIds[relationIndex])
+             )
+     }
+ 
+-    protected inline fun <reified T : GearyComponent> has(set: Boolean = true): GearyEntity {
+-        val componentId = componentId<T>().let { if (set) it and HOLDS_DATA.inv() else it }
++    protected inline fun <reified T : GearyComponent> has(set: Boolean = false): GearyEntity {
++        val componentId = componentId<T>().let { if (set) it or HOLDS_DATA else it }
+         registerAccessor(componentId)
+         return geary(componentId)
+     }
++
++    protected inline fun <reified T : GearyComponent> lacks(set: Boolean = false): GearyEntity {
++        val componentId = componentId<T>().let { if (set) it or HOLDS_DATA else it }
++        registerLackOf(componentId)
++        return geary(componentId)
++    }
+ }
+Index: components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/DisableEventsAction.kt
+===================================================================
+diff --git a/components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/DisableEventsAction.kt b/components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/DisableEventsAction.kt
+new file mode 100644
+--- /dev/null	(revision b23276c32a5041fbcbf8f601b6b1801f6c69282e)
++++ b/components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/DisableEventsAction.kt	(revision b23276c32a5041fbcbf8f601b6b1801f6c69282e)
+@@ -0,0 +1,18 @@
++package com.mineinabyss.geary.ecs.actions
++
++import com.mineinabyss.geary.ecs.api.actions.GearyAction
++import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
++import com.mineinabyss.geary.ecs.api.entities.GearyEntity
++import com.mineinabyss.geary.ecs.components.EventsDisabledComponent
++import kotlinx.serialization.SerialName
++import kotlinx.serialization.Serializable
++
++@Serializable
++@SerialName("geary:disable_events")
++@AutoscanComponent
++public class DisableEventsAction(public val no_param: Boolean = true) : GearyAction() {
++    override fun GearyEntity.run(): Boolean {
++        setPersisting(EventsDisabledComponent(true))
++        return true
++    }
++}
+Index: components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/DisablePassiveActionsAction.kt
+===================================================================
+diff --git a/components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/DisablePassiveActionsAction.kt b/components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/DisablePassiveActionsAction.kt
+new file mode 100644
+--- /dev/null	(revision b23276c32a5041fbcbf8f601b6b1801f6c69282e)
++++ b/components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/DisablePassiveActionsAction.kt	(revision b23276c32a5041fbcbf8f601b6b1801f6c69282e)
+@@ -0,0 +1,18 @@
++package com.mineinabyss.geary.ecs.actions
++
++import com.mineinabyss.geary.ecs.api.actions.GearyAction
++import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
++import com.mineinabyss.geary.ecs.api.entities.GearyEntity
++import com.mineinabyss.geary.ecs.components.PassiveActionsDisabledComponent
++import kotlinx.serialization.SerialName
++import kotlinx.serialization.Serializable
++
++@Serializable
++@SerialName("geary:disable_passive_actions")
++@AutoscanComponent
++public class DisablePassiveActionsAction(public val no_param: Boolean = true) : GearyAction() {
++    override fun GearyEntity.run(): Boolean {
++        setPersisting(PassiveActionsDisabledComponent(true))
++        return true
++    }
++}
+Index: components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/EnableEventsAction.kt
+===================================================================
+diff --git a/components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/EnableEventsAction.kt b/components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/EnableEventsAction.kt
+new file mode 100644
+--- /dev/null	(revision b23276c32a5041fbcbf8f601b6b1801f6c69282e)
++++ b/components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/EnableEventsAction.kt	(revision b23276c32a5041fbcbf8f601b6b1801f6c69282e)
+@@ -0,0 +1,18 @@
++package com.mineinabyss.geary.ecs.actions
++
++import com.mineinabyss.geary.ecs.api.actions.GearyAction
++import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
++import com.mineinabyss.geary.ecs.api.entities.GearyEntity
++import com.mineinabyss.geary.ecs.components.EventsDisabledComponent
++import kotlinx.serialization.SerialName
++import kotlinx.serialization.Serializable
++
++@Serializable
++@SerialName("geary:enable_events")
++@AutoscanComponent
++public class EnableEventsAction(public val no_param: Boolean = true) : GearyAction() {
++    override fun GearyEntity.run(): Boolean {
++        remove<EventsDisabledComponent>()
++        return true
++    }
++}
+Index: components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/EnablePassiveActionsAction.kt
+===================================================================
+diff --git a/components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/EnablePassiveActionsAction.kt b/components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/EnablePassiveActionsAction.kt
+new file mode 100644
+--- /dev/null	(revision b23276c32a5041fbcbf8f601b6b1801f6c69282e)
++++ b/components/src/main/kotlin/com/mineinabyss/geary/ecs/actions/EnablePassiveActionsAction.kt	(revision b23276c32a5041fbcbf8f601b6b1801f6c69282e)
+@@ -0,0 +1,18 @@
++package com.mineinabyss.geary.ecs.actions
++
++import com.mineinabyss.geary.ecs.api.actions.GearyAction
++import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
++import com.mineinabyss.geary.ecs.api.entities.GearyEntity
++import com.mineinabyss.geary.ecs.components.PassiveActionsDisabledComponent
++import kotlinx.serialization.SerialName
++import kotlinx.serialization.Serializable
++
++@Serializable
++@SerialName("geary:enable_passive_actions")
++@AutoscanComponent
++public class EnablePassiveActionsAction(public val no_param: Boolean = true) : GearyAction() {
++    override fun GearyEntity.run(): Boolean {
++        remove<PassiveActionsDisabledComponent>()
++        return true
++    }
++}
+Index: components/src/main/kotlin/com/mineinabyss/geary/ecs/components/Components.kt
+===================================================================
+diff --git a/components/src/main/kotlin/com/mineinabyss/geary/ecs/components/Components.kt b/components/src/main/kotlin/com/mineinabyss/geary/ecs/components/Components.kt
+new file mode 100644
+--- /dev/null	(revision b23276c32a5041fbcbf8f601b6b1801f6c69282e)
++++ b/components/src/main/kotlin/com/mineinabyss/geary/ecs/components/Components.kt	(revision b23276c32a5041fbcbf8f601b6b1801f6c69282e)
+@@ -0,0 +1,15 @@
++package com.mineinabyss.geary.ecs.components
++
++import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
++import kotlinx.serialization.SerialName
++import kotlinx.serialization.Serializable
++
++@Serializable
++@SerialName("looty:events_disabled")
++@AutoscanComponent
++public data class EventsDisabledComponent(val no_param: Boolean = true)
++
++@Serializable
++@SerialName("looty:passive_action_disabled")
++@AutoscanComponent
++public data class PassiveActionsDisabledComponent(val no_param: Boolean = true)
+Index: components/src/main/kotlin/com/mineinabyss/geary/ecs/systems/PassiveActionsSystem.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/src/main/kotlin/com/mineinabyss/geary/ecs/systems/PassiveActionsSystem.kt b/components/src/main/kotlin/com/mineinabyss/geary/ecs/systems/PassiveActionsSystem.kt
+--- a/components/src/main/kotlin/com/mineinabyss/geary/ecs/systems/PassiveActionsSystem.kt	(revision 0c861599d5f656b5753518f1b3cf82ff8a74a90f)
++++ b/components/src/main/kotlin/com/mineinabyss/geary/ecs/systems/PassiveActionsSystem.kt	(revision b23276c32a5041fbcbf8f601b6b1801f6c69282e)
+@@ -1,8 +1,8 @@
+ package com.mineinabyss.geary.ecs.systems
+ 
+-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+ import com.mineinabyss.geary.ecs.api.systems.TickingSystem
+ import com.mineinabyss.geary.ecs.components.PassiveActionsComponent
++import com.mineinabyss.geary.ecs.components.PassiveActionsDisabledComponent
+ import com.mineinabyss.geary.ecs.engine.QueryResult
+ 
+ /**
+@@ -10,6 +10,8 @@
+  */
+ public object PassiveActionsSystem : TickingSystem(interval = 20) {
+     private val QueryResult.actions by get<PassiveActionsComponent>()
++    private val passivesDisabled = lacks<PassiveActionsDisabledComponent>()
++    private val passivesDisabledWithData = lacks<PassiveActionsDisabledComponent>(set = true)
+ 
+     override fun QueryResult.tick() {
+         actions.wrapped.forEach {
+Index: spigot/core/src/main/kotlin/com/mineinabyss/geary/minecraft/events/Events.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/spigot/core/src/main/kotlin/com/mineinabyss/geary/minecraft/events/Events.kt b/spigot/core/src/main/kotlin/com/mineinabyss/geary/minecraft/events/Events.kt
+--- a/spigot/core/src/main/kotlin/com/mineinabyss/geary/minecraft/events/Events.kt	(revision 0c861599d5f656b5753518f1b3cf82ff8a74a90f)
++++ b/spigot/core/src/main/kotlin/com/mineinabyss/geary/minecraft/events/Events.kt	(revision b23276c32a5041fbcbf8f601b6b1801f6c69282e)
+@@ -4,6 +4,7 @@
+ import com.mineinabyss.geary.ecs.api.actions.GearyAction
+ import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
+ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
++import com.mineinabyss.geary.ecs.components.EventsDisabledComponent
+ import com.mineinabyss.geary.ecs.serialization.FlatSerializer
+ import com.mineinabyss.geary.ecs.serialization.FlatWrap
+ import kotlinx.serialization.Serializable
+@@ -25,6 +26,8 @@
+ )
+ 
+ public fun Event.event(entity: GearyEntity?, name: String) {
++    if (entity?.has<EventsDisabledComponent>() == true) return
++
+     entity?.get<Events>()?.wrapped?.get(name)?.forEach {
+         it.runOn(entity)
+         if (it is CancelEventAction && this is Cancellable)

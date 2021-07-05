@@ -3,7 +3,6 @@ package com.mineinabyss.geary.ecs.systems
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.PassiveActionsComponent
 import com.mineinabyss.geary.ecs.components.PassiveActionsDisabledComponent
-import com.mineinabyss.geary.ecs.engine.QueryResult
 import com.mineinabyss.geary.ecs.engine.iteration.QueryResult
 
 /**
@@ -11,8 +10,11 @@ import com.mineinabyss.geary.ecs.engine.iteration.QueryResult
  */
 public object PassiveActionsSystem : TickingSystem(interval = 20) {
     private val QueryResult.actions by get<PassiveActionsComponent>()
-    private val passivesDisabled = lacks<PassiveActionsDisabledComponent>()
-    private val passivesDisabledWithData = lacks<PassiveActionsDisabledComponent>(set = true)
+    init {
+       not {
+           has<PassiveActionsDisabledComponent>()
+       }
+    }
 
     override fun QueryResult.tick() {
         actions.wrapped.forEach {
