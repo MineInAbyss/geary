@@ -11,6 +11,7 @@ import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
+import com.mineinabyss.geary.ecs.engine.withRole
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
@@ -65,7 +66,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
         holdsData: Boolean
     ) {
         val parentId = componentId(parentKClass)
-        val componentId = componentId(componentKClass).let { if (holdsData) it or HOLDS_DATA else it }
+        val componentId = componentId(componentKClass).let { if (holdsData) it.withRole(HOLDS_DATA) else it }
         Engine.setRelationFor(id, RelationParent(parentId), componentId, parentData)
     }
 

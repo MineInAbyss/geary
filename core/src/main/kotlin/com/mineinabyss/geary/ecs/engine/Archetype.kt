@@ -63,7 +63,7 @@ public data class Archetype(
 
     public operator fun contains(component: GearyComponentId): Boolean =
         // Check if contains component or the version with the HOLDS_DATA bit flipped
-        component in type || component xor HOLDS_DATA in type
+        component in type || component.withInvertedRole(HOLDS_DATA) in type
 
     internal val add = mutableMapOf<GearyComponentId, Archetype>()
     internal val remove = mutableMapOf<GearyComponentId, Archetype>()
@@ -72,7 +72,7 @@ public data class Archetype(
         return add[id] ?: type.let {
             // Ensure that when adding an ID that holds data, we remove the non-data-holding ID
             if (id.holdsData() && !id.isRelation())
-                it.minus(id and HOLDS_DATA.inv())
+                it.minus(id.withoutRole(HOLDS_DATA))
             else it
         }.plus(id).getArchetype()
     }
@@ -107,7 +107,7 @@ public data class Archetype(
         // if already present in this archetype, stop here since we dont need to update any data
         if (contains(component)) return null
 
-        val moveTo = this + (component and HOLDS_DATA.inv())
+        val moveTo = this + (component.withoutRole(HOLDS_DATA))
 
         val componentData = getComponents(record.row)
         return moveTo.addEntityWithData(entity, componentData).also { removeEntity(record.row) }
@@ -123,10 +123,10 @@ public data class Archetype(
         val isRelation = component.isRelation()
 
         // Relations should not add the HOLDS_DATA bit since the type roles are of the relation's child
-        val dataComponent = if (isRelation) component else component or HOLDS_DATA
+        val dataComponent = if (isRelation) component else component.withRole(HOLDS_DATA)
 
         //if component was added but not set, remove the old component before adding this one
-        val addId = dataComponent and HOLDS_DATA.inv()
+        val addId = dataComponent.withoutRole(HOLDS_DATA)
         if (addId in type) {
             val removedRecord = removeComponent(entity, record, addId)!!
             return removedRecord.archetype.setComponent(entity, removedRecord, dataComponent, data)
