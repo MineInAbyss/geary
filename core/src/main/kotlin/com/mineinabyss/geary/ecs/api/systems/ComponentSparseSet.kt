@@ -3,10 +3,7 @@ package com.mineinabyss.geary.ecs.api.systems
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.relations.toRelation
-import com.mineinabyss.geary.ecs.engine.Archetype
-import com.mineinabyss.geary.ecs.engine.RELATION
-import com.mineinabyss.geary.ecs.engine.get
-import com.mineinabyss.geary.ecs.engine.holdsData
+import com.mineinabyss.geary.ecs.engine.*
 import com.mineinabyss.geary.ecs.query.*
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import net.onedaybeard.bitvector.BitVector
@@ -41,7 +38,7 @@ internal class ComponentSparseSet {
             is OrSelector -> family.or.reduceToBits(BitVector::or)
             is ComponentLeaf -> componentMap[family.component]?.copy() ?: bitsOf()
             is RelationLeaf -> {
-                val relationId = family.relationParent.id or RELATION
+                val relationId = family.relationParent.id.withRole(RELATION)
                 componentMap[relationId]?.copy()?.apply {
                     if (family.componentMustHoldData) {
                         keepArchetypesMatching {

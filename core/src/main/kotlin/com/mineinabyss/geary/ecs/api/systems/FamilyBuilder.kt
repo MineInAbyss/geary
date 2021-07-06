@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.holdsData
+import com.mineinabyss.geary.ecs.engine.withInvertedRole
 import com.mineinabyss.geary.ecs.query.*
 
 public abstract class FamilyBuilder {
@@ -73,7 +74,7 @@ public abstract class MutableSelector : FamilyBuilder() {
     public inline fun <reified T : GearyComponent> has() {
         or {
             has(componentId<T>())
-            has(componentId<T>() xor HOLDS_DATA)
+            has(componentId<T>().withInvertedRole(HOLDS_DATA))
         }
     }
 

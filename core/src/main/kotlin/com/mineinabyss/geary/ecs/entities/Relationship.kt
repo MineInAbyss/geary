@@ -13,7 +13,7 @@ import com.mineinabyss.geary.ecs.prefab.PrefabKey
 
 /** Adds a [parent] entity to this entity.  */
 public fun GearyEntity.addParent(parent: GearyEntity) {
-    add(parent.id or CHILDOF)
+    add(parent.id.withRole(CHILDOF))
 }
 
 /** Adds a list of [parents] entities to this entity. */
@@ -23,7 +23,7 @@ public fun GearyEntity.addParents(parents: Array<GearyEntity>) {
 
 /** Removes a [parent], also unlinking this child from that parent. */
 public fun GearyEntity.removeParent(parent: GearyEntity) {
-    remove(parent.id or CHILDOF)
+    remove(parent.id.withRole(CHILDOF))
 }
 
 /** Removes all of this entity's parents, also unlinking this child from them. */
@@ -64,7 +64,7 @@ public val GearyEntity.parents: Set<GearyEntity>
 
 public val GearyEntity.children: List<GearyEntity>
     get() = QueryManager.getEntitiesMatching(family {
-        has(CHILDOF or id)
+        has(id.withRole(CHILDOF))
     })
 
 public val GearyEntity.prefabs: List<PrefabKey>
@@ -73,7 +73,7 @@ public val GearyEntity.prefabs: List<PrefabKey>
 
 /** Adds a [prefab] entity to this entity.  */
 public fun GearyEntity.addPrefab(prefab: GearyEntity) {
-    add(prefab.id or INSTANCEOF)
+    add(prefab.id.withRole(INSTANCEOF))
     setAll(prefab.getComponents())
     prefab.with<CopyToInstances> {
         it.decodeComponentsTo(this)
@@ -82,5 +82,5 @@ public fun GearyEntity.addPrefab(prefab: GearyEntity) {
 
 /** Adds a [prefab] entity to this entity.  */
 public fun GearyEntity.removePrefab(prefab: GearyEntity) {
-    remove(prefab.id or INSTANCEOF)
+    remove(prefab.id.withRole(INSTANCEOF))
 }

@@ -110,8 +110,8 @@ public open class GearyEngine : TickingEngine() {
         getOrAddRecord(entity).apply {
             // Only add HOLDS_DATA if this isn't a relation. All relations implicitly hold data currently and that bit
             // corresponds to the component part of the relation.
-            val markData = if (component and RELATION == 0uL) HOLDS_DATA else 0uL
-            val record = archetype.setComponent(entity, this, markData or component, data)
+            val role = if (!component.hasRole(RELATION)) HOLDS_DATA else NO_ROLE
+            val record = archetype.setComponent(entity, this, component.withRole(role), data)
             typeMap[entity] = record ?: return
         }
     }
@@ -127,14 +127,14 @@ public open class GearyEngine : TickingEngine() {
 
     override fun removeComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean {
         return getRecord(entity)?.apply {
-            val record = archetype.removeComponent(entity, this, component or HOLDS_DATA)
+            val record = archetype.removeComponent(entity, this, component.withRole(HOLDS_DATA))
                 ?: archetype.removeComponent(entity, this, component)
             typeMap[entity] = record ?: return false
         } != null
     }
 
     override fun getComponentFor(entity: GearyEntityId, component: GearyComponentId): GearyComponent? =
-        getRecord(entity)?.run { archetype[row, component or HOLDS_DATA] }
+        getRecord(entity)?.run { archetype[row, component.withRole(HOLDS_DATA)] }
 
     override fun hasComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean =
         getRecord(entity)?.archetype?.contains(component) ?: false
