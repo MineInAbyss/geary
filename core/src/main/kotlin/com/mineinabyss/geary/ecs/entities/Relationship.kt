@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.entities
 
 //TODO add documentation and maybe split into two files
 
+import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.geary
@@ -67,9 +68,11 @@ public val GearyEntity.children: List<GearyEntity>
         has(CHILDOF or id)
     })
 
-public val GearyEntity.prefabs: List<PrefabKey>
-    get() = type.filter { it.isInstance() }.mapNotNull { geary(it).get<PrefabKey>() }
+public val GearyEntity.prefabKeys: List<PrefabKey>
+    get() = prefabs.mapNotNull { geary(it).get<PrefabKey>() }
 
+public val GearyEntity.prefabs: List<GearyEntityId>
+    get() = type.filter { it.isInstance() }
 
 /** Adds a [prefab] entity to this entity.  */
 public fun GearyEntity.addPrefab(prefab: GearyEntity) {

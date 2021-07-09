@@ -98,6 +98,9 @@ public fun PersistentDataContainer.encodePrefabs(keys: Collection<PrefabKey>) {
     )
 }
 
+public fun PersistentDataContainer.decodePrefabs(): Set<PrefabKey> =
+    decode("geary:prefabs".toMCKey(), SetSerializer(PrefabKey.serializer())) ?: emptySet()
+
 /**
  * Decodes a set of components from this [PersistentDataContainer].
  *
@@ -112,6 +115,5 @@ public fun PersistentDataContainer.decodeComponents(): DecodedEntityData =
                 decode(it)
             }
             .toSet(),
-        type = (decode("geary:prefabs".toMCKey(), SetSerializer(PrefabKey.serializer())) ?: emptyList())
-            .mapNotNullTo(sortedSetOf()) { PrefabManager[it]?.id }
+        type = decodePrefabs().mapNotNullTo(sortedSetOf()) { it.toEntity()?.id }
     )

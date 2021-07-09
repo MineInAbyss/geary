@@ -1,7 +1,7 @@
 dependencies {
     //provided by Minecraft
-    compileOnly("fastutil:fastutil:5.0.9")
-    testImplementation("fastutil:fastutil:5.0.9")
+    compileOnly("it.unimi.dsi:fastutil:8.5.4")
+    testImplementation("it.unimi.dsi:fastutil:8.5.4")
 
 
     //ecs-related libs

@@ -26,7 +26,8 @@ public object Formats {
 
     //TODO allow this to work for all registered classes, not just components
     public fun getClassFor(serialName: String): KClass<out GearyComponent> =
-        componentSerialNames[serialName] ?: error("$serialName is not a valid component name in the registered components")
+        componentSerialNames[serialName]
+            ?: error("$serialName is not a valid component name in the registered components")
 
     public fun isRegistered(serialName: String): Boolean =
         serialName in componentSerialNames
@@ -56,7 +57,12 @@ public object Formats {
     }
 
     public val yamlFormat: Yaml by lazy {
-        Yaml(serializersModule = module, configuration = YamlConfiguration(encodeDefaults = false))
+        Yaml(
+            serializersModule = module,
+            configuration = YamlConfiguration(
+                encodeDefaults = false
+            )
+        )
     }
 
     //TODO make internal once we switch off of a singleton object

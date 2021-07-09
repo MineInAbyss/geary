@@ -19,7 +19,7 @@ public object BukkitAssociations : Listener {
         return geary(entityMap.getOrDefault(uuid, null) ?: return null)
     }
 
-    public operator fun contains(uuid: UUID): Boolean = entityMap.contains(uuid)
+    public operator fun contains(uuid: UUID): Boolean = entityMap.containsKey(uuid)
 
     public fun register(uuid: UUID, entity: GearyEntity) {
         entityMap[uuid] = entity.id.toLong()

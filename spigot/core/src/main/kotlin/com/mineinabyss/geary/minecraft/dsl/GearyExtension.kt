@@ -18,12 +18,14 @@ import com.mineinabyss.geary.minecraft.components.of
 import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.messaging.logVal
 import com.mineinabyss.idofront.messaging.logWarn
+import com.mineinabyss.idofront.plugin.registerEvents
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.*
 import kotlinx.serialization.serializerOrNull
 import org.bukkit.entity.Entity
+import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
@@ -230,6 +232,7 @@ public class GearyExtension(
 
     /** Registers a list of [systems]. */
     public fun systems(vararg systems: TickingSystem) {
+        plugin.registerEvents(*systems.filterIsInstance<Listener>().toTypedArray())
         systems.forEach { system(it) }
     }
 

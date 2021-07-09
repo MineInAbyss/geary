@@ -36,7 +36,11 @@ public fun GearyEntity.encodeComponentsTo(item: ItemStack) {
 
 /** Decodes a [PersistentDataContainer]'s components, adding them to this entity and its list of persisting components */
 public fun GearyEntity.decodeComponentsFrom(pdc: PersistentDataContainer) {
-    val (components, type) = pdc.decodeComponents()
+    decodeComponentsFrom(pdc.decodeComponents())
+}
+
+public fun GearyEntity.decodeComponentsFrom(decodedEntityData: DecodedEntityData) {
+    val (components, type) = decodedEntityData
 
     //components written to this entity's PDC will override the ones defined in type
     setAllPersisting(components)
