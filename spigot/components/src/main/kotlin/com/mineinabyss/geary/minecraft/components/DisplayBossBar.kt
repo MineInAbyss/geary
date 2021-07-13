@@ -8,6 +8,7 @@ import org.bukkit.Bukkit
 import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BossBar
+import org.bukkit.entity.Player
 
 /**
  * > geary:bossbar
@@ -20,7 +21,8 @@ import org.bukkit.boss.BossBar
 public class DisplayBossBar(
     public val color: BarColor,
     public val style: BarStyle,
-    public val range: Double
+    public val range: Double,
+    public var playersInRange: Set<Player>
 ) {
     @Transient public val bossBar: BossBar = Bukkit.createBossBar("Boss Bar", color, style)
 }

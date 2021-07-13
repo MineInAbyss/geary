@@ -20,15 +20,16 @@ public object BossBarDisplaySystem : TickingSystem(interval = 10) {
     override fun QueryResult.tick() {
         forEach { result: QueryResult ->
             val location = bukkitentity.getLocation()
+            val playersInRange = location.getNearbyPlayers(bossbar.range)
 
-            for(player in location.getNearbyPlayers(bossbar.range)) {
-                val playerLocation = player.getLocation()
-                if(playerLocation.world.equals(location) && playerLocation.distance(location) <= bossbar.range) {
-                    bossbar.bossBar.addPlayer(player)
-                }
-                else {
-                    bossbar.bossBar.removePlayer(player)
-                }
+            for(player in bossbar.playersInRange subtract playersInRange) {
+                bossbar.bossBar.removePlayer(player)
+            }
+
+            bossbar.playersInRange = playersInRange
+
+            for(player in playersInRange) {
+                bossbar.bossBar.addPlayer(player)
             }
         }
     }
