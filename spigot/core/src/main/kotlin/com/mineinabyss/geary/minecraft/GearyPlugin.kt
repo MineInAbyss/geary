@@ -19,9 +19,11 @@ import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
 import com.mineinabyss.idofront.serialization.UUIDSerializer
+import io.github.slimjar.app.builder.ApplicationBuilder
 import kotlinx.serialization.InternalSerializationApi
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
+import java.io.File
 import java.util.*
 import kotlin.io.path.div
 import kotlin.reflect.KClass
@@ -32,7 +34,11 @@ public class GearyPlugin : JavaPlugin() {
     @ExperimentalCommandDSL
     @ExperimentalTime
     override fun onEnable() {
-        logger.info("On enable has been called")
+        logger.info("Downloading dependencies.")
+        ApplicationBuilder.appending("Geary")
+            .downloadDirectoryPath(File(dataFolder.parentFile, "libraries").toPath())
+            .build()
+
         saveDefaultConfig()
         reloadConfig()
         GearyServices.setServiceProvider(object : GearyServiceProvider {

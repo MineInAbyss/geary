@@ -1,36 +1,19 @@
-import com.mineinabyss.geary.Deps
 import com.mineinabyss.sharedSetup
 
 plugins {
+    `java-library`
     id("com.github.johnrengelman.shadow")
+    id("geary.publication-conventions")
 }
 
 sharedSetup()
 
-subprojects {
-    repositories {
-        mavenCentral()
-        maven("https://papermc.io/repo/repository/maven-public/")
-        maven("https://repo.codemc.io/repository/nms/")
-    }
-
-    dependencies {
-        //TODO decide whether we stick with spigot or not since paper adds some nice things
-        compileOnly("com.destroystokyo.paper:paper-api:${Deps.serverVersion}")
-        compileOnly("com.destroystokyo.paper:paper:${Deps.serverVersion}") // NMS
-    }
-}
-
-allprojects {
-    publishing {
-        mineInAbyss(project) {
-            from(components["java"])
-        }
-    }
+repositories {
+    mavenCentral()
+//    mineInAbyss()
 }
 
 dependencies {
-    compileOnly(kotlin("stdlib-jdk8"))
     api(project(":geary-spigot:geary-spigot-core"))
     api(project(":geary-spigot:geary-spigot-components"))
 }
@@ -39,11 +22,8 @@ tasks {
     shadowJar {
         archiveBaseName.set("Geary")
 
-        dependencies {
-            exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib:.*"))
-        }
-
         relocate("com.mineinabyss.idofront", "${project.group}.${project.name}.idofront".toLowerCase())
+        relocate("io.github.slimjar.app", "io.github.slimjar.app.${project.group}.${project.name}".toLowerCase())
     }
 
     build {

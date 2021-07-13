@@ -9,6 +9,7 @@ class TestGearyServiceProvider(
     val map: Map<KClass<out Any>, Any>
 ) : GearyServiceProvider {
     override fun <T : Any> getService(service: KClass<T>): T? {
+        @Suppress("UNCHECKED_CAST")
         return map[service] as? T
     }
 }

@@ -1,9 +1,8 @@
-dependencies {
-    compileOnly(project(":geary-core"))
+plugins {
+    id("geary.kotlin-conventions")
+    id("geary.publication-conventions")
 }
 
-publishing {
-    mineInAbyss(project) {
-        from(components["java"])
-    }
+dependencies {
+    compileOnly(project(":geary-core"))
 }

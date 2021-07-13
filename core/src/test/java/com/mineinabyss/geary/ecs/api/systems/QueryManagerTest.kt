@@ -161,7 +161,7 @@ internal class QueryManagerTest {
         }
         QueryManager.trackQuery(system)
 
-        val entity = Engine.entity {
+        Engine.entity {
             setRelation<RelationTestComponent1, String>(RelationTestComponent1(), data = false)
             setRelation<RelationTestComponent1, Int>(RelationTestComponent1(), data = false)
             setRelation<RelationTestComponent2, String>(RelationTestComponent2(), data = false)

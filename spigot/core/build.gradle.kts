@@ -1,5 +1,13 @@
 import com.mineinabyss.sharedSetup
 
+val kotlinVersion: String by project
+val idofrontVersion: String by project
+
+plugins {
+    id("geary.kotlin-conventions")
+    id("geary.spigot-conventions")
+}
+
 sharedSetup {
     processResources()
 }
@@ -11,14 +19,20 @@ repositories {
 }
 
 dependencies {
-    implementation("org.reflections:reflections:0.9.12")
+    slim("org.reflections:reflections:0.9.12")
     //TODO I"d like to use kotlinspice here but not sure how to best add dependencies that need to be shaded.
     // For now leave as compile only since this dep is always present and having 2 copies was causing issues.
-    compileOnly(kotlin("reflect", version = com.mineinabyss.geary.Deps.kotlinVersion))
+    compileOnly(kotlin("reflect", version = kotlinVersion))
 
-    implementation("com.mineinabyss:idofront-nms:0.6.13")
-    compileOnly("com.github.okkero:skedule")
+    implementation("com.mineinabyss:idofront-nms:$idofrontVersion")
+    slim("com.github.okkero:skedule")
 
     api(project(":geary-core"))
     api(project(":geary-components"))
+}
+
+tasks {
+    slimJar {
+
+    }
 }
