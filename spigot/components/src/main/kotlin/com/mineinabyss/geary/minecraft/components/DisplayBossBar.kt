@@ -3,8 +3,11 @@ package com.mineinabyss.geary.minecraft.components
 import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import org.bukkit.Bukkit
 import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BarColor
+import org.bukkit.boss.BossBar
 
 /**
  * > geary:bossbar
@@ -19,4 +22,5 @@ public class DisplayBossBar(
     public val style: BarStyle,
     public val range: Double
 ) {
+    @Transient public val bossBar: BossBar = Bukkit.createBossBar("Boss Bar", color, style)
 }
