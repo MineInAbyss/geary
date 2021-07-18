@@ -1,0 +1,15 @@
+name: Geary
+version: ${plugin_version}
+author: Offz
+load: STARTUP
+main: com.mineinabyss.geary.minecraft.GearyPlugin
+api-version: 1.16
+
+prefix: Geary
+description: An Entity Component System written for Spigot
+
+commands:
+  geary:
+    aliases: [geary]
+    description: The main Geary command
+    usage: /geary [sub command]

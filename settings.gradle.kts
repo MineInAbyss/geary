@@ -1,17 +1,22 @@
 rootProject.name = "geary"
 
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenLocal()
+    }
+
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id.startsWith("com.mineinabyss.conventions"))
+                useVersion("0.0.6")
+        }
+    }
+}
 
 include(
     "geary-core",
-    "geary-components",
-    "geary-spigot",
-    "geary-spigot:geary-spigot-core",
-    "geary-spigot:geary-spigot-components",
+    "geary-platform-papermc",
 )
 
-project(":geary-core").projectDir = file("./core")
-project(":geary-components").projectDir = file("./components")
-
-project(":geary-spigot").projectDir = file("./spigot")
-project(":geary-spigot:geary-spigot-core").projectDir = file("./spigot/core")
-project(":geary-spigot:geary-spigot-components").projectDir = file("./spigot/components")
+project(":geary-platform-papermc").projectDir = file("./platforms/geary-platform-papermc")

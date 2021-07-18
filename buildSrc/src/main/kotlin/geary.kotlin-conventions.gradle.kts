@@ -2,7 +2,6 @@ import com.mineinabyss.mineInAbyss
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val kotlinVersion: String by project
-val idofrontVersion: String by project
 
 plugins {
     java
@@ -27,7 +26,6 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin")
     }
 
-    implementation("com.mineinabyss:idofront:$idofrontVersion")
 }
 
 kotlin {
@@ -45,9 +43,5 @@ tasks {
                 "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
             )
         }
-    }
-
-    test {
-        useJUnitPlatform()
     }
 }
