@@ -5,7 +5,7 @@ import java.util.Properties
 Properties().apply { load(rootDir.toPath().resolveSibling(GRADLE_PROPERTIES).toFile().inputStream()) }
     .forEach { (key, value) -> project.ext["$key"] = value }
 
-val kotlinVersion: String by project
+val miaConventionsVersion: String by project
 
 plugins {
     `kotlin-dsl`
@@ -18,8 +18,10 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("gradle-plugin", kotlinVersion))
-    implementation(kotlin("serialization", kotlinVersion))
-    implementation("io.github.slimjar:gradle-plugin:1.2.1")
-    implementation("gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0")
+    //Get Kotlin plugin version via conventions plugin version
+    implementation("com.mineinabyss.conventions.kotlin:com.mineinabyss.conventions.kotlin.gradle.plugin:$miaConventionsVersion")
+    implementation(kotlin("gradle-plugin"))
+    implementation(kotlin("serialization"))
+//    implementation("io.github.slimjar:gradle-plugin")
+//    implementation("gradle.plugin.com.github.jengelman.gradle.plugins:shadow")
 }

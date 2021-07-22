@@ -1,13 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val kotlinVersion: String by project
+val useNMS: String? by project
+val idofrontVersion: String by project
 
 plugins {
-    java
-    kotlin("jvm")
-    kotlin("plugin.serialization")
-    id("com.github.johnrengelman.shadow")
-    id("io.github.slimjar")
+    id("com.mineinabyss.conventions.kotlin")
 }
 
 repositories {
@@ -15,14 +12,17 @@ repositories {
 }
 
 dependencies {
-    slim(platform("com.mineinabyss:kotlinspice:${kotlinVersion}+"))
-
     slim(kotlin("stdlib-jdk8"))
     slim("org.jetbrains.kotlinx:kotlinx-serialization-json")
     slim("org.jetbrains.kotlinx:kotlinx-serialization-cbor")
     slim("com.charleskorn.kaml:kaml") {
         exclude(group = "org.jetbrains.kotlin")
     }
+
+    if(useNMS.toBoolean())
+        implementation("com.mineinabyss:idofront-nms:$idofrontVersion")
+    else
+        implementation("com.mineinabyss:idofront:$idofrontVersion")
 }
 
 kotlin {

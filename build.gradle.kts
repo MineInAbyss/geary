@@ -1,5 +1,10 @@
 plugins {
     `java-library`
+    id("org.jetbrains.dokka")
+}
+
+repositories {
+    mavenCentral()
 }
 
 tasks {

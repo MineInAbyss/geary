@@ -5,6 +5,7 @@ pluginManagement {
 
     repositories {
         gradlePluginPortal()
+        mavenCentral()
         maven("https://repo.mineinabyss.com/releases")
     }
 

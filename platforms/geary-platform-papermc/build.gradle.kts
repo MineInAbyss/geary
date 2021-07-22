@@ -1,12 +1,8 @@
-val kotlinVersion: String by project
-val idofrontVersion: String by project
-
 plugins {
-    id("com.mineinabyss.conventions.kotlin")
+    id("geary.kotlin-conventions")
     kotlin("plugin.serialization")
     id("com.mineinabyss.conventions.papermc")
     id("com.mineinabyss.conventions.publication")
-    id("geary.kotlin-conventions")
     id("io.github.slimjar")
 }
 
@@ -15,7 +11,6 @@ repositories {
 }
 
 dependencies {
-    implementation("com.mineinabyss:idofront:$idofrontVersion")
     implementation("org.reflections:reflections:0.9.12")
 
     slim("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
