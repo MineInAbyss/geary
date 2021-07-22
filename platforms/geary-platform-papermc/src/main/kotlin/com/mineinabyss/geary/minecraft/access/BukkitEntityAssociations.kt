@@ -6,15 +6,11 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.entities.addPrefab
-import com.mineinabyss.geary.ecs.prefab.PrefabKey
-import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
 import com.mineinabyss.geary.minecraft.store.encodeComponentsTo
-import com.mineinabyss.idofront.nms.aliases.BukkitEntity
-import com.mineinabyss.idofront.nms.entity.typeName
+import com.mineinabyss.idofront.typealiases.BukkitEntity
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -47,7 +43,7 @@ public object BukkitEntityAssociations : Listener {
 
         gearyEntity.apply {
             // allow us to both get the BukkitEntity and specific class (ex Player)
-            set<BukkitEntity>(entity)
+            set(entity)
             entity.type.entityClass?.kotlin?.let { bukkitClass ->
                 set(entity, bukkitClass)
             }
@@ -60,9 +56,9 @@ public object BukkitEntityAssociations : Listener {
         }
 
         //TODO extension function to get prefab key from entity, including correct namespace
-        PrefabManager[PrefabKey("mobzy", entity.typeName)]?.let {
-            gearyEntity.addPrefab(it)
-        }
+//        PrefabManager[PrefabKey("mobzy", entity.typeName)]?.let {
+//            gearyEntity.addPrefab(it)
+//        }
 
         val pdc = entity.persistentDataContainer
         if (pdc.hasComponentsEncoded)
@@ -108,7 +104,7 @@ public object BukkitEntityAssociations : Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
         // Only remove player from ECS on disconnect, not death
-        if(entity is Player) return
+        if (entity is Player) return
         removeEntityAndEncodeComponents(entity)
     }
 

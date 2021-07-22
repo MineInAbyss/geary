@@ -8,7 +8,6 @@ import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
 import com.mineinabyss.geary.minecraft.geary
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.nms.aliases.BukkitEntity
 import com.okkero.skedule.schedule
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey

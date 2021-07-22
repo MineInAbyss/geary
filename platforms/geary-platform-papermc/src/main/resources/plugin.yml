@@ -3,7 +3,7 @@ version: ${plugin_version}
 author: Offz
 load: STARTUP
 main: com.mineinabyss.geary.minecraft.GearyPlugin
-api-version: 1.16
+api-version: 1.17
 
 prefix: Geary
 description: An Entity Component System written for Spigot

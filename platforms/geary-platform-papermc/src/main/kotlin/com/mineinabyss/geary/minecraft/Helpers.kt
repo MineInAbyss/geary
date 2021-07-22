@@ -1,22 +1,20 @@
 package com.mineinabyss.geary.minecraft
 
+import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.entities.addPrefab
 import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.minecraft.access.geary
-import com.mineinabyss.geary.minecraft.components.BukkitEntityType
 import com.mineinabyss.geary.minecraft.config.GearyConfig
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
+import com.mineinabyss.geary.minecraft.events.GearyAttemptMinecraftSpawnEvent
 import com.mineinabyss.geary.minecraft.events.GearyMinecraftSpawnEvent
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.messaging.broadcast
-import com.mineinabyss.idofront.nms.aliases.NMSEntityType
-import com.mineinabyss.idofront.nms.spawnEntity
-import com.mineinabyss.idofront.spawning.spawn
 import org.bukkit.Location
 import org.bukkit.entity.Entity
-import org.bukkit.event.entity.CreatureSpawnEvent
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.java.JavaPlugin
@@ -45,15 +43,14 @@ public fun Location.spawnGeary(prefab: PrefabKey): Entity? {
 }
 
 public fun Location.spawnGeary(prefab: GearyEntity): Entity? {
-    val entity = prefab.get<NMSEntityType<*>>()?.let { type ->
-        spawnEntity(type, spawnReason = CreatureSpawnEvent.SpawnReason.CUSTOM)
-    } ?: prefab.get<BukkitEntityType>()?.type?.let { type ->
-        spawn(type)
-    } ?: return null
+    val attemptSpawn = GearyAttemptMinecraftSpawnEvent(this, prefab)
+    attemptSpawn.call()
+    val bukkitEntity = attemptSpawn.bukkitEntity ?: return null
 
-    geary(entity) {
+    geary(bukkitEntity) {
         addPrefab(prefab)
         GearyMinecraftSpawnEvent(this).call()
     }
-    return entity
+
+    return bukkitEntity
 }

@@ -22,7 +22,6 @@ public data class Archetype(
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
     private val dataHoldingType = type.filter { it.holdsData() || it.isRelation() }
-    private val events = EventListenerContainer()
 
     /** Map of relation parent id to a list of relations with that parent */
     //TODO List<Relation>

@@ -11,20 +11,17 @@ import com.mineinabyss.geary.minecraft.dsl.GearyLoadManager
 import com.mineinabyss.geary.minecraft.dsl.GearyLoadPhase
 import com.mineinabyss.geary.minecraft.dsl.attachToGeary
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
+import com.mineinabyss.geary.minecraft.listeners.GearyAttemptSpawnListener
 import com.mineinabyss.geary.minecraft.store.FileSystemStore
 import com.mineinabyss.geary.minecraft.store.GearyStore
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
 import com.mineinabyss.idofront.serialization.UUIDSerializer
-import io.github.slimjar.app.builder.ApplicationBuilder
-import io.github.slimjar.injector.loader.InjectableFactory
-import io.github.slimjar.injector.loader.UnsafeInjectable
+import com.mineinabyss.idofront.slimjar.LibraryLoaderInjector
 import kotlinx.serialization.InternalSerializationApi
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
-import java.io.File
-import java.net.URLClassLoader
 import java.util.*
 import kotlin.io.path.div
 import kotlin.reflect.KClass
@@ -35,25 +32,7 @@ public class GearyPlugin : JavaPlugin() {
     @ExperimentalCommandDSL
     @ExperimentalTime
     override fun onEnable() {
-        logger.info("Downloading dependencies.")
-        val injector = UnsafeInjectable.create(classLoader as URLClassLoader)
-        ApplicationBuilder.injecting("Geary", injector)
-            .downloadDirectoryPath(File(dataFolder.parentFile, "libraries").toPath())
-            .build()
-
-        File(dataFolder, "addons").walk()
-            .filter { it.extension == "jar" }
-            .forEach { file ->
-                runCatching {
-                    val url = file.toURI().toURL()
-                    injector.inject(url)
-                }
-                    .onSuccess { logger.info("Successfully loaded addon ${file.name}") }
-                    .onFailure {
-                        logger.info("Failed to load addon ${file.name}")
-                        it.printStackTrace()
-                    }
-            }
+        LibraryLoaderInjector.inject(this)
 
         saveDefaultConfig()
         reloadConfig()
@@ -71,6 +50,7 @@ public class GearyPlugin : JavaPlugin() {
         registerEvents(
             BukkitEntityAssociations,
             BukkitAssociations,
+            GearyAttemptSpawnListener,
         )
 
         // This will also register a serializer for GearyEntityType
