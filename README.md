@@ -1,5 +1,5 @@
 [![Java CI with Gradle](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml/badge.svg)](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml)
-[![Package](https://badgen.net/maven/v/metadata-url/repo.mineinabyss.com/releases/com/mineinabyss/geary/maven-metadata.xml)](https://repo.mineinabyss.com/releases/com/mineinabyss/geary)
+[![Package](https://badgen.net/maven/v/metadata-url/repo.mineinabyss.com/releases/com/mineinabyss/geary-core/maven-metadata.xml)](https://repo.mineinabyss.com/releases/com/mineinabyss/geary-core)
 [![Wiki](https://badgen.net/badge/color/Project%20Wiki/purple?icon=wiki&label)](https://wiki.mineinabyss.com/geary)
 [![Contribute](https://shields.io/badge/Contribute-e57be5?logo=github%20sponsors&style=flat&logoColor=white)](https://wiki.mineinabyss.com/contribute)
 
