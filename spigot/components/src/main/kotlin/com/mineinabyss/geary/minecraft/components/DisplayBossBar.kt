@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.minecraft.components
 
 import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
+import com.mineinabyss.idofront.messaging.color
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -20,10 +21,11 @@ import java.util.*
 @SerialName("geary:bossbar")
 @AutoscanComponent
 public class DisplayBossBar(
+    public val title: String,
     public val color: BarColor,
     public val style: BarStyle,
     public val range: Double,
 ) {
-    @Transient public val bossBar: BossBar = Bukkit.createBossBar("Boss Bar", color, style)
+    @Transient public val bossBar: BossBar = Bukkit.createBossBar(title.color(), color, style)
     @Transient public val playersInRange: MutableSet<UUID> = mutableSetOf<UUID>()
 }
