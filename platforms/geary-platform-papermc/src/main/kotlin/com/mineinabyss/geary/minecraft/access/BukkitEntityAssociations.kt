@@ -7,9 +7,11 @@ import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
+import com.mineinabyss.geary.minecraft.events.GearyMinecraftPreLoadEvent
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
 import com.mineinabyss.geary.minecraft.store.encodeComponentsTo
+import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.typealiases.BukkitEntity
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
@@ -55,10 +57,7 @@ public object BukkitEntityAssociations : Listener {
             )
         }
 
-        //TODO extension function to get prefab key from entity, including correct namespace
-//        PrefabManager[PrefabKey("mobzy", entity.typeName)]?.let {
-//            gearyEntity.addPrefab(it)
-//        }
+        GearyMinecraftPreLoadEvent(gearyEntity, entity).call()
 
         val pdc = entity.persistentDataContainer
         if (pdc.hasComponentsEncoded)
