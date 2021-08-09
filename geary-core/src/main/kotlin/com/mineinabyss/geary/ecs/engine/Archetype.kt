@@ -12,7 +12,7 @@ import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
 import com.mineinabyss.geary.ecs.query.Query
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
-import java.lang.ref.WeakReference
+import java.util.*
 
 public typealias Event = GearyEntity.() -> Unit
 
@@ -33,7 +33,7 @@ public data class Archetype(
         val map = Long2ObjectOpenHashMap<List<Relation>>()
         relations.forEach { (key, value) ->
             val dataHolding = value.filter { it.component.holdsData() }
-            if(dataHolding.isNotEmpty()) map[key] = dataHolding
+            if (dataHolding.isNotEmpty()) map[key] = dataHolding
         }
         map
     }
@@ -185,27 +185,25 @@ public data class Archetype(
         componentData.forEach { it.removeLastOrNull() }
 
         if (lastIndex != row) {
-            runningIterators.retainAll {
-                val iterator = it.get()
-                if (iterator != null) {
-                    iterator.addMovedRow(lastIndex, row)
-                    true
-                } else false
+            runningIterators.keys.forEach {
+                it.addMovedRow(lastIndex, row)
             }
             Engine.setRecord(replacement, Record(this, row))
         }
     }
 
-    private val runningIterators = mutableSetOf<WeakReference<ArchetypeIterator>>()
+    // Basically just want a weak set where stuff gets auto removed when it is no longer running
+    // We put our iterator and null and this WeakHashMap handles the rest for us.
+    private val runningIterators = WeakHashMap<ArchetypeIterator, Any?>()
     private val queryIterators = mutableMapOf<Query, ArchetypeIterator>()
 
     internal fun finalizeIterator(iterator: ArchetypeIterator) {
-        runningIterators -= WeakReference(iterator)
+        runningIterators.remove(iterator)
     }
 
     internal fun iteratorFor(query: Query): ArchetypeIterator {
         val iterator = queryIterators.getOrPut(query) { ArchetypeIterator(this, query) }.copy()
-        runningIterators += WeakReference(iterator)
+        runningIterators[iterator] = null
         return iterator
     }
 }
