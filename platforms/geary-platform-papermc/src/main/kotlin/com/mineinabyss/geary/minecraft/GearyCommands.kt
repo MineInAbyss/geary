@@ -2,11 +2,20 @@ package com.mineinabyss.geary.minecraft
 
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
+import com.rylinaux.plugman.util.PluginUtil
 
 @ExperimentalCommandDSL
 internal class GearyCommands : IdofrontCommandExecutor() {
     override val commands = commands(geary) {
         "geary" {
+            "fullreload" {
+                action {
+                    val depends = StartupEventListener.getGearyDependants()
+                    depends.forEach { PluginUtil.unload(it) }
+                    PluginUtil.reload(geary)
+                    depends.forEach { PluginUtil.load(it.name) }
+                }
+            }
             //TODO reimplement
             /*"components"{
                 val type by stringArg()

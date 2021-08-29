@@ -14,6 +14,7 @@ import com.mineinabyss.geary.minecraft.events.GearyMinecraftSpawnEvent
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.messaging.broadcast
 import org.bukkit.Location
+import org.bukkit.NamespacedKey
 import org.bukkit.entity.Entity
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
@@ -54,3 +55,5 @@ public fun Location.spawnGeary(prefab: GearyEntity): Entity? {
 
     return bukkitEntity
 }
+
+public fun NamespacedKey.toPrefabKey(): PrefabKey = PrefabKey(namespace, key)

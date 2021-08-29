@@ -8,6 +8,7 @@ plugins {
 
 repositories {
     maven("https://jitpack.io")
+    maven("https://raw.githubusercontent.com/TheBlackEntity/PlugMan/repository/")
 }
 
 dependencies {
@@ -16,6 +17,7 @@ dependencies {
     slim("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
     slim("com.github.okkero:skedule")
     slim(kotlin("reflect"))
+    compileOnly("com.rylinaux:PlugMan:2.2.5")
 
     api(project(":geary-core"))
 }
