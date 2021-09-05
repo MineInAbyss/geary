@@ -15,6 +15,7 @@ dependencies {
     slim(kotlin("stdlib-jdk8"))
     slim("org.jetbrains.kotlinx:kotlinx-serialization-json")
     slim("org.jetbrains.kotlinx:kotlinx-serialization-cbor")
+    slim("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.2.1")
     slim("com.charleskorn.kaml:kaml") {
         exclude(group = "org.jetbrains.kotlin")
     }

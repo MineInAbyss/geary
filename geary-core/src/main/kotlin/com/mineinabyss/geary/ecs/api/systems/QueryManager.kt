@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.ecs.api.systems
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.query.Family
 import com.mineinabyss.geary.ecs.query.Query
@@ -24,6 +24,6 @@ public object QueryManager {
     }
 
     public fun getEntitiesMatching(family: Family): List<GearyEntity> {
-        return archetypes.match(family).flatMap { arc -> arc.ids.map { geary(it) } }
+        return archetypes.match(family).flatMap { arc -> arc.ids.map { it.toGeary() } }
     }
 }

@@ -2,7 +2,7 @@ package com.mineinabyss.geary.minecraft.store
 
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.entities.addPrefab
 import com.mineinabyss.idofront.items.editItemMeta
@@ -45,7 +45,7 @@ public fun GearyEntity.decodeComponentsFrom(decodedEntityData: DecodedEntityData
     //components written to this entity's PDC will override the ones defined in type
     setAllPersisting(components)
     for (id in type) {
-        addPrefab(geary(id))
+        addPrefab(id.toGeary())
     }
 }
 

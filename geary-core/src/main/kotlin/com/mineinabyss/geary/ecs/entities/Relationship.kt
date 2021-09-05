@@ -5,7 +5,7 @@ package com.mineinabyss.geary.ecs.entities
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.api.systems.family
 import com.mineinabyss.geary.ecs.components.CopyToInstances
@@ -53,13 +53,13 @@ public fun GearyEntity.clearChildren() {
 }
 
 public val GearyEntity.parent: GearyEntity?
-    get() = type.firstOrNull { it.isChild() }?.let { geary(it and ENTITY_MASK) }
+    get() = type.firstOrNull { it.isChild() }?.let { (it and ENTITY_MASK).toGeary() }
 
 public val GearyEntity.parents: Set<GearyEntity>
     get() {
         val parents = mutableSetOf<GearyEntity>()
         for (id in type) if (id.isChild())
-            parents.add(geary(id and ENTITY_MASK))
+            parents.add((id and ENTITY_MASK).toGeary())
         return parents
     }
 
@@ -69,7 +69,7 @@ public val GearyEntity.children: List<GearyEntity>
     })
 
 public val GearyEntity.prefabKeys: List<PrefabKey>
-    get() = prefabs.mapNotNull { geary(it).get<PrefabKey>() }
+    get() = prefabs.mapNotNull { it.toGeary().get<PrefabKey>() }
 
 public val GearyEntity.prefabs: List<GearyEntityId>
     get() = type.filter { it.isInstance() }
@@ -77,9 +77,9 @@ public val GearyEntity.prefabs: List<GearyEntityId>
 /** Adds a [prefab] entity to this entity.  */
 public fun GearyEntity.addPrefab(prefab: GearyEntity) {
     add(prefab.id.withRole(INSTANCEOF))
-    setAll(prefab.getComponents())
+    setAll(prefab.getComponents(), override = false) //TODO plan out more thoroughly and document overriding behaviour
     prefab.with<CopyToInstances> {
-        it.decodeComponentsTo(this)
+        it.decodeComponentsTo(this, override = false)
     }
 }
 

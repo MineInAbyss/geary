@@ -44,8 +44,10 @@ public value class GearyEntity(public val id: GearyEntityId) {
         error("Trying to set a collection with set method instead of setAll")
 
     /** Sets components that hold data for this entity */
-    public fun setAll(components: Collection<GearyComponent>) {
-        components.forEach { set(it, it::class) }
+    public fun setAll(components: Collection<GearyComponent>, override: Boolean = true) {
+        components.forEach {
+            if (override || !has(it::class)) set(it, it::class)
+        }
     }
 
     public inline fun <reified T : GearyComponent> getRelation(component: GearyComponent): T? {
@@ -103,8 +105,10 @@ public value class GearyEntity(public val id: GearyEntityId) {
     public fun setPersisting(components: Collection<GearyComponent>): Collection<GearyComponent> =
         setPersisting(component = components)
 
-    public inline fun setAllPersisting(components: Collection<GearyComponent>) {
-        components.forEach { setPersisting(it, it::class) }
+    public inline fun setAllPersisting(components: Collection<GearyComponent>, override: Boolean = true) {
+        components.forEach {
+            if (override || !has(it::class)) setPersisting(it, it::class)
+        }
     }
 
     /**
@@ -125,11 +129,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
         components.any { remove(it) }
 
     /** Gets a component of type [T] on this entity. */
-    public inline fun <reified T : GearyComponent> get(): T? =
-        get(componentId<T>()) as? T
-
-    /** Gets a component of [kClass]'s type on this entity. */
-    public fun <T : GearyComponent> get(kClass: KClass<out T>): T? =
+    public inline fun <reified T : GearyComponent> get(kClass: KClass<out T> = T::class): T? =
         get(componentId(kClass)) as? T
 
     /** Gets a [component] which holds data from this entity. Use [has] if the component is not to hold data. */
@@ -137,12 +137,14 @@ public value class GearyEntity(public val id: GearyEntityId) {
         Engine.getComponentFor(id, component)
 
     /** Gets a component of type [T] or adds a [default] if no component was present. */
-    public inline fun <reified T : GearyComponent> getOrSet(default: () -> T): T =
-        get<T>() ?: default().also { set(it) }
+    public inline fun <reified T : GearyComponent> getOrSet(kClass: KClass<out T> = T::class, default: () -> T): T =
+        get(kClass) ?: default().also { set(it) }
 
     /** Gets a persisting component of type [T] or adds a [default] if no component was present. */
-    public inline fun <reified T : GearyComponent> getOrSetPersisting(default: () -> T): T =
-        get<T>() ?: default().also { setPersisting<T>(it) }
+    public inline fun <reified T : GearyComponent> getOrSetPersisting(
+        kClass: KClass<out T> = T::class,
+        default: () -> T
+    ): T = get(kClass) ?: default().also { setPersisting(it, kClass) }
 
     /** Gets all the active components on this entity. */
     public inline fun getComponents(): Set<GearyComponent> = Engine.getComponentsFor(id)
@@ -163,17 +165,16 @@ public value class GearyEntity(public val id: GearyEntityId) {
     public inline fun <reified T : GearyComponent> with(let: (T) -> Unit): Unit? = get<T>()?.let(let)
 
     /** Checks whether this entity has a component of type [T], regardless of whether or not it holds data. */
-    public inline fun <reified T : GearyComponent> has(): Boolean = has(componentId<T>())
+    public inline fun <reified T : GearyComponent> has(kClass: KClass<out T> = T::class): Boolean =
+        has(componentId(kClass))
 
     /** Checks whether this entity has a [component], regardless of whether or not it holds data. */
     public inline fun has(component: GearyComponentId): Boolean =
         Engine.hasComponentFor(id, component)
 
-
     /** Checks whether an entity has all of a list of [components].
      * @see has */
-    public inline fun hasAll(components: Collection<ComponentClass>): Boolean =
-        components.all { has(componentId(it)) }
+    public inline fun hasAll(components: Collection<ComponentClass>): Boolean = components.all { has(it) }
 
     public operator fun component1(): GearyEntityId = id
 }

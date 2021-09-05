@@ -2,11 +2,11 @@ package com.mineinabyss.geary.minecraft.engine
 
 import co.aikar.timings.Timings
 import com.mineinabyss.geary.ecs.api.GearyEntityId
-import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.engine.GearyEngine
+import com.mineinabyss.geary.minecraft.GearyPlugin
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
-import com.mineinabyss.geary.minecraft.geary
 import com.mineinabyss.idofront.events.call
 import com.okkero.skedule.schedule
 import org.bukkit.Bukkit
@@ -15,12 +15,12 @@ import java.util.*
 
 public class SpigotEngine : GearyEngine() {
     public companion object {
-        public val componentsKey: NamespacedKey = NamespacedKey(geary, "components")
+        public val componentsKey: NamespacedKey = NamespacedKey(GearyPlugin.instance, "components")
     }
 
     override fun TickingSystem.runSystem() {
         // Adds a line in timings report showing which systems take up more time.
-        val timing = Timings.ofStart(geary, javaClass.name)
+        val timing = Timings.ofStart(GearyPlugin.instance, javaClass.name)
         runCatching {
             doTick()
         }.apply {
@@ -31,7 +31,7 @@ public class SpigotEngine : GearyEngine() {
 
     override fun scheduleSystemTicking() {
         //tick all systems every interval ticks
-        geary.schedule {
+        GearyPlugin.instance.schedule {
             repeating(1)
             while (true) {
                 tick(Bukkit.getServer().currentTick.toLong())
@@ -41,8 +41,8 @@ public class SpigotEngine : GearyEngine() {
     }
 
     override fun removeEntity(entity: GearyEntityId) {
-        if (geary(entity).has<UUID>())
-            GearyEntityRemoveEvent(geary(entity)).call()
+        if (entity.toGeary().has<UUID>())
+            GearyEntityRemoveEvent(entity.toGeary()).call()
         super.removeEntity(entity)
     }
 }

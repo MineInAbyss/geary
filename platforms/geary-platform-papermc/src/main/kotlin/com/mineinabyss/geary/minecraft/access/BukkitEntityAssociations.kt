@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.minecraft.access
 
+import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import com.mineinabyss.geary.ecs.api.GearyComponent
@@ -100,6 +101,14 @@ public object BukkitEntityAssociations : Listener {
     }
 
     /** Remove entities from ECS when they are removed from Bukkit for any reason (Uses PaperMC event) */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public fun EntityAddToWorldEvent.onBukkitEntityAdd() {
+        // Only remove player from ECS on disconnect, not death
+        if (entity is Player) return
+        registerEntity(entity)
+    }
+
+    /** Remove entities from ECS when they are removed from Bukkit for any reason (Uses PaperMC event) */
     @EventHandler(priority = EventPriority.HIGHEST)
     public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
         // Only remove player from ECS on disconnect, not death
@@ -108,7 +117,7 @@ public object BukkitEntityAssociations : Listener {
     }
 
     public fun removeEntityAndEncodeComponents(entity: BukkitEntity) {
-        val gearyEntity = gearyOrNull(entity) ?: return
+        val gearyEntity = entity.toGearyOrNull() ?: return
         //TODO some way of knowing if this entity is permanently removed
         gearyEntity.encodeComponentsTo(entity)
         unregisterEntity(entity)

@@ -6,13 +6,13 @@ import com.rylinaux.plugman.util.PluginUtil
 
 @ExperimentalCommandDSL
 internal class GearyCommands : IdofrontCommandExecutor() {
-    override val commands = commands(geary) {
+    override val commands = commands(GearyPlugin.instance) {
         "geary" {
             "fullreload" {
                 action {
                     val depends = StartupEventListener.getGearyDependants()
                     depends.forEach { PluginUtil.unload(it) }
-                    PluginUtil.reload(geary)
+                    PluginUtil.reload(GearyPlugin.instance)
                     depends.forEach { PluginUtil.load(it.name) }
                 }
             }

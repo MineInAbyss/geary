@@ -14,7 +14,9 @@ import com.mineinabyss.geary.ecs.query.accessors.*
  * @property family The Query itself is a mutable family builder, [family] is the built, immutable version of it.
  * @property matchedArchetypes A set of archetypes which have been matched to this query.
  */
-public abstract class Query : Iterable<QueryResult>, MutableAndSelector() {
+public abstract class Query(
+    init: (Query.() -> Unit)? = null
+) : Iterable<QueryResult>, MutableAndSelector() {
     public val family: AndSelector by lazy { build() }
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
     internal val accessors = mutableListOf<Accessor<*>>()
@@ -22,7 +24,7 @@ public abstract class Query : Iterable<QueryResult>, MutableAndSelector() {
     private var registered = false
 
     public override fun iterator(): QueryIterator {
-        if(!registered) {
+        if (!registered) {
             QueryManager.trackQuery(this)
             registered = true
         }
@@ -59,4 +61,7 @@ public abstract class Query : Iterable<QueryResult>, MutableAndSelector() {
     protected inline fun <reified T : GearyComponent> QueryResult.get(): ComponentAccessor<T> =
         error("Cannot change query at runtime")
 
+    init {
+        if (init != null) init()
+    }
 }

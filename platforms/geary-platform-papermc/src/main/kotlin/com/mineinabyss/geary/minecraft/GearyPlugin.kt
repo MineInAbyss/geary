@@ -7,7 +7,8 @@ import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.withSerialName
 import com.mineinabyss.geary.minecraft.access.BukkitAssociations
 import com.mineinabyss.geary.minecraft.access.BukkitEntityAssociations
-import com.mineinabyss.geary.minecraft.access.geary
+import com.mineinabyss.geary.minecraft.access.toGeary
+import com.mineinabyss.geary.minecraft.dsl.GearyLoadPhase
 import com.mineinabyss.geary.minecraft.dsl.gearyAddon
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
 import com.mineinabyss.geary.minecraft.listeners.GearyAttemptSpawnListener
@@ -17,6 +18,7 @@ import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
 import com.mineinabyss.idofront.serialization.UUIDSerializer
+import com.mineinabyss.idofront.slimjar.IdofrontSlimjar
 import com.mineinabyss.idofront.slimjar.LibraryLoaderInjector
 import kotlinx.serialization.InternalSerializationApi
 import org.bukkit.Bukkit
@@ -44,10 +46,11 @@ public object StartupEventListener : Listener {
 }
 
 public class GearyPlugin : JavaPlugin() {
-    @InternalSerializationApi
     @ExperimentalCommandDSL
     override fun onEnable() {
-        LibraryLoaderInjector.inject(this)
+        IdofrontSlimjar.loadGlobally(this)
+        instance = this
+
         registerEvents(StartupEventListener)
 
         saveDefaultConfig()
@@ -72,9 +75,7 @@ public class GearyPlugin : JavaPlugin() {
 
         // This will also register a serializer for GearyEntityType
         gearyAddon {
-            autoscanComponents()
-            autoscanConditions()
-            autoscanActions()
+            autoscanAll()
 
             components {
                 //TODO move out to a custom components class
@@ -82,12 +83,14 @@ public class GearyPlugin : JavaPlugin() {
                 Formats.registerSerialName("geary:uuid", UUID::class)
             }
 
-            postLoad {
-                logger.info("Loading prefabs")
-                dataFolder.listFiles()
-                    ?.filter { it.isDirectory }
-                    ?.forEach { loadPrefabs(it, namespace = it.name) }
-                Bukkit.getOnlinePlayers().forEach { geary(it) }
+            dataFolder.listFiles()
+                ?.filter { it.isDirectory }
+                ?.forEach { loadPrefabs(it, namespace = it.name) }
+
+            startup {
+                GearyLoadPhase.ENABLE {
+                    Bukkit.getOnlinePlayers().forEach { it.toGeary() }
+                }
             }
         }
     }
@@ -96,5 +99,10 @@ public class GearyPlugin : JavaPlugin() {
         super.onDisable()
         logger.info("onDisable has been invoked!")
         server.scheduler.cancelTasks(this)
+    }
+
+    public companion object {
+        /** Gets [GearyPlugin] via Bukkit once, then sends that reference back afterwards */
+        public lateinit var instance: GearyPlugin
     }
 }

@@ -30,10 +30,10 @@ public data class CopyToInstances(
 
     private fun getDeepCopied() = Formats.cborFormat.decodeFromByteArray(serializer(), serializedComponents)
 
-    public fun decodeComponentsTo(entity: GearyEntity) {
+    public fun decodeComponentsTo(entity: GearyEntity, override: Boolean = true) {
         val (instance, persist) = getDeepCopied()
         //order of addition specifies that persisting components should override all
-        entity.setAll(instance)
-        entity.setAllPersisting(persist)
+        entity.setAll(instance, override)
+        entity.setAllPersisting(persist, override)
     }
 }

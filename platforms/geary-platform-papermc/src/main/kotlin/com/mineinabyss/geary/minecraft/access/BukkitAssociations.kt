@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.minecraft.access
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
 import com.mineinabyss.geary.minecraft.events.GearyMinecraftLoadEvent
 import com.mineinabyss.idofront.events.call
@@ -16,7 +16,7 @@ public object BukkitAssociations : Listener {
     private val entityMap = Object2LongOpenHashMap<UUID>()
 
     public operator fun get(uuid: UUID): GearyEntity? {
-        return geary(entityMap.getOrDefault(uuid, null) ?: return null)
+        return (entityMap.getOrDefault(uuid, null) ?: return null).toGeary()
     }
 
     public operator fun contains(uuid: UUID): Boolean = entityMap.containsKey(uuid)
@@ -28,7 +28,7 @@ public object BukkitAssociations : Listener {
 
     public fun remove(uuid: UUID): GearyEntity? {
         if (uuid !in entityMap) return null
-        return geary(entityMap.removeLong(uuid))
+        return entityMap.removeLong(uuid).toGeary()
     }
 
     public inline fun getOrPut(uuid: UUID, run: () -> GearyEntity): GearyEntity {

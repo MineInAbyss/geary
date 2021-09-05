@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.ecs.engine.iteration
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.accessors.Accessor
@@ -58,7 +58,7 @@ public data class ArchetypeIterator(
         if (combinationsIterator?.hasNext() != true) {
             val destinationRow = movedRows.firstOrNull() ?: row++
             movedRows.remove(destinationRow)
-            val entity = geary(archetype.ids[destinationRow])
+            val entity = archetype.ids[destinationRow].toGeary()
 
             combinationsIterator = AccessorCombinationsIterator(
                 AccessorData(

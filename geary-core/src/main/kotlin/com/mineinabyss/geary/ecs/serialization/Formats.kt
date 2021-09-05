@@ -8,6 +8,7 @@ import com.uchuhimo.collections.mutableBiMapOf
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.hocon.Hocon
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
@@ -40,11 +41,17 @@ public object Formats {
         componentSerialNames[name] = kClass
     }
 
-    @ExperimentalSerializationApi
     public val cborFormat: Cbor by lazy {
         Cbor {
             serializersModule = module
             encodeDefaults = false
+        }
+    }
+
+    public val hoconFormat: Hocon by lazy {
+        Hocon {
+            serializersModule = module
+            useArrayPolymorphism
         }
     }
 

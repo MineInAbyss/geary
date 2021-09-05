@@ -3,7 +3,7 @@ package com.mineinabyss.geary.ecs.helpers
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.geary
+import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.serialization.Formats
 
@@ -16,7 +16,7 @@ private val Collection<GearyComponent>.names: String get() = mapNotNull { it.ser
 /** Neatly lists all the components on this entity. */
 public fun GearyEntity.listComponents(): String {
     return """
-        Type: ${type.mapNotNull { geary(it).get<PrefabKey>() }}
+        Type: ${type.mapNotNull { it.toGeary().get<PrefabKey>() }}
         Instance: ${getInstanceComponents().names}
         Persisting: ${getPersistingComponents().names}
     """.trimIndent()

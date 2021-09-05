@@ -2,7 +2,7 @@ package com.mineinabyss.geary.ecs.query.accessors
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.gearyNoMask
+import com.mineinabyss.geary.ecs.api.entities.toGearyNoMask
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.engine.iteration.AccessorData
@@ -25,8 +25,8 @@ public open class RelationAccessor<T : GearyComponent>(
         iterator.matchedRelations.mapIndexed { i, relation ->
             RelationData(
                 parentData = archetype.componentData[iterator.dataIndices[i]][row] as T,
-                relation = gearyNoMask(relationParent.id),
-                component = gearyNoMask(relation.component)
+                relation = relationParent.id.toGearyNoMask(),
+                component = relation.component.toGearyNoMask()
             )
         }
 }
