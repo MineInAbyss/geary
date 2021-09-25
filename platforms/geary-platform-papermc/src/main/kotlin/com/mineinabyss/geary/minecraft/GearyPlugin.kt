@@ -19,8 +19,6 @@ import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
 import com.mineinabyss.idofront.serialization.UUIDSerializer
 import com.mineinabyss.idofront.slimjar.IdofrontSlimjar
-import com.mineinabyss.idofront.slimjar.LibraryLoaderInjector
-import kotlinx.serialization.InternalSerializationApi
 import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -48,7 +46,7 @@ public object StartupEventListener : Listener {
 public class GearyPlugin : JavaPlugin() {
     @ExperimentalCommandDSL
     override fun onEnable() {
-        IdofrontSlimjar.loadGlobally(this)
+        IdofrontSlimjar.loadToLibraryLoader(this)
         instance = this
 
         registerEvents(StartupEventListener)
