@@ -11,9 +11,9 @@ public object GearyLoadManager {
     private val actions = sortedMapOf<GearyLoadPhase, MutableList<() -> Unit>>()
 
     public fun add(phase: GearyLoadPhase, action: () -> Unit) {
-        actions.getOrPut(phase) { mutableListOf() }.add(action)
-
         if (actions.isEmpty()) scheduleLoadTasks()
+
+        actions.getOrPut(phase) { mutableListOf() }.add(action)
     }
 
     private fun MutableList<() -> Unit>.runAll() = forEach { it() }
