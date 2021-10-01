@@ -1,3 +1,4 @@
+import Com_mineinabyss_conventions_platform_gradle.Deps
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val useNMS: String? by project
@@ -5,6 +6,7 @@ val idofrontVersion: String by project
 
 plugins {
     id("com.mineinabyss.conventions.kotlin")
+    id("com.mineinabyss.conventions.slimjar")
 }
 
 repositories {
@@ -13,10 +15,11 @@ repositories {
 
 dependencies {
     slim(kotlin("stdlib-jdk8"))
-    slim("org.jetbrains.kotlinx:kotlinx-serialization-json")
-    slim("org.jetbrains.kotlinx:kotlinx-serialization-cbor")
+
+    slim(Deps.kotlinx.serialization.json)
+    slim(Deps.kotlinx.serialization.cbor)
     slim("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.2.1")
-    slim("com.charleskorn.kaml:kaml") {
+    slim(Deps.kotlinx.serialization.kaml) {
         exclude(group = "org.jetbrains.kotlin")
     }
 

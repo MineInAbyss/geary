@@ -1,7 +1,7 @@
 rootProject.name = "geary"
 
 pluginManagement {
-    val miaConventionsVersion: String by settings
+    val idofrontConventions: String by settings
 
     repositories {
         gradlePluginPortal()
@@ -12,7 +12,7 @@ pluginManagement {
     resolutionStrategy {
         eachPlugin {
             if (requested.id.id.startsWith("com.mineinabyss.conventions"))
-                useVersion(miaConventionsVersion)
+                useVersion(idofrontConventions)
         }
     }
 }
