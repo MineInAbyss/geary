@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.api.relations
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
+import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.engine.*
 
 /**
@@ -45,6 +46,9 @@ public value class Relation internal constructor(
     public companion object {
         public fun of(parent: GearyComponentId, component: GearyComponentId = 0uL): Relation =
             Relation(RelationParent(parent), component)
+
+        public inline fun <reified P: GearyComponent, reified C: GearyComponent> of(): Relation =
+            Relation(RelationParent(componentId<P>()), componentId<C>())
     }
 }
 

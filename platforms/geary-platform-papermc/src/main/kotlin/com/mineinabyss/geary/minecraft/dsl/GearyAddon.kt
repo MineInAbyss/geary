@@ -8,15 +8,9 @@ import com.mineinabyss.geary.ecs.api.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
-import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
-import com.mineinabyss.geary.ecs.serialization.GearyEntitySerializer
-import com.mineinabyss.geary.minecraft.StartupEventListener
 import com.mineinabyss.geary.minecraft.access.BukkitEntityAssociations
-import com.mineinabyss.geary.minecraft.events.GearyPrefabLoadEvent
-import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.messaging.logWarn
 import com.mineinabyss.idofront.plugin.registerEvents
 import kotlinx.serialization.InternalSerializationApi
@@ -308,31 +302,19 @@ public class GearyAddon(
         }
     }
 
+    /** Loads prefab entities from all files inside a [directory][from], into a given [namespace] */
     public fun loadPrefabs(
         from: File,
-        run: ((String, GearyEntity) -> Unit)? = null,
         namespace: String = plugin.name.lowercase()
     ) {
         startup {
             GearyLoadPhase.LOAD_PREFABS {
-                from.walk().filter { it.isFile }.forEach { file ->
-                    val name = file.nameWithoutExtension
-                    try {
-                        val format = when (val ext = file.extension) {
-                            "yml" -> Formats.yamlFormat
-                            "json" -> Formats.jsonFormat
-                            else -> error("Unknown file format $ext")
-                        }
-                        val entity = format.decodeFromString(GearyEntitySerializer, file.readText())
-                        val key = PrefabKey(namespace, name)
-                        entity.set(key)
-                        PrefabManager.registerPrefab(key, entity)
-                        run?.invoke(name, entity)
-                        GearyLoadManager.loadingPrefabs += entity
-                    } catch (e: Exception) {
-                        logError("Error deserializing prefab: $name from ${file.path}")
-                        e.printStackTrace()
-                    }
+                // Start with the innermost directories
+                val dirs = from.walkBottomUp().filter { it.isDirectory }
+                val files = dirs.flatMap { it.walk().maxDepth(1).filter { it.isFile } }
+                files.forEach { file ->
+                    val entity = PrefabManager.loadFromFile(namespace, file) ?: return@forEach
+                    GearyLoadManager.loadingPrefabs += entity
                 }
             }
         }
@@ -359,6 +341,8 @@ public class GearyAddon(
         PhaseCreator().apply(run)
     }
 }
+
+/** The polymorphic builder scope that allows registering subclasses. */
 public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>?) -> Unit
 
 /** Entry point to register a new [Plugin] with the Geary ECS. */

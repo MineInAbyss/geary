@@ -148,13 +148,17 @@ public open class GearyEngine : TickingEngine() {
             children.forEach { it.removeEntity() }
         }
 
+        clearEntity(entity)
+
+        //add current id into queue for reuse
+        removedEntities.push(entity)
+    }
+
+    override fun clearEntity(entity: GearyEntityId) {
         getRecord(entity)?.apply {
             archetype.removeEntity(row)
         }
         typeMap.remove(entity)
-
-        //add current id into queue for reuse
-        removedEntities.push(entity)
     }
 
     public override fun getType(entity: GearyEntityId): GearyType = typeMap[entity]?.archetype?.type ?: GearyType()

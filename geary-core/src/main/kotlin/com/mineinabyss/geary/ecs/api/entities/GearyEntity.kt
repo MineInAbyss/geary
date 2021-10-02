@@ -11,6 +11,7 @@ import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
+import com.mineinabyss.geary.ecs.engine.INSTANCEOF
 import com.mineinabyss.geary.ecs.engine.withRole
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
@@ -128,6 +129,11 @@ public value class GearyEntity(public val id: GearyEntityId) {
     public inline fun removeAll(components: Collection<GearyComponentId>): Boolean =
         components.any { remove(it) }
 
+    /** Clears the components on this entity. */
+    public fun clear() {
+        Engine.clearEntity(id)
+    }
+
     /** Gets a component of type [T] on this entity. */
     public inline fun <reified T : GearyComponent> get(kClass: KClass<out T> = T::class): T? =
         get(componentId(kClass)) as? T
@@ -161,8 +167,8 @@ public value class GearyEntity(public val id: GearyEntityId) {
     public inline fun getInstanceComponents(): Set<GearyComponent> =
         getComponents() - getPersistingComponents()
 
-    /** Runs something on a component on this entity of type [T] if present. */
-    public inline fun <reified T : GearyComponent> with(let: (T) -> Unit): Unit? = get<T>()?.let(let)
+    public inline fun instanceOf(entity: GearyEntity): Boolean =
+        has(entity.id.withRole(INSTANCEOF))
 
     /** Checks whether this entity has a component of type [T], regardless of whether or not it holds data. */
     public inline fun <reified T : GearyComponent> has(kClass: KClass<out T> = T::class): Boolean =

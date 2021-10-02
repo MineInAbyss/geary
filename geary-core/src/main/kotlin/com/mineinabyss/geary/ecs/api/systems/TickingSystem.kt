@@ -12,7 +12,8 @@ import com.mineinabyss.geary.ecs.query.Query
  * @see [ArchetypeIterator]
  */
 public abstract class TickingSystem(
-    public val interval: Long = 1
+    public val interval: Long = 1,
+    init: (TickingSystem.() -> Unit)? = null
 ) : Query() {
     protected var iteration: Int = 0
         private set
@@ -44,5 +45,9 @@ public abstract class TickingSystem(
 
     public inline fun withEach(action: QueryResult.() -> Unit) {
         forEach { result -> result.action() }
+    }
+
+    init {
+        if (init != null) init()
     }
 }

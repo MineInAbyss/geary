@@ -3,25 +3,29 @@ package com.mineinabyss.geary.ecs.prefab
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import kotlinx.serialization.Serializable
 
+/**
+ * An inline class which represents a key build from a [namespace] and [name], separated
+ * by a '`:`' symbol.
+ */
 @Serializable(with = PrefabKeySerializer::class)
 @JvmInline
-public value class PrefabKey(public val key: String) {
-    public constructor(plugin: String, name: String) : this("$plugin:$name")
-
-    public val plugin: String get() = key.substringBefore(':')
+public value class PrefabKey private constructor(public val key: String) {
+    public val namespace: String get() = key.substringBefore(':')
     public val name: String get() = key.substringAfter(':')
 
     public fun toEntity(): GearyEntity? = PrefabManager[this]
 
-    override fun toString(): String = "$plugin:$name"
+    override fun toString(): String = "$namespace:$name"
 
     public companion object {
+        /** Creates a key from a string with [namespace] and [name] separated by one '`:`' character. */
         public fun of(stringKey: String): PrefabKey {
-            val split = stringKey.split(':')
-            if (split.size != 2)
+            if (stringKey.split(':').size != 2)
                 error("Malformatted prefab key: $stringKey. Must only contain one : that splits namespace and key.")
-            val (plugin, name) = split
-            return PrefabKey(plugin, name)
+            return PrefabKey(stringKey)
         }
+
+        /** Creates a key from a [namespace] and [name] which must not contain any '`:`' characters. */
+        public fun of(namespace: String, name: String): PrefabKey = of("$namespace:$name")
     }
 }

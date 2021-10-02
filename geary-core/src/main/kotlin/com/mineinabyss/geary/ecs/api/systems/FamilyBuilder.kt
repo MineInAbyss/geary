@@ -3,6 +3,7 @@ package com.mineinabyss.geary.ecs.api.systems
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.componentId
+import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
@@ -98,6 +99,10 @@ public abstract class MutableSelector : FamilyBuilder() {
 
     public fun has(relationParent: RelationParent, componentMustHoldData: Boolean = false) {
         add(MutableRelationLeaf(relationParent, componentMustHoldData))
+    }
+
+    public fun has(relation: Relation) {
+        has(relation.id)
     }
 }
 

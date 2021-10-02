@@ -23,6 +23,7 @@ public object QueryManager {
         }
     }
 
+    //TODO convert to Sequence
     public fun getEntitiesMatching(family: Family): List<GearyEntity> {
         return archetypes.match(family).flatMap { arc -> arc.ids.map { it.toGeary() } }
     }
