@@ -3,22 +3,25 @@ package com.mineinabyss.geary.ecs.api.systems
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.relations.toRelation
-import com.mineinabyss.geary.ecs.engine.*
+import com.mineinabyss.geary.ecs.engine.RELATION
+import com.mineinabyss.geary.ecs.engine.get
+import com.mineinabyss.geary.ecs.engine.withRole
 import com.mineinabyss.geary.ecs.query.*
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import net.onedaybeard.bitvector.BitVector
 import net.onedaybeard.bitvector.bitsOf
 
-private typealias ComponentMap<T> = Long2ObjectOpenHashMap<T>
-
-internal class ComponentSparseSet {
-    private val elements: MutableList<Archetype> = mutableListOf()
-    private val componentMap = ComponentMap<BitVector>()
+/**
+ * A map of [GearyComponentId]s to Arrays of objects with the ability to make fast queries based on component IDs.
+ */
+internal abstract class Component2ObjectArrayMap<T> {
+    private val elements = mutableListOf<T>()
+    private val componentMap = Long2ObjectOpenHashMap<BitVector>()
 
     private fun GearyComponentId.toComponentMapId(): GearyComponentId =
         toRelation()?.parent?.id?.or(RELATION) ?: this
 
-    fun add(element: Archetype, type: GearyType) {
+    fun add(element: T, type: GearyType) {
         elements += element
         val index = elements.lastIndex
         type.map { it.toComponentMapId() }.forEach { id ->
@@ -42,7 +45,7 @@ internal class ComponentSparseSet {
                 componentMap[relationId]?.copy()?.apply {
                     if (family.componentMustHoldData) {
                         keepArchetypesMatching {
-                            it.dataHoldingRelations.containsKey(family.relationParent.id.toLong())
+                            it.getGearyType().contains(family.relationParent, componentMustHoldData = true)
                         }
                     }
                 } ?: bitsOf()
@@ -50,7 +53,9 @@ internal class ComponentSparseSet {
         }
     }
 
-    private inline fun BitVector.keepArchetypesMatching(predicate: (archetype: Archetype) -> Boolean): BitVector {
+    abstract fun T.getGearyType(): GearyType
+
+    private inline fun BitVector.keepArchetypesMatching(predicate: (archetype: T) -> Boolean): BitVector {
         forEachBit { index ->
             if (!predicate(elements[index]))
                 clear(index)
@@ -58,9 +63,9 @@ internal class ComponentSparseSet {
         return this
     }
 
-    fun match(family: Family): List<Archetype> {
-        val matchingArchetypes = mutableListOf<Archetype>()
-        getMatchingBits(family, null).forEachBit { matchingArchetypes += elements[it] }
-        return matchingArchetypes
+    fun match(family: Family): List<T> {
+        val matchingElements = mutableListOf<T>()
+        getMatchingBits(family, null).forEachBit { matchingElements += elements[it] }
+        return matchingElements
     }
 }

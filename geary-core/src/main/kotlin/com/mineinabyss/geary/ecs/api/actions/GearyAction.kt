@@ -5,7 +5,7 @@ import com.mineinabyss.geary.ecs.api.properties.EntityPropertyHolder
 import kotlinx.serialization.Serializable
 
 /**
- * Actions are pieces of code that can be [run against][runOn] a specific entity.
+ * Actions are pieces of code that can be [run against][invoke] a specific entity.
  *
  * Using polymorphic serialization, we can ask to deserialize a list of GearyActions and allow users to specify
  * specific actions within a config.
@@ -16,8 +16,8 @@ import kotlinx.serialization.Serializable
  * Please read the wiki for more info on common classes you might want to use for extendable composition.
  */
 @Serializable
-public abstract class GearyAction : EntityPropertyHolder() {
-    public fun runOn(entity: GearyEntity): Boolean =
+public abstract class GearyAction : EntityPropertyHolder(), (GearyEntity) -> Boolean {
+    public override fun invoke(entity: GearyEntity): Boolean =
         entity.runWithProperties { run() } ?: false
 
     protected abstract fun GearyEntity.run(): Boolean

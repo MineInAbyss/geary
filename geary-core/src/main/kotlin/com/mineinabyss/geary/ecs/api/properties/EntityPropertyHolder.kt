@@ -5,8 +5,9 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.engine.Archetype
+import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
+import com.mineinabyss.geary.ecs.query.Family
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -20,6 +21,9 @@ public abstract class EntityPropertyHolder {
     private val extraData = Long2ObjectOpenHashMap<List<Any>>()
     private val extraProperties = mutableListOf<EntityExtension<*>>()
 
+    public val familyBuilder: MutableAndSelector = MutableAndSelector()
+    public val family: Family by lazy { familyBuilder.build() }
+
     public val propertiesEmpty: Boolean by lazy { extraProperties.isEmpty() && dataKey.isEmpty() }
 
     public operator fun <T : Any> EntityExtension<T>.provideDelegate(
@@ -29,8 +33,14 @@ public abstract class EntityPropertyHolder {
         return PropertyDelegate(this)
     }
 
-    public inline fun <reified T : GearyComponent> get(): Accessor<T> =
-        Accessor(componentId<T>() or HOLDS_DATA)
+    public inline fun <reified T : GearyComponent> has() {
+        familyBuilder.has<T>()
+    }
+
+    public inline fun <reified T : GearyComponent> get(): Accessor<T> {
+        familyBuilder.hasData<T>()
+        return Accessor(componentId<T>() or HOLDS_DATA)
+    }
 
     public inline fun <T> GearyEntity.runWithProperties(run: GearyEntity.() -> T): T? {
         if (propertiesEmpty) return run()
