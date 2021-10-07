@@ -28,7 +28,6 @@ public interface Engine {
     /** Gets a list of all the components [entity] has. */
     public fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent>
 
-    /** Gets a list of all the components [entity] has. */
     public fun getRelatedComponentsFor(entity: GearyEntityId, relationParent: RelationParent): Set<GearyComponent>
 
     /** Gets a [component]'s data from an [entity] or null if not present/the component doesn't hold any data. */
@@ -56,6 +55,9 @@ public interface Engine {
 
     /** Removes an entity from the ECS, freeing up its entity id. */
     public fun removeEntity(entity: GearyEntityId)
+
+    /** Clears all components on an entity. */
+    public fun clearEntity(entity: GearyEntityId)
 
     //TODO split registry and getting
     /** Given a component's [kClass], returns its [GearyComponentId], or registers the component with the ECS */

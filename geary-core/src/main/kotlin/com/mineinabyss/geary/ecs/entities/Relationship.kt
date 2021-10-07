@@ -3,9 +3,13 @@ package com.mineinabyss.geary.ecs.entities
 //TODO add documentation and maybe split into two files
 
 import com.mineinabyss.geary.ecs.api.GearyEntityId
+import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
+import com.mineinabyss.geary.ecs.api.entities.with
+import com.mineinabyss.geary.ecs.api.relations.NoInherit
+import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.api.systems.family
 import com.mineinabyss.geary.ecs.components.CopyToInstances
@@ -68,6 +72,11 @@ public val GearyEntity.children: List<GearyEntity>
         has(id.withRole(CHILDOF))
     })
 
+public val GearyEntity.instances: List<GearyEntity>
+    get() = QueryManager.getEntitiesMatching(family {
+        has(id.withRole(INSTANCEOF))
+    })
+
 public val GearyEntity.prefabKeys: List<PrefabKey>
     get() = prefabs.mapNotNull { it.toGeary().get<PrefabKey>() }
 
@@ -77,9 +86,12 @@ public val GearyEntity.prefabs: List<GearyEntityId>
 /** Adds a [prefab] entity to this entity.  */
 public fun GearyEntity.addPrefab(prefab: GearyEntity) {
     add(prefab.id.withRole(INSTANCEOF))
-    setAll(prefab.getComponents(), override = false) //TODO plan out more thoroughly and document overriding behaviour
-    prefab.with<CopyToInstances> {
-        it.decodeComponentsTo(this, override = false)
+    //TODO this isn't copying over any relations
+    val comp = prefab.getComponents()
+    val noInherit = prefab.getComponentsRelatedTo(RelationParent(componentId<NoInherit>()))
+    setAll((comp - noInherit), override = false) //TODO plan out more thoroughly and document overriding behaviour
+    prefab.with { copy: CopyToInstances ->
+        copy.decodeComponentsTo(this, override = false)
     }
 }
 

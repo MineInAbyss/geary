@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.ecs.query
 
 import com.mineinabyss.geary.ecs.api.GearyComponentId
-import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.engine.holdsData
 
@@ -15,7 +14,6 @@ public class RelationLeaf(
     public val relationParent: RelationParent,
     public val componentMustHoldData: Boolean = false
 ) : Family()
-
 
 public class AndSelector(
     public val and: List<Family>

@@ -6,23 +6,37 @@ import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.query.Family
 import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
+import com.mineinabyss.geary.ecs.query.events.ComponentAddSystem
 
 public object QueryManager {
     private val queries = mutableListOf<Query>()
-    private val archetypes = ComponentSparseSet()
+    private val componentAddSystems = mutableListOf<ComponentAddSystem>()
+
+    private val archetypes = object : Component2ObjectArrayMap<Archetype>() {
+        override fun Archetype.getGearyType() = type
+    }
+
+    public fun trackComponentAddSystem(system: ComponentAddSystem) {
+        val matched = archetypes.match(system.family)
+        componentAddSystems += system
+        matched.forEach { it.addComponentAddSystem(system) }
+    }
 
     public fun trackQuery(query: Query) {
-        query.matchedArchetypes += archetypes.match(query.family)
+        val matched = archetypes.match(query.family)
+        query.matchedArchetypes += matched
         queries.add(query)
     }
 
     internal fun registerArchetype(archetype: Archetype) {
         archetypes.add(archetype, archetype.type)
-        queries.filter { archetype.type in it.family }.forEach {
-            it.matchedArchetypes += archetype
-        }
+        val matched = queries.filter { archetype.type in it.family }
+        val matchedEvents = componentAddSystems.filter { archetype.type in it.family }
+        matchedEvents.forEach { archetype.addComponentAddSystem(it) }
+        matched.forEach { it.matchedArchetypes += archetype }
     }
 
+    //TODO convert to Sequence
     public fun getEntitiesMatching(family: Family): List<GearyEntity> {
         return archetypes.match(family).flatMap { arc -> arc.ids.map { it.toGeary() } }
     }

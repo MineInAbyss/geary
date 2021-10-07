@@ -10,7 +10,10 @@ import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
+import com.mineinabyss.geary.ecs.query.AndSelector
 import com.mineinabyss.geary.ecs.query.Query
+import com.mineinabyss.geary.ecs.query.events.ComponentAddSystem
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import java.util.*
 
@@ -44,7 +47,12 @@ public data class Archetype(
             .filter { it.id.toLong() in relations }
             .associateWith { relations[it.id.toLong()]!! } //TODO handle null error
 
-    internal fun indexOf(id: GearyComponentId): Int = dataHoldingType.indexOf(id)
+    private val comp2indices = Long2IntOpenHashMap().apply {
+        dataHoldingType.forEachIndexed { i, compId -> put(compId.toLong(), i) }
+        defaultReturnValue(-1)
+    }
+
+    internal fun indexOf(id: GearyComponentId): Int = comp2indices.get(id.toLong())
 
     public val size: Int get() = ids.size
 
@@ -191,6 +199,22 @@ public data class Archetype(
             Engine.setRecord(replacement, Record(this, row))
         }
     }
+
+    // Some systems that get called when components get modified
+
+    public fun addComponentAddSystem(system: ComponentAddSystem) {
+        (system.family as AndSelector).components
+            .map { indexOf(it) }
+            .forEach { componentAddSystems[it] += system }
+    }
+
+    public fun runComponentAddSystems(forComponent: GearyComponentId, entity: GearyEntity) {
+        val index = indexOf(forComponent)
+        if (index == -1) return
+        componentAddSystems[index].forEach { it(entity) }
+    }
+
+    private val componentAddSystems = Array(dataHoldingType.size) { mutableSetOf<ComponentAddSystem>() }
 
     // Basically just want a weak set where stuff gets auto removed when it is no longer running
     // We put our iterator and null and this WeakHashMap handles the rest for us.

@@ -73,7 +73,7 @@ public data class ArchetypeIterator(
 
         return QueryResult(
             entity = combinationsIterator!!.accessorData.entity,
-            iterator = this,
+//            iterator = this,
             data = combinationsIterator!!.next(),
         )
     }
@@ -89,6 +89,6 @@ public class AccessorData(
 
 public data class QueryResult(
     val entity: GearyEntity,
-    internal val iterator: ArchetypeIterator,
+//    internal val iterator: ArchetypeIterator,
     internal val data: List<*>
 )

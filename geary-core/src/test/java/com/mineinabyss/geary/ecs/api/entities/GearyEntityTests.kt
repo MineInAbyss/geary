@@ -42,4 +42,15 @@ internal class GearyEntityTests {
         }
         entity.type shouldContainExactly entitySetAll.type
     }
+
+    @Test
+    fun clear() {
+        val entity = Engine.entity {
+            setPersisting("Test")
+        }
+        val relations = entity.type.getArchetype().relations[componentId<PersistingComponent>().toLong()]
+        relations.size shouldBe 1
+        relations.first().component shouldBe (componentId<String>() or HOLDS_DATA)
+        entity.getPersistingComponents().shouldContainExactly("Test")
+    }
 }

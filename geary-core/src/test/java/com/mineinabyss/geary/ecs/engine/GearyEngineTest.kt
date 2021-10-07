@@ -77,6 +77,16 @@ internal class GearyEngineTest {
     }
 
     @Test
+    fun clear() {
+        val entity = Engine.entity {
+            set("Test")
+            add<Int>()
+        }
+        entity.clear()
+        entity.getComponents().isEmpty() shouldBe true
+    }
+
+    @Test
     fun setAll() {
         Engine.entity {
             setAll(listOf("Test", 1))

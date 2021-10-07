@@ -49,4 +49,4 @@ public fun Location.spawnGeary(prefab: GearyEntity): Entity? {
     return bukkitEntity
 }
 
-public fun NamespacedKey.toPrefabKey(): PrefabKey = PrefabKey(namespace, key)
+public fun NamespacedKey.toPrefabKey(): PrefabKey = PrefabKey.of(namespace, key)

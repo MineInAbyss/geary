@@ -14,11 +14,10 @@ public open class RelationWithDataAccessor<T : GearyComponent>(
     query: Query,
     private val relationParent: RelationParent,
 ) : Accessor<RelationWithData<T>>(query) {
-    private val ArchetypeIterator.matchedRelations: List<Relation>
-            by cached {
-                archetype.relations[relationParent.id.toLong()]!!
-                    .filter { it.component.holdsData() || archetype.contains(it.component) }
-            }
+    private val ArchetypeIterator.matchedRelations: List<Relation> by cached {
+        archetype.relations[relationParent.id.toLong()]!!
+            .filter { it.component.holdsData() || archetype.contains(it.component) }
+    }
 
     private val ArchetypeIterator.parentDataIndices: IntArray
             by cached { matchedRelations.map { archetype.indexOf(it.id) }.toIntArray() }
