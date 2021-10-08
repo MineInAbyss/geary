@@ -7,9 +7,7 @@ plugins {
 
 dependencies {
     //ecs-related libs
-    implementation("com.uchuhimo:kotlinx-bimap:1.2") {
-        exclude(group = "org.jetbrains.kotlin")
-    }
+    implementation("com.uchuhimo:kotlinx-bimap:1.2") { isTransitive = false }
     implementation("net.onedaybeard.bitvector:bitvector-jvm:0.1.4")
 
     //provided by Minecraft

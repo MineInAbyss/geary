@@ -46,7 +46,7 @@ public object StartupEventListener : Listener {
 public class GearyPlugin : JavaPlugin() {
     @ExperimentalCommandDSL
     override fun onEnable() {
-        IdofrontSlimjar.loadGlobally(this)
+        IdofrontSlimjar.loadToLibraryLoader(this)
         instance = this
 
         registerEvents(StartupEventListener)
