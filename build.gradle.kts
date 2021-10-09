@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("org.jetbrains.dokka")
+    id("org.jetbrains.dokka") version "1.5.30"
 }
 
 repositories {

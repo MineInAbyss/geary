@@ -1,6 +1,7 @@
 rootProject.name = "geary"
 
 pluginManagement {
+    val kotlinVersion: String by settings
     val idofrontConventions: String by settings
 
     repositories {
@@ -15,7 +16,11 @@ pluginManagement {
                 useVersion(idofrontConventions)
         }
     }
+    plugins {
+        kotlin("plugin.serialization") version kotlinVersion
+    }
 }
+
 
 include(
     "geary-core",
@@ -23,3 +28,5 @@ include(
 )
 
 project(":geary-platform-papermc").projectDir = file("./platforms/geary-platform-papermc")
+
+includeBuild("geary-conventions")
