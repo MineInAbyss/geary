@@ -1,5 +1,8 @@
 package com.mineinabyss.geary.minecraft
 
+import com.mineinabyss.geary.ecs.prefab.PrefabKey
+import com.mineinabyss.geary.ecs.prefab.PrefabManager
+import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.rylinaux.plugman.util.PluginUtil
@@ -8,6 +11,12 @@ import com.rylinaux.plugman.util.PluginUtil
 internal class GearyCommands : IdofrontCommandExecutor() {
     override val commands = commands(GearyPlugin.instance) {
         "geary" {
+            "reread" {
+                val prefab by stringArg()
+                action {
+                    PrefabManager.reread(PrefabKey.of(prefab).toEntity()!!)
+                }
+            }
             "fullreload" {
                 action {
                     val depends = StartupEventListener.getGearyDependants()
