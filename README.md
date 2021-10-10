@@ -1,16 +1,19 @@
-[![Java CI with Gradle](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml/badge.svg)](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml)
-[![Package](https://badgen.net/maven/v/metadata-url/repo.mineinabyss.com/releases/com/mineinabyss/geary-core/maven-metadata.xml)](https://repo.mineinabyss.com/releases/com/mineinabyss/geary-core)
-[![Wiki](https://badgen.net/badge/color/Project%20Wiki/purple?icon=wiki&label)](https://wiki.mineinabyss.com/geary)
-[![Contribute](https://shields.io/badge/Contribute-e57be5?logo=github%20sponsors&style=flat&logoColor=white)](https://wiki.mineinabyss.com/contribute)
+<div align="center">
 
 # Geary
+[![Java CI with Gradle](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml/badge.svg)](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml)
+[![Package](https://badgen.net/maven/v/metadata-url/repo.mineinabyss.com/releases/com/mineinabyss/geary-platform-papermc/maven-metadata.xml)](https://repo.mineinabyss.com/releases/com/mineinabyss/geary-platform-papermc)
+[![Wiki](https://badgen.net/badge/color/Project%20Wiki/purple?icon=wiki&label)](https://wiki.mineinabyss.com/geary)
+[![Contribute](https://shields.io/badge/Contribute-e57be5?logo=github%20sponsors&style=flat&logoColor=white)](https://wiki.mineinabyss.com/contribute)
+</div>
 
-### Overview
 
-Geary is an Entity Component System (ECS) written in and for Kotlin designed for Minecraft server plugins. The engine design is inspired by [flecs](https://github.com/SanderMertens/flecs) and uses archetypes for data storage.
+## Overview
 
-We have two Spigot plugins using this ECS to add Minecraft-specific functionality:
-- [Mobzy](https://github.com/MineInAbyss/Mobzy) - Custom NMS entities that bridge ECS and Minecraft's very inheritance based entities.
+Geary is an Entity Component System (ECS) written in Kotlin and designed for Minecraft server plugins. The engine design is inspired by [flecs](https://github.com/SanderMertens/flecs) and uses archetypes for data storage.
+
+We have two PaperMC plugins using this ECS to add Minecraft-specific functionality:
+- [Mobzy](https://github.com/MineInAbyss/Mobzy) - Custom entities that bridge ECS and Minecraft's very inheritance based entities.
 - [Looty](https://github.com/MineInAbyss/Looty) - Custom, highly configurable items.
 
 ## Features
@@ -23,11 +26,66 @@ Both Mobzy and Looty use this to allow for config-based entity creation, and sto
 
 ### Nice Kotlin syntax
 
-Idiomatic Kotlin syntax for instantiating entities, iterating over them in systems, and creating components. We generally try to make use of Kotlin specific features like reified types, and we use a DSL to let third party addons get set up with Geary.
+Idiomatic Kotlin syntax for instantiating entities, iterating over them in systems, and creating components. We generally try to make use of Kotlin specific features like reified types, and we use a DSL to let third party addons get set up with Geary. See examples below for a preview.
 
 ### Prefabs
 
 Prefabs allow you to reuse components between multiple entities of the same type. The addon DSL allows you to specify a folder to automatically load prefabs from. These may be written in YAML, JSON, and eventually any other backend supported by ktx.serialization.
+
+## Examples
+
+Start with some sample components (note we can make them persistent by adding some annotations):
+
+```kotlin
+class Texture { ... }
+
+class Textures(
+    val idle: Texture,
+    val walking: Texture
+)
+
+class Render(var activeTexture: Texture)
+
+class Velocity(...) {
+    fun isNotZero(): Boolean
+}
+```
+
+An entity to get us started:
+
+```kotlin
+Engine.entity {
+   setAll(Textures(...), Render(...), Velocity(...))
+}
+```
+
+And a system that sets a walking animation when entities are moving:
+
+```kotlin
+object WalkingAnimationSystem : TickingSystem() {
+    // Specify all components we want (Geary also supports branched AND/OR/NOT statements for selection)
+    val QueryResult.textures by get<Textures>()
+    val QueryResult.render by get<Render>()
+    val QueryResult.velocity by get<Velocity>()
+    
+    override fun QueryResult.tick() {
+      // We can access our components like regular variables!
+      render.activeTexture = when(velocity.isNotZero()) {
+           true -> textures.walking
+           false -> textures.idle
+      }
+   }
+}
+```
+
+A nifty feature: systems are just queries, which are iterators!
+
+```kotlin
+WalkingAnimationSystem.apply {
+   filter { it.velocity.isNotZero() }
+      .map { it.render.activeTexture }
+} // Returns a list of textures for any moving entity
+```
 
 ## Planned
 
@@ -53,12 +111,9 @@ A DSL for making in-depth queries to efficiently get exactly the entities you wa
 
 ## Limitations
 - There is no proper Java support. We are using many Kotlin-specific libraries and want to make this nice to use in Kotlin first. However, we understand parts of this may be useful for Java plugins as well, and plan to expand some support for them in the future (ex you may have to write components in Kotlin but could still write the rest of your plugin as you prefer).
-- API changes are still rather common.
+- API changes are still rather common, and the codebase itself needs to be ironed out a lot (there is some unexpected behaviour in many places.)
 
 ## Usage
-
-- We have [Github packages](https://github.com/MineInAbyss/Geary/packages) set up for use with gradle/maven, however the API isn't properly maintained yet. Many things will change as the ECS is being built.
-- We'll eventually make a wiki with API documentation. In the meantime, you can ask questions in `#plugin-dev` on our [Discord](https://discord.gg/QXPCk2y) server.
 
 ### Gradle
 ```groovy
@@ -68,7 +123,10 @@ repositories {
 
 dependencies {
     compileOnly 'com.mineinabyss:geary:<version>'
-    // Use the line below if you want both geary and spigot specific stuff
-    compileOnly 'com.mineinabyss:geary-spigot:<version>'
+    // Use the line below if you want to use Geary for your PaperMC plugin
+    compileOnly 'com.mineinabyss:geary-platform-papermc:<version>'
 }
 ```
+
+### Wiki
+A rudimentary wiki can be found at [wiki.mineinabyss.com](https://wiki.mineinabyss.com/geary/)
