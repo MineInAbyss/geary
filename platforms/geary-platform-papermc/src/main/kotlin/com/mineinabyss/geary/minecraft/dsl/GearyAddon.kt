@@ -7,7 +7,7 @@ import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoscan
 import com.mineinabyss.geary.ecs.api.conditions.GearyCondition
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.systems.TickingSystem
+import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.minecraft.access.BukkitEntityAssociations
@@ -229,12 +229,12 @@ public class GearyAddon(
     }
 
     /** Registers a [system]. */
-    public fun system(system: TickingSystem) {
+    public fun system(system: GearySystem) {
         Engine.addSystem(system)
     }
 
     /** Registers a list of [systems]. */
-    public fun systems(vararg systems: TickingSystem) {
+    public fun systems(vararg systems: GearySystem) {
         plugin.registerEvents(*systems.filterIsInstance<Listener>().toTypedArray())
         systems.forEach { system(it) }
     }

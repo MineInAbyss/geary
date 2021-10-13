@@ -9,10 +9,10 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.relations.toRelation
+import com.mineinabyss.geary.ecs.api.systems.ComponentAddSystem
 import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
 import com.mineinabyss.geary.ecs.query.AndSelector
 import com.mineinabyss.geary.ecs.query.Query
-import com.mineinabyss.geary.ecs.query.events.ComponentAddSystem
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import java.util.*

@@ -98,7 +98,10 @@ public fun PersistentDataContainer.encodePrefabs(keys: Collection<PrefabKey>) {
 }
 
 public fun PersistentDataContainer.decodePrefabs(): Set<PrefabKey> =
-    decode("geary:prefabs".toMCKey(), SetSerializer(PrefabKey.serializer())) ?: emptySet()
+    decode("geary:prefabs".toMCKey(), SetSerializer(PrefabKey.serializer()))
+        ?.map { PrefabKey.of(it.toString().replaceBefore(':', "mineinabyss")) }
+        ?.toSet()
+         ?: emptySet()
 
 /**
  * Decodes a set of components from this [PersistentDataContainer].

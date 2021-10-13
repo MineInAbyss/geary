@@ -7,7 +7,7 @@ import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.services.gearyService
-import com.mineinabyss.geary.ecs.api.systems.TickingSystem
+import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.engine.Record
 import kotlin.reflect.KClass
 
@@ -23,7 +23,7 @@ public interface Engine {
     public fun getNextId(): GearyEntityId
 
     /** Adds a [system] to the engine, which will be ticked appropriately by the engine */
-    public fun addSystem(system: TickingSystem): Boolean
+    public fun addSystem(system: GearySystem): Boolean
 
     /** Gets a list of all the components [entity] has. */
     public fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent>

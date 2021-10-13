@@ -8,6 +8,8 @@ import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.systems.ComponentAddSystem
+import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.ComponentInfo
@@ -51,11 +53,20 @@ public open class GearyEngine : TickingEngine() {
     //TODO Proper pipeline with different stages
     protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
 
-    override fun addSystem(system: TickingSystem): Boolean {
+    override fun addSystem(system: GearySystem): Boolean {
         // Track systems right at startup since they are likely going to tick very soon anyways and we don't care about
         // any hiccups at that point.
-        QueryManager.trackQuery(system)
-        return registeredSystems.add(system)
+        return when(system) {
+            is TickingSystem -> {
+                QueryManager.trackQuery(system)
+                registeredSystems.add(system)
+            }
+            is ComponentAddSystem -> {
+                system.track()
+                true
+            }
+        }
+
     }
 
     //TODO support suspending functions for systems

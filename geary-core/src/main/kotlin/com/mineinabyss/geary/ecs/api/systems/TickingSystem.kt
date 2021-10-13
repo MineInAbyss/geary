@@ -14,7 +14,7 @@ import com.mineinabyss.geary.ecs.query.Query
 public abstract class TickingSystem(
     public val interval: Long = 1,
     init: (TickingSystem.() -> Unit)? = null
-) : Query() {
+) : Query(), GearySystem {
     protected var iteration: Int = 0
         private set
 

@@ -6,7 +6,6 @@ import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.query.Family
 import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
-import com.mineinabyss.geary.ecs.query.events.ComponentAddSystem
 
 public object QueryManager {
     private val queries = mutableListOf<Query>()
