@@ -8,11 +8,9 @@ import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
-import com.mineinabyss.geary.minecraft.events.GearyMinecraftPreLoadEvent
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import com.mineinabyss.geary.minecraft.store.decodeComponentsFrom
 import com.mineinabyss.geary.minecraft.store.encodeComponentsTo
-import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.typealiases.BukkitEntity
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
@@ -45,26 +43,26 @@ public object BukkitEntityAssociations : Listener {
         val gearyEntity = Engine.entity()
 
         gearyEntity.apply {
-            // allow us to both get the BukkitEntity and specific class (ex Player)
-            set(entity)
-            entity.type.entityClass?.kotlin?.let { bukkitClass ->
-                set(entity, bukkitClass)
-            }
-
             setAll(
                 onBukkitEntityRegister.flatMap { mapping ->
                     mutableListOf<GearyComponent>().apply { mapping(entity) }
                 }
             )
+
+            BukkitAssociations.register(uuid, gearyEntity)
+
+            val pdc = entity.persistentDataContainer
+            if (pdc.hasComponentsEncoded)
+                gearyEntity.decodeComponentsFrom(pdc)
+            // allow us to both get the BukkitEntity and specific class (ex Player)
+            entity.type.entityClass?.kotlin?.let { bukkitClass ->
+                set(entity, bukkitClass)
+            }
+
+            // Any component addition listener that wants Bukkit entity will immediately
+            // run, so we do this last. Potentially change how that fires in the future.
+            set(entity)
         }
-
-        GearyMinecraftPreLoadEvent(gearyEntity, entity).call()
-
-        val pdc = entity.persistentDataContainer
-        if (pdc.hasComponentsEncoded)
-            gearyEntity.decodeComponentsFrom(pdc)
-
-        BukkitAssociations.register(uuid, gearyEntity)
 
         return gearyEntity
     }

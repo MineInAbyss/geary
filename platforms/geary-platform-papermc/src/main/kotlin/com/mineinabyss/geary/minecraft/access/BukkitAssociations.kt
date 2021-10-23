@@ -3,8 +3,6 @@ package com.mineinabyss.geary.minecraft.access
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
-import com.mineinabyss.geary.minecraft.events.GearyMinecraftLoadEvent
-import com.mineinabyss.idofront.events.call
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -23,7 +21,6 @@ public object BukkitAssociations : Listener {
 
     public fun register(uuid: UUID, entity: GearyEntity) {
         entityMap[uuid] = entity.id.toLong()
-        GearyMinecraftLoadEvent(entity).call()
     }
 
     public fun remove(uuid: UUID): GearyEntity? {
