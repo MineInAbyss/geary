@@ -53,6 +53,7 @@ public class GearyAddon(
         autoscanComponents()
         autoscanActions()
         autoscanConditions()
+//        autoscanSingletonSystems()
     }
 
     /**
@@ -81,10 +82,7 @@ public class GearyAddon(
      * @see AutoScanner
      */
     public fun autoscanActions(init: AutoScanner.() -> Unit = {}) {
-        autoscan<GearyAction>(init) { kClass, serializer ->
-            if (serializer != null)
-                action(kClass, serializer)
-        }
+        autoscan<GearyAction>(init)
     }
 
     /**
@@ -96,16 +94,14 @@ public class GearyAddon(
         autoscan<GearyCondition>(init)
     }
 
-    //TODO basically use the same system except get different annotations and not kSerializer
-    /*@InternalSerializationApi
-    public fun autoscanSingletonSystems(init: AutoScanner.() -> Unit = {}) {
-        autoscan<TickingSystem>({
-            filterBy = { this }
-            init()
-        }) { kClass, _ ->
-            kClass.objectInstance?.let { system(it) }
-        }
-    }*/
+//    public fun autoscanSingletonSystems(init: AutoScanner.() -> Unit = {}) {
+//        autoscan<GearySystem>({
+//            filterBy = { this }
+//            init()
+//        }) { kClass, _ ->
+//            kClass.objectInstance?.let { system(it) }
+//        }
+//    }
 
     /**
      * Registers serializers for any type [T] on the classpath of [plugin]'s [ClassLoader].
@@ -114,12 +110,14 @@ public class GearyAddon(
      */
     public inline fun <reified T : Any> autoscan(
         crossinline init: AutoScanner.() -> Unit = {},
+        runNow: Boolean = false,
         noinline addSubclass: SerializerRegistry<T> = { kClass, serializer ->
             if (serializer != null)
                 subclass(kClass, serializer)
         }
     ) {
-        startup {
+        if (runNow) AutoScanner().apply(init).registerSerializers(T::class, addSubclass)
+        else startup {
             GearyLoadPhase.REGISTER_SERIALIZERS {
                 AutoScanner().apply(init).registerSerializers(T::class, addSubclass)
             }

@@ -6,7 +6,6 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.uchuhimo.collections.MutableBiMap
 import com.uchuhimo.collections.mutableBiMapOf
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.hocon.Hocon
 import kotlinx.serialization.json.Json
@@ -23,7 +22,8 @@ import kotlin.reflect.KClass
  */
 public object Formats {
     private val componentSerialNames: MutableBiMap<String, KClass<out GearyComponent>> = mutableBiMapOf()
-    private var module = EmptySerializersModule
+    public var module: SerializersModule = EmptySerializersModule
+        private set
 
     //TODO allow this to work for all registered classes, not just components
     public fun getClassFor(serialName: String): KClass<out GearyComponent> =

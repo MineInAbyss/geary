@@ -20,35 +20,19 @@ import com.mineinabyss.idofront.plugin.registerService
 import com.mineinabyss.idofront.serialization.UUIDSerializer
 import com.mineinabyss.idofront.slimjar.IdofrontSlimjar
 import org.bukkit.Bukkit
-import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
-import org.bukkit.event.server.PluginEnableEvent
-import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.*
 import kotlin.io.path.div
 import kotlin.reflect.KClass
 
-public object StartupEventListener : Listener {
-    public val runPostLoad: MutableList<() -> Unit> = mutableListOf()
-
-    public fun getGearyDependants(): List<Plugin> =
-        Bukkit.getServer().pluginManager.plugins.filter { "Geary" in it.description.depend }
-
-    @EventHandler
-    public fun PluginEnableEvent.onPluginLoad() {
-        if ("Geary" in plugin.description.depend && getGearyDependants().last() == plugin) {
-            runPostLoad.toList().forEach { it() }
-        }
-    }
-}
-
 public class GearyPlugin : JavaPlugin() {
+    override fun onLoad() {
+        IdofrontSlimjar.loadToLibraryLoader(this)
+    }
+
     @ExperimentalCommandDSL
     override fun onEnable() {
-        IdofrontSlimjar.loadToLibraryLoader(this)
         instance = this
-
         registerEvents(StartupEventListener)
 
         saveDefaultConfig()
@@ -60,7 +44,6 @@ public class GearyPlugin : JavaPlugin() {
         })
 
         registerService<Engine>(SpigotEngine().apply { start() })
-        registerService<GearyStore>(FileSystemStore(dataFolder.toPath() / "serialized"))
 
         // Register commands.
         GearyCommands()
@@ -87,6 +70,7 @@ public class GearyPlugin : JavaPlugin() {
 
             startup {
                 GearyLoadPhase.ENABLE {
+                    registerService<GearyStore>(FileSystemStore(dataFolder.toPath() / "serialized"))
                     Bukkit.getOnlinePlayers().forEach { it.toGeary() }
                 }
             }
@@ -94,8 +78,6 @@ public class GearyPlugin : JavaPlugin() {
     }
 
     override fun onDisable() {
-        super.onDisable()
-        logger.info("onDisable has been invoked!")
         server.scheduler.cancelTasks(this)
     }
 
