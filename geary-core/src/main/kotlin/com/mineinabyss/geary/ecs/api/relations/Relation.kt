@@ -4,6 +4,8 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.engine.*
+import kotlinx.serialization.Serializable
+import kotlin.reflect.KClass
 
 /**
  * A combination of two [GearyComponentId]s into one that represents a relation between
@@ -21,19 +23,11 @@ import com.mineinabyss.geary.ecs.engine.*
  * @property component The part of the relation that points to another component on the entity.
  *
  */
+@Serializable
 @JvmInline
 public value class Relation internal constructor(
     public val id: GearyComponentId
 ) : Comparable<Relation> {
-    public constructor(
-        parent: RelationParent,
-        component: GearyComponentId
-    ) : this(
-        (parent.id shl 32 and RELATION_PARENT_MASK)
-                or (component and RELATION_COMPONENT_MASK)
-                or RELATION
-    )
-
     public val parent: RelationParent get() = RelationParent(id and RELATION_PARENT_MASK shr 32)
     public val component: GearyComponentId get() = id and RELATION_COMPONENT_MASK and RELATION.inv()
     public val withoutComponent: GearyComponent get() = id and (TYPE_ROLES_MASK or RELATION_PARENT_MASK)
@@ -44,11 +38,23 @@ public value class Relation internal constructor(
         id.toString(2)
 
     public companion object {
-        public fun of(parent: GearyComponentId, component: GearyComponentId = 0uL): Relation =
-            Relation(RelationParent(parent), component)
+        public fun of(
+            parent: RelationParent,
+            component: GearyComponentId
+        ): Relation = Relation(
+            (parent.id shl 32 and RELATION_PARENT_MASK)
+                    or (component and RELATION_COMPONENT_MASK)
+                    or RELATION
+        )
 
-        public inline fun <reified P: GearyComponent, reified C: GearyComponent> of(): Relation =
-            Relation(RelationParent(componentId<P>()), componentId<C>())
+        public fun of(parent: GearyComponentId, component: GearyComponentId = 0uL): Relation =
+            of(RelationParent(parent), component)
+
+        public fun of(parent: KClass<*>, component: KClass<*>): Relation =
+            of(componentId(parent::class), componentId(component::class))
+
+        public inline fun <reified P : GearyComponent, reified C : GearyComponent> of(): Relation =
+            of(componentId<P>(), componentId<C>())
     }
 }
 

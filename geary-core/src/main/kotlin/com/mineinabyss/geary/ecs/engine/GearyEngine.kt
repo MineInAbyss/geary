@@ -56,7 +56,7 @@ public open class GearyEngine : TickingEngine() {
     override fun addSystem(system: GearySystem): Boolean {
         // Track systems right at startup since they are likely going to tick very soon anyways and we don't care about
         // any hiccups at that point.
-        return when(system) {
+        return when (system) {
             is TickingSystem -> {
                 QueryManager.trackQuery(system)
                 registeredSystems.add(system)
@@ -102,13 +102,15 @@ public open class GearyEngine : TickingEngine() {
             archetype.getComponents(row).toSet()
         } ?: emptySet()
 
-    override fun getRelatedComponentsFor(
+    override fun getRelationsFor(
         entity: GearyEntityId,
         relationParent: RelationParent
-    ): Set<GearyComponent> = getRecord(entity)?.run {
+    ): Set<Pair<GearyComponent, Relation>> = getRecord(entity)?.run {
         archetype
             .relations[relationParent.id.toLong()]
-            ?.mapNotNullTo(mutableSetOf()) { archetype[row, it.component] }
+            ?.mapNotNullTo(mutableSetOf()) {
+                archetype[row, it.component]?.to(Relation.of(relationParent, it.component))
+            }
     } ?: setOf()
 
 
@@ -138,7 +140,7 @@ public open class GearyEngine : TickingEngine() {
         forComponent: GearyComponentId,
         data: GearyComponent
     ) {
-        setComponentFor(entity, Relation(parent, forComponent).id, data)
+        setComponentFor(entity, Relation.of(parent, forComponent).id, data)
     }
 
     override fun removeComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean {

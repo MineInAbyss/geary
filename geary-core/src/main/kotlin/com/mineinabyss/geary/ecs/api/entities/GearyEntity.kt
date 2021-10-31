@@ -51,8 +51,10 @@ public value class GearyEntity(public val id: GearyEntityId) {
         }
     }
 
+    public inline fun <reified T : GearyComponent, reified C : GearyComponent> getRelation(): T? = getRelation(C::class)
+
     public inline fun <reified T : GearyComponent> getRelation(component: GearyComponent): T? {
-        return get(Relation(RelationParent(componentId<T>()), componentId(component::class)).id) as? T
+        return get(Relation.of(T::class, component::class).id) as? T
     }
 
     public inline fun <reified T : GearyComponent, reified C : GearyComponent> setRelation(
@@ -72,6 +74,12 @@ public value class GearyEntity(public val id: GearyEntityId) {
         val componentId = componentId(componentKClass).let { if (holdsData) it.withRole(HOLDS_DATA) else it }
         Engine.setRelationFor(id, RelationParent(parentId), componentId, parentData)
     }
+
+    public inline fun <reified T : GearyComponent, reified C : GearyComponent> removeRelation(): Boolean =
+        removeRelation(Relation.of<T, C>())
+
+    public fun removeRelation(relation: Relation): Boolean =
+        remove(Relation.of(relation.parent, relation.component).id)
 
     /** Adds a list of [component] to this entity */
     public inline fun add(component: GearyComponentId) {
@@ -155,8 +163,23 @@ public value class GearyEntity(public val id: GearyEntityId) {
     /** Gets all the active components on this entity. */
     public inline fun getComponents(): Set<GearyComponent> = Engine.getComponentsFor(id)
 
+
+    /** Removes all components related to a parent of type [T] on the entity. */
+    public inline fun <reified T : GearyComponent> removeRelations(): Set<GearyComponent> {
+        val comps = Engine.getRelationsFor(id, RelationParent(componentId<T>()))
+        comps.forEach { (_, relation) ->
+            removeRelation(relation)
+        }
+        return comps.mapTo(mutableSetOf()) { it.first }
+    }
+
+    /** Gets a list of components related to the component represented by [T]. */
+    public inline fun <reified T : GearyComponent> getComponentsRelatedTo(): Set<GearyComponent> =
+        getComponentsRelatedTo(RelationParent(componentId<T>()))
+
+    /** Gets a list of components related to the component represented by [relationParentId]. */
     public inline fun getComponentsRelatedTo(relationParentId: RelationParent): Set<GearyComponent> =
-        Engine.getRelatedComponentsFor(id, relationParentId)
+        Engine.getRelationsFor(id, relationParentId).mapTo(mutableSetOf()) { it.first }
 
     /** Gets all the active persisting components on this entity. */
     public inline fun getPersistingComponents(): Set<GearyComponent> =

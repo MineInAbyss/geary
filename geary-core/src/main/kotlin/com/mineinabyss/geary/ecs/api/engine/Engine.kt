@@ -28,7 +28,14 @@ public interface Engine {
     /** Gets a list of all the components [entity] has. */
     public fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent>
 
-    public fun getRelatedComponentsFor(entity: GearyEntityId, relationParent: RelationParent): Set<GearyComponent>
+    /**
+     * Gets a list of components related to the component represented by [relationParent], and pairs them with
+     * the id of the child part of the relation.
+     */
+    public fun getRelationsFor(
+        entity: GearyEntityId,
+        relationParent: RelationParent
+    ): Set<Pair<GearyComponent, Relation>>
 
     /** Gets a [component]'s data from an [entity] or null if not present/the component doesn't hold any data. */
     public fun getComponentFor(entity: GearyEntityId, component: GearyComponentId): GearyComponent?
@@ -36,13 +43,13 @@ public interface Engine {
     /** Checks whether an [entity] has a [component] */
     public fun hasComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean
 
-    /** Adds this [component] to the [entity]'s type but doesnt store any data. */
+    /** Adds this [component] to the [entity]'s type but doesn't store any data. */
     public fun addComponentFor(entity: GearyEntityId, component: GearyComponentId)
 
     /** Associates this component's data with this entity. */
     public fun setComponentFor(entity: GearyEntityId, component: GearyComponentId, data: GearyComponent)
 
-    /** Sets a [Relation] component for this [entity], with data associated with the [parent] */
+    /** Sets a [Relation] component for this [entity], with [data] associated with the [parent] */
     public fun setRelationFor(
         entity: GearyEntityId,
         parent: RelationParent,

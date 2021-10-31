@@ -45,7 +45,11 @@ public abstract class EntityPropertyHolder {
     public inline fun <T> GearyEntity.runWithProperties(run: GearyEntity.() -> T): T? {
         if (propertiesEmpty) return run()
         if (readProperties(this)) {
-            return run().also { clear(this) }
+            return try {
+                run()
+            } finally {
+                clear(this)
+            }
         }
         return null
     }
