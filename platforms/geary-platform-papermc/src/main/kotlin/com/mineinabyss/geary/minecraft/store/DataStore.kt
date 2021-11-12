@@ -97,11 +97,20 @@ public fun PersistentDataContainer.encodePrefabs(keys: Collection<PrefabKey>) {
     )
 }
 
+public object PrefabNamespaceMigrations {
+    public val migrations: MutableMap<String, String> = mutableMapOf()
+}
+
 public fun PersistentDataContainer.decodePrefabs(): Set<PrefabKey> =
     decode("geary:prefabs".toMCKey(), SetSerializer(PrefabKey.serializer()))
-        ?.map { PrefabKey.of(it.toString().replaceBefore(':', "mineinabyss")) }
+        ?.map {
+            val key = PrefabKey.of(it.toString())
+            // Migrate namespace if needed
+            val migrated = PrefabNamespaceMigrations.migrations.getOrDefault(key.namespace, key.namespace)
+            PrefabKey.of(migrated, key.name)
+        }
         ?.toSet()
-         ?: emptySet()
+        ?: emptySet()
 
 /**
  * Decodes a set of components from this [PersistentDataContainer].
