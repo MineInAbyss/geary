@@ -21,7 +21,7 @@ public value class PrefabKey private constructor(public val key: String) {
         /** Creates a key from a string with [namespace] and [name] separated by one '`:`' character. */
         public fun of(stringKey: String): PrefabKey {
             if (stringKey.split(':').size != 2)
-                error("Malformatted prefab key: $stringKey. Must only contain one : that splits namespace and key.")
+                error("Malformed prefab key: $stringKey. Must only contain one : that splits namespace and key.")
             return PrefabKey(stringKey)
         }
 
