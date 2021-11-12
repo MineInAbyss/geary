@@ -14,7 +14,6 @@ import com.mineinabyss.geary.minecraft.engine.SpigotEngine
 import com.mineinabyss.geary.minecraft.listeners.GearyAttemptSpawnListener
 import com.mineinabyss.geary.minecraft.store.FileSystemStore
 import com.mineinabyss.geary.minecraft.store.GearyStore
-import com.mineinabyss.idofront.commands.execution.ExperimentalCommandDSL
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
 import com.mineinabyss.idofront.serialization.UUIDSerializer
@@ -30,7 +29,6 @@ public class GearyPlugin : JavaPlugin() {
         IdofrontSlimjar.loadToLibraryLoader(this)
     }
 
-    @ExperimentalCommandDSL
     override fun onEnable() {
         instance = this
         registerEvents(StartupEventListener)

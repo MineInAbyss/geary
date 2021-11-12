@@ -42,13 +42,13 @@ public open class GearyEngine : TickingEngine() {
 //        componentInfo.set(ComponentInfo(ComponentInfo::class)) //FIXME causes an error
     }
 
-    override fun getComponentIdForClass(kClass: KClass<*>): GearyComponentId {
-        return classToComponentMap.getOrPut(kClass) {
-            entity {
-                set(ComponentInfo(kClass))
-            }.id
+    override fun getOrRegisterComponentIdForClass(kClass: KClass<*>): GearyComponentId =
+        classToComponentMap.getOrElse(kClass) { registerComponentIdForClass(kClass) }
+
+    override fun registerComponentIdForClass(kClass: KClass<*>): GearyComponentId =
+        classToComponentMap.getOrPut(kClass) { entity().id }.also {
+            it.toGeary().set(ComponentInfo(kClass))
         }
-    }
 
     //TODO Proper pipeline with different stages
     protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()

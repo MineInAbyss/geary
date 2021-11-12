@@ -125,7 +125,7 @@ public class GearyAddon(
     }
 
     private companion object {
-        private data class CacheKey(val plugin: Plugin, val path: String?, val excluded: Collection<String>)
+        private data class CacheKey(val classLoader: ClassLoader, val path: String?, val excluded: Collection<String>)
 
         private val reflectionsCache = mutableMapOf<CacheKey, Reflections>()
     }
@@ -159,10 +159,10 @@ public class GearyAddon(
 
         /** Gets a reflections object under [path] */
         private fun getReflections(): Reflections? {
-            // cache the object we get because it takes considerable amount of time to get
-            val cacheKey = CacheKey(this@GearyAddon.plugin, path, excluded)
-            reflectionsCache[cacheKey]?.let { return it }
             val classLoader = this@GearyAddon.plugin::class.java.classLoader
+            // cache the object we get because it takes considerable amount of time to get
+            val cacheKey = CacheKey(classLoader, path, excluded)
+            reflectionsCache[cacheKey]?.let { return it }
 
             val reflections = Reflections(
                 ConfigurationBuilder()
@@ -263,8 +263,7 @@ public class GearyAddon(
         kClass: KClass<T>,
         serializer: KSerializer<T>?
     ) {
-        //TODO make it more explicitly clear this function registers new components as entities
-        Engine.getComponentIdForClass(kClass)
+        Engine.registerComponentIdForClass(kClass)
 
         val serialName = serializer?.descriptor?.serialName ?: return
         if (!Formats.isRegistered(serialName)) {
@@ -274,12 +273,12 @@ public class GearyAddon(
     }
 
     /** Adds a [SerializersModule] to be used for polymorphic serialization within the ECS. */
-    public fun serializers(init: SerializersModuleBuilder.() -> Unit) {
-        Formats.addSerializerModule(SerializersModule { init() })
+    public inline fun serializers(init: SerializersModuleBuilder.() -> Unit) {
+        Formats.addSerializerModule(plugin.name, SerializersModule { init() })
     }
 
     /** Entry point for extending behaviour regarding how bukkit entities are linked to the ECS. */
-    public fun bukkitEntityAssociations(init: BukkitEntityAssociationsAddon.() -> Unit) {
+    public inline fun bukkitEntityAssociations(init: BukkitEntityAssociationsAddon.() -> Unit) {
         BukkitEntityAssociationsAddon().apply(init)
     }
 
@@ -346,5 +345,6 @@ public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KC
 /** Entry point to register a new [Plugin] with the Geary ECS. */
 //TODO support plugins being re-registered after a reload
 public inline fun Plugin.gearyAddon(init: GearyAddon.() -> Unit) {
+    Formats.clearSerializerModule(name)
     GearyAddon(this).apply(init)
 }

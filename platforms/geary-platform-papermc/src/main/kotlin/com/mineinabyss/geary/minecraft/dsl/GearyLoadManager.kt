@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.minecraft.dsl
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.minecraft.GearyPlugin
 import com.mineinabyss.geary.minecraft.events.GearyPrefabLoadEvent
 import com.mineinabyss.idofront.events.call
@@ -23,6 +24,7 @@ public object GearyLoadManager {
             waitFor(1)
             GearyPlugin.instance.logger.info("Registering Serializers")
             actions[GearyLoadPhase.REGISTER_SERIALIZERS]?.runAll()
+            Formats.createFormats()
             GearyPlugin.instance.logger.info("Loading prefabs")
             actions[GearyLoadPhase.LOAD_PREFABS]?.runAll()
             loadingPrefabs.forEach {

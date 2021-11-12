@@ -20,7 +20,7 @@ public inline fun <reified T> componentId(): GearyComponentId = componentId(T::c
 @Deprecated("Should not be getting an id for an id!", ReplaceWith("componentId(component)"))
 public fun componentId(id: KClass<out GearyComponentId>): Nothing = error("Trying to access id for component id")
 
-public fun componentId(kClass: KClass<*>): GearyComponentId = Engine.getComponentIdForClass(kClass)
+public fun componentId(kClass: KClass<*>): GearyComponentId = Engine.getOrRegisterComponentIdForClass(kClass)
 
 public fun GearyComponentId.getComponentInfo(): ComponentInfo? = this.toGeary().get()
 

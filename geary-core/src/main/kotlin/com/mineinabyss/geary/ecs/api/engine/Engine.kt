@@ -8,6 +8,7 @@ import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.services.gearyService
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
+import com.mineinabyss.geary.ecs.components.ComponentInfo
 import com.mineinabyss.geary.ecs.engine.Record
 import kotlin.reflect.KClass
 
@@ -66,9 +67,14 @@ public interface Engine {
     /** Clears all components on an entity. */
     public fun clearEntity(entity: GearyEntityId)
 
-    //TODO split registry and getting
-    /** Given a component's [kClass], returns its [GearyComponentId], or registers the component with the ECS */
-    public fun getComponentIdForClass(kClass: KClass<*>): GearyComponentId
+    /**
+     * Given a component's [kClass], returns its [GearyComponentId], or registers the component with the ECS
+     * @see registerComponentIdForClass
+     */
+    public fun getOrRegisterComponentIdForClass(kClass: KClass<*>): GearyComponentId
+
+    /** Registers an entity with a [ComponentInfo] component that will represent this [kClass]'s component type. */
+    public fun registerComponentIdForClass(kClass: KClass<*>): GearyComponentId
 
     /** Gets the [GearyType] of this [entity] (i.e. a list of all the component/entity ids it holds) */
     public fun getType(entity: GearyEntityId): GearyType

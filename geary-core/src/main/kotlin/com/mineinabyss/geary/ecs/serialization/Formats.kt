@@ -25,6 +25,8 @@ public object Formats {
     public var module: SerializersModule = EmptySerializersModule
         private set
 
+    internal val addonToModuleMap = mutableMapOf<String, SerializersModule>()
+
     //TODO allow this to work for all registered classes, not just components
     public fun getClassFor(serialName: String): KClass<out GearyComponent> =
         componentSerialNames[serialName]
@@ -41,30 +43,33 @@ public object Formats {
         componentSerialNames[name] = kClass
     }
 
-    public val cborFormat: Cbor by lazy {
-        Cbor {
+    public lateinit var cborFormat: Cbor
+
+    public lateinit var hoconFormat: Hocon
+
+    public lateinit var jsonFormat: Json
+
+    public lateinit var yamlFormat: Yaml
+
+    public fun createFormats() {
+        // Merge modules from all registered addons into one
+        module = addonToModuleMap.values.fold(EmptySerializersModule) { acc, module ->
+            acc.overwriteWith(module)
+        }
+        cborFormat = Cbor {
             serializersModule = module
             encodeDefaults = false
         }
-    }
-
-    public val hoconFormat: Hocon by lazy {
-        Hocon {
+        hoconFormat = Hocon {
             serializersModule = module
             useArrayPolymorphism
         }
-    }
-
-    public val jsonFormat: Json by lazy {
-        Json {
+        jsonFormat = Json {
             serializersModule = module
             useArrayPolymorphism = true
             encodeDefaults = false
         }
-    }
-
-    public val yamlFormat: Yaml by lazy {
-        Yaml(
+        yamlFormat = Yaml(
             serializersModule = module,
             configuration = YamlConfiguration(
                 encodeDefaults = false
@@ -73,8 +78,12 @@ public object Formats {
     }
 
     //TODO make internal once we switch off of a singleton object
-    public fun addSerializerModule(module: SerializersModule) {
-        this.module = module.overwriteWith(this.module)
+    public fun addSerializerModule(addonName: String, module: SerializersModule) {
+        addonToModuleMap[addonName] = addonToModuleMap.getOrDefault(addonName, EmptySerializersModule).overwriteWith(module)
+    }
+
+    public fun clearSerializerModule(addonName: String) {
+        addonToModuleMap -= addonName
     }
 
     public fun getSerializerFor(
