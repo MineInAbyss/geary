@@ -6,16 +6,18 @@ import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.relations.toRelation
-import com.mineinabyss.geary.ecs.api.systems.ComponentAddSystem
+import com.mineinabyss.geary.ecs.engine.events.GearyListener
 import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
-import com.mineinabyss.geary.ecs.query.AndSelector
+import com.mineinabyss.geary.ecs.engine.iteration.accessors.AccessorDataScope
 import com.mineinabyss.geary.ecs.query.Query
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import java.util.*
+import kotlin.reflect.KClass
 
 public typealias Event = GearyEntity.() -> Unit
 
@@ -202,10 +204,10 @@ public data class Archetype(
 
     // Some systems that get called when components get modified
 
-    public fun addComponentAddSystem(system: ComponentAddSystem) {
-        (system.family as AndSelector).components
+    public fun addEventListener(system: GearyListener) {
+        system.family.components
             .map { indexOf(it) }
-            .forEach { componentAddSystems[it] += system }
+            .forEach { listeners[it] += system }
     }
 
     public fun runComponentAddSystems(forComponent: GearyComponentId, entity: GearyEntity) {
@@ -214,8 +216,16 @@ public data class Archetype(
         componentAddSystems[index].forEach { it(entity) }
     }
 
-    private val componentAddSystems = Array(dataHoldingType.size) { mutableSetOf<ComponentAddSystem>() }
+    public fun <T: Any> runEvent(eventData: T, row: Int) {
+        val scope = AccessorDataScope(this, row, ids[row].toGeary())
+        listeners[eventData::class]?.forEach { listener ->
+            listener.iteratorFor(scope).forEach { dataCombination ->
+                listener.run()
+            }
+        }
+    }
 
+    private val listeners = mutableMapOf<KClass<*>, MutableSet<GearyListener>>()
     // Basically just want a weak set where stuff gets auto removed when it is no longer running
     // We put our iterator and null and this WeakHashMap handles the rest for us.
     private val runningIterators = WeakHashMap<ArchetypeIterator, Any?>()

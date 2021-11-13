@@ -6,14 +6,13 @@ import com.mineinabyss.geary.ecs.api.entities.toGearyNoMask
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.engine.holdsData
-import com.mineinabyss.geary.ecs.engine.iteration.AccessorData
+import com.mineinabyss.geary.ecs.engine.iteration.AccessorDataScope
 import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
-import com.mineinabyss.geary.ecs.query.Query
 
 public open class RelationWithDataAccessor<T : GearyComponent>(
-    query: Query,
+    index: Int,
     private val relationParent: RelationParent,
-) : Accessor<RelationWithData<T>>(query) {
+) : Accessor<RelationWithData<T>>(index) {
     private val ArchetypeIterator.matchedRelations: List<Relation> by cached {
         archetype.relations[relationParent.id.toLong()]!!
             .filter { it.component.holdsData() || archetype.contains(it.component) }
@@ -25,7 +24,7 @@ public open class RelationWithDataAccessor<T : GearyComponent>(
     private val ArchetypeIterator.componentDataIndices: IntArray
             by cached { matchedRelations.map { archetype.indexOf(it.component) }.toIntArray() }
 
-    override fun AccessorData.readData(): List<RelationWithData<T>> =
+    override fun AccessorDataScope.readData(): List<RelationWithData<T>> =
         iterator.matchedRelations.mapIndexed { i, relation ->
             RelationWithData(
                 parentData = archetype.componentData[iterator.parentDataIndices[i]][row] as T,

@@ -18,7 +18,7 @@ public object QueryManager {
     public fun trackComponentAddSystem(system: ComponentAddSystem) {
         val matched = archetypes.match(system.family)
         componentAddSystems += system
-        matched.forEach { it.addComponentAddSystem(system) }
+        matched.forEach { it.addEventListener(system) }
     }
 
     public fun trackQuery(query: Query) {
@@ -31,7 +31,7 @@ public object QueryManager {
         archetypes.add(archetype, archetype.type)
         val matched = queries.filter { archetype.type in it.family }
         val matchedEvents = componentAddSystems.filter { archetype.type in it.family }
-        matchedEvents.forEach { archetype.addComponentAddSystem(it) }
+        matchedEvents.forEach { archetype.addEventListener(it) }
         matched.forEach { it.matchedArchetypes += archetype }
     }
 

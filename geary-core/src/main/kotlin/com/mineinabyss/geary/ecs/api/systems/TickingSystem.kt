@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.ecs.api.systems
 
 import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
-import com.mineinabyss.geary.ecs.engine.iteration.QueryResult
+import com.mineinabyss.geary.ecs.engine.iteration.accessors.QueryResult
 import com.mineinabyss.geary.ecs.query.Query
 
 /**

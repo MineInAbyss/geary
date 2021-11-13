@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.ecs.query
 
 import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
-import com.mineinabyss.geary.ecs.engine.iteration.QueryResult
+import com.mineinabyss.geary.ecs.engine.iteration.accessors.QueryResult
 
 public class QueryIterator(
     public val query: Query

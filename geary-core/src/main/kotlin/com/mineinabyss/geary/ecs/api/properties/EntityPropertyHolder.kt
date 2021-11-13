@@ -7,7 +7,7 @@ import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
-import com.mineinabyss.geary.ecs.query.Family
+import com.mineinabyss.geary.ecs.query.AndSelector
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -22,7 +22,7 @@ public abstract class EntityPropertyHolder {
     private val extraProperties = mutableListOf<EntityExtension<*>>()
 
     public val familyBuilder: MutableAndSelector = MutableAndSelector()
-    public val family: Family by lazy { familyBuilder.build() }
+    public val family: AndSelector by lazy { familyBuilder.build() }
 
     public val propertiesEmpty: Boolean by lazy { extraProperties.isEmpty() && dataKey.isEmpty() }
 
