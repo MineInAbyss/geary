@@ -1,24 +1,22 @@
-package com.mineinabyss.geary.ecs.query.accessors
+package com.mineinabyss.geary.ecs.accessors
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.entities.toGearyNoMask
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
-import com.mineinabyss.geary.ecs.engine.iteration.accessors.ArchetypeCache
-import com.mineinabyss.geary.ecs.engine.iteration.accessors.RawAccessorDataScope
 
 public open class RelationListAccessor<T : GearyComponent>(
     index: Int,
     private val relationParent: RelationParent,
 ) : Accessor<List<RelationWithData<T>>>(index) {
-    private val ArchetypeCache.matchedRelations: List<Relation>
+    private val ArchetypeCacheScope.matchedRelations: List<Relation>
             by cached { archetype.relations[relationParent.id.toLong()]!! }
 
     //TODO reuse code from RelationWithDataAccessor
-    private val ArchetypeCache.parentDataIndices: IntArray
+    private val ArchetypeCacheScope.parentDataIndices: IntArray
             by cached { matchedRelations.map { archetype.indexOf(it.id) }.toIntArray() }
 
-    private val ArchetypeCache.componentDataIndices: IntArray
+    private val ArchetypeCacheScope.componentDataIndices: IntArray
             by cached { matchedRelations.map { archetype.indexOf(it.component) }.toIntArray() }
 
     override fun RawAccessorDataScope.readData(): List<List<RelationWithData<T>>> =

@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.ecs.api.systems
 
+import com.mineinabyss.geary.ecs.accessors.ResultScope
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
@@ -7,7 +8,6 @@ import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.engine.*
-import com.mineinabyss.geary.ecs.engine.iteration.accessors.QueryResult
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
@@ -37,10 +37,10 @@ internal class QueryManagerTest {
         }
 
         val system = object : TickingSystem() {
-            val QueryResult.string by get<String>()
+            val ResultScope.string by get<String>()
             val int = has<Int>()
 
-            override fun QueryResult.tick() {
+            override fun ResultScope.tick() {
                 string shouldBe entity.get<String>()
                 entity.has<Int>() shouldBe true
             }
@@ -82,9 +82,9 @@ internal class QueryManagerTest {
         var ran = 0
 
         val removingSystem = object : TickingSystem() {
-            val QueryResult.string by get<String>()
+            val ResultScope.string by get<String>()
 
-            override fun QueryResult.tick() {
+            override fun ResultScope.tick() {
                 entity.remove<String>()
                 ran++
             }
@@ -114,8 +114,8 @@ internal class QueryManagerTest {
     fun relations() {
         var ran = 0
         val system = object : TickingSystem() {
-            val QueryResult.test by relation<RelationTestComponent>()
-            override fun QueryResult.tick() {
+            val ResultScope.test by relation<RelationTestComponent>()
+            override fun ResultScope.tick() {
                 ran++
                 family.relationParents.map { it.id } shouldContain test.relation.id
                 test.parentData.shouldBeInstanceOf<RelationTestComponent>()
@@ -151,9 +151,9 @@ internal class QueryManagerTest {
     fun relationPermutations() {
         var ran = 0
         val system = object : TickingSystem() {
-            val QueryResult.test1 by relation<RelationTestComponent1>()
-            val QueryResult.test2 by relation<RelationTestComponent2>()
-            override fun QueryResult.tick() {
+            val ResultScope.test1 by relation<RelationTestComponent1>()
+            val ResultScope.test2 by relation<RelationTestComponent2>()
+            override fun ResultScope.tick() {
                 ran++
                 test1.parentData.shouldBeInstanceOf<RelationTestComponent1>()
                 test2.parentData.shouldBeInstanceOf<RelationTestComponent2>()
@@ -179,9 +179,9 @@ internal class QueryManagerTest {
     @Test
     fun relationsWithData() {
         val system = object : TickingSystem() {
-            val QueryResult.withData by relationWithData<RelationTestWithData>()
+            val ResultScope.withData by relationWithData<RelationTestWithData>()
 
-            override fun QueryResult.tick() {
+            override fun ResultScope.tick() {
                 withData.parentData.shouldBeInstanceOf<RelationTestWithData>()
                 withData.componentData shouldBe "Test"
             }

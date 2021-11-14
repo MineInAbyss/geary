@@ -20,6 +20,12 @@ private fun createArchetype(prevNode: Archetype, componentEdge: GearyComponentId
     return arc
 }
 
+public fun Archetype.countChildren(vis: MutableSet<Archetype> = mutableSetOf()): Int {
+    add.values.filter { it !in vis }.forEach { it.countChildren(vis) }
+    vis.addAll(add.values)
+    return vis.count()
+}
+
 internal val root: Archetype = Archetype(GearyType())
 
 public fun GearyType.plus(id: GearyComponentId): GearyType =

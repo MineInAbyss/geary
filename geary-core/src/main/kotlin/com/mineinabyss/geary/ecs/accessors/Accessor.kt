@@ -1,9 +1,5 @@
-package com.mineinabyss.geary.ecs.query.accessors
+package com.mineinabyss.geary.ecs.accessors
 
-import com.mineinabyss.geary.ecs.engine.iteration.accessors.AccessorHolder
-import com.mineinabyss.geary.ecs.engine.iteration.accessors.ArchetypeCache
-import com.mineinabyss.geary.ecs.engine.iteration.accessors.QueryResult
-import com.mineinabyss.geary.ecs.engine.iteration.accessors.RawAccessorDataScope
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -15,14 +11,14 @@ import kotlin.reflect.KProperty
  * - A consumer provides an [RawAccessorDataScope] and uses it to create an iterator with [AccessorHolder.iteratorFor].
  * - The [iterator][AccessorHolder.AccessorCombinationsIterator] requests each accessor
  *   to [parse][readData] the raw data.
- * - The consumer creates a [QueryResult], for each iteration.
- * - The [QueryResult]'s scope allows appropriate accessors to read data efficiently.
+ * - The consumer creates a [ResultScope], for each iteration.
+ * - The [ResultScope]'s scope allows appropriate accessors to read data efficiently.
  */
 public abstract class Accessor<T>(
     public val index: Int
-) : ReadOnlyProperty<QueryResult, T> {
+) : ReadOnlyProperty<ResultScope, T> {
     @Suppress("UNCHECKED_CAST")
-    override fun getValue(thisRef: QueryResult, property: KProperty<*>): T =
+    override fun getValue(thisRef: ResultScope, property: KProperty<*>): T =
         thisRef.data[index] as T
 
     /**
@@ -33,18 +29,18 @@ public abstract class Accessor<T>(
     internal val cached: List<PerArchetypeCache<*>> get() = _cached
     protected val _cached: MutableList<PerArchetypeCache<*>> = mutableListOf()
 
-    protected inline fun <T> cached(crossinline operation: ArchetypeCache.() -> T): PerArchetypeCache<T> =
+    protected inline fun <T> cached(crossinline operation: ArchetypeCacheScope.() -> T): PerArchetypeCache<T> =
         object : PerArchetypeCache<T>(_cached.size) {
-            override fun ArchetypeCache.calculate(): T = operation()
+            override fun ArchetypeCacheScope.calculate(): T = operation()
         }.also { _cached += it }
 
     public abstract inner class PerArchetypeCache<T>(
         public val cacheIndex: Int
-    ) : ReadOnlyProperty<ArchetypeCache, T> {
-        public abstract fun ArchetypeCache.calculate(): T
+    ) : ReadOnlyProperty<ArchetypeCacheScope, T> {
+        public abstract fun ArchetypeCacheScope.calculate(): T
 
         @Suppress("UNCHECKED_CAST")
-        override fun getValue(thisRef: ArchetypeCache, property: KProperty<*>): T =
+        override fun getValue(thisRef: ArchetypeCacheScope, property: KProperty<*>): T =
             thisRef.perArchetypeData[index][cacheIndex] as T
     }
 }

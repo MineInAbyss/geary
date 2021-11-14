@@ -1,15 +1,14 @@
-package com.mineinabyss.geary.ecs.engine.iteration
+package com.mineinabyss.geary.ecs.engine
 
+import com.mineinabyss.geary.ecs.accessors.AccessorHolder
+import com.mineinabyss.geary.ecs.accessors.RawAccessorDataScope
+import com.mineinabyss.geary.ecs.accessors.ResultScope
 import com.mineinabyss.geary.ecs.api.entities.toGeary
-import com.mineinabyss.geary.ecs.engine.Archetype
-import com.mineinabyss.geary.ecs.engine.iteration.accessors.AccessorHolder
-import com.mineinabyss.geary.ecs.engine.iteration.accessors.QueryResult
-import com.mineinabyss.geary.ecs.engine.iteration.accessors.RawAccessorDataScope
 
 public data class ArchetypeIterator(
     public val archetype: Archetype,
     public val holder: AccessorHolder,
-) : Iterator<QueryResult> {
+) : Iterator<ResultScope> {
     private val perArchCache = holder.cacheForArchetype(archetype)
     private var row: Int = 0
 
@@ -29,7 +28,7 @@ public data class ArchetypeIterator(
 
     private var combinationsIterator: AccessorHolder.AccessorCombinationsIterator? = null
 
-    override fun next(): QueryResult {
+    override fun next(): ResultScope {
         if (combinationsIterator?.hasNext() != true) {
             val destinationRow = movedRows.firstOrNull() ?: row++
             movedRows.remove(destinationRow)
@@ -45,7 +44,7 @@ public data class ArchetypeIterator(
             )
         }
 
-        return QueryResult(
+        return ResultScope(
             entity = combinationsIterator!!.dataScope.entity,
             data = combinationsIterator!!.next()
         )

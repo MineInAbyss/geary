@@ -1,11 +1,11 @@
 package com.mineinabyss.geary.ecs.query
 
-import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
-import com.mineinabyss.geary.ecs.engine.iteration.accessors.QueryResult
+import com.mineinabyss.geary.ecs.accessors.ResultScope
+import com.mineinabyss.geary.ecs.engine.ArchetypeIterator
 
 public class QueryIterator(
     public val query: Query
-) : Iterator<QueryResult> {
+) : Iterator<ResultScope> {
     private val archetypes = query.matchedArchetypes.toList().iterator()
 
     override fun hasNext(): Boolean {
@@ -30,7 +30,7 @@ public class QueryIterator(
         return archetypes.next().iteratorFor(query)
     }
 
-    override fun next(): QueryResult {
+    override fun next(): ResultScope {
         return archetypeIterator!!.next()
     }
 }

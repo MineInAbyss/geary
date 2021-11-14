@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.ecs.engine.iteration.accessors
+package com.mineinabyss.geary.ecs.accessors
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.componentId
@@ -7,7 +7,6 @@ import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.query.AndSelector
-import com.mineinabyss.geary.ecs.query.accessors.*
 
 /**
  * A holder of [Accessor]s which provides helper functions for creating them.
@@ -55,7 +54,7 @@ public abstract class AccessorHolder : MutableAndSelector() {
     public fun cacheForArchetype(archetype: Archetype): List<List<Any?>> =
         perArchetypeCache.getOrPut(archetype) {
             val accessorCache: List<MutableList<Any?>> = accessors.map { it.cached.mapTo(mutableListOf()) { null } }
-            val cache = ArchetypeCache(archetype, accessorCache)
+            val cache = ArchetypeCacheScope(archetype, accessorCache)
 
             for (accessor in accessors)
                 for (it in accessor.cached)

@@ -18,7 +18,9 @@ public object QueryManager {
     public fun trackEventListener(listener: GearyListener) {
         val matched = archetypes.match(listener.family)
         eventListeners += listener
-        matched.forEach { listener.apply { it.handlers() } }
+        for (archetype in matched) {
+            listener.apply { GearyHandlerScope(archetype, this).init() }
+        }
     }
 
     public fun trackQuery(query: Query) {
@@ -31,7 +33,7 @@ public object QueryManager {
         archetypes.add(archetype, archetype.type)
         val matched = queries.filter { archetype.type in it.family }
         val matchedListeners = eventListeners.filter { archetype.type in it.family }
-        matchedListeners.forEach { it.apply { archetype.handlers() } }
+        matchedListeners.forEach { it.apply { GearyHandlerScope(archetype, this).init() } }
         matched.forEach { it.matchedArchetypes += archetype }
     }
 

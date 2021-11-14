@@ -56,8 +56,15 @@ public fun GearyEntity.clearChildren() {
     children.forEach { remove(it.id) }
 }
 
+/** Gets the first parent of this entity */
 public val GearyEntity.parent: GearyEntity?
     get() = type.firstOrNull { it.isChild() }?.let { (it and ENTITY_MASK).toGeary() }
+
+/** Runs code on the first parent of this entity. */
+public inline fun GearyEntity.onParent(parent: GearyEntity? = this.parent, run: GearyEntity.() -> Unit) {
+    parent ?: return
+    run(parent)
+}
 
 public val GearyEntity.parents: Set<GearyEntity>
     get() {

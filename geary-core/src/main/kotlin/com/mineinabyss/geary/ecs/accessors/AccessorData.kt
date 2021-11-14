@@ -1,11 +1,13 @@
-package com.mineinabyss.geary.ecs.engine.iteration.accessors
+package com.mineinabyss.geary.ecs.accessors
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.engine.Archetype
-import com.mineinabyss.geary.ecs.query.accessors.Accessor
 
 /**
- * Some raw data [Accessor]s process to eventually build up to a [QueryResult].
+ * Some raw data [Accessor]s process to eventually build up to a [ResultScope].
+ *
+ * Extends [ArchetypeCacheScope] because anything in this scope should have access to
+ * properties cached per archetype.
  *
  * @see Accessor
  */
@@ -14,19 +16,21 @@ public class RawAccessorDataScope(
     perArchetypeData: List<List<Any?>>,
     public val row: Int,
     public val entity: GearyEntity,
-) : ArchetypeCache(archetype, perArchetypeData)
+) : ArchetypeCacheScope(archetype, perArchetypeData)
 
-public open class ArchetypeCache(
+/**
+ * Scope provided for accessor caching by archetype.
+ */
+public open class ArchetypeCacheScope(
     public val archetype: Archetype,
     public val perArchetypeData: List<List<Any?>>,
 )
 
 
-//TODO better name now that this isn't query specific
 /**
  * Stores data which is formatted
  */
-public data class QueryResult(
+public data class ResultScope(
     val entity: GearyEntity,
     internal val data: List<*>,
 )
