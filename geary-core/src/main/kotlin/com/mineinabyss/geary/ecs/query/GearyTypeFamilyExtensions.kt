@@ -4,7 +4,6 @@ import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
-import com.mineinabyss.geary.ecs.engine.holdsData
 import com.mineinabyss.geary.ecs.engine.isRelation
 import com.mineinabyss.geary.ecs.engine.withRole
 
@@ -13,7 +12,7 @@ public fun GearyType.contains(relationParent: RelationParent, componentMustHoldD
     return mapNotNull { it.toRelation() }
         .any { relationInType ->
             relationInType.parent == relationParent && components.any {
-                if(componentMustHoldData)
+                if (componentMustHoldData)
                     it == relationInType.component.withRole(HOLDS_DATA)
                 else
                     it == relationInType.component

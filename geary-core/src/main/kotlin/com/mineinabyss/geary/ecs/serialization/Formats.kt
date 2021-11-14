@@ -79,7 +79,8 @@ public object Formats {
 
     //TODO make internal once we switch off of a singleton object
     public fun addSerializerModule(addonName: String, module: SerializersModule) {
-        addonToModuleMap[addonName] = addonToModuleMap.getOrDefault(addonName, EmptySerializersModule).overwriteWith(module)
+        addonToModuleMap[addonName] =
+            addonToModuleMap.getOrDefault(addonName, EmptySerializersModule).overwriteWith(module)
     }
 
     public fun clearSerializerModule(addonName: String) {
