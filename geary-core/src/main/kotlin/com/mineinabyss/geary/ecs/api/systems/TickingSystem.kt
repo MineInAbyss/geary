@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.ecs.api.systems
 
-import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
-import com.mineinabyss.geary.ecs.engine.iteration.QueryResult
+import com.mineinabyss.geary.ecs.accessors.ResultScope
+import com.mineinabyss.geary.ecs.engine.ArchetypeIterator
 import com.mineinabyss.geary.ecs.query.Query
 
 /**
@@ -33,7 +33,7 @@ public abstract class TickingSystem(
         forEach { it.tick() }
     }
 
-    protected open fun QueryResult.tick() {}
+    protected open fun ResultScope.tick() {}
 
     protected fun every(iterations: Int): Boolean =
         iteration.mod(iterations) == 0
@@ -43,7 +43,7 @@ public abstract class TickingSystem(
         return null
     }
 
-    public inline fun withEach(action: QueryResult.() -> Unit) {
+    public inline fun withEach(action: ResultScope.() -> Unit) {
         forEach { result -> result.action() }
     }
 

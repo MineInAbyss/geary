@@ -8,12 +8,13 @@ import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
-import com.mineinabyss.geary.ecs.api.systems.ComponentAddSystem
+import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.ComponentInfo
 import com.mineinabyss.geary.ecs.entities.children
+import com.mineinabyss.geary.ecs.events.ComponentAddEvent
 import com.mineinabyss.idofront.messaging.logError
 import java.util.*
 import kotlin.reflect.KClass
@@ -53,20 +54,16 @@ public open class GearyEngine : TickingEngine() {
     //TODO Proper pipeline with different stages
     protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
 
-    override fun addSystem(system: GearySystem): Boolean {
+    override fun addSystem(system: GearySystem) {
         // Track systems right at startup since they are likely going to tick very soon anyways and we don't care about
         // any hiccups at that point.
-        return when (system) {
+        when (system) {
             is TickingSystem -> {
                 QueryManager.trackQuery(system)
                 registeredSystems.add(system)
             }
-            is ComponentAddSystem -> {
-                system.track()
-                true
-            }
+            is GearyListener -> QueryManager.trackEventListener(system)
         }
-
     }
 
     //TODO support suspending functions for systems
@@ -118,7 +115,7 @@ public open class GearyEngine : TickingEngine() {
         getOrAddRecord(entity).apply {
             val newRecord = archetype.addComponent(entity, this, HOLDS_DATA.inv() and component)
             typeMap[entity] = newRecord ?: return
-            newRecord.archetype.runComponentAddSystems(component, entity.toGeary())
+            newRecord.archetype.runEvent(ComponentAddEvent(component), newRecord.row)
         }
     }
 
@@ -130,7 +127,7 @@ public open class GearyEngine : TickingEngine() {
             val componentWithRole = component.withRole(role)
             val newRecord = archetype.setComponent(entity, this, componentWithRole, data)
             typeMap[entity] = newRecord ?: return
-            newRecord.archetype.runComponentAddSystems(componentWithRole, entity.toGeary())
+            newRecord.archetype.runEvent(ComponentAddEvent(componentWithRole), newRecord.row)
         }
     }
 

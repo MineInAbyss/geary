@@ -24,7 +24,7 @@ public interface Engine {
     public fun getNextId(): GearyEntityId
 
     /** Adds a [system] to the engine, which will be ticked appropriately by the engine */
-    public fun addSystem(system: GearySystem): Boolean
+    public fun addSystem(system: GearySystem)
 
     /** Gets a list of all the components [entity] has. */
     public fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent>

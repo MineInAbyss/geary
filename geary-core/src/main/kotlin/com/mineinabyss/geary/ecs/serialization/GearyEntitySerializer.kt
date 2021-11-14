@@ -15,7 +15,8 @@ import kotlinx.serialization.encoding.Encoder
  * A serializer which loads a new entity from a list of components.
  */
 public object GearyEntitySerializer : KSerializer<GearyEntity> {
-    public val componentListSerializer: KSerializer<List<GearyComponent>> = ListSerializer(PolymorphicSerializer(GearyComponent::class))
+    public val componentListSerializer: KSerializer<List<GearyComponent>> =
+        ListSerializer(PolymorphicSerializer(GearyComponent::class))
     override val descriptor: SerialDescriptor = componentListSerializer.descriptor
 
     override fun serialize(encoder: Encoder, value: GearyEntity) {

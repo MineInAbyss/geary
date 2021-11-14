@@ -9,16 +9,18 @@ import com.mineinabyss.geary.ecs.query.contains
 
 public object QueryManager {
     private val queries = mutableListOf<Query>()
-    private val componentAddSystems = mutableListOf<ComponentAddSystem>()
+    private val eventListeners = mutableListOf<GearyListener>()
 
     private val archetypes = object : Component2ObjectArrayMap<Archetype>() {
         override fun Archetype.getGearyType() = type
     }
 
-    public fun trackComponentAddSystem(system: ComponentAddSystem) {
-        val matched = archetypes.match(system.family)
-        componentAddSystems += system
-        matched.forEach { it.addComponentAddSystem(system) }
+    public fun trackEventListener(listener: GearyListener) {
+        val matched = archetypes.match(listener.family)
+        eventListeners += listener
+        for (archetype in matched) {
+            listener.apply { GearyHandlerScope(archetype, this).init() }
+        }
     }
 
     public fun trackQuery(query: Query) {
@@ -30,8 +32,8 @@ public object QueryManager {
     internal fun registerArchetype(archetype: Archetype) {
         archetypes.add(archetype, archetype.type)
         val matched = queries.filter { archetype.type in it.family }
-        val matchedEvents = componentAddSystems.filter { archetype.type in it.family }
-        matchedEvents.forEach { archetype.addComponentAddSystem(it) }
+        val matchedListeners = eventListeners.filter { archetype.type in it.family }
+        matchedListeners.forEach { it.apply { GearyHandlerScope(archetype, this).init() } }
         matched.forEach { it.matchedArchetypes += archetype }
     }
 

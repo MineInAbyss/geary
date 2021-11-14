@@ -1,21 +1,22 @@
 package com.mineinabyss.geary.ecs.engine
 
+import com.mineinabyss.geary.ecs.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.relations.toRelation
-import com.mineinabyss.geary.ecs.api.systems.ComponentAddSystem
-import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
-import com.mineinabyss.geary.ecs.query.AndSelector
+import com.mineinabyss.geary.ecs.events.ComponentAddEvent
 import com.mineinabyss.geary.ecs.query.Query
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import java.util.*
+import kotlin.reflect.KClass
 
 public typealias Event = GearyEntity.() -> Unit
 
@@ -200,34 +201,59 @@ public data class Archetype(
         }
     }
 
-    // Some systems that get called when components get modified
+    // ==== Event listeners ====
 
-    public fun addComponentAddSystem(system: ComponentAddSystem) {
-        (system.family as AndSelector).components
-            .map { indexOf(it) }
-            .forEach { componentAddSystems[it] += system }
+    public fun <T : Any> addEventListener(
+        forClass: KClass<T>,
+        run: GearyEventHandler<T>
+    ) {
+        when (forClass) {
+            ComponentAddEvent::class -> run.holder.family.components
+                .map { indexOf(it) }
+                .forEach { componentAddListeners[it] += run }
+            else -> listeners.getOrPut(forClass) { mutableSetOf() } += run
+        }
     }
 
-    public fun runComponentAddSystems(forComponent: GearyComponentId, entity: GearyEntity) {
-        val index = indexOf(forComponent)
-        if (index == -1) return
-        componentAddSystems[index].forEach { it(entity) }
+    public inline fun <reified T : Any> runEvent(eventData: T, row: Int) {
+        runEvent(T::class, eventData, row)
     }
 
-    private val componentAddSystems = Array(dataHoldingType.size) { mutableSetOf<ComponentAddSystem>() }
+    public fun <T : Any> runEvent(kClass: KClass<T>, eventData: T, row: Int) {
+        val entity = ids[row].toGeary()
+
+        when (eventData) {
+            is ComponentAddEvent -> {
+                val index = indexOf(eventData.component)
+                if (index == -1) return
+                componentAddListeners[index].forEach {
+                    val scope = RawAccessorDataScope(this, it.holder.cacheForArchetype(this), row, entity)
+                    it.runEvent(eventData, scope)
+                }
+            }
+            else -> listeners[kClass::class]?.forEach {
+                //TODO clean up by moving into runEvent
+                val scope = RawAccessorDataScope(this, it.holder.cacheForArchetype(this), row, entity)
+                it.runEvent(eventData, scope)
+            }
+        }
+    }
+
+    private val listeners = mutableMapOf<KClass<*>, MutableSet<GearyEventHandler<*>>>()
+    private val componentAddListeners = Array(dataHoldingType.size) { mutableSetOf<GearyEventHandler<*>>() }
 
     // Basically just want a weak set where stuff gets auto removed when it is no longer running
     // We put our iterator and null and this WeakHashMap handles the rest for us.
     private val runningIterators = WeakHashMap<ArchetypeIterator, Any?>()
-    private val queryIterators = mutableMapOf<Query, ArchetypeIterator>()
 
     internal fun finalizeIterator(iterator: ArchetypeIterator) {
         runningIterators.remove(iterator)
     }
 
     internal fun iteratorFor(query: Query): ArchetypeIterator {
-        val iterator = queryIterators.getOrPut(query) { ArchetypeIterator(this, query) }.copy()
+        val iterator = ArchetypeIterator(this, query)
         runningIterators[iterator] = null
         return iterator
     }
 }
+
