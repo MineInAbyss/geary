@@ -10,9 +10,10 @@ import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.relations.toRelation
-import com.mineinabyss.geary.ecs.engine.events.GearyListener
 import com.mineinabyss.geary.ecs.engine.iteration.ArchetypeIterator
-import com.mineinabyss.geary.ecs.engine.iteration.accessors.AccessorDataScope
+import com.mineinabyss.geary.ecs.engine.iteration.accessors.AccessorHolder
+import com.mineinabyss.geary.ecs.engine.iteration.accessors.QueryResult
+import com.mineinabyss.geary.ecs.engine.iteration.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.ecs.query.Query
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
@@ -202,42 +203,84 @@ public data class Archetype(
         }
     }
 
-    // Some systems that get called when components get modified
+    // ==== Event listeners ====
 
-    public fun addEventListener(system: GearyListener) {
-        system.family.components
-            .map { indexOf(it) }
-            .forEach { listeners[it] += system }
+    public fun <T : Any> addEventListener(
+        forClass: KClass<T>,
+        run: ExecutableEvent<T>
+    ) {
+        when (forClass) {
+            ComponentAddEvent::class -> run.holder.family.components
+                .map { indexOf(it) }
+                .forEach { componentAddListeners[it] += run }
+            else -> listeners.getOrPut(forClass) { mutableSetOf() } += run
+        }
     }
 
-    public fun runComponentAddSystems(forComponent: GearyComponentId, entity: GearyEntity) {
-        val index = indexOf(forComponent)
-        if (index == -1) return
-        componentAddSystems[index].forEach { it(entity) }
+    public inline fun <reified T : Any> runEvent(eventData: T, row: Int) {
+        runEvent(T::class, eventData, row)
     }
 
-    public fun <T: Any> runEvent(eventData: T, row: Int) {
-        val scope = AccessorDataScope(this, row, ids[row].toGeary())
-        listeners[eventData::class]?.forEach { listener ->
-            listener.iteratorFor(scope).forEach { dataCombination ->
-                listener.run()
+    public fun <T : Any> runEvent(kClass: KClass<T>, eventData: T, row: Int) {
+        val entity = ids[row].toGeary()
+
+        when (eventData) {
+            is ComponentAddEvent -> {
+                val index = indexOf(eventData.component)
+                if (index == -1) return
+                componentAddListeners[index].forEach {
+                    val scope = RawAccessorDataScope(this, it.holder.cacheForArchetype(this), row, entity)
+                    it.runEvent(eventData, scope)
+                }
+            }
+            else -> listeners[kClass::class]?.forEach {
+                //TODO clean up by moving into runEvent
+                val scope = RawAccessorDataScope(this, it.holder.cacheForArchetype(this), row, entity)
+                it.runEvent(eventData, scope)
             }
         }
     }
 
-    private val listeners = mutableMapOf<KClass<*>, MutableSet<GearyListener>>()
+    private val listeners = mutableMapOf<KClass<*>, MutableSet<ExecutableEvent<*>>>()
+    private val componentAddListeners = Array(dataHoldingType.size) { mutableSetOf<ExecutableEvent<*>>() }
+
     // Basically just want a weak set where stuff gets auto removed when it is no longer running
     // We put our iterator and null and this WeakHashMap handles the rest for us.
     private val runningIterators = WeakHashMap<ArchetypeIterator, Any?>()
-    private val queryIterators = mutableMapOf<Query, ArchetypeIterator>()
 
     internal fun finalizeIterator(iterator: ArchetypeIterator) {
         runningIterators.remove(iterator)
     }
 
     internal fun iteratorFor(query: Query): ArchetypeIterator {
-        val iterator = queryIterators.getOrPut(query) { ArchetypeIterator(this, query) }.copy()
+        val iterator = ArchetypeIterator(this, query)
         runningIterators[iterator] = null
         return iterator
     }
 }
+
+//TODO rename to handler?
+public class ExecutableEvent<T : Any>(
+    public val holder: AccessorHolder,
+    public val onEvent: QueryResult.(T) -> Unit
+) {
+    /** Be sure [event] is of the same type as this listener wants! */
+    public fun runEvent(event: Any, scope: RawAccessorDataScope) {
+        holder.iteratorFor(scope).forEach { dataCombination ->
+            QueryResult(scope.entity, dataCombination).onEvent(event as T)
+        }
+    }
+}
+
+/**
+ * Called every time an entity gets all of a listener's requested components added to it.
+ *
+ * For example, if listening to `A`, `B`, `C`, the event triggers when any of the components is added,
+ * as long as all three are present after the addition.
+ *
+ * MAKE SURE YOUR LISTENER DOES NOT HAVE ANY LOGIC BRANCHES. Only the top level list of components are
+ * guaranteed to match, nothing else is checked.
+ */
+public class ComponentAddEvent(
+    public val component: GearyComponentId
+)

@@ -9,10 +9,16 @@ import com.mineinabyss.geary.ecs.query.accessors.Accessor
  *
  * @see Accessor
  */
-public class AccessorDataScope(
-    public val archetype: Archetype,
+public class RawAccessorDataScope(
+    archetype: Archetype,
+    perArchetypeData: List<List<Any?>>,
     public val row: Int,
     public val entity: GearyEntity,
+) : ArchetypeCache(archetype, perArchetypeData)
+
+public open class ArchetypeCache(
+    public val archetype: Archetype,
+    public val perArchetypeData: List<List<Any?>>,
 )
 
 
@@ -22,5 +28,5 @@ public class AccessorDataScope(
  */
 public data class QueryResult(
     val entity: GearyEntity,
-    internal val data: List<*>
+    internal val data: List<*>,
 )

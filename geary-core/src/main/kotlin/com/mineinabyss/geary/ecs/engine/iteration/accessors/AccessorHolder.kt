@@ -4,6 +4,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.relations.RelationParent
 import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
+import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.query.AndSelector
 import com.mineinabyss.geary.ecs.query.accessors.*
@@ -16,10 +17,7 @@ import com.mineinabyss.geary.ecs.query.accessors.*
 public abstract class AccessorHolder : MutableAndSelector() {
     public val family: AndSelector by lazy { build() }
     internal val accessors = mutableListOf<Accessor<*>>()
-
-//    val cachedPerArchetype =
-    internal val cachedValues: List<MutableList<Any?>> =
-        List(accessors.size) { mutableListOf() }
+    private val perArchetypeCache = mutableMapOf<Archetype, List<List<Any?>>>()
 
     //TODO getOrNull
 
@@ -54,12 +52,25 @@ public abstract class AccessorHolder : MutableAndSelector() {
         return accessor
     }
 
+    public fun cacheForArchetype(archetype: Archetype): List<List<Any?>> =
+        perArchetypeCache.getOrPut(archetype) {
+            val accessorCache: List<MutableList<Any?>> = accessors.map { it.cached.mapTo(mutableListOf()) { null } }
+            val cache = ArchetypeCache(archetype, accessorCache)
+
+            for (accessor in accessors)
+                for (it in accessor.cached)
+                    accessorCache[accessor.index][it.cacheIndex] =
+                        it.run { cache.calculate() }
+
+            accessorCache
+        }
+
     // ==== Iteration ====
 
-    internal fun iteratorFor(dataScope: AccessorDataScope): AccessorCombinationsIterator =
+    internal fun iteratorFor(dataScope: RawAccessorDataScope): AccessorCombinationsIterator =
         AccessorCombinationsIterator(dataScope)
 
-    internal inner class AccessorCombinationsIterator(val dataScope: AccessorDataScope) : Iterator<List<*>> {
+    internal inner class AccessorCombinationsIterator(val dataScope: RawAccessorDataScope) : Iterator<List<*>> {
         /** All sets of data each accessor wants. Will iterate over all combinations of items from each list. */
         val data: List<List<*>> = accessors.map { with(it) { dataScope.readData() } }
 

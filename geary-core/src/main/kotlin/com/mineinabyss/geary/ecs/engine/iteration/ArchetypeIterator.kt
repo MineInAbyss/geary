@@ -2,25 +2,15 @@ package com.mineinabyss.geary.ecs.engine.iteration
 
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.engine.Archetype
-import com.mineinabyss.geary.ecs.engine.iteration.accessors.AccessorDataScope
 import com.mineinabyss.geary.ecs.engine.iteration.accessors.AccessorHolder
 import com.mineinabyss.geary.ecs.engine.iteration.accessors.QueryResult
-import com.mineinabyss.geary.ecs.query.accessors.Accessor
+import com.mineinabyss.geary.ecs.engine.iteration.accessors.RawAccessorDataScope
 
 public data class ArchetypeIterator(
     public val archetype: Archetype,
     public val holder: AccessorHolder,
 ) : Iterator<QueryResult> {
-    private val accessors: List<Accessor<*>> = holder.accessors
-
-    init {
-        accessors.forEachIndexed { i, accessor ->
-            for (cached in accessor.cached) {
-                cachedValues[i].add(with(cached) { calculate() })
-            }
-        }
-    }
-
+    private val perArchCache = holder.cacheForArchetype(archetype)
     private var row: Int = 0
 
     override fun hasNext(): Boolean =
@@ -46,17 +36,18 @@ public data class ArchetypeIterator(
             val entity = archetype.ids[destinationRow].toGeary()
 
             combinationsIterator = holder.iteratorFor(
-                AccessorDataScope(
+                RawAccessorDataScope(
                     archetype = archetype,
                     row = destinationRow,
                     entity = entity,
+                    perArchetypeData = perArchCache
                 )
             )
         }
 
         return QueryResult(
             entity = combinationsIterator!!.dataScope.entity,
-            data = combinationsIterator!!.next(),
+            data = combinationsIterator!!.next()
         )
     }
 }
