@@ -14,6 +14,7 @@ import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.ComponentInfo
 import com.mineinabyss.geary.ecs.entities.children
+import com.mineinabyss.geary.ecs.events.ComponentAddEvent
 import com.mineinabyss.idofront.messaging.logError
 import java.util.*
 import kotlin.reflect.KClass
