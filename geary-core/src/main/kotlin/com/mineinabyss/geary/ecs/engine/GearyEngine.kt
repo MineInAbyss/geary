@@ -115,7 +115,7 @@ public open class GearyEngine : TickingEngine() {
         getOrAddRecord(entity).apply {
             val newRecord = archetype.addComponent(entity, this, HOLDS_DATA.inv() and component)
             typeMap[entity] = newRecord ?: return
-            newRecord.archetype.runEvent(ComponentAddEvent(component), newRecord.row)
+            newRecord.archetype.callEvent(ComponentAddEvent(component), newRecord.row)
         }
     }
 
@@ -127,7 +127,7 @@ public open class GearyEngine : TickingEngine() {
             val componentWithRole = component.withRole(role)
             val newRecord = archetype.setComponent(entity, this, componentWithRole, data)
             typeMap[entity] = newRecord ?: return
-            newRecord.archetype.runEvent(ComponentAddEvent(componentWithRole), newRecord.row)
+            newRecord.archetype.callEvent(ComponentAddEvent(componentWithRole), newRecord.row)
         }
     }
 

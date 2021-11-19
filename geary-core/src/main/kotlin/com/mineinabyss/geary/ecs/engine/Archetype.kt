@@ -215,11 +215,11 @@ public data class Archetype(
         }
     }
 
-    public inline fun <reified T : Any> runEvent(eventData: T, row: Int) {
-        runEvent(T::class, eventData, row)
+    public inline fun <reified T : Any> callEvent(eventData: T, row: Int) {
+        callEvent(T::class, eventData, row)
     }
 
-    public fun <T : Any> runEvent(kClass: KClass<T>, eventData: T, row: Int) {
+    public fun <T : Any> callEvent(kClass: KClass<T>, eventData: T, row: Int) {
         val entity = ids[row].toGeary()
 
         when (eventData) {

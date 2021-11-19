@@ -13,3 +13,5 @@ public annotation class ExcludeAutoscan
  * components must be marked with this annotation for the autoscanner to automatically register them.
  */
 public annotation class AutoscanComponent
+
+public annotation class AutoscanCondition

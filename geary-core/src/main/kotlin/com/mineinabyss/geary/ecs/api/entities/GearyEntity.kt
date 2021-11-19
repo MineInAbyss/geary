@@ -205,5 +205,11 @@ public value class GearyEntity(public val id: GearyEntityId) {
      * @see has */
     public inline fun hasAll(components: Collection<ComponentClass>): Boolean = components.all { has(it) }
 
+    public inline fun <reified T : Any> callEvent(eventData: T) {
+        Engine.getRecord(id)?.apply {
+            archetype.callEvent(T::class, eventData, row)
+        }
+    }
+
     public operator fun component1(): GearyEntityId = id
 }
