@@ -53,6 +53,10 @@ public value class GearyEntity(public val id: GearyEntityId) {
 
     public inline fun <reified T : GearyComponent, reified C : GearyComponent> getRelation(): T? = getRelation(C::class)
 
+    public inline fun <reified T : GearyComponent> getRelation(componentKlass: KClass<GearyComponent>): T? {
+        return get(Relation.of(T::class, componentKlass).id) as? T
+    }
+
     public inline fun <reified T : GearyComponent> getRelation(component: GearyComponent): T? {
         return get(Relation.of(T::class, component::class).id) as? T
     }

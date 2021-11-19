@@ -28,7 +28,7 @@ import kotlin.reflect.KClass
  * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */
 public open class GearyEngine : TickingEngine() {
-    internal val typeMap = mutableMapOf<GearyEntityId, Record>()
+    private val typeMap = mutableMapOf<GearyEntityId, Record>()
     private var currId: GearyEntityId = 0uL
 
     //TODO there's likely a more performant option
