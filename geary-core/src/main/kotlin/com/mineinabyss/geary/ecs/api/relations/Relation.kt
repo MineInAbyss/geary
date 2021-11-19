@@ -11,16 +11,16 @@ import kotlin.reflect.KClass
  * A combination of two [GearyComponentId]s into one that represents a relation between
  * the two. Used for "adding a component to another component."
  *
- * Data of the [parent]'s type is stored under the relation's full [id] in archetypes.
- * The [component] points to another component this relation references.
+ * Data of the [data]'s type is stored under the relation's full [id] in archetypes.
+ * The [key] points to another component this relation references.
  *
  * ```
  * Parent bits:     0x00FFFFFF00000000
  * Component bits:  0xFF000000FFFFFFFF
  * ```
  *
- * @property parent The part of the relation which determines the data type of the full relation.
- * @property component The part of the relation that points to another component on the entity.
+ * @property data The part of the relation which determines the data type of the full relation.
+ * @property key The part of the relation that points to another component on the entity.
  *
  */
 @Serializable
@@ -28,9 +28,8 @@ import kotlin.reflect.KClass
 public value class Relation internal constructor(
     public val id: GearyComponentId
 ) : Comparable<Relation> {
-    public val parent: RelationParent get() = RelationParent(id and RELATION_PARENT_MASK shr 32)
-    public val component: GearyComponentId get() = id and RELATION_COMPONENT_MASK and RELATION.inv()
-    public val withoutComponent: GearyComponent get() = id and (TYPE_ROLES_MASK or RELATION_PARENT_MASK)
+    public val data: RelationDataType get() = RelationDataType(id and RELATION_PARENT_MASK shr 32)
+    public val key: GearyComponentId get() = id and RELATION_COMPONENT_MASK and RELATION.inv()
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
 
@@ -39,7 +38,7 @@ public value class Relation internal constructor(
 
     public companion object {
         public fun of(
-            parent: RelationParent,
+            parent: RelationDataType,
             component: GearyComponentId
         ): Relation = Relation(
             (parent.id shl 32 and RELATION_PARENT_MASK)
@@ -48,10 +47,10 @@ public value class Relation internal constructor(
         )
 
         public fun of(parent: GearyComponentId, component: GearyComponentId = 0uL): Relation =
-            of(RelationParent(parent), component)
+            of(RelationDataType(parent), component)
 
         public fun of(parent: KClass<*>, component: KClass<*>): Relation =
-            of(componentId(parent::class), componentId(component::class))
+            of(componentId(parent), componentId(component))
 
         public inline fun <reified P : GearyComponent, reified C : GearyComponent> of(): Relation =
             of(componentId<P>(), componentId<C>())
@@ -66,7 +65,7 @@ public value class Relation internal constructor(
  * ```
  */
 @JvmInline
-public value class RelationParent(public val id: GearyComponentId)
+public value class RelationDataType(public val id: GearyComponentId)
 
 public fun GearyComponentId.toRelation(): Relation? =
     Relation(this).takeIf { isRelation() }

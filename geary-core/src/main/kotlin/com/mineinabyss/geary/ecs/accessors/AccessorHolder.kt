@@ -2,7 +2,7 @@ package com.mineinabyss.geary.ecs.accessors
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
@@ -27,22 +27,22 @@ public abstract class AccessorHolder : MutableAndSelector() {
     }
 
     public inline fun <reified T : GearyComponent> relation(): RelationAccessor<T> {
-        val relationParent = RelationParent(componentId<T>())
-        has(relationParent)
-        return addAccessor { RelationAccessor(it, relationParent) }
+        val relationDataType = RelationDataType(componentId<T>())
+        has(relationDataType)
+        return addAccessor { RelationAccessor(it, relationDataType) }
     }
 
     public inline fun <reified T : GearyComponent> relationWithData(): RelationWithDataAccessor<T> {
-        val relationParent = RelationParent(componentId<T>())
-        has(relationParent, componentMustHoldData = true)
+        val relationDataType = RelationDataType(componentId<T>())
+        has(relationDataType, componentMustHoldData = true)
 
-        return addAccessor { RelationWithDataAccessor(it, relationParent) }
+        return addAccessor { RelationWithDataAccessor(it, relationDataType) }
     }
 
     public inline fun <reified T : GearyComponent> allRelationsWithData(): RelationListAccessor<T> {
-        val relationParent = RelationParent(componentId<T>())
-        has(relationParent, componentMustHoldData = true)
-        return addAccessor { RelationListAccessor(it, relationParent) }
+        val relationDataType = RelationDataType(componentId<T>())
+        has(relationDataType, componentMustHoldData = true)
+        return addAccessor { RelationListAccessor(it, relationDataType) }
     }
 
     public fun <T : Accessor<*>> addAccessor(create: (index: Int) -> T): T {

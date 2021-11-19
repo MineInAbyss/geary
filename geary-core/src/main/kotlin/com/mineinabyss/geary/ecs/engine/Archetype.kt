@@ -9,7 +9,7 @@ import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.events.ComponentAddEvent
 import com.mineinabyss.geary.ecs.query.Query
@@ -31,19 +31,19 @@ public data class Archetype(
     //TODO List<Relation>
     internal val relations: Long2ObjectOpenHashMap<MutableList<Relation>> = type
         .mapNotNull { it.toRelation() }
-        .groupByTo(Long2ObjectOpenHashMap()) { it.parent.id.toLong() }
+        .groupByTo(Long2ObjectOpenHashMap()) { it.data.id.toLong() }
 
     internal val dataHoldingRelations: Long2ObjectOpenHashMap<List<Relation>> by lazy {
         val map = Long2ObjectOpenHashMap<List<Relation>>()
         relations.forEach { (key, value) ->
-            val dataHolding = value.filter { it.component.holdsData() }
+            val dataHolding = value.filter { it.key.holdsData() }
             if (dataHolding.isNotEmpty()) map[key] = dataHolding
         }
         map
     }
 
     /** @return This Archetype's [relations] that are also a part of [matchRelations]. */
-    public fun matchedRelationsFor(matchRelations: Collection<RelationParent>): Map<RelationParent, List<Relation>> =
+    public fun matchedRelationsFor(matchRelations: Collection<RelationDataType>): Map<RelationDataType, List<Relation>> =
         matchRelations
             .filter { it.id.toLong() in relations }
             .associateWith { relations[it.id.toLong()]!! } //TODO handle null error
