@@ -1,4 +1,6 @@
 @file:OptIn(ExperimentalUnsignedTypes::class)
+// Some of these run often enough and are stable enough to justify inlining.
+@file:Suppress("NOTHING_TO_INLINE")
 
 package com.mineinabyss.geary.ecs.engine
 
@@ -26,14 +28,10 @@ public fun GearyComponentId.isChild(): Boolean = this.hasRole(CHILDOF)
 public fun GearyComponentId.isRelation(): Boolean = this.hasRole(RELATION)
 public fun GearyComponentId.holdsData(): Boolean = this.hasRole(HOLDS_DATA)
 
-@ExperimentalUnsignedTypes
-public fun GearyComponentId.hasRole(role: ULong): Boolean = this and role != 0uL
+public inline fun GearyComponentId.hasRole(role: ULong): Boolean = this and role != 0uL
 
-@ExperimentalUnsignedTypes
-public fun GearyComponentId.withRole(role: ULong): ULong = this or role
+public inline fun GearyComponentId.withRole(role: ULong): ULong = this or role
 
-@ExperimentalUnsignedTypes
-public fun GearyComponentId.withoutRole(role: ULong): ULong = this and role.inv()
+public inline fun GearyComponentId.withoutRole(role: ULong): ULong = this and role.inv()
 
-@ExperimentalUnsignedTypes
-public fun GearyComponentId.withInvertedRole(role: ULong): ULong = this xor role
+public inline fun GearyComponentId.withInvertedRole(role: ULong): ULong = this xor role

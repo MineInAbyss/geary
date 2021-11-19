@@ -7,7 +7,7 @@ import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
@@ -101,12 +101,12 @@ public open class GearyEngine : TickingEngine() {
 
     override fun getRelationsFor(
         entity: GearyEntityId,
-        relationParent: RelationParent
+        relationDataType: RelationDataType
     ): Set<Pair<GearyComponent, Relation>> = getRecord(entity)?.run {
         archetype
-            .relations[relationParent.id.toLong()]
+            .relations[relationDataType.id.toLong()]
             ?.mapNotNullTo(mutableSetOf()) {
-                archetype[row, it.component]?.to(Relation.of(relationParent, it.component))
+                archetype[row, it.key.withRole(HOLDS_DATA)]?.to(Relation.of(relationDataType, it.key))
             }
     } ?: setOf()
 
@@ -131,15 +131,6 @@ public open class GearyEngine : TickingEngine() {
         }
     }
 
-    override fun setRelationFor(
-        entity: GearyEntityId,
-        parent: RelationParent,
-        forComponent: GearyComponentId,
-        data: GearyComponent
-    ) {
-        setComponentFor(entity, Relation.of(parent, forComponent).id, data)
-    }
-
     override fun removeComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean {
         return getRecord(entity)?.apply {
             val record = archetype.removeComponent(entity, this, component.withRole(HOLDS_DATA))
@@ -149,7 +140,9 @@ public open class GearyEngine : TickingEngine() {
     }
 
     override fun getComponentFor(entity: GearyEntityId, component: GearyComponentId): GearyComponent? =
-        getRecord(entity)?.run { archetype[row, component.withRole(HOLDS_DATA)] }
+        getRecord(entity)?.run {
+            archetype[row, component.let { if (it.hasRole(RELATION)) it else it.withRole(HOLDS_DATA) }]
+        }
 
     override fun hasComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean =
         getRecord(entity)?.archetype?.contains(component) ?: false

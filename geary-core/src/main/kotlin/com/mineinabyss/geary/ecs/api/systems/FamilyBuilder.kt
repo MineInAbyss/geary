@@ -4,7 +4,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.holdsData
@@ -29,10 +29,10 @@ public class MutableComponentLeaf(
 }
 
 public class MutableRelationLeaf(
-    public var relationParent: RelationParent,
+    public var relationDataType: RelationDataType,
     public val componentMustHoldData: Boolean = false
 ) : FamilyBuilder() {
-    override fun build(): RelationLeaf = RelationLeaf(relationParent, componentMustHoldData)
+    override fun build(): RelationLeaf = RelationLeaf(relationDataType, componentMustHoldData)
 }
 
 public abstract class MutableSelector : FamilyBuilder() {
@@ -40,11 +40,11 @@ public abstract class MutableSelector : FamilyBuilder() {
 
     public val components: List<GearyComponentId> get() = _components
     public val componentsWithData: List<GearyComponentId> get() = _componentsWithData
-    public val relationParents: List<RelationParent> get() = _relationParents
+    public val relationDataTypes: List<RelationDataType> get() = _relationDataTypes
 
     private val _components = mutableListOf<GearyComponentId>()
     private val _componentsWithData = mutableListOf<GearyComponentId>()
-    private val _relationParents = mutableListOf<RelationParent>()
+    private val _relationDataTypes = mutableListOf<RelationDataType>()
 
     protected fun add(element: FamilyBuilder) {
         elements += element
@@ -56,7 +56,7 @@ public abstract class MutableSelector : FamilyBuilder() {
         }
 
         if (element is MutableRelationLeaf)
-            _relationParents += element.relationParent
+            _relationDataTypes += element.relationDataType
     }
 
     public fun not(init: MutableAndNotSelector.() -> Unit) {
@@ -90,15 +90,15 @@ public abstract class MutableSelector : FamilyBuilder() {
     public fun has(componentIds: Collection<GearyComponentId>) {
         componentIds.forEach {
             it.toRelation()?.let { relation ->
-                add(MutableRelationLeaf(relation.parent))
+                add(MutableRelationLeaf(relation.data))
             } ?: run {
                 add(MutableComponentLeaf(it))
             }
         }
     }
 
-    public fun has(relationParent: RelationParent, componentMustHoldData: Boolean = false) {
-        add(MutableRelationLeaf(relationParent, componentMustHoldData))
+    public fun has(relationDataType: RelationDataType, componentMustHoldData: Boolean = false) {
+        add(MutableRelationLeaf(relationDataType, componentMustHoldData))
     }
 
     public fun has(relation: Relation) {

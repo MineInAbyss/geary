@@ -6,7 +6,6 @@ import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.GearyEngine
-import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.getArchetype
 import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
 import io.kotest.matchers.collections.shouldContainExactly
@@ -29,7 +28,7 @@ internal class GearyEntityTests {
         val relations =
             entity.type.getArchetype().relations[componentId<PersistingComponent>().toLong()]
         relations.size shouldBe 1
-        relations.first().component shouldBe (componentId<String>() or HOLDS_DATA)
+        relations.first().key shouldBe componentId<String>()
         entity.getPersistingComponents().shouldContainExactly("Test")
     }
 
@@ -53,44 +52,23 @@ internal class GearyEntityTests {
         val relations =
             entity.type.getArchetype().relations[componentId<PersistingComponent>().toLong()]
         relations.size shouldBe 1
-        relations.first().component shouldBe (componentId<String>() or HOLDS_DATA)
+        relations.first().key shouldBe (componentId<String>())
         entity.getPersistingComponents().shouldContainExactly("Test")
     }
 
     @Nested
     inner class RelationTest {
-        inner class TestRelation;
+        inner class TestRelation
 
         @Test
         fun `getRelation reified`() {
+            val testData = TestRelation()
             val entity = Engine.entity {
-                setRelation<TestRelation, String>(TestRelation(), false)
+                setRelation<TestRelation, String>(testData)
                 add<String>()
             }
 
-            entity.getRelation<TestRelation, String>() shouldBe TestRelation()
-        }
-
-        @Test
-        fun `getRelation from component`() {
-            val stringComponent = "test"
-            val entity = Engine.entity {
-                setRelation<TestRelation, String>(TestRelation(), false)
-                add<String>()
-            }
-
-            entity.getRelation<TestRelation>(stringComponent) shouldBe TestRelation()
-        }
-
-        @Test
-        fun `getRelation from component kClass`() {
-            val stringComponent = "test"
-            val entity = Engine.entity {
-                setRelation<TestRelation, String>(TestRelation(), false)
-                add<String>()
-            }
-
-            entity.getRelation<TestRelation>(stringComponent::class) shouldBe TestRelation()
+            entity.getRelation<TestRelation, String>() shouldBe testData
         }
     }
 }

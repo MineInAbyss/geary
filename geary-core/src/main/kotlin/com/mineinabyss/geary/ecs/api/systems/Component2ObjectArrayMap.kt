@@ -19,7 +19,7 @@ internal abstract class Component2ObjectArrayMap<T> {
     private val componentMap = Long2ObjectOpenHashMap<BitVector>()
 
     private fun GearyComponentId.toComponentMapId(): GearyComponentId =
-        toRelation()?.parent?.id?.or(RELATION) ?: this
+        toRelation()?.data?.id?.or(RELATION) ?: this
 
     fun add(element: T, type: GearyType) {
         elements += element
@@ -41,11 +41,11 @@ internal abstract class Component2ObjectArrayMap<T> {
             is OrSelector -> family.or.reduceToBits(BitVector::or)
             is ComponentLeaf -> componentMap[family.component]?.copy() ?: bitsOf()
             is RelationLeaf -> {
-                val relationId = family.relationParent.id.withRole(RELATION)
+                val relationId = family.relationDataType.id.withRole(RELATION)
                 componentMap[relationId]?.copy()?.apply {
                     if (family.componentMustHoldData) {
                         keepArchetypesMatching {
-                            it.getGearyType().contains(family.relationParent, componentMustHoldData = true)
+                            it.getGearyType().contains(family.relationDataType, componentMustHoldData = true)
                         }
                     }
                 } ?: bitsOf()
