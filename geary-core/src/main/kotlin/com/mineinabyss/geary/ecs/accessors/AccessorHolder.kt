@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.accessors
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.componentId
+import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.Archetype
@@ -25,6 +26,14 @@ public abstract class AccessorHolder : MutableAndSelector() {
         has(component)
         return addAccessor { ComponentAccessor(it, component) }
     }
+
+    //TODO write tests
+    protected inline fun <reified D : GearyComponent, reified Key : GearyComponent> getRelation(): ComponentAccessor<D> {
+        val component = Relation.of<D, Key>()
+        has(component)
+        return addAccessor { ComponentAccessor(it, component.id) }
+    }
+
 
     public inline fun <reified T : GearyComponent> relation(): RelationAccessor<T> {
         val relationDataType = RelationDataType(componentId<T>())

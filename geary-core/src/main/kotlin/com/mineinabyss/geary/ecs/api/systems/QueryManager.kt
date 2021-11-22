@@ -19,7 +19,7 @@ public object QueryManager {
         val matched = archetypes.match(listener.family)
         eventListeners += listener
         for (archetype in matched) {
-            listener.apply { GearyHandlerScope(archetype, this).init() }
+            listener.apply { GearyHandlerScope(archetype, this).register() }
         }
     }
 
@@ -33,7 +33,7 @@ public object QueryManager {
         archetypes.add(archetype, archetype.type)
         val matched = queries.filter { archetype.type in it.family }
         val matchedListeners = eventListeners.filter { archetype.type in it.family }
-        matchedListeners.forEach { it.apply { GearyHandlerScope(archetype, this).init() } }
+        matchedListeners.forEach { it.apply { GearyHandlerScope(archetype, this).register() } }
         matched.forEach { it.matchedArchetypes += archetype }
     }
 

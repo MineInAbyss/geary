@@ -8,7 +8,7 @@ import com.mineinabyss.geary.ecs.engine.GearyEventHandler
 public typealias EventRunner <T> = ResultScope.(T) -> Unit
 
 public abstract class GearyListener : AccessorHolder(), GearySystem {
-    public abstract fun GearyHandlerScope.init()
+    public abstract fun GearyHandlerScope.register()
 }
 
 public class GearyHandlerScope(

@@ -1,28 +1,23 @@
 package com.mineinabyss.geary.minecraft.dsl
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
-import com.mineinabyss.geary.ecs.api.autoscan.AutoscanCondition
 import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoscan
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
+import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.minecraft.access.BukkitEntityAssociations
 import com.mineinabyss.idofront.plugin.registerEvents
-import kotlinx.serialization.InternalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
 import kotlinx.serialization.modules.*
-import kotlinx.serialization.serializerOrNull
 import org.bukkit.entity.Entity
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
 import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.full.hasAnnotation
-import kotlin.reflect.jvm.kotlinFunction
 
 @DslMarker
 internal annotation class GearyAddonDSL
@@ -39,11 +34,10 @@ public class GearyAddon(
     public val classLoader: ClassLoader = plugin::class.java.classLoader
 
     /**
-     * Automatically scans for all annotated components, actions, and conditions.
+     * Automatically scans for all annotated components
      *
      * @see autoscanComponents
      * @see autoscanActions
-     * @see autoscanConditions
      */
     public fun autoscanAll() {
         autoscanComponents()
@@ -58,14 +52,12 @@ public class GearyAddon(
     public fun autoscanComponents(init: AutoScanner.() -> Unit = {}) {
         autoscan<GearyComponent>({
             getBy = {
-                getTypesAnnotatedWith(AutoscanComponent::class.java)
+                getTypesAnnotatedWith(Serializable::class.java)
             }
-            filterBy = {
-                filter { it.hasAnnotation<Serializable>() }
-            }
-
             init()
         }) { kClass, serializer ->
+            val serialName = serializer?.descriptor?.serialName ?: return@autoscan false
+            PrefabKey.ofOrNull(serialName) ?: return@autoscan false
             component(kClass, serializer)
         }
     }
@@ -90,6 +82,7 @@ public class GearyAddon(
         noinline addSubclass: SerializerRegistry<T> = { kClass, serializer ->
             if (serializer != null)
                 subclass(kClass, serializer)
+            serializer != null
         }
     ) {
         if (runNow) AutoScanner(classLoader).apply(init).registerSerializers(T::class, addSubclass)
@@ -107,6 +100,7 @@ public class GearyAddon(
         addSubclass: SerializerRegistry<T> = { kClass, serializer ->
             if (serializer != null)
                 subclass(kClass, serializer)
+            serializer != null
         },
     ) {
         val reflections = getReflections() ?: return
@@ -114,25 +108,15 @@ public class GearyAddon(
             polymorphic(kClass) {
                 reflections.getBy(kClass)
                     .map { it.kotlin }
-                    .apply { filterBy() }
                     .filter { !it.hasAnnotation<ExcludeAutoscan>() }
                     .filterIsInstance<KClass<T>>()
-                    .map {
-                        this@polymorphic.addSubclass(it, it.serializerOrNull())
-                        it.simpleName
-                    }
+                    .filter { this@polymorphic.addSubclass(it, it.serializerOrNull()) }
+                    .map { it.simpleName }
                     .joinToString()
                     .also { this@GearyAddon.plugin.logger.info("Autoscan loaded serializers for class ${kClass.simpleName}: $it") }
             }
         }
     }
-
-    public fun autoscanConditions() {
-        val reflections = AutoScanner(classLoader).getReflections() ?: return
-        reflections.getMethodsAnnotatedWith(AutoscanCondition::class.java)
-            .map { it.kotlinFunction }
-    }
-
 
     /** Adds a [SerializersModule] for polymorphic serialization of [GearyComponent]s within the ECS. */
     public inline fun components(crossinline init: PolymorphicModuleBuilder<GearyComponent>.() -> Unit) {
@@ -165,14 +149,14 @@ public class GearyAddon(
     public fun <T : GearyComponent> PolymorphicModuleBuilder<T>.component(
         kClass: KClass<T>,
         serializer: KSerializer<T>?
-    ) {
-        Engine.registerComponentIdForClass(kClass)
-
-        val serialName = serializer?.descriptor?.serialName ?: return
+    ): Boolean {
+        val serialName = serializer?.descriptor?.serialName ?: return false
         if (!Formats.isRegistered(serialName)) {
             Formats.registerSerialName(serialName, kClass)
             subclass(kClass, serializer)
+            return true
         }
+        return false
     }
 
     /** Adds a [SerializersModule] to be used for polymorphic serialization within the ECS. */
@@ -243,7 +227,7 @@ public class GearyAddon(
 }
 
 /** The polymorphic builder scope that allows registering subclasses. */
-public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>?) -> Unit
+public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>?) -> Boolean
 
 /** Entry point to register a new [Plugin] with the Geary ECS. */
 //TODO support plugins being re-registered after a reload
