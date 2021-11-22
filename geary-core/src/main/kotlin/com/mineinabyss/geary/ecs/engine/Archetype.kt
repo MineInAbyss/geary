@@ -28,14 +28,10 @@ public data class Archetype(
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
     private val dataHoldingType = type.filter { it.holdsData() || it.isRelation() }
 
-    /**
-     * Edges to other archetypes where a single component has been added.
-     */
+    /** Edges to other archetypes where a single component has been added */
     internal val componentAddEdges = Long2ObjectOpenHashMap<Archetype>()
 
-    /**
-     * Edges to other archetypes where a single component has been removed.
-     */
+    /** Edges to other archetypes where a single component has been removed */
     internal val componentRemoveEdges = Long2ObjectOpenHashMap<Archetype>()
 
     /** Map of relation parent id to a list of relations with that parent */
@@ -44,6 +40,7 @@ public data class Archetype(
         .groupBy { it.data.id.toLong() }
         .let { Long2ObjectOpenHashMap(it) }
 
+    /** Map of relation parent id to a list of relations with that parent that also hold data*/
     internal val dataHoldingRelations: Long2ObjectOpenHashMap<List<Relation>> by lazy {
         val map = Long2ObjectOpenHashMap<List<Relation>>()
         relations.forEach { (key, value) ->
@@ -53,26 +50,31 @@ public data class Archetype(
         map
     }
 
+    /** Map of component ids to their index in the componentData list */
     private val comp2indices = Long2IntOpenHashMap().apply {
         dataHoldingType.forEachIndexed { i, compId -> put(compId.toLong(), i) }
         defaultReturnValue(-1)
     }
 
-    internal fun indexOf(id: GearyComponentId): Int = comp2indices.get(id.toLong())
-
     public val size: Int get() = ids.size
 
+    /** List of entity ids contained in this archetype */
     internal val ids: LongArrayList = LongArrayList()
 
+    /** List of list of component data */
     //TODO Use a hashmap here and make sure errors still get thrown if component ids are ever wrong
     internal val componentData: List<MutableList<GearyComponent>> = dataHoldingType.map { mutableListOf() }
 
+    /** Event Listeners on this archetype */
     private val listeners = mutableMapOf<KClass<*>, MutableSet<GearyEventHandler<*>>>()
+    /** ComponentAdd event listeners on this archetype */
     private val componentAddListeners = Array(dataHoldingType.size) { mutableSetOf<GearyEventHandler<*>>() }
 
     // Basically just want a weak set where stuff gets auto removed when it is no longer running
     // We put our iterator and null and this WeakHashMap handles the rest for us.
     private val runningIterators = Collections.newSetFromMap(WeakHashMap<ArchetypeIterator, Boolean>())
+
+    internal fun indexOf(id: GearyComponentId): Int = comp2indices.get(id.toLong())
 
     /** @return This Archetype's [relations] that are also a part of [matchRelations]. */
     public fun matchedRelationsFor(matchRelations: Collection<RelationDataType>): Map<RelationDataType, List<Relation>> =
