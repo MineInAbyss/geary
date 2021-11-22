@@ -7,22 +7,22 @@ import com.mineinabyss.geary.ecs.api.systems.QueryManager
 public fun GearyType.getArchetype(): Archetype {
     var node = root
     forEach { compId ->
-        node = node.add[compId] ?: createArchetype(node, compId)
+        node = node.componentAddEdges[compId] ?: createArchetype(node, compId)
     }
     return node
 }
 
 private fun createArchetype(prevNode: Archetype, componentEdge: GearyComponentId): Archetype {
     val arc = Archetype(prevNode.type.plus(componentEdge))
-    arc.remove[componentEdge] = prevNode
-    prevNode.add[componentEdge] = arc
+    arc.componentRemoveEdges[componentEdge] = prevNode
+    prevNode.componentAddEdges[componentEdge] = arc
     QueryManager.registerArchetype(arc)
     return arc
 }
 
 public fun Archetype.countChildren(vis: MutableSet<Archetype> = mutableSetOf()): Int {
-    add.values.filter { it !in vis }.forEach { it.countChildren(vis) }
-    vis.addAll(add.values)
+    componentAddEdges.values.filter { it !in vis }.forEach { it.countChildren(vis) }
+    vis.addAll(componentAddEdges.values)
     return vis.count()
 }
 

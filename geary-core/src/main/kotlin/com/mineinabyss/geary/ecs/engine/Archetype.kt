@@ -15,6 +15,7 @@ import com.mineinabyss.geary.ecs.events.ComponentAddEvent
 import com.mineinabyss.geary.ecs.query.Query
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
+import it.unimi.dsi.fastutil.longs.LongArrayList
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -27,11 +28,21 @@ public data class Archetype(
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
     private val dataHoldingType = type.filter { it.holdsData() || it.isRelation() }
 
+    /**
+     * Edges to other archetypes where a single component has been added.
+     */
+    internal val componentAddEdges = Long2ObjectOpenHashMap<Archetype>()
+
+    /**
+     * Edges to other archetypes where a single component has been removed.
+     */
+    internal val componentRemoveEdges = Long2ObjectOpenHashMap<Archetype>()
+
     /** Map of relation parent id to a list of relations with that parent */
-    //TODO List<Relation>
-    internal val relations: Long2ObjectOpenHashMap<MutableList<Relation>> = type
+    internal val relations: Long2ObjectOpenHashMap<List<Relation>> = type
         .mapNotNull { it.toRelation() }
-        .groupByTo(Long2ObjectOpenHashMap()) { it.data.id.toLong() }
+        .groupBy { it.data.id.toLong() }
+        .let { Long2ObjectOpenHashMap(it) }
 
     internal val dataHoldingRelations: Long2ObjectOpenHashMap<List<Relation>> by lazy {
         val map = Long2ObjectOpenHashMap<List<Relation>>()
@@ -42,12 +53,6 @@ public data class Archetype(
         map
     }
 
-    /** @return This Archetype's [relations] that are also a part of [matchRelations]. */
-    public fun matchedRelationsFor(matchRelations: Collection<RelationDataType>): Map<RelationDataType, List<Relation>> =
-        matchRelations
-            .filter { it.id.toLong() in relations }
-            .associateWith { relations[it.id.toLong()]!! } //TODO handle null error
-
     private val comp2indices = Long2IntOpenHashMap().apply {
         dataHoldingType.forEachIndexed { i, compId -> put(compId.toLong(), i) }
         defaultReturnValue(-1)
@@ -57,10 +62,24 @@ public data class Archetype(
 
     public val size: Int get() = ids.size
 
-    internal val ids: MutableList<GearyEntityId> = mutableListOf()
+    internal val ids: LongArrayList = LongArrayList()
 
     //TODO Use a hashmap here and make sure errors still get thrown if component ids are ever wrong
     internal val componentData: List<MutableList<GearyComponent>> = dataHoldingType.map { mutableListOf() }
+
+    private val listeners = mutableMapOf<KClass<*>, MutableSet<GearyEventHandler<*>>>()
+    private val componentAddListeners = Array(dataHoldingType.size) { mutableSetOf<GearyEventHandler<*>>() }
+
+    // Basically just want a weak set where stuff gets auto removed when it is no longer running
+    // We put our iterator and null and this WeakHashMap handles the rest for us.
+    private val runningIterators = Collections.newSetFromMap(WeakHashMap<ArchetypeIterator, Boolean>())
+
+    /** @return This Archetype's [relations] that are also a part of [matchRelations]. */
+    public fun matchedRelationsFor(matchRelations: Collection<RelationDataType>): Map<RelationDataType, List<Relation>> =
+        matchRelations
+            .filter { it.id.toLong() in relations }
+            .associateWith { relations[it.id.toLong()]!! } //TODO handle null error
+
 
     public operator fun get(row: Int, component: GearyComponentId): GearyComponent? {
         val compIndex = indexOf(component)
@@ -73,11 +92,8 @@ public data class Archetype(
         // Check if contains component or the version with the HOLDS_DATA bit flipped
         component in type || component.withInvertedRole(HOLDS_DATA) in type
 
-    internal val add = mutableMapOf<GearyComponentId, Archetype>()
-    internal val remove = mutableMapOf<GearyComponentId, Archetype>()
-
     public operator fun plus(id: GearyComponentId): Archetype {
-        return add[id] ?: type.let {
+        return componentAddEdges[id] ?: type.let {
             // Ensure that when adding an ID that holds data, we remove the non-data-holding ID
             if (id.holdsData() && !id.isRelation())
                 it.minus(id.withoutRole(HOLDS_DATA))
@@ -86,8 +102,8 @@ public data class Archetype(
     }
 
     public operator fun minus(id: GearyComponentId): Archetype {
-        return remove[id] ?: type.minus(id).getArchetype().also {
-            remove[id] = it
+        return componentRemoveEdges[id] ?: type.minus(id).getArchetype().also {
+            componentRemoveEdges[id] = it
         }
     }
 
@@ -99,7 +115,7 @@ public data class Archetype(
         entity: GearyEntityId,
         data: List<GearyComponent>
     ): Record {
-        ids.add(entity)
+        ids.add(entity.toLong())
         componentData.forEachIndexed { i, compArray ->
             compArray.add(data[i])
         }
@@ -194,10 +210,10 @@ public data class Archetype(
         componentData.forEach { it.removeLastOrNull() }
 
         if (lastIndex != row) {
-            runningIterators.keys.forEach {
+            runningIterators.forEach {
                 it.addMovedRow(lastIndex, row)
             }
-            Engine.setRecord(replacement, Record(this, row))
+            Engine.setRecord(replacement.toULong(), Record(this, row))
         }
     }
 
@@ -220,7 +236,7 @@ public data class Archetype(
     }
 
     public fun <T : Any> callEvent(kClass: KClass<T>, eventData: T, row: Int) {
-        val entity = ids[row].toGeary()
+        val entity = ids.getLong(row).toGeary()
 
         when (eventData) {
             is ComponentAddEvent -> {
@@ -239,20 +255,13 @@ public data class Archetype(
         }
     }
 
-    private val listeners = mutableMapOf<KClass<*>, MutableSet<GearyEventHandler<*>>>()
-    private val componentAddListeners = Array(dataHoldingType.size) { mutableSetOf<GearyEventHandler<*>>() }
-
-    // Basically just want a weak set where stuff gets auto removed when it is no longer running
-    // We put our iterator and null and this WeakHashMap handles the rest for us.
-    private val runningIterators = WeakHashMap<ArchetypeIterator, Any?>()
-
     internal fun finalizeIterator(iterator: ArchetypeIterator) {
         runningIterators.remove(iterator)
     }
 
     internal fun iteratorFor(query: Query): ArchetypeIterator {
         val iterator = ArchetypeIterator(this, query)
-        runningIterators[iterator] = null
+        runningIterators.add(iterator)
         return iterator
     }
 }
