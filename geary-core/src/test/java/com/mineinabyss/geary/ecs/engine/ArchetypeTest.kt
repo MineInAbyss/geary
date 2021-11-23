@@ -13,16 +13,19 @@ import org.junit.jupiter.api.Test
 
 @ExperimentalUnsignedTypes
 internal class ArchetypeTest {
+    val engine = GearyEngine()
+    val root = Archetype(GearyType(), engine)
+
     @Nested
     inner class MovingBetweenArchetypes {
         @Test
         fun `empty type equals empty archetype`() {
-            GearyType().getArchetype() shouldBe root
+            GearyType().getArchetype(engine) shouldBe root
         }
 
         @Test
         fun `get type equals archetype adding`() {
-            root + 1u + 2u + 3u - 1u + 1u shouldBe sortedSetOf<GearyComponentId>(1u, 2u, 3u).getArchetype()
+            root + 1u + 2u + 3u - 1u + 1u shouldBe sortedSetOf<GearyComponentId>(1u, 2u, 3u).getArchetype(engine)
         }
 
         @Test
@@ -37,7 +40,7 @@ internal class ArchetypeTest {
             sortedSetOf(
                 Relation.of(10uL, 1uL or HOLDS_DATA).id,
                 Relation.of(10uL, 2uL or HOLDS_DATA).id,
-            )
+            ), engine
         )
         val relation = RelationDataType(10uL)
         val matched = arc.matchedRelationsFor(listOf(relation))
