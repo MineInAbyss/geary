@@ -3,6 +3,7 @@ package com.mineinabyss.geary.ecs.engine
 import com.mineinabyss.geary.ecs.accessors.AccessorHolder
 import com.mineinabyss.geary.ecs.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.ecs.accessors.ResultScope
+import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 
 public data class ArchetypeIterator(
@@ -46,7 +47,8 @@ public data class ArchetypeIterator(
 
         return ResultScope(
             entity = combinationsIterator!!.dataScope.entity,
-            data = combinationsIterator!!.next()
+            data = combinationsIterator!!.next(),
+            engine = archetype.engine
         )
     }
 }

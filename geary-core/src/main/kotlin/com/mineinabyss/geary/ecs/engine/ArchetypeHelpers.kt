@@ -4,8 +4,8 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 
-public fun GearyType.getArchetype(): Archetype {
-    var node = root
+public fun GearyType.getArchetype(engine: GearyEngine): Archetype {
+    var node = engine.root
     forEach { compId ->
         node = node.componentAddEdges[compId] ?: createArchetype(node, compId)
     }
@@ -13,7 +13,7 @@ public fun GearyType.getArchetype(): Archetype {
 }
 
 private fun createArchetype(prevNode: Archetype, componentEdge: GearyComponentId): Archetype {
-    val arc = Archetype(prevNode.type.plus(componentEdge))
+    val arc = Archetype(prevNode.type.plus(componentEdge), prevNode.engine)
     arc.componentRemoveEdges[componentEdge] = prevNode
     prevNode.componentAddEdges[componentEdge] = arc
     QueryManager.registerArchetype(arc)
@@ -25,8 +25,6 @@ public fun Archetype.countChildren(vis: MutableSet<Archetype> = mutableSetOf()):
     vis.addAll(componentAddEdges.values)
     return vis.count()
 }
-
-internal val root: Archetype = Archetype(GearyType())
 
 public fun GearyType.plus(id: GearyComponentId): GearyType =
     GearyType(this).apply { add(id) }

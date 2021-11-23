@@ -30,6 +30,9 @@ import kotlin.reflect.KClass
 public open class GearyEngine : TickingEngine() {
     private val typeMap = mutableMapOf<GearyEntityId, Record>()
     private var currId: GearyEntityId = 0uL
+    internal val root by lazy {
+        Archetype(GearyType(), this)
+    }
 
     //TODO there's likely a more performant option
     private val removedEntities = Stack<GearyEntityId>()

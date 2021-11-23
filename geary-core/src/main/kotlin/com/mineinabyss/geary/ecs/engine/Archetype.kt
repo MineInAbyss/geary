@@ -28,6 +28,7 @@ import kotlin.reflect.KClass
  */
 public data class Archetype(
     public val type: GearyType,
+    public val engine : GearyEngine
 ) {
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     //TODO aim to make private
@@ -128,11 +129,11 @@ public data class Archetype(
             if (componentId.holdsData() && !componentId.isRelation())
                 it.minus(componentId.withoutRole(HOLDS_DATA))
             else it
-        }.plus(componentId).getArchetype()
+        }.plus(componentId).getArchetype(engine)
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
     public operator fun minus(componentId: GearyComponentId): Archetype =
-        componentRemoveEdges[componentId] ?: type.minus(componentId).getArchetype().also {
+        componentRemoveEdges[componentId] ?: type.minus(componentId).getArchetype(engine).also {
             componentRemoveEdges[componentId] = it
         }
 
