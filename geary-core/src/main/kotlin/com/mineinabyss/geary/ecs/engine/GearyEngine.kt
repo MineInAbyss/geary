@@ -113,7 +113,7 @@ public open class GearyEngine : TickingEngine() {
 
     override fun addComponentFor(entity: GearyEntityId, component: GearyComponentId) {
         getOrAddRecord(entity).apply {
-            val newRecord = archetype.addComponent(entity, this, HOLDS_DATA.inv() and component)
+            val newRecord = archetype.addComponent(entity, row, HOLDS_DATA.inv() and component)
             typeMap[entity] = newRecord ?: return
             newRecord.archetype.callEvent(ComponentAddEvent(component), newRecord.row)
         }
@@ -125,7 +125,7 @@ public open class GearyEngine : TickingEngine() {
             // corresponds to the component part of the relation.
             val role = if (!component.hasRole(RELATION)) HOLDS_DATA else NO_ROLE
             val componentWithRole = component.withRole(role)
-            val newRecord = archetype.setComponent(entity, this, componentWithRole, data)
+            val newRecord = archetype.setComponent(entity, row, componentWithRole, data)
             typeMap[entity] = newRecord ?: return
             newRecord.archetype.callEvent(ComponentAddEvent(componentWithRole), newRecord.row)
         }
@@ -133,8 +133,8 @@ public open class GearyEngine : TickingEngine() {
 
     override fun removeComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean {
         return getRecord(entity)?.apply {
-            val record = archetype.removeComponent(entity, this, component.withRole(HOLDS_DATA))
-                ?: archetype.removeComponent(entity, this, component)
+            val record = archetype.removeComponent(entity, row, component.withRole(HOLDS_DATA))
+                ?: archetype.removeComponent(entity, row, component)
             typeMap[entity] = record ?: return false
         } != null
     }

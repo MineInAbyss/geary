@@ -16,6 +16,6 @@ public class GearyHandlerScope(
     public val listener: GearyListener,
 ) {
     public inline fun <reified T : Any> on(noinline run: EventRunner<T>) {
-        archetype.addEventListener(T::class, GearyEventHandler(listener, run))
+        archetype.addEventHandler(T::class, GearyEventHandler(listener, run))
     }
 }
