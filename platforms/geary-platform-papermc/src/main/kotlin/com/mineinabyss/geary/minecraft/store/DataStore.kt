@@ -44,7 +44,7 @@ public fun <T : GearyComponent> PersistentDataContainer.encode(
  */
 public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(): T? {
     return decode(
-        serializer = Formats.getSerializerFor<T>() ?: return null,
+        serializer = Formats.getSerializerFor() ?: return null,
         key = Formats.getSerialNameFor<T>()?.toComponentKey() ?: return null
     )
 }

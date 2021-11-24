@@ -10,8 +10,14 @@ import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.minecraft.access.BukkitEntityAssociations
 import com.mineinabyss.idofront.plugin.registerEvents
-import kotlinx.serialization.*
-import kotlinx.serialization.modules.*
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.modules.PolymorphicModuleBuilder
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.SerializersModuleBuilder
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.serializerOrNull
 import org.bukkit.entity.Entity
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
@@ -37,7 +43,7 @@ public class GearyAddon(
      * Automatically scans for all annotated components
      *
      * @see autoscanComponents
-     * @see autoscanActions
+     * @see autoscanSingletonSystems
      */
     public fun autoscanAll() {
         startup {
@@ -64,7 +70,7 @@ public class GearyAddon(
 
     public fun autoscanSingletonSystems() {
         AutoScanner(classLoader).getReflections()?.getSubTypesOf(GearySystem::class.java)
-            ?.mapNotNull { it.kotlin.objectInstance as? GearySystem }
+            ?.mapNotNull { it.kotlin.objectInstance }
             ?.onEach { system(it) }
             ?.map { it::class.simpleName }
             ?.joinToString()
@@ -100,7 +106,7 @@ public class GearyAddon(
     ) {
         this@GearyAddon.serializers {
             polymorphic(kClass) {
-                map { it.kotlin }
+                asSequence().map { it.kotlin }
                     .filter { !it.hasAnnotation<ExcludeAutoscan>() }
                     .filterIsInstance<KClass<T>>()
                     .filter { this@polymorphic.addSubclass(it, it.serializerOrNull()) }

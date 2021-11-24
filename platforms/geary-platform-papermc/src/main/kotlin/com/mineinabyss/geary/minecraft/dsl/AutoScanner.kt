@@ -2,6 +2,7 @@ package com.mineinabyss.geary.minecraft.dsl
 
 import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoscan
 import com.mineinabyss.idofront.messaging.logWarn
+import kotlinx.serialization.modules.SerializersModule
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.ClasspathHelper

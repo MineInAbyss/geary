@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
-@ExperimentalUnsignedTypes
 internal class GearyEngineTest {
     val engine: GearyEngine = GearyEngine()
 

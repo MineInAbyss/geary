@@ -17,7 +17,6 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-@ExperimentalUnsignedTypes
 internal class QueryManagerTest {
     val engine: GearyEngine = GearyEngine()
 
