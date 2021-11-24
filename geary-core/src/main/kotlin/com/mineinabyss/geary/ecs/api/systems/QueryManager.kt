@@ -7,7 +7,7 @@ import com.mineinabyss.geary.ecs.query.Family
 import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
 
-public object QueryManager {
+public class QueryManager {
     private val queries = mutableListOf<Query>()
     private val eventListeners = mutableListOf<GearyListener>()
 

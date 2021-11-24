@@ -4,8 +4,6 @@ import com.mineinabyss.geary.ecs.accessors.AccessorHolder
 import com.mineinabyss.geary.ecs.accessors.ComponentAccessor
 import com.mineinabyss.geary.ecs.accessors.ResultScope
 import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 
@@ -19,7 +17,7 @@ public abstract class Query(engine: GearyEngine) : Iterable<ResultScope>, Access
 
     public override fun iterator(): QueryIterator {
         if (!registered) {
-            QueryManager.trackQuery(this)
+            engine.queryManager.trackQuery(this)
             registered = true
         }
         return QueryIterator(this)

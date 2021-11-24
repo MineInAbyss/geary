@@ -27,6 +27,7 @@ import kotlin.reflect.KClass
  *
  * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */
+//TODO: Inject dependencies where possible?
 public open class GearyEngine : TickingEngine() {
     private val typeMap = mutableMapOf<GearyEntityId, Record>()
     private var currId: GearyEntityId = 0uL
@@ -36,6 +37,8 @@ public open class GearyEngine : TickingEngine() {
     internal val scope by lazy {
         GearyAccessorScope(this)
     }
+
+    internal val queryManager = QueryManager()
 
     //TODO there's likely a more performant option
     private val removedEntities = Stack<GearyEntityId>()
@@ -65,10 +68,10 @@ public open class GearyEngine : TickingEngine() {
         // any hiccups at that point.
         when (system) {
             is TickingSystem -> {
-                QueryManager.trackQuery(system)
+                queryManager.trackQuery(system)
                 registeredSystems.add(system)
             }
-            is GearyListener -> QueryManager.trackEventListener(system)
+            is GearyListener -> queryManager.trackEventListener(system)
         }
     }
 

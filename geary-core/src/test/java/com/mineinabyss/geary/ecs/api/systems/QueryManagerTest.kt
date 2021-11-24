@@ -1,16 +1,14 @@
 package com.mineinabyss.geary.ecs.api.systems
 
+import com.mineinabyss.geary.ecs.accessors.GearyAccessorScope
 import com.mineinabyss.geary.ecs.accessors.ResultScope
 import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.getArchetype
-import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
@@ -21,22 +19,19 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 @ExperimentalUnsignedTypes
-internal class QueryManagerTest {
+internal class queryManagerTest {
     val engine: GearyEngine = GearyEngine()
-
-    init {
-        setEngineServiceProvider(engine)
-    }
+    val queryManager = engine.queryManager
 
     @Nested
-    inner class FamilyMatchingTest {
-        val entity = Engine.entity {
-            set("Test")
-            add<Int>()
+    inner class FamilyMatchingTest : GearyAccessorScope(engine) {
+        val entity = engine.entity {
+            it.set("Test")
+            it.add<Int>()
         }
-        val entity2 = Engine.entity {
-            set("Test")
-            set(1)
+        val entity2 = engine.entity {
+            it.set("Test")
+            it.set(1)
         }
 
         val system = object : TickingSystem(engine) {
@@ -54,7 +49,7 @@ internal class QueryManagerTest {
         val correctArchetype = engine.root + stringId + intId
 
         init {
-            QueryManager.trackQuery(system)
+            queryManager.trackQuery(system)
         }
 
         @Test
@@ -69,7 +64,7 @@ internal class QueryManagerTest {
 
         @Test
         fun `get entities matching family`() {
-            QueryManager.getEntitiesMatching(system.family).apply {
+            queryManager.getEntitiesMatching(system.family).apply {
                 shouldContainAll(entity, entity2)
             }
         }
@@ -81,10 +76,10 @@ internal class QueryManagerTest {
     }
 
     @Nested
-    inner class ConcurrentModificationTests {
+    inner class ConcurrentModificationTests : GearyAccessorScope(engine) {
         var ran = 0
 
-        val removingSystem = object : TickingSystem() {
+        val removingSystem = object : TickingSystem(engine) {
             val ResultScope.string by get<String>()
 
             override fun ResultScope.tick() {
@@ -94,15 +89,15 @@ internal class QueryManagerTest {
         }
 
         init {
-            QueryManager.trackQuery(removingSystem)
+            queryManager.trackQuery(removingSystem)
         }
 
         //FIXME who needs systems to work properly anyways
         @Test
         fun `concurrent modification`() {
-            val entities = (0 until 10).map { Engine.entity { set("Test") } }
+            val entities = (0 until 10).map { engine.entity { it.set("Test") } }
             val total =
-                QueryManager.getEntitiesMatching(family {
+                queryManager.getEntitiesMatching(family(engine) {
                     hasData<String>()
                 }).count()
             removingSystem.doTick()
@@ -111,101 +106,107 @@ internal class QueryManagerTest {
         }
     }
 
-    private class RelationTestComponent
+    @Nested
+    inner class RelationshipTests : GearyAccessorScope(engine) {
 
-    @Test
-    fun relations() {
-        var ran = 0
-        val system = object : TickingSystem() {
-            val ResultScope.test by relation<RelationTestComponent>()
-            override fun ResultScope.tick() {
-                ran++
-                family.relationDataTypes.map { it.id } shouldContain test.relation.id
-                test.parentData.shouldBeInstanceOf<RelationTestComponent>()
+        private inner class RelationTestComponent
+
+        @Test
+        fun relations() {
+            var ran = 0
+            val system = object : TickingSystem(engine) {
+                val ResultScope.test by relation<RelationTestComponent>()
+                override fun ResultScope.tick() {
+                    ran++
+                    family.relationDataTypes.map { it.id } shouldContain test.relation.id
+                    test.parentData.shouldBeInstanceOf<RelationTestComponent>()
+                }
             }
-        }
-        system.family.relationDataTypes.shouldContainExactly(RelationDataType(componentId<RelationTestComponent>()))
-        QueryManager.trackQuery(system)
-        val entity = Engine.entity {
-            setRelation<RelationTestComponent, String>(RelationTestComponent())
-            add<String>()
-        }
-        val entity2 = Engine.entity {
-            setRelation<RelationTestComponent, Int>(RelationTestComponent())
-            add<Int>()
-        }
-        val entity3 = Engine.entity {
-            setRelation<String, RelationTestComponent>("")
-            add<RelationTestComponent>()
-        }
-        family { has(entity.type) }.relationDataTypes.first() shouldBe system.family.relationDataTypes.first()
-        system.matchedArchetypes.shouldContainAll(entity.type.getArchetype(engine), entity2.type.getArchetype(engine))
-        system.matchedArchetypes.shouldNotContain(entity3.type.getArchetype(engine))
-
-        system.doTick()
-        ran shouldBe 2
-
-    }
-
-    private class RelationTestComponent1
-    private class RelationTestComponent2
-
-    @Test
-    fun relationPermutations() {
-        var ran = 0
-        val system = object : TickingSystem() {
-            val ResultScope.test1 by relation<RelationTestComponent1>()
-            val ResultScope.test2 by relation<RelationTestComponent2>()
-            override fun ResultScope.tick() {
-                ran++
-                test1.parentData.shouldBeInstanceOf<RelationTestComponent1>()
-                test2.parentData.shouldBeInstanceOf<RelationTestComponent2>()
+            system.family.relationDataTypes.shouldContainExactly(RelationDataType(componentId<RelationTestComponent>()))
+            queryManager.trackQuery(system)
+            val entity = engine.entity {
+                it.setRelation<RelationTestComponent, String>(RelationTestComponent())
+                it.add<String>()
             }
-        }
-        QueryManager.trackQuery(system)
-
-        Engine.entity {
-            setRelation<RelationTestComponent1, String>(RelationTestComponent1())
-            setRelation<RelationTestComponent1, Int>(RelationTestComponent1())
-            setRelation<RelationTestComponent2, String>(RelationTestComponent2())
-            setRelation<RelationTestComponent2, Int>(RelationTestComponent2())
-            add<String>()
-        }
-
-        system.doTick()
-
-        ran shouldBe 4
-    }
-
-    class RelationTestWithData
-
-    @Test
-    fun relationsWithData() {
-        val system = object : TickingSystem() {
-            val ResultScope.withData by relationWithData<RelationTestWithData>()
-
-            override fun ResultScope.tick() {
-                withData.parentData.shouldBeInstanceOf<RelationTestWithData>()
-                withData.componentData shouldBe "Test"
+            val entity2 = engine.entity {
+                it.setRelation<RelationTestComponent, Int>(RelationTestComponent())
+                it.add<Int>()
             }
+            val entity3 = engine.entity {
+                it.setRelation<String, RelationTestComponent>("")
+                it.add<RelationTestComponent>()
+            }
+            family(engine) { has(entity.type) }.relationDataTypes.first() shouldBe system.family.relationDataTypes.first()
+            system.matchedArchetypes.shouldContainAll(
+                entity.type.getArchetype(engine),
+                entity2.type.getArchetype(engine)
+            )
+            system.matchedArchetypes.shouldNotContain(entity3.type.getArchetype(engine))
+
+            system.doTick()
+            ran shouldBe 2
+
         }
 
-        val entity = Engine.entity {
-            setRelation<RelationTestWithData, String>(RelationTestWithData())
-            add<String>()
+        private inner class RelationTestComponent1
+        private inner class RelationTestComponent2
+
+        @Test
+        fun relationPermutations() {
+            var ran = 0
+            val system = object : TickingSystem(engine) {
+                val ResultScope.test1 by relation<RelationTestComponent1>()
+                val ResultScope.test2 by relation<RelationTestComponent2>()
+                override fun ResultScope.tick() {
+                    ran++
+                    test1.parentData.shouldBeInstanceOf<RelationTestComponent1>()
+                    test2.parentData.shouldBeInstanceOf<RelationTestComponent2>()
+                }
+            }
+            queryManager.trackQuery(system)
+
+            engine.entity {
+                it.setRelation<RelationTestComponent1, String>(RelationTestComponent1())
+                it.setRelation<RelationTestComponent1, Int>(RelationTestComponent1())
+                it.setRelation<RelationTestComponent2, String>(RelationTestComponent2())
+                it.setRelation<RelationTestComponent2, Int>(RelationTestComponent2())
+                it.add<String>()
+            }
+
+            system.doTick()
+
+            ran shouldBe 4
         }
 
-        val entityWithData = Engine.entity {
-            setRelation<RelationTestWithData, String>(RelationTestWithData())
-            set("Test")
+        inner class RelationTestWithData
+
+        @Test
+        fun relationsWithData() {
+            val system = object : TickingSystem(engine) {
+                val ResultScope.withData by relationWithData<RelationTestWithData>()
+
+                override fun ResultScope.tick() {
+                    withData.parentData.shouldBeInstanceOf<RelationTestWithData>()
+                    withData.componentData shouldBe "Test"
+                }
+            }
+
+            val entity = engine.entity {
+                it.setRelation<RelationTestWithData, String>(RelationTestWithData())
+                it.add<String>()
+            }
+
+            val entityWithData = engine.entity {
+                it.setRelation<RelationTestWithData, String>(RelationTestWithData())
+                it.set("Test")
+            }
+
+            queryManager.trackQuery(system)
+
+            system.matchedArchetypes.shouldNotContain(entity.type.getArchetype(engine))
+            system.matchedArchetypes.shouldContain(entityWithData.type.getArchetype(engine))
+
+            system.doTick()
         }
-
-        QueryManager.trackQuery(system)
-
-        system.matchedArchetypes.shouldNotContain(entity.type.getArchetype(engine))
-        system.matchedArchetypes.shouldContain(entityWithData.type.getArchetype(engine))
-
-        system.doTick()
     }
-
 }

@@ -13,8 +13,8 @@ import com.mineinabyss.geary.ecs.query.Query
  * @see [ArchetypeIterator]
  */
 public abstract class TickingSystem(
-    public val interval: Long = 1,
-    init: (TickingSystem.() -> Unit)? = null, engine: GearyEngine
+    engine: GearyEngine,
+    init: (TickingSystem.() -> Unit)? = null, public val interval: Long = 1
 ) : Query(engine), GearySystem {
     protected var iteration: Int = 0
         private set
