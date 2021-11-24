@@ -14,23 +14,22 @@ import org.junit.jupiter.api.Test
 @ExperimentalUnsignedTypes
 internal class ArchetypeTest {
     val engine = GearyEngine()
-    val root = Archetype(GearyType(), engine)
 
     @Nested
     inner class MovingBetweenArchetypes {
         @Test
         fun `empty type equals empty archetype`() {
-            GearyType().getArchetype(engine) shouldBe root
+            GearyType().getArchetype(engine) shouldBe engine.root
         }
 
         @Test
         fun `get type equals archetype adding`() {
-            root + 1u + 2u + 3u - 1u + 1u shouldBe sortedSetOf<GearyComponentId>(1u, 2u, 3u).getArchetype(engine)
+            engine.root + 1u + 2u + 3u - 1u + 1u shouldBe sortedSetOf<GearyComponentId>(1u, 2u, 3u).getArchetype(engine)
         }
 
         @Test
         fun `reach same archetype from different starting positions`() {
-            root + 1u + 2u + 3u shouldBe root + 3u + 2u + 1u
+            engine.root + 1u + 2u + 3u shouldBe engine.root + 3u + 2u + 1u
         }
     }
 

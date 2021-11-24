@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.ecs.api.entities
 
-import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
@@ -22,7 +21,7 @@ internal class GearyEntityTests {
 
     @Test
     fun setPersisting() {
-        val entity = Engine.entity {
+        val entity = engine.entity {
             setPersisting("Test")
         }
         val relations =
@@ -34,11 +33,11 @@ internal class GearyEntityTests {
 
     @Test
     fun setAllPersisting() {
-        val entity = Engine.entity {
+        val entity = engine.entity {
             set("Test")
             set(1)
         }
-        val entitySetAll = Engine.entity {
+        val entitySetAll = engine.entity {
             setAll(listOf("Test", 1))
         }
         entity.type shouldContainExactly entitySetAll.type
@@ -46,7 +45,7 @@ internal class GearyEntityTests {
 
     @Test
     fun clear() {
-        val entity = Engine.entity {
+        val entity = engine.entity {
             setPersisting("Test")
         }
         val relations =
@@ -63,7 +62,7 @@ internal class GearyEntityTests {
         @Test
         fun `getRelation reified`() {
             val testData = TestRelation()
-            val entity = Engine.entity {
+            val entity = engine.entity {
                 setRelation<TestRelation, String>(testData)
                 add<String>()
             }
