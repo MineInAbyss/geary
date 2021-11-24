@@ -279,7 +279,7 @@ public data class Archetype(
             runningIterators.forEach {
                 it.addMovedRow(lastIndex, row)
             }
-            Engine.setRecord(replacement.toULong(), Record(this, row))
+            engine.setRecord(replacement.toULong(), Record(this, row))
         }
     }
 

@@ -3,11 +3,12 @@ package com.mineinabyss.geary.ecs.api.systems
 import com.mineinabyss.geary.ecs.accessors.AccessorHolder
 import com.mineinabyss.geary.ecs.accessors.ResultScope
 import com.mineinabyss.geary.ecs.engine.Archetype
+import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.engine.GearyEventHandler
 
 public typealias EventRunner <T> = ResultScope.(T) -> Unit
 
-public abstract class GearyListener : AccessorHolder(), GearySystem {
+public abstract class GearyListener(engine: GearyEngine) : AccessorHolder(engine), GearySystem {
     public abstract fun GearyHandlerScope.register()
 }
 

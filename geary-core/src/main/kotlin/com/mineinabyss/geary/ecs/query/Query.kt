@@ -4,13 +4,15 @@ import com.mineinabyss.geary.ecs.accessors.AccessorHolder
 import com.mineinabyss.geary.ecs.accessors.ComponentAccessor
 import com.mineinabyss.geary.ecs.accessors.ResultScope
 import com.mineinabyss.geary.ecs.api.GearyComponent
+import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.engine.Archetype
+import com.mineinabyss.geary.ecs.engine.GearyEngine
 
 /**com.mineinabyss.geary.ecs.engine.iteration.accessors
  * @property matchedArchetypes A set of archetypes which have been matched to this query.
  */
-public abstract class Query : Iterable<ResultScope>, AccessorHolder() {
+public abstract class Query(engine: GearyEngine) : Iterable<ResultScope>, AccessorHolder(engine) {
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
 
     private var registered = false

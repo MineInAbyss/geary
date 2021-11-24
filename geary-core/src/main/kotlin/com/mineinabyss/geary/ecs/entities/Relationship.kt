@@ -75,14 +75,18 @@ public val GearyEntity.parents: Set<GearyEntity>
     }
 
 public val GearyEntity.children: List<GearyEntity>
-    get() = QueryManager.getEntitiesMatching(family {
-        has(id.withRole(CHILDOF))
-    })
+    get() = TODO("NOT IMPL")
+
+//        QueryManager.getEntitiesMatching(family {
+//        has(id.withRole(CHILDOF))
+//    })
 
 public val GearyEntity.instances: List<GearyEntity>
-    get() = QueryManager.getEntitiesMatching(family {
-        has(id.withRole(INSTANCEOF))
-    })
+    get() = TODO("NOT IMPL")
+
+//        QueryManager.getEntitiesMatching(family {
+//        has(id.withRole(INSTANCEOF))
+//    })
 
 public val GearyEntity.prefabKeys: List<PrefabKey>
     get() = prefabs.mapNotNull { it.toGeary().get<PrefabKey>() }

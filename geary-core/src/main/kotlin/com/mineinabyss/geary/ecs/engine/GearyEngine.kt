@@ -4,7 +4,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.api.engine.entity
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationDataType
@@ -51,7 +51,7 @@ public open class GearyEngine : TickingEngine() {
 
     override fun registerComponentIdForClass(kClass: KClass<*>): GearyComponentId =
         classToComponentMap.getOrPut(kClass) { entity().id }.also {
-            it.toGeary().set(ComponentInfo(kClass))
+            setComponentFor(it.toGeary().id, componentId(ComponentInfo::class), ComponentInfo(kClass))
         }
 
     //TODO Proper pipeline with different stages
@@ -154,7 +154,7 @@ public open class GearyEngine : TickingEngine() {
     override fun removeEntity(entity: GearyEntityId) {
         // remove all children of this entity from the ECS as well
         entity.toGeary().apply {
-            children.forEach { it.removeEntity() }
+            children.forEach { removeEntity(it.id) }
         }
 
         clearEntity(entity)
@@ -180,4 +180,9 @@ public open class GearyEngine : TickingEngine() {
 
     private fun getOrAddRecord(entity: GearyEntityId) =
         typeMap.getOrPut(entity) { root.addEntityWithData(entity, listOf()) }
+
+    public fun entity(): GearyEntity = getNextId().toGeary()
+
+    public inline fun <reified T> componentId(): GearyComponentId = componentId(T::class)
+    public fun componentId(kClass: KClass<*>): GearyComponentId = getOrRegisterComponentIdForClass(kClass)
 }

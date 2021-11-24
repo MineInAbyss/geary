@@ -4,6 +4,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoscan
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.services.gearyService
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
@@ -32,6 +33,7 @@ public class GearyAddon(
     public val plugin: Plugin
 ) {
     public val classLoader: ClassLoader = plugin::class.java.classLoader
+    public val engine: Engine by lazy { gearyService() }
 
     /**
      * Automatically scans for all annotated components
@@ -125,7 +127,7 @@ public class GearyAddon(
 
     /** Registers a [system]. */
     public fun system(system: GearySystem) {
-        Engine.addSystem(system)
+        engine.addSystem(system)
     }
 
     /** Registers a list of [systems]. */

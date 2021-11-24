@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.api.systems
 
 import com.mineinabyss.geary.ecs.accessors.ResultScope
 import com.mineinabyss.geary.ecs.engine.ArchetypeIterator
+import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.query.Query
 
 /**
@@ -13,8 +14,8 @@ import com.mineinabyss.geary.ecs.query.Query
  */
 public abstract class TickingSystem(
     public val interval: Long = 1,
-    init: (TickingSystem.() -> Unit)? = null
-) : Query(), GearySystem {
+    init: (TickingSystem.() -> Unit)? = null, engine: GearyEngine
+) : Query(engine), GearySystem {
     protected var iteration: Int = 0
         private set
 

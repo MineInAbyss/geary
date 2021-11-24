@@ -39,7 +39,7 @@ internal class QueryManagerTest {
             set(1)
         }
 
-        val system = object : TickingSystem() {
+        val system = object : TickingSystem(engine) {
             val ResultScope.string by get<String>()
             val int = has<Int>()
 
