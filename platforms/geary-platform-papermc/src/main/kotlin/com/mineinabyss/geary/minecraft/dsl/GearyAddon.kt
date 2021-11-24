@@ -40,8 +40,12 @@ public class GearyAddon(
      * @see autoscanActions
      */
     public fun autoscanAll() {
-        autoscanComponents()
-//        autoscanSingletonSystems()
+        startup {
+            GearyLoadPhase.REGISTER_SERIALIZERS {
+                autoscanComponents()
+                autoscanSingletonSystems()
+            }
+        }
     }
 
     /**
@@ -49,27 +53,23 @@ public class GearyAddon(
      *
      * @see AutoScanner
      */
-    public fun autoscanComponents(init: AutoScanner.() -> Unit = {}) {
-        autoscan<GearyComponent>({
-            getBy = {
-                getTypesAnnotatedWith(Serializable::class.java)
+    public fun autoscanComponents() {
+        AutoScanner(classLoader).getReflections()?.getTypesAnnotatedWith(Serializable::class.java)
+            ?.registerSerializers(GearyComponent::class) { kClass, serializer ->
+                val serialName = serializer?.descriptor?.serialName ?: return@registerSerializers false
+                PrefabKey.ofOrNull(serialName) ?: return@registerSerializers false
+                component(kClass, serializer)
             }
-            init()
-        }) { kClass, serializer ->
-            val serialName = serializer?.descriptor?.serialName ?: return@autoscan false
-            PrefabKey.ofOrNull(serialName) ?: return@autoscan false
-            component(kClass, serializer)
-        }
     }
 
-//    public fun autoscanSingletonSystems(init: AutoScanner.() -> Unit = {}) {
-//        autoscan<GearySystem>({
-//            filterBy = { this }
-//            init()
-//        }) { kClass, _ ->
-//            kClass.objectInstance?.let { system(it) }
-//        }
-//    }
+    public fun autoscanSingletonSystems() {
+        AutoScanner(classLoader).getReflections()?.getSubTypesOf(GearySystem::class.java)
+            ?.mapNotNull { it.kotlin.objectInstance as? GearySystem }
+            ?.onEach { system(it) }
+            ?.map { it::class.simpleName }
+            ?.joinToString()
+            ?.also { this@GearyAddon.plugin.logger.info("Autoscan loaded singleton systems: $it") }
+    }
 
     /**
      * Registers serializers for any type [T] on the classpath of [plugin]'s [ClassLoader].
@@ -78,24 +78,19 @@ public class GearyAddon(
      */
     public inline fun <reified T : Any> autoscan(
         crossinline init: AutoScanner.() -> Unit = {},
-        runNow: Boolean = false,
         noinline addSubclass: SerializerRegistry<T> = { kClass, serializer ->
             if (serializer != null)
                 subclass(kClass, serializer)
             serializer != null
         }
     ) {
-        if (runNow) AutoScanner(classLoader).apply(init).registerSerializers(T::class, addSubclass)
-        else startup {
-            GearyLoadPhase.REGISTER_SERIALIZERS {
-                AutoScanner(classLoader).apply(init).registerSerializers(T::class, addSubclass)
-            }
-        }
+        AutoScanner(classLoader).apply(init).getReflections()
+            ?.getSubTypesOf(T::class.java)?.registerSerializers(T::class, addSubclass)
     }
 
     /** Helper function to register serializers via scanning for geary classes. */
     @OptIn(InternalSerializationApi::class)
-    public fun <T : Any> AutoScanner.registerSerializers(
+    public fun <T : Any> Collection<Class<*>>.registerSerializers(
         kClass: KClass<T>,
         addSubclass: SerializerRegistry<T> = { kClass, serializer ->
             if (serializer != null)
@@ -103,11 +98,9 @@ public class GearyAddon(
             serializer != null
         },
     ) {
-        val reflections = getReflections() ?: return
         this@GearyAddon.serializers {
             polymorphic(kClass) {
-                reflections.getBy(kClass)
-                    .map { it.kotlin }
+                map { it.kotlin }
                     .filter { !it.hasAnnotation<ExcludeAutoscan>() }
                     .filterIsInstance<KClass<T>>()
                     .filter { this@polymorphic.addSubclass(it, it.serializerOrNull()) }

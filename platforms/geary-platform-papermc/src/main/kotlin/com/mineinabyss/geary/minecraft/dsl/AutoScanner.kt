@@ -2,14 +2,11 @@ package com.mineinabyss.geary.minecraft.dsl
 
 import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoscan
 import com.mineinabyss.idofront.messaging.logWarn
-import kotlinx.serialization.Serializable
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.ClasspathHelper
 import org.reflections.util.ConfigurationBuilder
 import org.reflections.util.FilterBuilder
-import kotlin.reflect.KClass
-import kotlin.reflect.full.hasAnnotation
 
 /**
  * DSL for configuring automatic scanning of classes to be registered into Geary's [SerializersModule].
@@ -25,12 +22,6 @@ import kotlin.reflect.full.hasAnnotation
 @GearyAddonDSL
 public class AutoScanner(private val classLoader: ClassLoader) {
     public var path: String? = null
-    internal var getBy: Reflections.(kClass: KClass<*>) -> Set<Class<*>> = { kClass ->
-        getSubTypesOf(kClass.java)
-    }
-    internal var filterBy: List<KClass<*>>.() -> List<KClass<*>> = {
-        filter { it.hasAnnotation<Serializable>() }
-    }
     private val excluded = mutableListOf<String>()
 
     /** Add a path to be excluded from the scanner. */

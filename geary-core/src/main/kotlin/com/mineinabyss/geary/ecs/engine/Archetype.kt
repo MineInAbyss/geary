@@ -315,7 +315,7 @@ public data class Archetype(
                     it.runEvent(eventData, scope)
                 }
             }
-            else -> listeners[kClass::class]?.forEach {
+            else -> listeners[kClass]?.forEach {
                 //TODO clean up by moving into runEvent
                 val scope = RawAccessorDataScope(this, it.holder.cacheForArchetype(this), row, entity)
                 it.runEvent(eventData, scope)
