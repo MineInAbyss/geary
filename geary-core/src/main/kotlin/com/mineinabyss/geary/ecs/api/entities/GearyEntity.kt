@@ -1,19 +1,8 @@
 package com.mineinabyss.geary.ecs.api.entities
 
-import com.mineinabyss.geary.ecs.api.ComponentClass
-import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationDataType
-import com.mineinabyss.geary.ecs.components.PersistingComponent
-import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
-import com.mineinabyss.geary.ecs.engine.INSTANCEOF
-import com.mineinabyss.geary.ecs.engine.withRole
 import kotlinx.serialization.Serializable
-import kotlin.reflect.KClass
 
 /**
  * A wrapper around [GearyEntityId] that gets inlined to just a long (no performance degradation since no boxing occurs).

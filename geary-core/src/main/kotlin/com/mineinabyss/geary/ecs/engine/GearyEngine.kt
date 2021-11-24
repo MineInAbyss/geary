@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.ecs.engine
 
+import com.mineinabyss.geary.ecs.accessors.GearyAccessorScope
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
@@ -13,7 +14,6 @@ import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.ComponentInfo
-import com.mineinabyss.geary.ecs.entities.children
 import com.mineinabyss.geary.ecs.events.ComponentAddEvent
 import com.mineinabyss.idofront.messaging.logError
 import java.util.*
@@ -32,6 +32,9 @@ public open class GearyEngine : TickingEngine() {
     private var currId: GearyEntityId = 0uL
     internal val root by lazy {
         Archetype(GearyType(), this)
+    }
+    internal val scope by lazy {
+        GearyAccessorScope(this)
     }
 
     //TODO there's likely a more performant option
@@ -153,8 +156,10 @@ public open class GearyEngine : TickingEngine() {
     //TODO might be a smarter way of storing removed entities as an implicit list within a larger list of entities eventually
     override fun removeEntity(entity: GearyEntityId) {
         // remove all children of this entity from the ECS as well
-        entity.toGeary().apply {
-            children.forEach { removeEntity(it.id) }
+        with(scope) {
+            entity.toGeary().apply {
+                children.forEach { removeEntity(it.id) }
+            }
         }
 
         clearEntity(entity)

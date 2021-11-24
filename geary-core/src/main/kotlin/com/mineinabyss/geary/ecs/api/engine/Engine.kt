@@ -18,9 +18,6 @@ import kotlin.reflect.KClass
  * Its companion object gets a service via Bukkit as its implementation.
  */
 public interface Engine {
-    @Deprecated("Bad!")
-    public companion object : Engine by gearyService()
-
     /** Get the next free ID for use with the ECS. */
     public fun getNextId(): GearyEntityId
 

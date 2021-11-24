@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.ecs.components
 
+import com.mineinabyss.geary.ecs.accessors.GearyAccessorScope
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.serialization.Formats
@@ -28,10 +29,12 @@ public data class CopyToInstances(
 
     private fun getDeepCopied() = Formats.cborFormat.decodeFromByteArray(serializer(), serializedComponents)
 
-    public fun decodeComponentsTo(entity: GearyEntity, override: Boolean = true) {
-        val (instance, persist) = getDeepCopied()
-        //order of addition specifies that persisting components should override all
-        entity.setAll(instance, override)
-        entity.setAllPersisting(persist, override)
+    public fun decodeComponentsTo(entity: GearyEntity, scope: GearyAccessorScope, override: Boolean = true) {
+        with(scope) {
+            val (instance, persist) = getDeepCopied()
+            //order of addition specifies that persisting components should override all
+            entity.setAll(instance, override)
+            entity.setAllPersisting(persist, override)
+        }
     }
 }

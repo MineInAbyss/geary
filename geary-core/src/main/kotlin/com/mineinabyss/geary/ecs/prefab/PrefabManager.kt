@@ -1,12 +1,10 @@
 package com.mineinabyss.geary.ecs.prefab
 
-import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.entity
+import com.mineinabyss.geary.ecs.accessors.GearyAccessorScope
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.with
 import com.mineinabyss.geary.ecs.api.relations.NoInherit
 import com.mineinabyss.geary.ecs.components.Prefab
-import com.mineinabyss.geary.ecs.prefab.PrefabManager.keys
+import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.GearyEntitySerializer
 import com.mineinabyss.idofront.messaging.logError
@@ -19,7 +17,8 @@ import java.io.File
  *
  * @property keys A list of registered [PrefabKey]s.
  */
-public object PrefabManager {
+public class PrefabManager(engine: GearyEngine, internal val serializer: GearyEntitySerializer) :
+    GearyAccessorScope(engine) {
     public val keys: List<PrefabKey> get() = prefabs.keys.toList()
 
     private val prefabs: MutableBiMap<PrefabKey, GearyEntity> = mutableBiMapOf()
@@ -56,8 +55,8 @@ public object PrefabManager {
                 "json" -> Formats.jsonFormat
                 else -> error("Unknown file format $ext")
             }
-            val entity = writeTo ?: Engine.entity()
-            entity.setAll(format.decodeFromString(GearyEntitySerializer.componentListSerializer, file.readText()))
+            val entity = writeTo ?: engine.entity()
+            entity.setAll(format.decodeFromString(serializer.componentListSerializer, file.readText()))
 
             val key = PrefabKey.of(namespace, name)
             entity.set(Prefab(file))

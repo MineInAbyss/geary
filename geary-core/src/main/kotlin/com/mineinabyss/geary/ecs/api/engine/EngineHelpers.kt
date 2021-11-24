@@ -2,7 +2,6 @@ package com.mineinabyss.geary.ecs.api.engine
 
 import com.mineinabyss.geary.ecs.accessors.GearyAccessorScope
 import com.mineinabyss.geary.ecs.api.GearyComponentId
-import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.components.ComponentInfo
@@ -10,8 +9,8 @@ import kotlin.reflect.KClass
 
 public fun Engine.entity(): GearyEntity = getNextId().toGeary()
 
-public inline fun Engine.entity(run: GearyAccessorScope.(entity: GearyEntity) -> Unit): GearyEntity =
-    getNextId().toGeary(run)
+public inline fun Engine.entity(run: GearyAccessorScope.(entity: GearyEntity) -> Unit): GearyEntity = TODO("HOW HANDLE")
+//    getNextId().toGeary(run)
 
 @Deprecated("TODO REIMPLEMENT")
 public inline fun Engine.temporaryEntity(run: (GearyEntity) -> Unit) {
@@ -32,8 +31,3 @@ public fun componentId(kClass: KClass<*>): GearyComponentId = TODO("")
 
 public fun GearyComponentId.getComponentInfo(): ComponentInfo? = TODO("")
 //this.toGeary().get()
-
-@Deprecated("D:")
-public val GearyEntity.type: GearyType
-    get() = TODO("")
-//Engine.getType(id)

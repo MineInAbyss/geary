@@ -3,7 +3,10 @@ package com.mineinabyss.geary.ecs.api.relations
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.engine.*
+import com.mineinabyss.geary.ecs.engine.RELATION
+import com.mineinabyss.geary.ecs.engine.RELATION_COMPONENT_MASK
+import com.mineinabyss.geary.ecs.engine.RELATION_PARENT_MASK
+import com.mineinabyss.geary.ecs.engine.isRelation
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
