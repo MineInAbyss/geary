@@ -4,7 +4,9 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
+import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
+import com.mineinabyss.geary.ecs.api.engine.temporaryEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationDataType
@@ -115,7 +117,10 @@ public open class GearyEngine : TickingEngine() {
         getOrAddRecord(entity).apply {
             val newRecord = archetype.addComponent(entity, row, HOLDS_DATA.inv() and component)
             typeMap[entity] = newRecord ?: return
-            newRecord.archetype.callEvent(ComponentAddEvent(component), newRecord.row)
+            Engine.temporaryEntity { componentAddEvent ->
+                componentAddEvent.set(ComponentAddEvent(component))
+                newRecord.archetype.callEvent(componentAddEvent, newRecord.row)
+            }
         }
     }
 
@@ -127,7 +132,10 @@ public open class GearyEngine : TickingEngine() {
             val componentWithRole = component.withRole(role)
             val newRecord = archetype.setComponent(entity, row, componentWithRole, data)
             typeMap[entity] = newRecord ?: return
-            newRecord.archetype.callEvent(ComponentAddEvent(componentWithRole), newRecord.row)
+            Engine.temporaryEntity { componentAddEvent ->
+                componentAddEvent.set(ComponentAddEvent(componentWithRole))
+                newRecord.archetype.callEvent(componentAddEvent, newRecord.row)
+            }
         }
     }
 

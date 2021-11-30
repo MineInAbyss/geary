@@ -6,18 +6,17 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.relations.toRelation
-import com.mineinabyss.geary.ecs.events.ComponentAddEvent
 import com.mineinabyss.geary.ecs.query.Query
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongArrayList
 import java.util.*
-import kotlin.reflect.KClass
 
 /**
  * Archetypes store a list of entities with the same [GearyType], and provide functions to
@@ -71,16 +70,9 @@ public data class Archetype(
     /** The amount of entities stored in this archetype. */
     public val size: Int get() = ids.size
 
+    //TODO update doc
     /** A map of event class type to a set of event handlers which fire on that event. */
-    private val listeners = mutableMapOf<KClass<*>, MutableSet<GearyEventHandler<*>>>()
-
-    /**
-     * Sets of event handlers in an outer array whose indices represent internal component ids.
-     *
-     * After an entity gets added to this archetype, the appropriate handlers fire based on the component added.
-     */
-    //FIXME this should be used for the full type not just data holding.
-    private val componentAddListeners = Array(dataHoldingType.size) { mutableSetOf<GearyEventHandler<*>>() }
+    private val eventHandlers = mutableSetOf<GearyEventHandler>()
 
     // Basically just want a weak set where stuff gets auto removed when it is no longer running
     // We put our iterator and null and this WeakHashMap handles the rest for us.
@@ -284,42 +276,20 @@ public data class Archetype(
 
     // ==== Event listeners ====
 
-    /** Adds [handler] that fires for a class [forClass]. */
-    public fun <T : Any> addEventHandler(
-        forClass: KClass<T>,
-        handler: GearyEventHandler<T>
-    ) {
-        when (forClass) {
-            ComponentAddEvent::class -> handler.holder.family.components
-                .map { indexOf(it) }
-                .forEach { componentAddListeners[it] += handler }
-            else -> listeners.getOrPut(forClass) { mutableSetOf() } += handler
-        }
+    /** Adds an event [handler] that listens to certain events relating to entities in this archetype. */
+    public fun addEventHandler(handler: GearyEventHandler) {
+        eventHandlers += handler
     }
 
-    /** Calls an event with type [T] on an entity at [row], providing it with some [eventData]. */
-    public inline fun <reified T : Any> callEvent(eventData: T, row: Int) {
-        callEvent(T::class, eventData, row)
-    }
-
-    /** Calls an event with type [kClass] on an entity at [row], providing it with some [eventData]. */
-    public fun <T : Any> callEvent(kClass: KClass<T>, eventData: T, row: Int) {
+    /** Calls an event with data in an [event entity][event]. */
+    public fun callEvent(event: GearyEntity, row: Int) {
         val entity = getEntity(row)
+        val type = event.type
 
-        when (eventData) {
-            is ComponentAddEvent -> {
-                val index = indexOf(eventData.component)
-                if (index == -1) return
-                componentAddListeners[index].forEach {
-                    val scope = RawAccessorDataScope(this, it.holder.cacheForArchetype(this), row, entity)
-                    it.runEvent(eventData, scope)
-                }
-            }
-            else -> listeners[kClass]?.forEach {
-                //TODO clean up by moving into runEvent
-                val scope = RawAccessorDataScope(this, it.holder.cacheForArchetype(this), row, entity)
-                it.runEvent(eventData, scope)
-            }
+        //TODO performance upgrade will come when we figure out a solution in QueryManager as well.
+        for (handler in eventHandlers) {
+            val scope = RawAccessorDataScope(this, handler.holder.cacheForArchetype(this), row, entity)
+            handler.runEvent(event, scope)
         }
     }
 

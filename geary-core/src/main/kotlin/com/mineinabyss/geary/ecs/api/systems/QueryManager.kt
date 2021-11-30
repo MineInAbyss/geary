@@ -11,9 +11,7 @@ public object QueryManager {
     private val queries = mutableListOf<Query>()
     private val eventListeners = mutableListOf<GearyListener>()
 
-    private val archetypes = object : Component2ObjectArrayMap<Archetype>() {
-        override fun Archetype.getGearyType() = type
-    }
+    private val archetypes = Component2ObjectArrayMap<Archetype>()
 
     public fun trackEventListener(listener: GearyListener) {
         val matched = archetypes.match(listener.family)

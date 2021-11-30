@@ -90,6 +90,7 @@ public class GearyAddon(
             serializer != null
         }
     ) {
+        mutableListOf("") += listOf("")
         AutoScanner(classLoader).apply(init).getReflections()
             ?.getSubTypesOf(T::class.java)?.registerSerializers(T::class, addSubclass)
     }

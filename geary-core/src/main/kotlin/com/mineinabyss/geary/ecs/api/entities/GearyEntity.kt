@@ -6,6 +6,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
+import com.mineinabyss.geary.ecs.api.engine.temporaryEntity
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.components.PersistingComponent
@@ -204,10 +205,30 @@ public value class GearyEntity(public val id: GearyEntityId) {
      * @see has */
     public inline fun hasAll(components: Collection<ComponentClass>): Boolean = components.all { has(it) }
 
-    public inline fun <reified T : Any> callEvent(eventData: T) {
+    public inline fun callEvent(event: GearyEntity) {
         Engine.getRecord(id)?.apply {
-            archetype.callEvent(T::class, eventData, row)
+            archetype.callEvent(event, row)
         }
+    }
+
+    public inline fun callEvent(
+        initEvent: (event: GearyEntity) -> Unit
+    ) {
+        callEvent(initEvent) {}
+    }
+
+    public inline fun <T> callEvent(
+        init: (event: GearyEntity) -> Unit,
+        result: (event: GearyEntity) -> T
+    ): T {
+        Engine.getRecord(id)?.apply {
+            Engine.temporaryEntity { event ->
+                init(event)
+                archetype.callEvent(event, row)
+                return result(event)
+            }
+        }
+        error("Failed to get an entity while calling event that expects a result returned")
     }
 
     public operator fun component1(): GearyEntityId = id
