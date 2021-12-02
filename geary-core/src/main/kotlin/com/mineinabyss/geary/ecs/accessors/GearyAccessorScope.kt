@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.ecs.accessors
 
 import com.mineinabyss.geary.ecs.api.*
-import com.mineinabyss.geary.ecs.api.ComponentClass
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.NoInherit
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationDataType
+import com.mineinabyss.geary.ecs.api.systems.family
 import com.mineinabyss.geary.ecs.components.CopyToInstances
 import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.*
@@ -49,7 +49,7 @@ public open class GearyAccessorScope(public val engine: GearyEngine) {
         key: KClass<*>
     ): D? {
         @Suppress("UNCHECKED_CAST") // internally ensured to always be true
-        return get(Relation.of(data, key).id) as? D
+        return get(relation(data, key).id) as? D
     }
 
     public inline fun <reified D : GearyComponent, reified Key : GearyComponent> GearyEntity.setRelation(
@@ -63,11 +63,11 @@ public open class GearyAccessorScope(public val engine: GearyEngine) {
         keyKClass: KClass<*>,
         data: D
     ) {
-        engine.setComponentFor(id, Relation.of(dataKClass, keyKClass).id, data)
+        engine.setComponentFor(id, relation(dataKClass, keyKClass).id, data)
     }
 
     public inline fun <reified T : GearyComponent, reified C : GearyComponent> GearyEntity.removeRelation(): Boolean =
-        removeRelation(Relation.of<T, C>())
+        removeRelation(relation<T, C>())
 
     public fun GearyEntity.removeRelation(relation: Relation): Boolean =
         remove(Relation.of(relation.data, relation.key).id)
@@ -264,18 +264,15 @@ public open class GearyAccessorScope(public val engine: GearyEngine) {
         }
 
     public val GearyEntity.children: List<GearyEntity>
-        get() = TODO("NOT IMPL")
-
-//        QueryManager.getEntitiesMatching(family {
-//        has(id.withRole(CHILDOF))
-//    })
+        get() = engine.queryManager.getEntitiesMatching(family(engine) {
+            has(id.withRole(CHILDOF))
+        })
 
     public val GearyEntity.instances: List<GearyEntity>
-        get() = TODO("NOT IMPL")
-
-//        QueryManager.getEntitiesMatching(family {
-//        has(id.withRole(INSTANCEOF))
-//    })
+        get() =
+            engine.queryManager.getEntitiesMatching(family(engine) {
+                has(id.withRole(INSTANCEOF))
+            })
 
     public val GearyEntity.prefabKeys: List<PrefabKey>
         get() = prefabs.mapNotNull { it.toGeary().get<PrefabKey>() }
@@ -333,7 +330,7 @@ public open class GearyAccessorScope(public val engine: GearyEngine) {
         )
     }
 
-// NULLABLES
+    // NULLABLES
 
     /** Runs a block, reading all passed components or null if not present. */
     public inline fun <reified T : GearyComponent> GearyEntity.withNullable(let: (T?) -> Unit) {
@@ -365,4 +362,16 @@ public open class GearyAccessorScope(public val engine: GearyEngine) {
     public val GearyEntity.type: GearyType
         get() = engine.getType(id)
 
+
+    public inline fun <reified T> componentId(): GearyComponentId = componentId(T::class)
+    public fun componentId(kClass: KClass<*>): GearyComponentId = engine.getOrRegisterComponentIdForClass(kClass)
+
+    public fun relation(parent: KClass<*>, component: KClass<*>): Relation =
+        Relation.of(
+            componentId(parent),
+            componentId(component)
+        )
+
+    public inline fun <reified P : GearyComponent, reified C : GearyComponent> relation(): Relation =
+        Relation.of(componentId<P>(), componentId<C>())
 }

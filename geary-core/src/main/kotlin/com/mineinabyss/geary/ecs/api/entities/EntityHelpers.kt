@@ -1,14 +1,7 @@
 package com.mineinabyss.geary.ecs.api.entities
 
-import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyEntityId
-import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
-
-/** Gets the entity associated with [this@toGeary] and runs code on it. */
-public inline fun GearyEntityId.toGeary(run: GearyEntity.() -> Unit): GearyEntity = TODO("NO")
-//    toGeary().apply(run)
 
 /** Gets the entity associated with [this@toGeary]. */
 //TODO think a bit more about the benefits of automatically adding a mask vs possible bugs with internal code

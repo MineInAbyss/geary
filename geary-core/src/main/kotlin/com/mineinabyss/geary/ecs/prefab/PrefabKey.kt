@@ -13,8 +13,6 @@ public value class PrefabKey private constructor(public val key: String) {
     public val namespace: String get() = key.substringBefore(':')
     public val name: String get() = key.substringAfter(':')
 
-    public fun toEntity(): GearyEntity? = PrefabManager[this]
-
     override fun toString(): String = "$namespace:$name"
 
     public companion object {

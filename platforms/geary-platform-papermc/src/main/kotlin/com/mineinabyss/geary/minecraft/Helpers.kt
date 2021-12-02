@@ -6,7 +6,7 @@ import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.minecraft.access.toGeary
 import com.mineinabyss.geary.minecraft.config.GearyConfig
-import com.mineinabyss.geary.minecraft.engine.SpigotEngine
+import com.mineinabyss.geary.minecraft.engine.PaperEngine
 import com.mineinabyss.geary.minecraft.events.GearyAttemptMinecraftSpawnEvent
 import com.mineinabyss.geary.minecraft.events.GearyMinecraftSpawnEvent
 import com.mineinabyss.idofront.events.call
@@ -23,12 +23,12 @@ internal fun debug(message: Any?) {
 
 /** Verifies a [PersistentDataContainer] has a tag identifying it as containing Geary components. */
 public var PersistentDataContainer.hasComponentsEncoded: Boolean
-    get() = has(SpigotEngine.componentsKey, PersistentDataType.BYTE)
+    get() = has(PaperEngine.componentsKey, PersistentDataType.BYTE)
     set(value) {
         when {
             //TODO are there any empty marker keys?
-            value -> if (!hasComponentsEncoded) set(SpigotEngine.componentsKey, PersistentDataType.BYTE, 1)
-            else -> remove(SpigotEngine.componentsKey)
+            value -> if (!hasComponentsEncoded) set(PaperEngine.componentsKey, PersistentDataType.BYTE, 1)
+            else -> remove(PaperEngine.componentsKey)
         }
     }
 

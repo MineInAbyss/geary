@@ -29,7 +29,10 @@ public abstract class AccessorHolder(engine: GearyEngine) : MutableAndSelector(e
 
     //TODO write tests
     protected inline fun <reified D : GearyComponent, reified Key : GearyComponent> getRelation(): ComponentAccessor<D> {
-        val component = Relation.of<D, Key>()
+        val component = Relation.of(
+            engine.componentId(D::class),
+            engine.componentId(Key::class)
+        )
         has(component)
         return addAccessor { ComponentAccessor(it, component.id) }
     }

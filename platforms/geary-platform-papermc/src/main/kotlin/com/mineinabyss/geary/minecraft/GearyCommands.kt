@@ -6,13 +6,13 @@ import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.rylinaux.plugman.util.PluginUtil
 
-internal class GearyCommands : IdofrontCommandExecutor() {
+internal class GearyCommands(private val prefabManager: PrefabManager) : IdofrontCommandExecutor() {
     override val commands = commands(GearyPlugin.instance) {
         "geary" {
             "reread" {
                 val prefab by stringArg()
                 action {
-                    PrefabManager.reread(PrefabKey.of(prefab).toEntity()!!)
+                    prefabManager.reread(prefabManager[PrefabKey.of(prefab)]!!)
                 }
             }
             "fullreload" {

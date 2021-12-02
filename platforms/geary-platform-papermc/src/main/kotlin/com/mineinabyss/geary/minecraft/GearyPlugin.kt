@@ -10,7 +10,7 @@ import com.mineinabyss.geary.minecraft.access.BukkitEntityAssociations
 import com.mineinabyss.geary.minecraft.access.toGeary
 import com.mineinabyss.geary.minecraft.dsl.GearyLoadPhase
 import com.mineinabyss.geary.minecraft.dsl.gearyAddon
-import com.mineinabyss.geary.minecraft.engine.SpigotEngine
+import com.mineinabyss.geary.minecraft.engine.PaperEngine
 import com.mineinabyss.geary.minecraft.listeners.GearyAttemptSpawnListener
 import com.mineinabyss.geary.minecraft.store.FileSystemStore
 import com.mineinabyss.geary.minecraft.store.GearyStore
@@ -41,7 +41,7 @@ public class GearyPlugin : JavaPlugin() {
             }
         })
 
-        registerService<Engine>(SpigotEngine().apply { start() })
+        registerService<Engine>(PaperEngine().apply { start() })
 
         // Register commands.
         GearyCommands()

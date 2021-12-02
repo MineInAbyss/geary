@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.minecraft.engine
 
 import co.aikar.timings.Timings
+import com.mineinabyss.geary.ecs.accessors.GearyAccessorScope
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
@@ -13,7 +14,7 @@ import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import java.util.*
 
-public class SpigotEngine : GearyEngine() {
+public class PaperEngine : GearyEngine() {
     public companion object {
         public val componentsKey: NamespacedKey = NamespacedKey(GearyPlugin.instance, "components")
     }
@@ -41,8 +42,10 @@ public class SpigotEngine : GearyEngine() {
     }
 
     override fun removeEntity(entity: GearyEntityId) {
-        if (entity.toGeary().has<UUID>())
-            GearyEntityRemoveEvent(entity.toGeary()).call()
-        super.removeEntity(entity)
+        with(scope) {
+            if (entity.toGeary().has<UUID>())
+                GearyEntityRemoveEvent(entity.toGeary()).call()
+            super.removeEntity(entity)
+        }
     }
 }

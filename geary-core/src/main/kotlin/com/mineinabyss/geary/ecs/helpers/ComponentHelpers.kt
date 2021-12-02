@@ -1,10 +1,6 @@
 package com.mineinabyss.geary.ecs.helpers
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.engine.type
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.toGeary
-import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.serialization.Formats
 
 /** Gets the serial name of this component as registered in [Formats] */
@@ -13,11 +9,12 @@ public val GearyComponent.serialName: String?
 
 private val Collection<GearyComponent>.names: String get() = mapNotNull { it.serialName }.joinToString()
 
+//TODO reimplement
 /** Neatly lists all the components on this entity. */
-public fun GearyEntity.listComponents(): String {
-    return """
-        Type: ${type.mapNotNull { it.toGeary().get<PrefabKey>() }}
-        Instance: ${getInstanceComponents().names}
-        Persisting: ${getPersistingComponents().names}
-    """.trimIndent()
-}
+//public fun GearyEntity.listComponents(): String {
+//    return """
+//        Type: ${type.mapNotNull { it.toGeary().get<PrefabKey>() }}
+//        Instance: ${getInstanceComponents().names}
+//        Persisting: ${getPersistingComponents().names}
+//    """.trimIndent()
+//}

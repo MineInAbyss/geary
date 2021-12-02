@@ -2,7 +2,6 @@ package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -27,81 +26,101 @@ internal class GearyEngineTest {
 
     @Test
     fun `adding component to entity`() {
-        engine.entity {
-            set("Test")
-        }.get<String>() shouldBe "Test"
+        with(engine.scope) {
+            engine.entity {
+                it.set("Test")
+            }.get<String>() shouldBe "Test"
+        }
     }
 
     @Test
     fun `entity has component works via add or set`() {
-        val entity = engine.entity {
-            add<String>()
-            set(1)
+        with(engine.scope) {
+            val entity = engine.entity {
+                it.add<String>()
+                it.set(1)
+            }
+            entity.has<String>() shouldBe true
+            entity.has<Int>() shouldBe true
         }
-        entity.has<String>() shouldBe true
-        entity.has<Int>() shouldBe true
     }
 
     @Test
     fun `entity archetype was set`() {
-        engine.entity {
-            add<String>()
-            set(1)
-        }.type.getArchetype(engine) shouldBe engine.root + componentId<String>() + (HOLDS_DATA or componentId<Int>())
+        with(engine.scope) {
+            engine.entity {
+                it.add<String>()
+                it.set(1)
+            }.type.getArchetype(engine) shouldBe engine.root + componentId<String>() + (HOLDS_DATA or componentId<Int>())
+        }
     }
 
     @Test
     fun `component removal`() {
-        engine.entity {
-            set("Test")
-            remove<String>()
-        }.type.getArchetype(engine) shouldBe engine.root
+        with(engine.scope) {
+            engine.entity {
+                it.set("Test")
+                it.remove<String>()
+            }.type.getArchetype(engine) shouldBe engine.root
+        }
     }
 
     @Test
     fun `add then set`() {
-        engine.entity {
-            add<String>()
-            set("Test")
-        }.type.getArchetype(engine) shouldBe engine.root + (componentId<String>() or HOLDS_DATA)
+        with(engine.scope) {
+            engine.entity {
+                it.add<String>()
+                it.set("Test")
+            }.type.getArchetype(engine) shouldBe engine.root + (componentId<String>() or HOLDS_DATA)
+        }
     }
 
     @Test
     fun getComponents() {
-        engine.entity {
-            set("Test")
-            set(1)
-            add<Long>()
-        }.getComponents().shouldContainExactly("Test", 1)
+        with(engine.scope) {
+            engine.entity {
+                it.set("Test")
+                it.set(1)
+                it.add<Long>()
+            }.getComponents().shouldContainExactly("Test", 1)
+        }
     }
 
     @Test
     fun clear() {
-        val entity = engine.entity {
-            set("Test")
-            add<Int>()
+        with(engine.scope) {
+            val entity = engine.entity {
+                it.set("Test")
+                it.add<Int>()
+            }
+            entity.clear()
+            entity.getComponents().isEmpty() shouldBe true
         }
-        entity.clear()
-        entity.getComponents().isEmpty() shouldBe true
     }
 
     @Test
     fun setAll() {
-        engine.entity {
-            setAll(listOf("Test", 1))
-            add<Long>()
-        }.getComponents().shouldContainExactly("Test", 1)
+        with(engine.scope) {
+
+            engine.entity {
+                it.setAll(listOf("Test", 1))
+                it.add<Long>()
+            }.getComponents().shouldContainExactly("Test", 1)
+        }
     }
 
     @Test
     fun setRelation() {
-        val entity = engine.entity {
-            setRelation<String, Int>("String to int relation")
+        with(engine.scope) {
+
+            val entity = engine.entity {
+                it.setRelation<String, Int>("String to int relation")
+            }
+            entity.type.shouldContainExactly(
+                Relation.of(componentId<String>(), componentId<Int>()).id
+            )
+            entity.getComponents().shouldContainExactly("String to int relation")
         }
-        entity.type.shouldContainExactly(
-            Relation.of(componentId<String>(), componentId<Int>()).id
-        )
-        entity.getComponents().shouldContainExactly("String to int relation")
     }
 
     @Nested
@@ -112,7 +131,7 @@ internal class GearyEngineTest {
             val offset = engine.getNextId() + 1uL
             repeat(10) {
                 engine.entity {
-                    add(100uL)
+                    it.add(100uL)
                 }
             }
 

@@ -7,7 +7,7 @@ import com.mineinabyss.geary.ecs.engine.isInstance
 import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
-import com.mineinabyss.geary.minecraft.engine.SpigotEngine
+import com.mineinabyss.geary.minecraft.engine.PaperEngine
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
 import com.mineinabyss.idofront.util.toMCKey
 import kotlinx.serialization.DeserializationStrategy
@@ -64,24 +64,6 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
 }
 
 /**
- * Encodes a list of [components] to this [PersistentDataContainer].
- *
- * @see encode
- */
-public fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>, type: GearyType) {
-    hasComponentsEncoded = true
-    //remove all keys present on the PDC so we only end up with the new list of components being encoded
-    keys.filter { it.namespace == "geary" && it != SpigotEngine.componentsKey }.forEach { remove(it) }
-
-    for (value in components)
-        encode(value)
-
-    val prefabs = type.filter { it.isInstance() }
-    if (prefabs.isNotEmpty())
-        encodePrefabs(prefabs.mapNotNull { it.toGeary().get<PrefabKey>() })
-}
-
-/**
  * Encodes a list of [PrefabKey]s under the key `geary:prefabs`. When decoding these will be stored in
  * [DecodedEntityData.type].
  */
@@ -111,20 +93,3 @@ public fun PersistentDataContainer.decodePrefabs(): Set<PrefabKey> =
         }
         ?.toSet()
         ?: emptySet()
-
-/**
- * Decodes a set of components from this [PersistentDataContainer].
- *
- * @see decode
- */
-public fun PersistentDataContainer.decodeComponents(): DecodedEntityData =
-    DecodedEntityData(
-        // only include keys that start with the component prefix and remove it to get the serial name
-        persistingComponents = keys
-            .filter { it.key.startsWith(COMPONENT_PREFIX) }
-            .mapNotNull {
-                decode(it)
-            }
-            .toSet(),
-        type = decodePrefabs().mapNotNullTo(sortedSetOf()) { it.toEntity()?.id }
-    )

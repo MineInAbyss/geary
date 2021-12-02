@@ -15,6 +15,8 @@ import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.ComponentInfo
 import com.mineinabyss.geary.ecs.events.ComponentAddEvent
+import com.mineinabyss.geary.ecs.prefab.PrefabManager
+import com.mineinabyss.geary.ecs.serialization.GearyEntitySerializer
 import com.mineinabyss.idofront.messaging.logError
 import java.util.*
 import kotlin.reflect.KClass
@@ -34,8 +36,12 @@ public open class GearyEngine : TickingEngine() {
     internal val root by lazy {
         Archetype(GearyType(), this)
     }
-    internal val scope by lazy {
+    public val scope: GearyAccessorScope by lazy {
         GearyAccessorScope(this)
+    }
+
+    public val prefabManager: PrefabManager by lazy {
+        PrefabManager(this, GearyEntitySerializer(this))
     }
 
     internal val queryManager = QueryManager()

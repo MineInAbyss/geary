@@ -51,12 +51,6 @@ public value class Relation internal constructor(
 
         public fun of(parent: GearyComponentId, component: GearyComponentId = 0uL): Relation =
             of(RelationDataType(parent), component)
-
-        public fun of(parent: KClass<*>, component: KClass<*>): Relation =
-            of(componentId(parent), componentId(component))
-
-        public inline fun <reified P : GearyComponent, reified C : GearyComponent> of(): Relation =
-            of(componentId<P>(), componentId<C>())
     }
 }
 

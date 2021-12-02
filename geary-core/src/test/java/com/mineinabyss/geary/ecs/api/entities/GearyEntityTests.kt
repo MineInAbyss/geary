@@ -1,12 +1,9 @@
 package com.mineinabyss.geary.ecs.api.entities
 
-import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.engine.getArchetype
-import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
@@ -15,44 +12,46 @@ import org.junit.jupiter.api.Test
 internal class GearyEntityTests {
     val engine: GearyEngine = GearyEngine()
 
-    init {
-        setEngineServiceProvider(engine)
-    }
-
     @Test
     fun setPersisting() {
         val entity = engine.entity {
-            setPersisting("Test")
+            it.setPersisting("Test")
         }
-        val relations =
-            entity.type.getArchetype(engine).relations[componentId<PersistingComponent>().toLong()]
-        relations.size shouldBe 1
-        relations.first().key shouldBe componentId<String>()
-        entity.getPersistingComponents().shouldContainExactly("Test")
+        with(engine.scope) {
+            val relations =
+                entity.type.getArchetype(engine).relations[componentId<PersistingComponent>().toLong()]
+            relations.size shouldBe 1
+            relations.first().key shouldBe componentId<String>()
+            entity.getPersistingComponents().shouldContainExactly("Test")
+        }
     }
 
     @Test
     fun setAllPersisting() {
         val entity = engine.entity {
-            set("Test")
-            set(1)
+            it.set("Test")
+            it.set(1)
         }
         val entitySetAll = engine.entity {
-            setAll(listOf("Test", 1))
+            it.setAll(listOf("Test", 1))
         }
-        entity.type shouldContainExactly entitySetAll.type
+        with(engine.scope) {
+            entity.type shouldContainExactly entitySetAll.type
+        }
     }
 
     @Test
     fun clear() {
         val entity = engine.entity {
-            setPersisting("Test")
+            it.setPersisting("Test")
         }
-        val relations =
-            entity.type.getArchetype(engine).relations[componentId<PersistingComponent>().toLong()]
-        relations.size shouldBe 1
-        relations.first().key shouldBe (componentId<String>())
-        entity.getPersistingComponents().shouldContainExactly("Test")
+        with(engine.scope) {
+            val relations =
+                entity.type.getArchetype(engine).relations[componentId<PersistingComponent>().toLong()]
+            relations.size shouldBe 1
+            relations.first().key shouldBe (componentId<String>())
+            entity.getPersistingComponents().shouldContainExactly("Test")
+        }
     }
 
     @Nested
@@ -63,11 +62,13 @@ internal class GearyEntityTests {
         fun `getRelation reified`() {
             val testData = TestRelation()
             val entity = engine.entity {
-                setRelation<TestRelation, String>(testData)
-                add<String>()
+                it.setRelation<TestRelation, String>(testData)
+                it.add<String>()
             }
 
-            entity.getRelation<TestRelation, String>() shouldBe testData
+            with(engine.scope) {
+                entity.getRelation<TestRelation, String>() shouldBe testData
+            }
         }
     }
 }
