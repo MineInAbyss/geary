@@ -113,18 +113,28 @@ public open class GearyEngine : TickingEngine() {
     } ?: setOf()
 
 
-    override fun addComponentFor(entity: GearyEntityId, component: GearyComponentId) {
+    override fun addComponentFor(
+        entity: GearyEntityId,
+        component: GearyComponentId,
+        noEvent: Boolean
+    ) {
         getOrAddRecord(entity).apply {
             val newRecord = archetype.addComponent(entity, row, HOLDS_DATA.inv() and component)
             typeMap[entity] = newRecord ?: return
-            Engine.temporaryEntity { componentAddEvent ->
-                componentAddEvent.set(ComponentAddEvent(component))
-                newRecord.archetype.callEvent(componentAddEvent, newRecord.row)
-            }
+            if (!noEvent)
+                Engine.temporaryEntity { componentAddEvent ->
+                    componentAddEvent.set(ComponentAddEvent(component), noEvent = true)
+                    newRecord.archetype.callEvent(componentAddEvent, newRecord.row)
+                }
         }
     }
 
-    override fun setComponentFor(entity: GearyEntityId, component: GearyComponentId, data: GearyComponent) {
+    override fun setComponentFor(
+        entity: GearyEntityId,
+        component: GearyComponentId,
+        data: GearyComponent,
+        noEvent: Boolean
+    ) {
         getOrAddRecord(entity).apply {
             // Only add HOLDS_DATA if this isn't a relation. All relations implicitly hold data currently and that bit
             // corresponds to the component part of the relation.
@@ -132,10 +142,11 @@ public open class GearyEngine : TickingEngine() {
             val componentWithRole = component.withRole(role)
             val newRecord = archetype.setComponent(entity, row, componentWithRole, data)
             typeMap[entity] = newRecord ?: return
-            Engine.temporaryEntity { componentAddEvent ->
-                componentAddEvent.set(ComponentAddEvent(componentWithRole))
-                newRecord.archetype.callEvent(componentAddEvent, newRecord.row)
-            }
+            if (!noEvent)
+                Engine.temporaryEntity { componentAddEvent ->
+                    componentAddEvent.set(ComponentAddEvent(componentWithRole), noEvent = true)
+                    newRecord.archetype.callEvent(componentAddEvent, newRecord.row)
+                }
         }
     }
 

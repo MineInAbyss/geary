@@ -13,6 +13,7 @@ import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.INSTANCEOF
 import com.mineinabyss.geary.ecs.engine.withRole
+import com.mineinabyss.geary.ecs.events.ComponentAddEvent
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
@@ -30,9 +31,17 @@ public value class GearyEntity(public val id: GearyEntityId) {
         Engine.removeEntity(id)
     }
 
-    /** Sets a component that holds data for this entity */
-    public inline fun <reified T : GearyComponent> set(component: T, kClass: KClass<out T> = T::class): T {
-        Engine.setComponentFor(id, componentId(kClass), component)
+    /**
+     * Sets a component that holds data for this entity
+     *
+     * @param noEvent If true, will not fire a [ComponentAddEvent].
+     */
+    public inline fun <reified T : GearyComponent> set(
+        component: T,
+        kClass: KClass<out T> = T::class,
+        noEvent: Boolean = false
+    ): T {
+        Engine.setComponentFor(id, componentId(kClass), component, noEvent)
         return component
     }
 
@@ -68,12 +77,16 @@ public value class GearyEntity(public val id: GearyEntityId) {
         setRelation(D::class, Key::class, data)
     }
 
+    /**
+     * @param noEvent If true, will not fire a [ComponentAddEvent].
+     */
     public fun <D : GearyComponent> setRelation(
         dataKClass: KClass<D>,
         keyKClass: KClass<*>,
-        data: D
+        data: D,
+        noEvent: Boolean = false
     ) {
-        Engine.setComponentFor(id, Relation.of(dataKClass, keyKClass).id, data)
+        Engine.setComponentFor(id, Relation.of(dataKClass, keyKClass).id, data, noEvent)
     }
 
     public inline fun <reified T : GearyComponent, reified C : GearyComponent> removeRelation(): Boolean =
@@ -82,9 +95,13 @@ public value class GearyEntity(public val id: GearyEntityId) {
     public fun removeRelation(relation: Relation): Boolean =
         remove(Relation.of(relation.data, relation.key).id)
 
-    /** Adds a list of [component] to this entity */
-    public inline fun add(component: GearyComponentId) {
-        Engine.addComponentFor(id, component)
+    /**
+     * Adds a list of [component] to this entity
+     *
+     * @param noEvent If true, will not fire a [ComponentAddEvent].
+     */
+    public inline fun add(component: GearyComponentId, noEvent: Boolean = false) {
+        Engine.addComponentFor(id, component, noEvent)
     }
 
     public inline fun <reified T : GearyComponent> add() {
@@ -204,6 +221,12 @@ public value class GearyEntity(public val id: GearyEntityId) {
     /** Checks whether an entity has all of a list of [components].
      * @see has */
     public inline fun hasAll(components: Collection<ComponentClass>): Boolean = components.all { has(it) }
+
+    public inline fun callEvent(vararg components: Any) {
+        callEvent {
+            setAll(components.toList())
+        }
+    }
 
     public inline fun callEvent(event: GearyEntity) {
         Engine.getRecord(id)?.apply {

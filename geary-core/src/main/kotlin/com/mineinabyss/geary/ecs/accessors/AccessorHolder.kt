@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
+import com.mineinabyss.geary.ecs.engine.withRole
 import com.mineinabyss.geary.ecs.query.AndSelector
 
 /**
@@ -22,7 +23,7 @@ public abstract class AccessorHolder : MutableAndSelector() {
     //TODO getOrNull
 
     public inline fun <reified T : GearyComponent> get(): ComponentAccessor<T> {
-        val component = componentId<T>() or HOLDS_DATA
+        val component = componentId<T>().withRole(HOLDS_DATA)
         has(component)
         return addAccessor { ComponentAccessor(it, component) }
     }
@@ -33,7 +34,6 @@ public abstract class AccessorHolder : MutableAndSelector() {
         has(component)
         return addAccessor { ComponentAccessor(it, component.id) }
     }
-
 
     public inline fun <reified T : GearyComponent> relation(): RelationAccessor<T> {
         val relationDataType = RelationDataType(componentId<T>())

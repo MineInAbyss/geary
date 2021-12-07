@@ -45,10 +45,15 @@ public interface Engine {
     public fun hasComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean
 
     /** Adds this [component] to the [entity]'s type but doesn't store any data. */
-    public fun addComponentFor(entity: GearyEntityId, component: GearyComponentId)
+    public fun addComponentFor(entity: GearyEntityId, component: GearyComponentId, noEvent: Boolean)
 
     /** Associates this component's data with this entity. */
-    public fun setComponentFor(entity: GearyEntityId, component: GearyComponentId, data: GearyComponent)
+    public fun setComponentFor(
+        entity: GearyEntityId,
+        component: GearyComponentId,
+        data: GearyComponent,
+        noEvent: Boolean
+    )
 
     /** Removes a [component] from an [entity] and clears any data previously associated with it. */
     public fun removeComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean
