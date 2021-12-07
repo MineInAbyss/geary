@@ -14,8 +14,9 @@ import net.onedaybeard.bitvector.bitsOf
 /**
  * A map of [GearyComponentId]s to Arrays of objects with the ability to make fast queries based on component IDs.
  */
-internal abstract class Component2ObjectArrayMap<T> {
+internal class Component2ObjectArrayMap<T> {
     private val elements = mutableListOf<T>()
+    private val elementTypes = mutableListOf<GearyType>()
     private val componentMap = Long2ObjectOpenHashMap<BitVector>()
 
     private fun GearyComponentId.toComponentMapId(): GearyComponentId =
@@ -23,6 +24,7 @@ internal abstract class Component2ObjectArrayMap<T> {
 
     fun add(element: T, type: GearyType) {
         elements += element
+        elementTypes += type
         val index = elements.lastIndex
         type.map { it.toComponentMapId() }.forEach { id ->
             componentMap.getOrPut(id.toLong()) { bitsOf() }.set(index)
@@ -44,23 +46,15 @@ internal abstract class Component2ObjectArrayMap<T> {
                 val relationId = family.relationDataType.id.withRole(RELATION)
                 componentMap[relationId]?.copy()?.apply {
                     if (family.componentMustHoldData) {
-                        keepArchetypesMatching {
-                            it.getGearyType().contains(family.relationDataType, componentMustHoldData = true)
+                        forEachBit { index ->
+                            val type = elementTypes[index]
+                            if(!type.contains(family.relationDataType, componentMustHoldData = true))
+                                clear(index)
                         }
                     }
                 } ?: bitsOf()
             }
         }
-    }
-
-    abstract fun T.getGearyType(): GearyType
-
-    private inline fun BitVector.keepArchetypesMatching(predicate: (archetype: T) -> Boolean): BitVector {
-        forEachBit { index ->
-            if (!predicate(elements[index]))
-                clear(index)
-        }
-        return this
     }
 
     fun match(family: Family): List<T> {

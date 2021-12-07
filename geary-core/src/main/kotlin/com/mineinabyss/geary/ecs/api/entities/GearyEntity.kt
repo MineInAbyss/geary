@@ -6,12 +6,14 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
+import com.mineinabyss.geary.ecs.api.engine.temporaryEntity
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.INSTANCEOF
 import com.mineinabyss.geary.ecs.engine.withRole
+import com.mineinabyss.geary.ecs.events.ComponentAddEvent
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
@@ -29,9 +31,17 @@ public value class GearyEntity(public val id: GearyEntityId) {
         Engine.removeEntity(id)
     }
 
-    /** Sets a component that holds data for this entity */
-    public inline fun <reified T : GearyComponent> set(component: T, kClass: KClass<out T> = T::class): T {
-        Engine.setComponentFor(id, componentId(kClass), component)
+    /**
+     * Sets a component that holds data for this entity
+     *
+     * @param noEvent If true, will not fire a [ComponentAddEvent].
+     */
+    public inline fun <reified T : GearyComponent> set(
+        component: T,
+        kClass: KClass<out T> = T::class,
+        noEvent: Boolean = false
+    ): T {
+        Engine.setComponentFor(id, componentId(kClass), component, noEvent)
         return component
     }
 
@@ -67,12 +77,16 @@ public value class GearyEntity(public val id: GearyEntityId) {
         setRelation(D::class, Key::class, data)
     }
 
+    /**
+     * @param noEvent If true, will not fire a [ComponentAddEvent].
+     */
     public fun <D : GearyComponent> setRelation(
         dataKClass: KClass<D>,
         keyKClass: KClass<*>,
-        data: D
+        data: D,
+        noEvent: Boolean = false
     ) {
-        Engine.setComponentFor(id, Relation.of(dataKClass, keyKClass).id, data)
+        Engine.setComponentFor(id, Relation.of(dataKClass, keyKClass).id, data, noEvent)
     }
 
     public inline fun <reified T : GearyComponent, reified C : GearyComponent> removeRelation(): Boolean =
@@ -81,9 +95,13 @@ public value class GearyEntity(public val id: GearyEntityId) {
     public fun removeRelation(relation: Relation): Boolean =
         remove(Relation.of(relation.data, relation.key).id)
 
-    /** Adds a list of [component] to this entity */
-    public inline fun add(component: GearyComponentId) {
-        Engine.addComponentFor(id, component)
+    /**
+     * Adds a list of [component] to this entity
+     *
+     * @param noEvent If true, will not fire a [ComponentAddEvent].
+     */
+    public inline fun add(component: GearyComponentId, noEvent: Boolean = false) {
+        Engine.addComponentFor(id, component, noEvent)
     }
 
     public inline fun <reified T : GearyComponent> add() {
@@ -204,10 +222,36 @@ public value class GearyEntity(public val id: GearyEntityId) {
      * @see has */
     public inline fun hasAll(components: Collection<ComponentClass>): Boolean = components.all { has(it) }
 
-    public inline fun <reified T : Any> callEvent(eventData: T) {
-        Engine.getRecord(id)?.apply {
-            archetype.callEvent(T::class, eventData, row)
+    public inline fun callEvent(vararg components: Any) {
+        callEvent { eventEntity ->
+            eventEntity.setAll(components.toList())
         }
+    }
+
+    public inline fun callEvent(event: GearyEntity) {
+        Engine.getRecord(id)?.apply {
+            archetype.callEvent(event, row)
+        }
+    }
+
+    public inline fun callEvent(
+        initEvent: (event: GearyEntity) -> Unit
+    ) {
+        callEvent(initEvent) {}
+    }
+
+    public inline fun <T> callEvent(
+        init: (event: GearyEntity) -> Unit,
+        result: (event: GearyEntity) -> T
+    ): T {
+        Engine.getRecord(id)?.apply {
+            Engine.temporaryEntity { event ->
+                init(event)
+                archetype.callEvent(event, row)
+                return result(event)
+            }
+        }
+        error("Failed to get an entity while calling event that expects a result returned")
     }
 
     public operator fun component1(): GearyEntityId = id

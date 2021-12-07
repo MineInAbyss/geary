@@ -12,6 +12,7 @@ import com.mineinabyss.geary.minecraft.dsl.GearyLoadPhase
 import com.mineinabyss.geary.minecraft.dsl.gearyAddon
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
 import com.mineinabyss.geary.minecraft.listeners.GearyAttemptSpawnListener
+import com.mineinabyss.geary.minecraft.listeners.InheritPrefabsOnLoad
 import com.mineinabyss.geary.minecraft.store.FileSystemStore
 import com.mineinabyss.geary.minecraft.store.GearyStore
 import com.mineinabyss.idofront.plugin.registerEvents
@@ -50,6 +51,7 @@ public class GearyPlugin : JavaPlugin() {
             BukkitEntityAssociations,
             BukkitAssociations,
             GearyAttemptSpawnListener,
+            InheritPrefabsOnLoad(),
         )
 
         // This will also register a serializer for GearyEntityType

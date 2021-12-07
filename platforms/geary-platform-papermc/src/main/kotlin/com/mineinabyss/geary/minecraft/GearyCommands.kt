@@ -7,16 +7,22 @@ import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
+import com.mineinabyss.idofront.commands.execution.stopCommand
 import com.mineinabyss.idofront.messaging.info
 import com.rylinaux.plugman.util.PluginUtil
+import org.bukkit.command.Command
+import org.bukkit.command.CommandSender
+import org.bukkit.command.TabCompleter
 
-internal class GearyCommands : IdofrontCommandExecutor() {
+internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(GearyPlugin.instance) {
         "geary" {
             "reread" {
                 val prefab by stringArg()
                 action {
-                    PrefabManager.reread(PrefabKey.of(prefab).toEntity()!!)
+                    PrefabManager.reread(
+                        PrefabKey.ofOrNull(prefab)?.toEntity() ?: command.stopCommand("Prefab key not found")
+                    )
                 }
             }
             "fullreload" {
@@ -42,6 +48,28 @@ internal class GearyCommands : IdofrontCommandExecutor() {
                     sender.info("$count entities with that component")
                 }
             }*/
+        }
+    }
+
+    override fun onTabComplete(
+        sender: CommandSender,
+        command: Command,
+        alias: String,
+        args: Array<out String>
+    ): List<String> {
+        return when (args.size) {
+            1 -> listOf(
+                "reread",
+                "fullreload",
+                "countArchetypes"
+            )
+            2 -> {
+                when (args[1]) {
+                    "reread" -> PrefabManager.keys.map { it.toString() }
+                    else -> listOf()
+                }
+            }
+            else -> listOf()
         }
     }
 }

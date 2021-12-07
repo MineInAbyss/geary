@@ -28,9 +28,18 @@ public open class ArchetypeCacheScope(
 
 
 /**
- * Stores data which is formatted
+ * Stores data which is formatted.
  */
-public data class ResultScope(
-    val entity: GearyEntity,
+public open class ResultScope(
+    public val entity: GearyEntity,
     internal val data: List<*>,
 )
+
+/**
+ * A [ResultScope] specific to the event system.
+ */
+public class EventResultScope(
+    entity: GearyEntity,
+    data: List<*>,
+    public val event: GearyEntity
+): ResultScope(entity, data)

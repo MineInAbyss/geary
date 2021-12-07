@@ -45,6 +45,7 @@ public object PrefabManager {
         entity.with { prefab: Prefab, key: PrefabKey ->
             entity.clear()
             loadFromFile(key.namespace, prefab.file, entity)
+            entity.inheritPrefabs()
         }
     }
 

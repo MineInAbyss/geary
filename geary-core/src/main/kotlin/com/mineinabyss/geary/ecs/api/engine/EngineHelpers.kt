@@ -11,8 +11,16 @@ public fun Engine.entity(): GearyEntity = getNextId().toGeary()
 
 public inline fun Engine.entity(run: GearyEntity.() -> Unit): GearyEntity = getNextId().toGeary(run)
 
+/** Creates an entity that will get removed once [run] completes or fails. */
 public inline fun Engine.temporaryEntity(run: (GearyEntity) -> Unit) {
-    getNextId().toGeary(run).removeEntity()
+    val entity = getNextId().toGeary()
+    try {
+        run(entity)
+    } catch (e: Throwable) {
+        e.printStackTrace()
+    } finally {
+        entity.removeEntity()
+    }
 }
 
 public inline fun <reified T> componentId(): GearyComponentId = componentId(T::class)

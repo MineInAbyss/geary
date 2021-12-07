@@ -18,5 +18,9 @@ public class ComponentAddEvent(
 )
 
 public fun GearyHandlerScope.onComponentAdd(run: EventRunner<ComponentAddEvent>) {
-    on(run)
+    val components = listener.family.components
+    on<ComponentAddEvent> { componentAdded ->
+        if (componentAdded.component in components)
+            run(componentAdded)
+    }
 }
