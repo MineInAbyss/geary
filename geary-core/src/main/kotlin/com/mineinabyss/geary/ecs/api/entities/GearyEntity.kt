@@ -223,8 +223,8 @@ public value class GearyEntity(public val id: GearyEntityId) {
     public inline fun hasAll(components: Collection<ComponentClass>): Boolean = components.all { has(it) }
 
     public inline fun callEvent(vararg components: Any) {
-        callEvent {
-            setAll(components.toList())
+        callEvent { eventEntity ->
+            eventEntity.setAll(components.toList())
         }
     }
 

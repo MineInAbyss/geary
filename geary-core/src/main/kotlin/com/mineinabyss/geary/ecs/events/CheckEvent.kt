@@ -10,7 +10,7 @@ public class CheckEvent {
 
 public fun GearyHandlerScope.onCheck(run: EventResultScope.(CheckEvent) -> Boolean) {
     on<CheckEvent> { check ->
-        if (!check.success)
+        if (check.success)
             check.success = run(check)
     }
 }

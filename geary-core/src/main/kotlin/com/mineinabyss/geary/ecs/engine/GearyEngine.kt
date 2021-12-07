@@ -54,17 +54,23 @@ public open class GearyEngine : TickingEngine() {
         }
 
     //TODO Proper pipeline with different stages
-    protected val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
+    private val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
+    private val registeredListeners: MutableSet<GearyListener> = mutableSetOf()
 
     override fun addSystem(system: GearySystem) {
         // Track systems right at startup since they are likely going to tick very soon anyways and we don't care about
         // any hiccups at that point.
         when (system) {
             is TickingSystem -> {
+                if(system in registeredSystems) return
                 QueryManager.trackQuery(system)
                 registeredSystems.add(system)
             }
-            is GearyListener -> QueryManager.trackEventListener(system)
+            is GearyListener -> {
+                if(system in registeredListeners) return
+                QueryManager.trackEventListener(system)
+                registeredListeners.add(system)
+            }
         }
     }
 

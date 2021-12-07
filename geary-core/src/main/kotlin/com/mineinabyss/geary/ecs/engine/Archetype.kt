@@ -13,6 +13,7 @@ import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.query.Query
+import com.mineinabyss.geary.ecs.query.contains
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongArrayList
@@ -70,9 +71,10 @@ public data class Archetype(
     /** The amount of entities stored in this archetype. */
     public val size: Int get() = ids.size
 
+    private val _eventHandlers = mutableSetOf<GearyEventHandler>()
     //TODO update doc
     /** A map of event class type to a set of event handlers which fire on that event. */
-    private val eventHandlers = mutableSetOf<GearyEventHandler>()
+    public val eventHandlers: Set<GearyEventHandler> = _eventHandlers
 
     // Basically just want a weak set where stuff gets auto removed when it is no longer running
     // We put our iterator and null and this WeakHashMap handles the rest for us.
@@ -278,7 +280,7 @@ public data class Archetype(
 
     /** Adds an event [handler] that listens to certain events relating to entities in this archetype. */
     public fun addEventHandler(handler: GearyEventHandler) {
-        eventHandlers += handler
+        _eventHandlers += handler
     }
 
     /** Calls an event with data in an [event entity][event]. */
@@ -288,7 +290,14 @@ public data class Archetype(
 
         //TODO performance upgrade will come when we figure out a solution in QueryManager as well.
         for (handler in eventHandlers) {
-            val scope = RawAccessorDataScope(this, handler.holder.cacheForArchetype(this), row, entity)
+            val archetype = Engine.getRecord(entity.id)?.archetype ?: this
+
+            // If an event handler has moved the entity to a new archetype, make sure we follow it
+            // and double check that the handler is still valid.
+            if (archetype != this && type !in handler.holder.family)
+                continue
+
+            val scope = RawAccessorDataScope(this, handler.holder.cacheForArchetype(archetype), row, entity)
             handler.runEvent(event, scope)
         }
     }
