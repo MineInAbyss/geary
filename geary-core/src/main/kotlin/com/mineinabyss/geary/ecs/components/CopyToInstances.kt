@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.ecs.components
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.autoscan.AutoscanComponent
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlinx.serialization.Polymorphic
@@ -17,7 +16,6 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 @SerialName("geary:copy_to_instances")
-@AutoscanComponent
 public data class CopyToInstances(
     private val temporary: Set<@Polymorphic GearyComponent> = setOf(),
     private val persisting: Set<@Polymorphic GearyComponent> = setOf(),

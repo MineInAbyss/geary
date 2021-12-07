@@ -11,15 +11,13 @@ public object QueryManager {
     private val queries = mutableListOf<Query>()
     private val eventListeners = mutableListOf<GearyListener>()
 
-    private val archetypes = object : Component2ObjectArrayMap<Archetype>() {
-        override fun Archetype.getGearyType() = type
-    }
+    private val archetypes = Component2ObjectArrayMap<Archetype>()
 
     public fun trackEventListener(listener: GearyListener) {
         val matched = archetypes.match(listener.family)
         eventListeners += listener
         for (archetype in matched) {
-            listener.apply { GearyHandlerScope(archetype, this).init() }
+            listener.apply { GearyHandlerScope(archetype, this).register() }
         }
     }
 
@@ -33,7 +31,7 @@ public object QueryManager {
         archetypes.add(archetype, archetype.type)
         val matched = queries.filter { archetype.type in it.family }
         val matchedListeners = eventListeners.filter { archetype.type in it.family }
-        matchedListeners.forEach { it.apply { GearyHandlerScope(archetype, this).init() } }
+        matchedListeners.forEach { it.apply { GearyHandlerScope(archetype, this).register() } }
         matched.forEach { it.matchedArchetypes += archetype }
     }
 

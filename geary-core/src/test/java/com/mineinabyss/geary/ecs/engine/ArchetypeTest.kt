@@ -3,7 +3,7 @@ package com.mineinabyss.geary.ecs.engine
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
@@ -11,7 +11,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-@ExperimentalUnsignedTypes
 internal class ArchetypeTest {
     @Nested
     inner class MovingBetweenArchetypes {
@@ -39,12 +38,12 @@ internal class ArchetypeTest {
                 Relation.of(10uL, 2uL or HOLDS_DATA).id,
             )
         )
-        val relation = RelationParent(10uL)
+        val relation = RelationDataType(10uL)
         val matched = arc.matchedRelationsFor(listOf(relation))
         matched shouldContainKey relation
-        matched[relation]?.map { it.component }.shouldContainExactly(1uL or HOLDS_DATA, 2uL or HOLDS_DATA)
+        matched[relation]?.map { it.key }.shouldContainExactly(1uL or HOLDS_DATA, 2uL or HOLDS_DATA)
 
-        val wrongRelation = RelationParent(11uL)
+        val wrongRelation = RelationDataType(11uL)
         val matched2 = arc.matchedRelationsFor(listOf(wrongRelation))
         matched2 shouldNotContainKey wrongRelation
     }

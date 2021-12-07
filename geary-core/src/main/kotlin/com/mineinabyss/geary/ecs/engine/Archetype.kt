@@ -6,110 +6,165 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.relations.toRelation
-import com.mineinabyss.geary.ecs.events.ComponentAddEvent
 import com.mineinabyss.geary.ecs.query.Query
+import com.mineinabyss.geary.ecs.query.contains
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
+import it.unimi.dsi.fastutil.longs.LongArrayList
 import java.util.*
-import kotlin.reflect.KClass
 
-public typealias Event = GearyEntity.() -> Unit
-
+/**
+ * Archetypes store a list of entities with the same [GearyType], and provide functions to
+ * quickly move them between archetypes.
+ *
+ * An example use case: If a query matches an archetype, it will also match all entities inside which
+ * gives a large performance boost to system iteration.
+ */
 public data class Archetype(
     public val type: GearyType,
 ) {
+    /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
+    //TODO aim to make private
+    internal val ids: LongArrayList = LongArrayList()
+
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
     private val dataHoldingType = type.filter { it.holdsData() || it.isRelation() }
 
-    /** Map of relation parent id to a list of relations with that parent */
-    //TODO List<Relation>
-    internal val relations: Long2ObjectOpenHashMap<MutableList<Relation>> = type
-        .mapNotNull { it.toRelation() }
-        .groupByTo(Long2ObjectOpenHashMap()) { it.parent.id.toLong() }
+    /** An outer list with indices for component ids, and sub-lists with data indexed by entity [ids]. */
+    internal val componentData: List<MutableList<GearyComponent>> = dataHoldingType.map { mutableListOf() }
 
+    /** Edges to other archetypes where a single component has been added. */
+    internal val componentAddEdges = Long2ObjectOpenHashMap<Archetype>()
+
+    /** Edges to other archetypes where a single component has been removed. */
+    internal val componentRemoveEdges = Long2ObjectOpenHashMap<Archetype>()
+
+    /** Map of relation parent id to a list of relations with that parent. */
+    internal val relations: Long2ObjectOpenHashMap<List<Relation>> = type
+        .mapNotNull { it.toRelation() }
+        .groupBy { it.data.id.toLong() }
+        .let { Long2ObjectOpenHashMap(it) }
+
+    /** A map of a relation's data type id to full relations that store data of that type. */
     internal val dataHoldingRelations: Long2ObjectOpenHashMap<List<Relation>> by lazy {
         val map = Long2ObjectOpenHashMap<List<Relation>>()
         relations.forEach { (key, value) ->
-            val dataHolding = value.filter { it.component.holdsData() }
+            val dataHolding = value.filter { it.key.holdsData() }
             if (dataHolding.isNotEmpty()) map[key] = dataHolding
         }
         map
     }
 
-    /** @return This Archetype's [relations] that are also a part of [matchRelations]. */
-    public fun matchedRelationsFor(matchRelations: Collection<RelationParent>): Map<RelationParent, List<Relation>> =
-        matchRelations
-            .filter { it.id.toLong() in relations }
-            .associateWith { relations[it.id.toLong()]!! } //TODO handle null error
-
+    /** A map of component ids to index used internally in this archetype (ex. in [componentData])*/
     private val comp2indices = Long2IntOpenHashMap().apply {
         dataHoldingType.forEachIndexed { i, compId -> put(compId.toLong(), i) }
         defaultReturnValue(-1)
     }
 
-    internal fun indexOf(id: GearyComponentId): Int = comp2indices.get(id.toLong())
-
+    /** The amount of entities stored in this archetype. */
     public val size: Int get() = ids.size
 
-    internal val ids: MutableList<GearyEntityId> = mutableListOf()
+    private val _eventHandlers = mutableSetOf<GearyEventHandler>()
+    //TODO update doc
+    /** A map of event class type to a set of event handlers which fire on that event. */
+    public val eventHandlers: Set<GearyEventHandler> = _eventHandlers
 
-    //TODO Use a hashmap here and make sure errors still get thrown if component ids are ever wrong
-    internal val componentData: List<MutableList<GearyComponent>> = dataHoldingType.map { mutableListOf() }
+    // Basically just want a weak set where stuff gets auto removed when it is no longer running
+    // We put our iterator and null and this WeakHashMap handles the rest for us.
+    private val runningIterators = Collections.newSetFromMap(WeakHashMap<ArchetypeIterator, Boolean>())
 
-    public operator fun get(row: Int, component: GearyComponentId): GearyComponent? {
-        val compIndex = indexOf(component)
+    // ==== Helper functions ====
+
+    /** @return This Archetype's [relations] that are also a part of [matchRelations]. */
+    public fun matchedRelationsFor(matchRelations: Collection<RelationDataType>): Map<RelationDataType, List<Relation>> =
+        matchRelations
+            .filter { it.id.toLong() in relations }
+            .associateWith { relations[it.id.toLong()]!! } //TODO handle null error
+
+    /**
+     * Used to pack data closer together and avoid having hashmaps throughout the archetype.
+     *
+     * @return The internally used index for this component [id].
+     */
+    internal fun indexOf(id: GearyComponentId): Int = comp2indices.get(id.toLong())
+
+    /**
+     * @return The data under a [componentId] for an entity at [row].
+     *
+     * @see Record
+     */
+    public operator fun get(row: Int, componentId: GearyComponentId): GearyComponent? {
+        val compIndex = indexOf(componentId)
         if (compIndex == -1) return null
 
         return componentData[compIndex][row]
     }
 
-    public operator fun contains(component: GearyComponentId): Boolean =
+    /** @return The entity stored at a given [row] in this archetype. */
+    internal fun getEntity(row: Int): GearyEntity = ids.getLong(row).toGeary()
+
+    /** @return Whether this archetype has a [componentId] in its type, regardless of the [HOLDS_DATA] role. */
+    public operator fun contains(componentId: GearyComponentId): Boolean =
         // Check if contains component or the version with the HOLDS_DATA bit flipped
-        component in type || component.withInvertedRole(HOLDS_DATA) in type
+        componentId in type || componentId.withInvertedRole(HOLDS_DATA) in type
 
-    internal val add = mutableMapOf<GearyComponentId, Archetype>()
-    internal val remove = mutableMapOf<GearyComponentId, Archetype>()
-
-    public operator fun plus(id: GearyComponentId): Archetype {
-        return add[id] ?: type.let {
+    /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
+    public operator fun plus(componentId: GearyComponentId): Archetype =
+        componentAddEdges[componentId] ?: type.let {
             // Ensure that when adding an ID that holds data, we remove the non-data-holding ID
-            if (id.holdsData() && !id.isRelation())
-                it.minus(id.withoutRole(HOLDS_DATA))
+            if (componentId.holdsData() && !componentId.isRelation())
+                it.minus(componentId.withoutRole(HOLDS_DATA))
             else it
-        }.plus(id).getArchetype()
-    }
+        }.plus(componentId).getArchetype()
 
-    public operator fun minus(id: GearyComponentId): Archetype {
-        return remove[id] ?: type.minus(id).getArchetype().also {
-            remove[id] = it
+    /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
+    public operator fun minus(componentId: GearyComponentId): Archetype =
+        componentRemoveEdges[componentId] ?: type.minus(componentId).getArchetype().also {
+            componentRemoveEdges[componentId] = it
         }
-    }
+
+    // ==== Entity mutation ====
 
     /**
-     * @param data A list of components whose indices correctly match those of this archetype's [dataHoldingType]
+     * Adds an entity to this archetype with properly ordered [data].
+     *
+     * @param data A list of components whose indices correctly match those of this archetype's [dataHoldingType].
+     *
+     * @return The new [Record] to be associated with this entity from now on.
      */
     @Synchronized
     internal fun addEntityWithData(
         entity: GearyEntityId,
         data: List<GearyComponent>
     ): Record {
-        ids.add(entity)
+        ids.add(entity.toLong())
         componentData.forEachIndexed { i, compArray ->
             compArray.add(data[i])
         }
         return Record(this, size - 1)
     }
 
+    // For the following few functions, both entity and row are passed to avoid doing several array look-ups
+    //  (ex when set calls remove).
+
+    /**
+     * Add a [component] to an [entity], moving it to the appropriate archetype.
+     *
+     * @return The new [Record] to be associated with this entity from now on.
+     *
+     * @see Engine.addComponentFor
+     */
     @Synchronized
     internal fun addComponent(
         entity: GearyEntityId,
-        record: Record,
+        row: Int,
         component: GearyComponentId
     ): Record? {
         // if already present in this archetype, stop here since we dont need to update any data
@@ -117,49 +172,67 @@ public data class Archetype(
 
         val moveTo = this + (component.withoutRole(HOLDS_DATA))
 
-        val componentData = getComponents(record.row)
-        return moveTo.addEntityWithData(entity, componentData).also { removeEntity(record.row) }
+        val componentData = getComponents(row)
+        return moveTo.addEntityWithData(entity, componentData).also { removeEntity(row) }
     }
 
+    /**
+     * Sets [data] at a [componentId] for an [entity], moving it to the appropriate archetype.
+     * Will remove [componentId] without the [HOLDS_DATA] role if present so an archetype never has both data/no data
+     * components at once.
+     *
+     * @return The new [Record] to be associated with this entity from now on, or null if the [componentId] was already
+     * present in this archetype.
+     *
+     * @see Engine.setComponentFor
+     */
     @Synchronized
     internal fun setComponent(
         entity: GearyEntityId,
-        record: Record,
-        component: GearyComponentId,
+        row: Int,
+        componentId: GearyComponentId,
         data: GearyComponent
     ): Record? {
-        val isRelation = component.isRelation()
+        val isRelation = componentId.isRelation()
 
         // Relations should not add the HOLDS_DATA bit since the type roles are of the relation's child
-        val dataComponent = if (isRelation) component else component.withRole(HOLDS_DATA)
+        val dataComponent = if (isRelation) componentId else componentId.withRole(HOLDS_DATA)
 
         //if component was added but not set, remove the old component before adding this one
         val addId = dataComponent.withoutRole(HOLDS_DATA)
         if (addId in type) {
-            val removedRecord = removeComponent(entity, record, addId)!!
-            return removedRecord.archetype.setComponent(entity, removedRecord, dataComponent, data)
+            val removedRecord = removeComponent(entity, row, addId)!!
+            return removedRecord.archetype.setComponent(entity, removedRecord.row, dataComponent, data)
         }
 
         //If component already in this type, just update the data
         val addIndex = indexOf(dataComponent)
         if (addIndex != -1) {
-            componentData[addIndex][record.row] = data
+            componentData[addIndex][row] = data
             return null
         }
 
         val moveTo = this + dataComponent
         val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
-        val componentData = getComponents(record.row).apply {
+        val componentData = getComponents(row).apply {
             add(newCompIndex, data)
         }
 
-        return moveTo.addEntityWithData(entity, componentData).also { removeEntity(record.row) }
+        return moveTo.addEntityWithData(entity, componentData).also { removeEntity(row) }
     }
 
+    /**
+     * Removes a [component] from an [entity], moving it to the appropriate archetype.
+     *
+     * @return The new [Record] to be associated with this entity from now on, or null if the [component]
+     * was not present in this archetype.
+     *
+     * @see Engine.removeComponentFor
+     */
     @Synchronized
     internal fun removeComponent(
         entity: GearyEntityId,
-        record: Record,
+        row: Int,
         component: GearyComponentId
     ): Record? {
         if (component !in type) return null
@@ -171,16 +244,18 @@ public data class Archetype(
         val skipData = indexOf(component)
         this.componentData.forEachIndexed { i, it ->
             if (i != skipData)
-                componentData.add(it[record.row])
+                componentData.add(it[row])
         }
 
-        removeEntity(record.row)
+        removeEntity(row)
         return moveTo.addEntityWithData(entity, componentData)
     }
 
+    /** Gets all the components associated with an entity at a [row]. */
     internal fun getComponents(row: Int): ArrayList<GearyComponent> =
         componentData.mapTo(arrayListOf()) { it[row] }
 
+    /** Removes the entity at a [row] in this archetype, notifying running archetype iterators. */
     @Synchronized
     internal fun removeEntity(row: Int) {
         val replacement = ids.last()
@@ -194,66 +269,50 @@ public data class Archetype(
         componentData.forEach { it.removeLastOrNull() }
 
         if (lastIndex != row) {
-            runningIterators.keys.forEach {
+            runningIterators.forEach {
                 it.addMovedRow(lastIndex, row)
             }
-            Engine.setRecord(replacement, Record(this, row))
+            Engine.setRecord(replacement.toULong(), Record(this, row))
         }
     }
 
     // ==== Event listeners ====
 
-    public fun <T : Any> addEventListener(
-        forClass: KClass<T>,
-        run: GearyEventHandler<T>
-    ) {
-        when (forClass) {
-            ComponentAddEvent::class -> run.holder.family.components
-                .map { indexOf(it) }
-                .forEach { componentAddListeners[it] += run }
-            else -> listeners.getOrPut(forClass) { mutableSetOf() } += run
+    /** Adds an event [handler] that listens to certain events relating to entities in this archetype. */
+    public fun addEventHandler(handler: GearyEventHandler) {
+        _eventHandlers += handler
+    }
+
+    /** Calls an event with data in an [event entity][event]. */
+    public fun callEvent(event: GearyEntity, row: Int) {
+        val entity = getEntity(row)
+        val type = event.type
+
+        //TODO performance upgrade will come when we figure out a solution in QueryManager as well.
+        for (handler in eventHandlers) {
+            val archetype = Engine.getRecord(entity.id)?.archetype ?: this
+
+            // If an event handler has moved the entity to a new archetype, make sure we follow it
+            // and double check that the handler is still valid.
+            if (archetype != this && type !in handler.holder.family)
+                continue
+
+            val scope = RawAccessorDataScope(this, handler.holder.cacheForArchetype(archetype), row, entity)
+            handler.runEvent(event, scope)
         }
     }
 
-    public inline fun <reified T : Any> runEvent(eventData: T, row: Int) {
-        runEvent(T::class, eventData, row)
-    }
+    // ==== Iterators ====
 
-    public fun <T : Any> runEvent(kClass: KClass<T>, eventData: T, row: Int) {
-        val entity = ids[row].toGeary()
-
-        when (eventData) {
-            is ComponentAddEvent -> {
-                val index = indexOf(eventData.component)
-                if (index == -1) return
-                componentAddListeners[index].forEach {
-                    val scope = RawAccessorDataScope(this, it.holder.cacheForArchetype(this), row, entity)
-                    it.runEvent(eventData, scope)
-                }
-            }
-            else -> listeners[kClass::class]?.forEach {
-                //TODO clean up by moving into runEvent
-                val scope = RawAccessorDataScope(this, it.holder.cacheForArchetype(this), row, entity)
-                it.runEvent(eventData, scope)
-            }
-        }
-    }
-
-    private val listeners = mutableMapOf<KClass<*>, MutableSet<GearyEventHandler<*>>>()
-    private val componentAddListeners = Array(dataHoldingType.size) { mutableSetOf<GearyEventHandler<*>>() }
-
-    // Basically just want a weak set where stuff gets auto removed when it is no longer running
-    // We put our iterator and null and this WeakHashMap handles the rest for us.
-    private val runningIterators = WeakHashMap<ArchetypeIterator, Any?>()
-
+    /** Stops tracking a running [iterator]. */
     internal fun finalizeIterator(iterator: ArchetypeIterator) {
         runningIterators.remove(iterator)
     }
 
+    /** Creates and tracks an [ArchetypeIterator] for a query. */
     internal fun iteratorFor(query: Query): ArchetypeIterator {
         val iterator = ArchetypeIterator(this, query)
-        runningIterators[iterator] = null
+        runningIterators.add(iterator)
         return iterator
     }
 }
-

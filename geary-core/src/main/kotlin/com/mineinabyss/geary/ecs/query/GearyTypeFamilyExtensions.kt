@@ -1,21 +1,21 @@
 package com.mineinabyss.geary.ecs.query
 
 import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.isRelation
 import com.mineinabyss.geary.ecs.engine.withRole
 
-public fun GearyType.contains(relationParent: RelationParent, componentMustHoldData: Boolean = false): Boolean {
+public fun GearyType.contains(relationDataType: RelationDataType, componentMustHoldData: Boolean = false): Boolean {
     val components = filter { !it.isRelation() }
     return mapNotNull { it.toRelation() }
         .any { relationInType ->
-            relationInType.parent == relationParent && components.any {
+            relationInType.data == relationDataType && components.any {
                 if (componentMustHoldData)
-                    it == relationInType.component.withRole(HOLDS_DATA)
+                    it == relationInType.key.withRole(HOLDS_DATA)
                 else
-                    it == relationInType.component
+                    it == relationInType.key
             }
         }
 }
@@ -25,5 +25,5 @@ public operator fun Family.contains(type: GearyType): Boolean = when (this) {
     is AndNotSelector -> andNot.none { type in it }
     is OrSelector -> or.any { type in it }
     is ComponentLeaf -> component in type
-    is RelationLeaf -> type.contains(relationParent, componentMustHoldData)
+    is RelationLeaf -> type.contains(relationDataType, componentMustHoldData)
 }

@@ -18,7 +18,7 @@ dependencies {
 
     slim(Deps.kotlinx.serialization.json)
     slim(Deps.kotlinx.serialization.cbor)
-    slim("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.2.1")
+    slim(Deps.kotlinx.serialization.hocon)
     slim(Deps.kotlinx.serialization.kaml) {
         exclude(group = "org.jetbrains.kotlin")
     }
@@ -37,9 +37,7 @@ tasks {
     withType<KotlinCompile> {
         kotlinOptions {
             freeCompilerArgs = listOf(
-                "-Xinline-classes",
                 "-Xopt-in=kotlin.RequiresOptIn",
-                "-Xopt-in=kotlin.ExperimentalUnsignedTypes",
                 "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
             )
         }

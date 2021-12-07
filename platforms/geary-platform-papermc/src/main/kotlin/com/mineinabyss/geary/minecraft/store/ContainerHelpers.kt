@@ -17,7 +17,7 @@ public fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
 
     //Update hashes
     persisting.forEach {
-        getRelation<PersistingComponent>(it)?.hash = it.hashCode()
+        getRelation(PersistingComponent::class, it::class)?.hash = it.hashCode()
     }
 
     pdc.encodeComponents(persisting, type.toCollection(TreeSet()))

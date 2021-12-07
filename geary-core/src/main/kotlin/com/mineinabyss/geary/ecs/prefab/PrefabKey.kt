@@ -18,6 +18,9 @@ public value class PrefabKey private constructor(public val key: String) {
     override fun toString(): String = "$namespace:$name"
 
     public companion object {
+        /** Creates a key like [of] but returns null when parsing fails. */
+        public fun ofOrNull(stringKey: String): PrefabKey? = runCatching { of(stringKey) }.getOrNull()
+
         /** Creates a key from a string with [namespace] and [name] separated by one '`:`' character. */
         public fun of(stringKey: String): PrefabKey {
             if (stringKey.split(':').size != 2)

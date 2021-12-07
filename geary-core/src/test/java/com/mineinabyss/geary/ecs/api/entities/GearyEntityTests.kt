@@ -6,11 +6,11 @@ import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.GearyEngine
-import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.getArchetype
 import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class GearyEntityTests {
@@ -25,14 +25,15 @@ internal class GearyEntityTests {
         val entity = Engine.entity {
             setPersisting("Test")
         }
-        val relations = entity.type.getArchetype().relations[componentId<PersistingComponent>().toLong()]
+        val relations =
+            entity.type.getArchetype().relations[componentId<PersistingComponent>().toLong()]
         relations.size shouldBe 1
-        relations.first().component shouldBe (componentId<String>() or HOLDS_DATA)
+        relations.first().key shouldBe componentId<String>()
         entity.getPersistingComponents().shouldContainExactly("Test")
     }
 
     @Test
-    fun setAllPersisting(){
+    fun setAllPersisting() {
         val entity = Engine.entity {
             set("Test")
             set(1)
@@ -48,9 +49,26 @@ internal class GearyEntityTests {
         val entity = Engine.entity {
             setPersisting("Test")
         }
-        val relations = entity.type.getArchetype().relations[componentId<PersistingComponent>().toLong()]
+        val relations =
+            entity.type.getArchetype().relations[componentId<PersistingComponent>().toLong()]
         relations.size shouldBe 1
-        relations.first().component shouldBe (componentId<String>() or HOLDS_DATA)
+        relations.first().key shouldBe (componentId<String>())
         entity.getPersistingComponents().shouldContainExactly("Test")
+    }
+
+    @Nested
+    inner class RelationTest {
+        inner class TestRelation
+
+        @Test
+        fun `getRelation reified`() {
+            val testData = TestRelation()
+            val entity = Engine.entity {
+                setRelation<TestRelation, String>(testData)
+                add<String>()
+            }
+
+            entity.getRelation<TestRelation, String>() shouldBe testData
+        }
     }
 }

@@ -6,7 +6,7 @@ import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
-import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.engine.*
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
@@ -17,7 +17,6 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-@ExperimentalUnsignedTypes
 internal class QueryManagerTest {
     val engine: GearyEngine = GearyEngine()
 
@@ -117,25 +116,25 @@ internal class QueryManagerTest {
             val ResultScope.test by relation<RelationTestComponent>()
             override fun ResultScope.tick() {
                 ran++
-                family.relationParents.map { it.id } shouldContain test.relation.id
+                family.relationDataTypes.map { it.id } shouldContain test.relation.id
                 test.parentData.shouldBeInstanceOf<RelationTestComponent>()
             }
         }
-        system.family.relationParents.shouldContainExactly(RelationParent(componentId<RelationTestComponent>()))
+        system.family.relationDataTypes.shouldContainExactly(RelationDataType(componentId<RelationTestComponent>()))
         QueryManager.trackQuery(system)
         val entity = Engine.entity {
-            setRelation<RelationTestComponent, String>(RelationTestComponent(), data = false)
+            setRelation<RelationTestComponent, String>(RelationTestComponent())
             add<String>()
         }
         val entity2 = Engine.entity {
-            setRelation<RelationTestComponent, Int>(RelationTestComponent(), data = false)
+            setRelation<RelationTestComponent, Int>(RelationTestComponent())
             add<Int>()
         }
         val entity3 = Engine.entity {
-            setRelation<String, RelationTestComponent>("", data = false)
+            setRelation<String, RelationTestComponent>("")
             add<RelationTestComponent>()
         }
-        family { has(entity.type) }.relationParents.first() shouldBe system.family.relationParents.first()
+        family { has(entity.type) }.relationDataTypes.first() shouldBe system.family.relationDataTypes.first()
         system.matchedArchetypes.shouldContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
         system.matchedArchetypes.shouldNotContain(entity3.type.getArchetype())
 
@@ -162,10 +161,10 @@ internal class QueryManagerTest {
         QueryManager.trackQuery(system)
 
         Engine.entity {
-            setRelation<RelationTestComponent1, String>(RelationTestComponent1(), data = false)
-            setRelation<RelationTestComponent1, Int>(RelationTestComponent1(), data = false)
-            setRelation<RelationTestComponent2, String>(RelationTestComponent2(), data = false)
-            setRelation<RelationTestComponent2, Int>(RelationTestComponent2(), data = false)
+            setRelation<RelationTestComponent1, String>(RelationTestComponent1())
+            setRelation<RelationTestComponent1, Int>(RelationTestComponent1())
+            setRelation<RelationTestComponent2, String>(RelationTestComponent2())
+            setRelation<RelationTestComponent2, Int>(RelationTestComponent2())
             add<String>()
         }
 
@@ -188,12 +187,12 @@ internal class QueryManagerTest {
         }
 
         val entity = Engine.entity {
-            setRelation<RelationTestWithData, String>(RelationTestWithData(), data = false)
+            setRelation<RelationTestWithData, String>(RelationTestWithData())
             add<String>()
         }
 
         val entityWithData = Engine.entity {
-            setRelation<RelationTestWithData, String>(RelationTestWithData(), data = true)
+            setRelation<RelationTestWithData, String>(RelationTestWithData())
             set("Test")
         }
 

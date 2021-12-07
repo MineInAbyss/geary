@@ -3,6 +3,7 @@ rootProject.name = "geary"
 pluginManagement {
     val kotlinVersion: String by settings
     val idofrontConventions: String by settings
+    val dokkaVersion: String by settings
 
     repositories {
         gradlePluginPortal()
@@ -17,7 +18,9 @@ pluginManagement {
         }
     }
     plugins {
+        kotlin("jvm") version kotlinVersion
         kotlin("plugin.serialization") version kotlinVersion
+        id("org.jetbrains.dokka") version dokkaVersion
     }
 }
 

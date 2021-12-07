@@ -2,10 +2,12 @@ package com.mineinabyss.geary.ecs.accessors
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
+import com.mineinabyss.geary.ecs.engine.withRole
 import com.mineinabyss.geary.ecs.query.AndSelector
 
 /**
@@ -15,37 +17,44 @@ import com.mineinabyss.geary.ecs.query.AndSelector
  */
 public abstract class AccessorHolder : MutableAndSelector() {
     public val family: AndSelector by lazy { build() }
-    internal val accessors = mutableListOf<Accessor<*>>()
+    internal open val accessors = mutableListOf<Accessor<*>>()
     private val perArchetypeCache = mutableMapOf<Archetype, List<List<Any?>>>()
 
     //TODO getOrNull
 
-    protected inline fun <reified T : GearyComponent> get(): ComponentAccessor<T> {
-        val component = componentId<T>() or HOLDS_DATA
+    public inline fun <reified T : GearyComponent> get(): ComponentAccessor<T> {
+        val component = componentId<T>().withRole(HOLDS_DATA)
         has(component)
         return addAccessor { ComponentAccessor(it, component) }
     }
 
+    //TODO write tests
+    public inline fun <reified D : GearyComponent, reified Key : GearyComponent> getRelation(): ComponentAccessor<D> {
+        val component = Relation.of<D, Key>()
+        has(component)
+        return addAccessor { ComponentAccessor(it, component.id) }
+    }
+
     public inline fun <reified T : GearyComponent> relation(): RelationAccessor<T> {
-        val relationParent = RelationParent(componentId<T>())
-        has(relationParent)
-        return addAccessor { RelationAccessor(it, relationParent) }
+        val relationDataType = RelationDataType(componentId<T>())
+        has(relationDataType)
+        return addAccessor { RelationAccessor(it, relationDataType) }
     }
 
     public inline fun <reified T : GearyComponent> relationWithData(): RelationWithDataAccessor<T> {
-        val relationParent = RelationParent(componentId<T>())
-        has(relationParent, componentMustHoldData = true)
+        val relationDataType = RelationDataType(componentId<T>())
+        has(relationDataType, componentMustHoldData = true)
 
-        return addAccessor { RelationWithDataAccessor(it, relationParent) }
+        return addAccessor { RelationWithDataAccessor(it, relationDataType) }
     }
 
     public inline fun <reified T : GearyComponent> allRelationsWithData(): RelationListAccessor<T> {
-        val relationParent = RelationParent(componentId<T>())
-        has(relationParent, componentMustHoldData = true)
-        return addAccessor { RelationListAccessor(it, relationParent) }
+        val relationDataType = RelationDataType(componentId<T>())
+        has(relationDataType, componentMustHoldData = true)
+        return addAccessor { RelationListAccessor(it, relationDataType) }
     }
 
-    public fun <T : Accessor<*>> addAccessor(create: (index: Int) -> T): T {
+    public open fun <T : Accessor<*>> addAccessor(create: (index: Int) -> T): T {
         val accessor = create(accessors.size)
         accessors += accessor
         return accessor

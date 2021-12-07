@@ -32,7 +32,7 @@ public data class ArchetypeIterator(
         if (combinationsIterator?.hasNext() != true) {
             val destinationRow = movedRows.firstOrNull() ?: row++
             movedRows.remove(destinationRow)
-            val entity = archetype.ids[destinationRow].toGeary()
+            val entity = archetype.ids.getLong( destinationRow).toGeary()
 
             combinationsIterator = holder.iteratorFor(
                 RawAccessorDataScope(

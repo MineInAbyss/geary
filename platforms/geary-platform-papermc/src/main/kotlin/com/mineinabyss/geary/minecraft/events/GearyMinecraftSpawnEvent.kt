@@ -9,9 +9,6 @@ import org.bukkit.event.HandlerList
  * are attached.
  *
  * This does not get called when an existing Bukkit entity gets a representation in Geary.
- *
- * Unlike [GearyMinecraftLoadEvent], this event is only called once when the entity is created, and not on subsequent
- * loads.
  */
 public data class GearyMinecraftSpawnEvent(
     val entity: GearyEntity

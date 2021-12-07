@@ -5,7 +5,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationParent
+import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.services.gearyService
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.components.ComponentInfo
@@ -30,12 +30,12 @@ public interface Engine {
     public fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent>
 
     /**
-     * Gets a list of components related to the component represented by [relationParent], and pairs them with
+     * Gets a list of components related to the component represented by [relationDataType], and pairs them with
      * the id of the child part of the relation.
      */
     public fun getRelationsFor(
         entity: GearyEntityId,
-        relationParent: RelationParent
+        relationDataType: RelationDataType
     ): Set<Pair<GearyComponent, Relation>>
 
     /** Gets a [component]'s data from an [entity] or null if not present/the component doesn't hold any data. */
@@ -45,17 +45,14 @@ public interface Engine {
     public fun hasComponentFor(entity: GearyEntityId, component: GearyComponentId): Boolean
 
     /** Adds this [component] to the [entity]'s type but doesn't store any data. */
-    public fun addComponentFor(entity: GearyEntityId, component: GearyComponentId)
+    public fun addComponentFor(entity: GearyEntityId, component: GearyComponentId, noEvent: Boolean)
 
     /** Associates this component's data with this entity. */
-    public fun setComponentFor(entity: GearyEntityId, component: GearyComponentId, data: GearyComponent)
-
-    /** Sets a [Relation] component for this [entity], with [data] associated with the [parent] */
-    public fun setRelationFor(
+    public fun setComponentFor(
         entity: GearyEntityId,
-        parent: RelationParent,
-        forComponent: GearyComponentId,
-        data: GearyComponent
+        component: GearyComponentId,
+        data: GearyComponent,
+        noEvent: Boolean
     )
 
     /** Removes a [component] from an [entity] and clears any data previously associated with it. */
