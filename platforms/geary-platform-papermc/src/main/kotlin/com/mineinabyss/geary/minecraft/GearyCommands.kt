@@ -64,8 +64,11 @@ internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
                 "countArchetypes"
             )
             2 -> {
-                when (args[1]) {
-                    "reread" -> PrefabManager.keys.map { it.toString() }
+                when (args[0]) {
+                    "reread" -> PrefabManager.keys.filter {
+                            val arg = args[1].lowercase()
+                            it.name.startsWith(arg) || it.key.startsWith(arg)
+                        }.map { it.toString() }
                     else -> listOf()
                 }
             }
