@@ -9,6 +9,7 @@ import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.withRole
 import com.mineinabyss.geary.ecs.query.AndSelector
+import kotlin.properties.ReadOnlyProperty
 
 /**
  * A holder of [Accessor]s which provides helper functions for creating them.
@@ -20,12 +21,25 @@ public abstract class AccessorHolder : MutableAndSelector() {
     internal open val accessors = mutableListOf<Accessor<*>>()
     private val perArchetypeCache = mutableMapOf<Archetype, List<List<Any?>>>()
 
-    //TODO getOrNull
+    public inline fun <reified T : GearyComponent?> getOrDefault(default: T): ComponentOrDefaultAccessor<T> {
+        val component = componentId<T>().withRole(HOLDS_DATA)
+        return addAccessor { ComponentOrDefaultAccessor(it, component, default) }
+    }
+
+    public inline fun <reified T : GearyComponent?> getOrNull(): ComponentOrDefaultAccessor<T?> {
+        return getOrDefault(null)
+    }
 
     public inline fun <reified T : GearyComponent> get(): ComponentAccessor<T> {
         val component = componentId<T>().withRole(HOLDS_DATA)
         has(component)
         return addAccessor { ComponentAccessor(it, component) }
+    }
+
+    public inline fun <reified T : GearyComponent?, R> Accessor<T>.map(
+        crossinline transform: (T) -> R
+    ): ReadOnlyProperty<GenericResultScope, R> = ReadOnlyProperty { thisRef, property ->
+        transform(this.getValue(thisRef, property))
     }
 
     //TODO write tests

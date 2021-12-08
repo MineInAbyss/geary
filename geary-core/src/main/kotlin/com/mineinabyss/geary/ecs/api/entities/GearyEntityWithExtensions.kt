@@ -20,45 +20,40 @@ public inline fun <R, reified T : GC?> GE.with(let: (T) -> R): R? =
 public inline fun <R, reified T : GC?, reified T2 : GC?> GE.with(let: (T, T2) -> R): R? =
     runCatching { let(nullOrError(), nullOrError()) }.getOrNull()
 
-public inline fun <reified T : GC, reified T2 : GC, reified T3 : GC> GE.with(let: (T, T2, T3) -> Unit): Unit? {
-    return let(get() ?: return null, get() ?: return null, get() ?: return null)
-}
+public inline fun <reified T : GC, reified T2 : GC, reified T3 : GC> GE.with(let: (T, T2, T3) -> Unit): Unit? =
+    runCatching { let(nullOrError(), nullOrError(), nullOrError()) }.getOrNull()
 
-public inline fun <reified T : GC, reified T2 : GC, reified T3 : GC, reified T4 : GC> GE.with(let: (T, T2, T3, T4) -> Unit): Unit? {
-    return let(get() ?: return null, get() ?: return null, get() ?: return null, get() ?: return null)
-}
+public inline fun <reified T : GC, reified T2 : GC, reified T3 : GC, reified T4 : GC> GE.with(let: (T, T2, T3, T4) -> Unit): Unit? =
+    runCatching { let(nullOrError(), nullOrError(), nullOrError(), nullOrError()) }.getOrNull()
 
-public inline fun <reified T : GC, reified T2 : GC, reified T3 : GC, reified T4 : GC, reified T5 : GC> GE.with(let: (T, T2, T3, T4, T5) -> Unit): Unit? {
-    return let(
-        get() ?: return null,
-        get() ?: return null,
-        get() ?: return null,
-        get() ?: return null,
-        get() ?: return null
-    )
-}
+public inline fun <reified T : GC, reified T2 : GC, reified T3 : GC, reified T4 : GC, reified T5 : GC> GE.with(let: (T, T2, T3, T4, T5) -> Unit): Unit? =
+    runCatching { let(nullOrError(), nullOrError(), nullOrError(), nullOrError(), nullOrError()) }.getOrNull()
 
-// NULLABLES
+public inline fun <reified T : GC, reified T2 : GC, reified T3 : GC, reified T4 : GC, reified T5 : GC, reified T6 : GC> GE.with(
+    let: (T, T2, T3, T4, T5, T6) -> Unit
+): Unit? =
+    runCatching {
+        let(
+            nullOrError(),
+            nullOrError(),
+            nullOrError(),
+            nullOrError(),
+            nullOrError(),
+            nullOrError()
+        )
+    }.getOrNull()
 
-/** Runs a block, reading all passed components or null if not present. */
-public inline fun <reified T : GC> GE.withNullable(let: (T?) -> Unit) {
-    return let(get())
-}
-
-public inline fun <reified T : GC, reified T2 : GC> GE.withNullable(let: (T?, T2?) -> Unit) {
-    return let(get(), get())
-}
-
-public inline fun <reified T : GC, reified T2 : GC, reified T3 : GC> GE.withNullable(let: (T?, T2?, T3?) -> Unit) {
-    return let(get(), get(), get())
-}
-
-public inline fun <reified T : GC, reified T2 : GC, reified T3 : GC, reified T4 : GC> GE.withNullable(let: (T?, T2?, T3?, T4?) -> Unit) {
-    return let(get(), get(), get(), get())
-}
-
-public inline fun <reified T : GC, reified T2 : GC, reified T3 : GC, reified T4 : GC, reified T5 : GC> GE.withNullable(
-    let: (T?, T2?, T3?, T4?, T5?) -> Unit
-) {
-    return let(get(), get(), get(), get(), get())
-}
+public inline fun <reified T : GC, reified T2 : GC, reified T3 : GC, reified T4 : GC, reified T5 : GC, reified T6 : GC, reified T7 : GC> GE.with(
+    let: (T, T2, T3, T4, T5, T6, T7) -> Unit
+): Unit? =
+    runCatching {
+        let(
+            nullOrError(),
+            nullOrError(),
+            nullOrError(),
+            nullOrError(),
+            nullOrError(),
+            nullOrError(),
+            nullOrError()
+        )
+    }.getOrNull()

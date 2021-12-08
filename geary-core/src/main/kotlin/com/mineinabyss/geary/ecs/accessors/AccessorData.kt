@@ -26,14 +26,18 @@ public open class ArchetypeCacheScope(
     public val perArchetypeData: List<List<Any?>>,
 )
 
+public open class GenericResultScope(
+    public val entity: GearyEntity,
+    internal val data: List<*>,
+)
 
 /**
  * Stores data which is formatted.
  */
 public open class ResultScope(
-    public val entity: GearyEntity,
-    internal val data: List<*>,
-)
+    entity: GearyEntity,
+    data: List<*>,
+) : GenericResultScope(entity, data)
 
 /**
  * A [ResultScope] specific to the event system.
@@ -41,5 +45,4 @@ public open class ResultScope(
 public class EventResultScope(
     entity: GearyEntity,
     data: List<*>,
-    public val event: GearyEntity
-): ResultScope(entity, data)
+) : GenericResultScope(entity, data)

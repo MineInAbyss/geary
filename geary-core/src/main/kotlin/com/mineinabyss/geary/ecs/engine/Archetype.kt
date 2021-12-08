@@ -12,6 +12,7 @@ import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.relations.toRelation
+import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
@@ -70,6 +71,11 @@ public data class Archetype(
 
     /** The amount of entities stored in this archetype. */
     public val size: Int get() = ids.size
+
+    private val _eventListeners = mutableSetOf<GearyListener>()
+
+    /** TODO. */
+    public val eventListeners: Set<GearyListener> = _eventListeners
 
     private val _eventHandlers = mutableSetOf<GearyEventHandler>()
     //TODO update doc
@@ -283,22 +289,35 @@ public data class Archetype(
         _eventHandlers += handler
     }
 
+    public fun addEventListener(handler: GearyListener) {
+        _eventListeners += handler
+    }
+
     /** Calls an event with data in an [event entity][event]. */
     public fun callEvent(event: GearyEntity, row: Int) {
         val entity = getEntity(row)
-        val type = event.type
+
+        val eventArchetype = Engine.getRecord(event.id)!!.archetype
 
         //TODO performance upgrade will come when we figure out a solution in QueryManager as well.
-        for (handler in eventHandlers) {
-            val archetype = Engine.getRecord(entity.id)?.archetype ?: this
+        for (handler in eventArchetype.eventHandlers) {
+            // If an event handler has moved the entity to a new archetype, make sure we follow it.
+            val archetype = Engine.getRecord(entity.id)!!.archetype
+            val newEventArchetype = Engine.getRecord(event.id)!!.archetype
 
-            // If an event handler has moved the entity to a new archetype, make sure we follow it
-            // and double check that the handler is still valid.
-            if (archetype != this && type !in handler.holder.family)
-                continue
+            // Check that this handler has a listener associated with it.
+            if (handler.parentHolder !in archetype._eventListeners) continue
 
-            val scope = RawAccessorDataScope(this, handler.holder.cacheForArchetype(archetype), row, entity)
-            handler.runEvent(event, scope)
+            // Check that we still match the data if archetype changed.
+            if (archetype != this && entity.type !in handler.parentHolder.family) continue
+            if (newEventArchetype != this && event.type !in handler.family) continue
+
+            val entityScope =
+                RawAccessorDataScope(archetype, handler.parentHolder.cacheForArchetype(archetype), row, entity)
+            val eventScope =
+                RawAccessorDataScope(eventArchetype, handler.cacheForArchetype(eventArchetype), row, entity)
+
+            handler.runEvent(event, entityScope, eventScope)
         }
     }
 

@@ -9,6 +9,7 @@ dependencies {
     //ecs-related libs
     implementation("com.uchuhimo:kotlinx-bimap:1.2") { isTransitive = false }
     implementation("net.onedaybeard.bitvector:bitvector-jvm:0.1.4")
+    implementation(kotlin("reflect"))
 
     //provided by Minecraft
     compileOnly("it.unimi.dsi:fastutil:8.5.4")

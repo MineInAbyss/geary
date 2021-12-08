@@ -1,8 +1,6 @@
 package com.mineinabyss.geary.ecs.events
 
 import com.mineinabyss.geary.ecs.api.GearyComponentId
-import com.mineinabyss.geary.ecs.api.systems.EventRunner
-import com.mineinabyss.geary.ecs.api.systems.GearyHandlerScope
 
 /**
  * Called every time an entity gets all of a listener's requested components added to it.
@@ -16,11 +14,3 @@ import com.mineinabyss.geary.ecs.api.systems.GearyHandlerScope
 public class ComponentAddEvent(
     public val component: GearyComponentId
 )
-
-public fun GearyHandlerScope.onComponentAdd(run: EventRunner<ComponentAddEvent>) {
-    val components = listener.family.components
-    on<ComponentAddEvent> { componentAdded ->
-        if (componentAdded.component in components)
-            run(componentAdded)
-    }
-}

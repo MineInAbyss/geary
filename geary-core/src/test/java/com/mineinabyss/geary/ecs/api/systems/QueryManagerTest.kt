@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.ecs.api.systems
 
+import com.mineinabyss.geary.ecs.accessors.EventResultScope
 import com.mineinabyss.geary.ecs.accessors.ResultScope
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
@@ -204,4 +205,10 @@ internal class QueryManagerTest {
         system.doTick()
     }
 
+    class EventListener: GearyListener() {
+        inner class Run: GearyEventHandler() {
+            override fun ResultScope.handle(event: EventResultScope) {
+            }
+        }
+    }
 }
