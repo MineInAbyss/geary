@@ -6,6 +6,7 @@ import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Nested
@@ -90,7 +91,7 @@ internal class GearyEngineTest {
         Engine.entity {
             setAll(listOf("Test", 1))
             add<Long>()
-        }.getComponents().shouldContainExactly("Test", 1)
+        }.getComponents().shouldContainExactlyInAnyOrder("Test", 1)
     }
 
     @Test
