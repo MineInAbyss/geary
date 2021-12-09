@@ -9,6 +9,7 @@ import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.engine.*
+import com.mineinabyss.geary.ecs.query.contains
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
@@ -205,10 +206,27 @@ internal class QueryManagerTest {
         system.doTick()
     }
 
-    class EventListener: GearyListener() {
-        inner class Run: GearyEventHandler() {
+    private class TestComponent()
+    private object EventListener : GearyListener() {
+        var ran = 0
+        private val ResultScope.testComponent by get<TestComponent>()
+
+        object Run : GearyEventHandler() {
             override fun ResultScope.handle(event: EventResultScope) {
+                ran++
             }
         }
+    }
+
+    @Test
+    fun `empty event handler`() {
+        (root.type in EventListener.Run.family) shouldBe true
+        Engine.addSystem(EventListener)
+        root.eventHandlers shouldContain EventListener.Run
+        Engine.entity {
+            set(TestComponent())
+        }.callEvent()
+        // 1 from setting, 1 from calling empty event
+        EventListener.ran shouldBe 2
     }
 }

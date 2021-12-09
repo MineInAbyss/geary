@@ -13,7 +13,7 @@ public inline fun Engine.entity(run: GearyEntity.() -> Unit): GearyEntity = getN
 
 /** Creates an entity that will get removed once [run] completes or fails. */
 public inline fun Engine.temporaryEntity(run: (GearyEntity) -> Unit) {
-    val entity = getNextId().toGeary()
+    val entity = entity()
     try {
         run(entity)
     } catch (e: Throwable) {

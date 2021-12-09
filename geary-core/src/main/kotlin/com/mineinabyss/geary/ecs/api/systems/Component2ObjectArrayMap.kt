@@ -31,11 +31,16 @@ internal class Component2ObjectArrayMap<T> {
         }
     }
 
-    private fun getMatchingBits(family: Family, bits: BitVector?): BitVector {
-        fun List<Family>.reduceToBits(operation: BitVector.(BitVector) -> Unit): BitVector =
-            ifEmpty { return bitsOf() }
+    // Null indicates no bits should be excluded
+    private fun getMatchingBits(family: Family, bits: BitVector?): BitVector? {
+        fun List<Family>.reduceToBits(operation: BitVector.(BitVector) -> Unit): BitVector? =
+            ifEmpty { return null }
                 .map { getMatchingBits(it, bits?.copy()) }
-                .reduce { acc, andBits -> acc.also { it.operation(andBits) } }
+                .reduce { acc, andBits ->
+                    acc.also {
+                        if (andBits != null) it?.operation(andBits)
+                    }
+                }
 
         return when (family) {
             is AndSelector -> family.and.reduceToBits(BitVector::and)
@@ -48,7 +53,7 @@ internal class Component2ObjectArrayMap<T> {
                     if (family.componentMustHoldData) {
                         forEachBit { index ->
                             val type = elementTypes[index]
-                            if(!type.contains(family.relationDataType, componentMustHoldData = true))
+                            if (!type.contains(family.relationDataType, componentMustHoldData = true))
                                 clear(index)
                         }
                     }
@@ -59,7 +64,9 @@ internal class Component2ObjectArrayMap<T> {
 
     fun match(family: Family): List<T> {
         val matchingElements = mutableListOf<T>()
-        getMatchingBits(family, null).forEachBit { matchingElements += elements[it] }
+        getMatchingBits(family, null)?.forEachBit { matchingElements += elements[it] }
+            ?: return elements.toList()
+
         return matchingElements
     }
 }

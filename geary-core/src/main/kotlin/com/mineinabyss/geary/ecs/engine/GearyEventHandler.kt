@@ -32,7 +32,6 @@ public abstract class GearyEventHandler(
     }
 
     internal open fun preHandle(entityResult: ResultScope, eventResult: EventResultScope) {
-        println("Handling")
         entityResult.handle(eventResult)
     }
 }
@@ -42,9 +41,7 @@ public abstract class ComponentAddHandler: GearyEventHandler() {
     private val EventResultScope.component by get<ComponentAddEvent>().map { it.component }
     private val checkedComponents by lazy { parentHolder.family.components }
     override fun preHandle(entityResult: ResultScope, eventResult: EventResultScope) {
-        println("Running prehandle")
         if(eventResult.component in checkedComponents) {
-            println("Component was in!")
             super.preHandle(entityResult, eventResult)
         }
     }

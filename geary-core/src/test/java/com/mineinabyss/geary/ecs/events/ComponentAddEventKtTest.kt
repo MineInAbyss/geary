@@ -27,11 +27,9 @@ internal class ComponentAddEventKtTest {
         val ResultScope.int by get<Int>()
         val ResultScope.double by get<Double>()
 
-        inner class Increment(): ComponentAddHandler() {
+        private inner class Increment(): ComponentAddHandler() {
             override fun ResultScope.handle(event: EventResultScope) {
-                println("Incrementing $inc")
                 inc++
-                println("$inc is now")
             }
         }
     }

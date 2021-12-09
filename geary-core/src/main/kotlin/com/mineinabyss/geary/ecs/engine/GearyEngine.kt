@@ -100,7 +100,11 @@ public open class GearyEngine : TickingEngine() {
 
 
     @Synchronized
-    override fun getNextId(): GearyEntityId = if (removedEntities.isNotEmpty()) removedEntities.pop() else currId++
+    override fun getNextId(): GearyEntityId {
+        val id = if (removedEntities.isNotEmpty()) removedEntities.pop() else currId++
+        setRecord(id, root.addEntityWithData(id, listOf()))
+        return id
+    }
 
     override fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent> =
         getRecord(entity)?.run {

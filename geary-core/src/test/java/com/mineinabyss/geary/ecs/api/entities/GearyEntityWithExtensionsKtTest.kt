@@ -16,12 +16,10 @@ internal class GearyEntityWithExtensionsKtTest {
 
     @Test
     fun nullable_with_extensions() {
-        println("Creating entity")
         val entity = Engine.entity {
             set("")
             set(1)
         }
-        println("Created")
 
         (entity.with { _: String, _: Int -> true } ?: false) shouldBe true
         (entity.with { _: String, _: Double -> true } ?: false) shouldBe false
