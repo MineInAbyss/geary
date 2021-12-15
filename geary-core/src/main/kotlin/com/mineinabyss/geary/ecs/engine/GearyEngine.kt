@@ -16,7 +16,7 @@ import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.ComponentInfo
 import com.mineinabyss.geary.ecs.entities.children
-import com.mineinabyss.geary.ecs.events.ComponentAddEvent
+import com.mineinabyss.geary.ecs.events.AddedComponent
 import com.mineinabyss.idofront.messaging.logError
 import java.util.*
 import kotlin.reflect.KClass
@@ -133,7 +133,7 @@ public open class GearyEngine : TickingEngine() {
             typeMap[entity] = newRecord ?: return
             if (!noEvent)
                 Engine.temporaryEntity { componentAddEvent ->
-                    componentAddEvent.set(ComponentAddEvent(component), noEvent = true)
+                    componentAddEvent.set(AddedComponent(component), noEvent = true)
                     newRecord.archetype.callEvent(componentAddEvent, newRecord.row)
                 }
         }
@@ -154,7 +154,7 @@ public open class GearyEngine : TickingEngine() {
             typeMap[entity] = newRecord ?: return
             if (!noEvent)
                 Engine.temporaryEntity { componentAddEvent ->
-                    componentAddEvent.set(ComponentAddEvent(componentWithRole), noEvent = true)
+                    componentAddEvent.set(AddedComponent(componentWithRole), noEvent = true)
                     newRecord.archetype.callEvent(componentAddEvent, newRecord.row)
                 }
         }

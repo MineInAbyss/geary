@@ -1,7 +1,8 @@
 package com.mineinabyss.geary.minecraft.dsl
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoscan
+import com.mineinabyss.geary.ecs.api.autoscan.AutoScan
+import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoScan
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
@@ -23,7 +24,9 @@ import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
 import java.io.File
 import kotlin.reflect.KClass
+import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.hasAnnotation
+import kotlin.reflect.full.isSubclassOf
 
 @DslMarker
 internal annotation class GearyAddonDSL
@@ -42,14 +45,14 @@ public class GearyAddon(
     /**
      * Automatically scans for all annotated components
      *
-     * @see autoscanComponents
-     * @see autoscanSingletonSystems
+     * @see autoScanComponents
+     * @see autoScanSystems
      */
-    public fun autoscanAll() {
+    public fun autoScanAll() {
         startup {
             GearyLoadPhase.REGISTER_SERIALIZERS {
-                autoscanComponents()
-                autoscanSingletonSystems()
+                autoScanComponents()
+                autoScanSystems()
             }
         }
     }
@@ -59,7 +62,7 @@ public class GearyAddon(
      *
      * @see AutoScanner
      */
-    public fun autoscanComponents() {
+    public fun autoScanComponents() {
         AutoScanner(classLoader).getReflections()?.getTypesAnnotatedWith(Serializable::class.java)
             ?.registerSerializers(GearyComponent::class) { kClass, serializer ->
                 val serialName = serializer?.descriptor?.serialName ?: return@registerSerializers false
@@ -68,13 +71,25 @@ public class GearyAddon(
             }
     }
 
-    public fun autoscanSingletonSystems() {
-        AutoScanner(classLoader).getReflections()?.getSubTypesOf(GearySystem::class.java)
-            ?.mapNotNull { it.kotlin.objectInstance }
+    /**
+     * Registers any systems (including event listeners) that are annotated with [AutoScan].
+     *
+     * Supports singletons or classes with no constructor parameters.
+     *
+     * @see AutoScanner
+     */
+    public fun autoScanSystems() {
+        AutoScanner(classLoader).getReflections()
+            ?.getTypesAnnotatedWith(AutoScan::class.java)
+            ?.asSequence()
+            ?.map { it.kotlin }
+            ?.filter { it.isSubclassOf(GearySystem::class) }
+            ?.mapNotNull { it.objectInstance ?: runCatching { it.createInstance() }.getOrNull() }
+            ?.filterIsInstance<GearySystem>()
             ?.onEach { system(it) }
             ?.map { it::class.simpleName }
             ?.joinToString()
-            ?.also { this@GearyAddon.plugin.logger.info("Autoscan loaded singleton systems: $it") }
+            ?.let { this@GearyAddon.plugin.logger.info("Autoscan loaded singleton systems: $it") }
     }
 
     /**
@@ -82,7 +97,7 @@ public class GearyAddon(
      *
      * @see AutoScanner
      */
-    public inline fun <reified T : Any> autoscan(
+    public inline fun <reified T : Any> autoScan(
         crossinline init: AutoScanner.() -> Unit = {},
         noinline addSubclass: SerializerRegistry<T> = { kClass, serializer ->
             if (serializer != null)
@@ -99,16 +114,16 @@ public class GearyAddon(
     @OptIn(InternalSerializationApi::class)
     public fun <T : Any> Collection<Class<*>>.registerSerializers(
         kClass: KClass<T>,
-        addSubclass: SerializerRegistry<T> = { kClass, serializer ->
+        addSubclass: SerializerRegistry<T> = { subClass, serializer ->
             if (serializer != null)
-                subclass(kClass, serializer)
+                subclass(subClass, serializer)
             serializer != null
         },
     ) {
         this@GearyAddon.serializers {
             polymorphic(kClass) {
                 asSequence().map { it.kotlin }
-                    .filter { !it.hasAnnotation<ExcludeAutoscan>() }
+                    .filter { !it.hasAnnotation<ExcludeAutoScan>() }
                     .filterIsInstance<KClass<T>>()
                     .filter { this@polymorphic.addSubclass(it, it.serializerOrNull()) }
                     .map { it.simpleName }
@@ -195,7 +210,7 @@ public class GearyAddon(
             GearyLoadPhase.LOAD_PREFABS {
                 // Start with the innermost directories
                 val dirs = from.walkBottomUp().filter { it.isDirectory }
-                val files = dirs.flatMap { it.walk().maxDepth(1).filter { it.isFile } }
+                val files = dirs.flatMap { dir -> dir.walk().maxDepth(1).filter { it.isFile } }
                 files.forEach { file ->
                     val entity = PrefabManager.loadFromFile(namespace, file) ?: return@forEach
                     GearyLoadManager.loadingPrefabs += entity

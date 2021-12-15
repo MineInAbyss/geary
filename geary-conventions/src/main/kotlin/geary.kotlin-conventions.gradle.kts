@@ -6,7 +6,6 @@ val idofrontVersion: String by project
 
 plugins {
     id("com.mineinabyss.conventions.kotlin")
-    id("com.mineinabyss.conventions.slimjar")
 }
 
 repositories {
@@ -14,12 +13,12 @@ repositories {
 }
 
 dependencies {
-    slim(kotlin("stdlib-jdk8"))
-
-    slim(Deps.kotlinx.serialization.json)
-    slim(Deps.kotlinx.serialization.cbor)
-    slim(Deps.kotlinx.serialization.hocon)
-    slim(Deps.kotlinx.serialization.kaml) {
+    // MineInAbyss platform
+    compileOnly(Deps.kotlin.stdlib)
+    compileOnly(Deps.kotlinx.serialization.json)
+    compileOnly(Deps.kotlinx.serialization.cbor)
+    compileOnly(Deps.kotlinx.serialization.hocon)
+    compileOnly(Deps.kotlinx.serialization.kaml) {
         exclude(group = "org.jetbrains.kotlin")
     }
 

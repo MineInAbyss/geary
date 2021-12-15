@@ -10,6 +10,7 @@ import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.withRole
 import com.mineinabyss.geary.ecs.query.AndSelector
 import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
 /**
  * A holder of [Accessor]s which provides helper functions for creating them.
@@ -20,6 +21,10 @@ public abstract class AccessorHolder : MutableAndSelector() {
     public val family: AndSelector by lazy { build() }
     internal open val accessors = mutableListOf<Accessor<*>>()
     private val perArchetypeCache = mutableMapOf<Archetype, List<List<Any?>>>()
+
+    @Suppress("UNCHECKED_CAST")
+    public operator fun <T> Accessor<T>.getValue(thisRef: GenericResultScope, property: KProperty<*>): T =
+        thisRef.data[index] as T
 
     public inline fun <reified T : GearyComponent?> getOrDefault(default: T): ComponentOrDefaultAccessor<T> {
         val component = componentId<T>().withRole(HOLDS_DATA)

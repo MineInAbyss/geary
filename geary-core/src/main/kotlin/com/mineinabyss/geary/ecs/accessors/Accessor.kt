@@ -16,11 +16,7 @@ import kotlin.reflect.KProperty
  */
 public abstract class Accessor<T>(
     public val index: Int
-) : ReadOnlyProperty<GenericResultScope, T> {
-    @Suppress("UNCHECKED_CAST")
-    override fun getValue(thisRef: GenericResultScope, property: KProperty<*>): T =
-        thisRef.data[index] as T
-
+) {
     /**
      * An accessor will read data given
      */

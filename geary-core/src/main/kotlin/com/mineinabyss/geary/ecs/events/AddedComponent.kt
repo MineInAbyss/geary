@@ -11,6 +11,6 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
  * MAKE SURE YOUR LISTENER DOES NOT HAVE ANY LOGIC BRANCHES. Only the top level list of components are
  * guaranteed to match, nothing else is checked.
  */
-public class ComponentAddEvent(
+public class AddedComponent(
     public val component: GearyComponentId
 )

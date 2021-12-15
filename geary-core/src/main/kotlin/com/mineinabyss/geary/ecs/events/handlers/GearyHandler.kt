@@ -1,15 +1,22 @@
-package com.mineinabyss.geary.ecs.engine
+package com.mineinabyss.geary.ecs.events.handlers
 
-import com.mineinabyss.geary.ecs.accessors.AccessorHolder
-import com.mineinabyss.geary.ecs.accessors.EventResultScope
-import com.mineinabyss.geary.ecs.accessors.RawAccessorDataScope
-import com.mineinabyss.geary.ecs.accessors.ResultScope
+import com.mineinabyss.geary.ecs.accessors.*
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.events.ComponentAddEvent
+import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.idofront.messaging.logError
+import kotlin.reflect.KProperty
 
-public abstract class GearyEventHandler(
-) : AccessorHolder() {
+@RequiresOptIn(
+    level = RequiresOptIn.Level.ERROR,
+    message = "Trying to use entity scope in event, use EventResultScope instead"
+)
+public annotation class WrongScope
+
+/**
+ * Placed within a [GearyListener] as an `object` or `inner class` to fire when an event matching
+ * specified components gets fired on an entity matching the listener's components.
+ */
+public abstract class GearyHandler : AccessorHolder() {
     public lateinit var parentHolder: AccessorHolder
         internal set
 
@@ -19,7 +26,7 @@ public abstract class GearyEventHandler(
     public open fun runEvent(event: GearyEntity, entityScope: RawAccessorDataScope, eventScope: RawAccessorDataScope) {
         try {
             iteratorFor(eventScope).forEach { eventData ->
-                iteratorFor(entityScope).forEach { entityData ->
+                parentHolder.iteratorFor(entityScope).forEach { entityData ->
                     val entityResult = ResultScope(entityScope.entity, entityData)
                     val eventResult = EventResultScope(event, eventData)
                     preHandle(entityResult, eventResult)
@@ -34,15 +41,11 @@ public abstract class GearyEventHandler(
     internal open fun preHandle(entityResult: ResultScope, eventResult: EventResultScope) {
         entityResult.handle(eventResult)
     }
+
+    @Suppress("UNCHECKED_CAST")
+    @WrongScope
+    public operator fun <T> Accessor<T>.getValue(thisRef: ResultScope, property: KProperty<*>): T =
+        with(this@GearyHandler as AccessorHolder) { getValue(thisRef, property) }
 }
 
 
-public abstract class ComponentAddHandler: GearyEventHandler() {
-    private val EventResultScope.component by get<ComponentAddEvent>().map { it.component }
-    private val checkedComponents by lazy { parentHolder.family.components }
-    override fun preHandle(entityResult: ResultScope, eventResult: EventResultScope) {
-        if(eventResult.component in checkedComponents) {
-            super.preHandle(entityResult, eventResult)
-        }
-    }
-}

@@ -15,10 +15,10 @@ import com.mineinabyss.geary.minecraft.listeners.GearyAttemptSpawnListener
 import com.mineinabyss.geary.minecraft.listeners.InheritPrefabsOnLoad
 import com.mineinabyss.geary.minecraft.store.FileSystemStore
 import com.mineinabyss.geary.minecraft.store.GearyStore
+import com.mineinabyss.idofront.platforms.IdofrontPlatforms
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
 import com.mineinabyss.idofront.serialization.UUIDSerializer
-import com.mineinabyss.idofront.slimjar.IdofrontSlimjar
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.*
@@ -27,7 +27,7 @@ import kotlin.reflect.KClass
 
 public class GearyPlugin : JavaPlugin() {
     override fun onLoad() {
-        IdofrontSlimjar.loadToLibraryLoader(this)
+        IdofrontPlatforms.load(this, "mineinabyss")
     }
 
     override fun onEnable() {
@@ -56,7 +56,7 @@ public class GearyPlugin : JavaPlugin() {
 
         // This will also register a serializer for GearyEntityType
         gearyAddon {
-            autoscanAll()
+            autoScanAll()
 
             components {
                 //TODO move out to a custom components class

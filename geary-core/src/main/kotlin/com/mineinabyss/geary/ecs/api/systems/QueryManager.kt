@@ -3,8 +3,8 @@ package com.mineinabyss.geary.ecs.api.systems
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.engine.Archetype
-import com.mineinabyss.geary.ecs.engine.GearyEventHandler
 import com.mineinabyss.geary.ecs.engine.root
+import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
 import com.mineinabyss.geary.ecs.query.Family
 import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
@@ -15,7 +15,7 @@ import kotlin.reflect.jvm.isAccessible
 public object QueryManager {
     private val queries = mutableListOf<Query>()
     private val eventListeners = mutableListOf<GearyListener>()
-    private val eventHandlers = mutableListOf<GearyEventHandler>()
+    private val eventHandlers = mutableListOf<GearyHandler>()
 
     private val archetypes = Component2ObjectArrayMap<Archetype>()
 
@@ -29,7 +29,7 @@ public object QueryManager {
         listener::class.nestedClasses
             .mapNotNull { kClass ->
                 // Instantiate child objects or inner classes, even if private
-                kClass.takeIf { it.isSubclassOf(GearyEventHandler::class) }?.run {
+                kClass.takeIf { it.isSubclassOf(GearyHandler::class) }?.run {
                     val field = java.fields.find { it.name == "INSTANCE" }
                     field?.isAccessible = true
                     field?.get(null)
@@ -38,7 +38,7 @@ public object QueryManager {
                         isAccessible = true
                         call(listener)
                     }
-            }.filterIsInstance<GearyEventHandler>()
+            }.filterIsInstance<GearyHandler>()
             .forEach { handler ->
                 val handlerMatched = archetypes.match(handler.family)
                 handler.parentHolder = listener

@@ -13,6 +13,7 @@ import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
+import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
 import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
@@ -77,10 +78,10 @@ public data class Archetype(
     /** TODO. */
     public val eventListeners: Set<GearyListener> = _eventListeners
 
-    private val _eventHandlers = mutableSetOf<GearyEventHandler>()
+    private val _eventHandlers = mutableSetOf<GearyHandler>()
     //TODO update doc
     /** A map of event class type to a set of event handlers which fire on that event. */
-    public val eventHandlers: Set<GearyEventHandler> = _eventHandlers
+    public val eventHandlers: Set<GearyHandler> = _eventHandlers
 
     // Basically just want a weak set where stuff gets auto removed when it is no longer running
     // We put our iterator and null and this WeakHashMap handles the rest for us.
@@ -285,7 +286,7 @@ public data class Archetype(
     // ==== Event listeners ====
 
     /** Adds an event [handler] that listens to certain events relating to entities in this archetype. */
-    public fun addEventHandler(handler: GearyEventHandler) {
+    public fun addEventHandler(handler: GearyHandler) {
         _eventHandlers += handler
     }
 
@@ -297,7 +298,8 @@ public data class Archetype(
     public fun callEvent(event: GearyEntity, row: Int) {
         val entity = getEntity(row)
 
-        val eventArchetype = Engine.getRecord(event.id)!!.archetype
+        val eventRecord = Engine.getRecord(event.id)!!
+        val eventArchetype = eventRecord.archetype
 
         //TODO performance upgrade will come when we figure out a solution in QueryManager as well.
         for (handler in eventArchetype.eventHandlers) {
@@ -315,7 +317,7 @@ public data class Archetype(
             val entityScope =
                 RawAccessorDataScope(archetype, handler.parentHolder.cacheForArchetype(archetype), row, entity)
             val eventScope =
-                RawAccessorDataScope(eventArchetype, handler.cacheForArchetype(eventArchetype), row, entity)
+                RawAccessorDataScope(eventArchetype, handler.cacheForArchetype(eventArchetype), eventRecord.row, event)
 
             handler.runEvent(event, entityScope, eventScope)
         }

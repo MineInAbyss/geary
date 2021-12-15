@@ -13,7 +13,7 @@ import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.INSTANCEOF
 import com.mineinabyss.geary.ecs.engine.withRole
-import com.mineinabyss.geary.ecs.events.ComponentAddEvent
+import com.mineinabyss.geary.ecs.events.AddedComponent
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
@@ -34,7 +34,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
     /**
      * Sets a component that holds data for this entity
      *
-     * @param noEvent If true, will not fire a [ComponentAddEvent].
+     * @param noEvent If true, will not fire a [AddedComponent].
      */
     public inline fun <reified T : GearyComponent> set(
         component: T,
@@ -78,7 +78,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
     }
 
     /**
-     * @param noEvent If true, will not fire a [ComponentAddEvent].
+     * @param noEvent If true, will not fire a [AddedComponent].
      */
     public fun <D : GearyComponent> setRelation(
         dataKClass: KClass<D>,
@@ -98,7 +98,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
     /**
      * Adds a list of [component] to this entity
      *
-     * @param noEvent If true, will not fire a [ComponentAddEvent].
+     * @param noEvent If true, will not fire a [AddedComponent].
      */
     public inline fun add(component: GearyComponentId, noEvent: Boolean = false) {
         Engine.addComponentFor(id, component, noEvent)
@@ -221,6 +221,13 @@ public value class GearyEntity(public val id: GearyEntityId) {
     /** Checks whether an entity has all of a list of [components].
      * @see has */
     public inline fun hasAll(components: Collection<ComponentClass>): Boolean = components.all { has(it) }
+
+    public inline fun <T> callEvent(
+        vararg components: Any,
+        result: (event: GearyEntity) -> T
+    ): T = callEvent({ eventEntity ->
+        eventEntity.setAll(components.toList())
+    }, result = result)
 
     public inline fun callEvent(vararg components: Any) {
         callEvent { eventEntity ->

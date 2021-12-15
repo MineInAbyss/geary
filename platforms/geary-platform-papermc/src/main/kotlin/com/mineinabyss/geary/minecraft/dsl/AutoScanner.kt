@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.minecraft.dsl
 
-import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoscan
+import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoScan
 import com.mineinabyss.idofront.messaging.logWarn
 import kotlinx.serialization.modules.SerializersModule
 import org.reflections.Reflections
@@ -13,7 +13,7 @@ import org.reflections.util.FilterBuilder
  * DSL for configuring automatic scanning of classes to be registered into Geary's [SerializersModule].
  *
  * A [path] to limit search to may be specified. Specific packages can also be excluded with [excludePath].
- * Annotate a class with [ExcludeAutoscan] to exclude it from automatically being registered.
+ * Annotate a class with [ExcludeAutoScan] to exclude it from automatically being registered.
  *
  * _Note that if the plugin is loaded using a custom classloading solution, autoscan may not work._
  *

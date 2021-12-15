@@ -9,6 +9,7 @@ import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.engine.*
+import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
 import com.mineinabyss.geary.ecs.query.contains
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
@@ -211,7 +212,7 @@ internal class QueryManagerTest {
         var ran = 0
         private val ResultScope.testComponent by get<TestComponent>()
 
-        object Run : GearyEventHandler() {
+        object Run : GearyHandler() {
             override fun ResultScope.handle(event: EventResultScope) {
                 ran++
             }

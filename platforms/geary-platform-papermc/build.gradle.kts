@@ -14,14 +14,19 @@ repositories {
 }
 
 dependencies {
-    implementation("org.reflections:reflections:0.9.12")
+    // MineInAbyss platform
+    compileOnly(Deps.kotlinx.coroutines)
+    compileOnly(Deps.minecraft.skedule)
+    compileOnly(Deps.kotlin.reflect) { isTransitive = false }
 
-    slim(Deps.kotlinx.coroutines)
-    slim(Deps.minecraft.skedule)
-    slim(Deps.kotlin.reflect) { isTransitive = false }
+    // Other plugins
     compileOnly("com.rylinaux:PlugMan:2.2.5")
 
-    api(project(":geary-core"))
+    // Shaded
+    api(project(":geary-core")) {
+        exclude(module = "kotlin-reflect")
+    }
+    implementation("org.reflections:reflections:0.9.12")
 }
 
 tasks {
