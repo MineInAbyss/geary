@@ -9,6 +9,7 @@ import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.engine.getArchetype
 import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
+import com.mineinabyss.geary.ecs.events.handlers.ComponentAddHandler
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
