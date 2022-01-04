@@ -42,7 +42,25 @@ public open class ResultScope(
 /**
  * A [ResultScope] specific to the event system.
  */
-public class EventResultScope(
+public class EventScope(
+    entity: GearyEntity,
+    data: List<*>,
+) : GenericResultScope(entity, data)
+
+
+/**
+ * Stores data which is formatted.
+ */
+public open class SourceScope(
+    entity: GearyEntity,
+    data: List<*>,
+) : GenericResultScope(entity, data)
+
+
+/**
+ * Stores data which is formatted.
+ */
+public open class TargetScope(
     entity: GearyEntity,
     data: List<*>,
 ) : GenericResultScope(entity, data)

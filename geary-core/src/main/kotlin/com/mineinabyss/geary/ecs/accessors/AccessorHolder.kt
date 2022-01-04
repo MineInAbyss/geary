@@ -1,77 +1,25 @@
 package com.mineinabyss.geary.ecs.accessors
 
-import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationDataType
 import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.Archetype
-import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
-import com.mineinabyss.geary.ecs.engine.withRole
 import com.mineinabyss.geary.ecs.query.AndSelector
-import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
+
 
 /**
  * A holder of [Accessor]s which provides helper functions for creating them.
  *
  * @property family A lazily built immutable family that represents all data this holder needs to function.
  */
-public abstract class AccessorHolder : MutableAndSelector() {
+public abstract class AccessorHolder : MutableAndSelector(), AccessorBuilderProvider {
     public val family: AndSelector by lazy { build() }
     internal open val accessors = mutableListOf<Accessor<*>>()
     private val perArchetypeCache = mutableMapOf<Archetype, List<List<Any?>>>()
 
-    @Suppress("UNCHECKED_CAST")
-    public operator fun <T> Accessor<T>.getValue(thisRef: GenericResultScope, property: KProperty<*>): T =
-        thisRef.data[index] as T
-
-    public inline fun <reified T : GearyComponent?> getOrDefault(default: T): ComponentOrDefaultAccessor<T> {
-        val component = componentId<T>().withRole(HOLDS_DATA)
-        return addAccessor { ComponentOrDefaultAccessor(it, component, default) }
-    }
-
-    public inline fun <reified T : GearyComponent?> getOrNull(): ComponentOrDefaultAccessor<T?> {
-        return getOrDefault(null)
-    }
-
-    public inline fun <reified T : GearyComponent> get(): ComponentAccessor<T> {
-        val component = componentId<T>().withRole(HOLDS_DATA)
-        has(component)
-        return addAccessor { ComponentAccessor(it, component) }
-    }
-
-    public inline fun <reified T : GearyComponent?, R> Accessor<T>.map(
-        crossinline transform: (T) -> R
-    ): ReadOnlyProperty<GenericResultScope, R> = ReadOnlyProperty { thisRef, property ->
-        transform(this.getValue(thisRef, property))
-    }
-
-    //TODO write tests
-    public inline fun <reified D : GearyComponent, reified Key : GearyComponent> getRelation(): ComponentAccessor<D> {
-        val component = Relation.of<D, Key>()
-        has(component)
-        return addAccessor { ComponentAccessor(it, component.id) }
-    }
-
-    public inline fun <reified T : GearyComponent> relation(): RelationAccessor<T> {
-        val relationDataType = RelationDataType(componentId<T>())
-        has(relationDataType)
-        return addAccessor { RelationAccessor(it, relationDataType) }
-    }
-
-    public inline fun <reified T : GearyComponent> relationWithData(): RelationWithDataAccessor<T> {
-        val relationDataType = RelationDataType(componentId<T>())
-        has(relationDataType, componentMustHoldData = true)
-
-        return addAccessor { RelationWithDataAccessor(it, relationDataType) }
-    }
-
-    public inline fun <reified T : GearyComponent> allRelationsWithData(): RelationListAccessor<T> {
-        val relationDataType = RelationDataType(componentId<T>())
-        has(relationDataType, componentMustHoldData = true)
-        return addAccessor { RelationListAccessor(it, relationDataType) }
-    }
+    public operator fun <T : Accessor<*>> AccessorBuilder<T>.provideDelegate(
+        thisRef: Any,
+        property: KProperty<*>
+    ): T = addAccessor { build(this@AccessorHolder, it) }
 
     public open fun <T : Accessor<*>> addAccessor(create: (index: Int) -> T): T {
         val accessor = create(accessors.size)

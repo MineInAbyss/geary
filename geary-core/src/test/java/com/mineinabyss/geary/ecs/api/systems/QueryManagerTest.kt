@@ -1,7 +1,9 @@
 package com.mineinabyss.geary.ecs.api.systems
 
-import com.mineinabyss.geary.ecs.accessors.EventResultScope
+import com.mineinabyss.geary.ecs.accessors.EventScope
 import com.mineinabyss.geary.ecs.accessors.ResultScope
+import com.mineinabyss.geary.ecs.accessors.get
+import com.mineinabyss.geary.ecs.accessors.relation
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
@@ -120,7 +122,7 @@ internal class QueryManagerTest {
             override fun ResultScope.tick() {
                 ran++
                 family.relationDataTypes.map { it.id } shouldContain test.relation.id
-                test.parentData.shouldBeInstanceOf<RelationTestComponent>()
+                test.data.shouldBeInstanceOf<RelationTestComponent>()
             }
         }
         system.family.relationDataTypes.shouldContainExactly(RelationDataType(componentId<RelationTestComponent>()))
@@ -157,8 +159,8 @@ internal class QueryManagerTest {
             val ResultScope.test2 by relation<RelationTestComponent2>()
             override fun ResultScope.tick() {
                 ran++
-                test1.parentData.shouldBeInstanceOf<RelationTestComponent1>()
-                test2.parentData.shouldBeInstanceOf<RelationTestComponent2>()
+                test1.data.shouldBeInstanceOf<RelationTestComponent1>()
+                test2.data.shouldBeInstanceOf<RelationTestComponent2>()
             }
         }
         QueryManager.trackQuery(system)
@@ -181,11 +183,11 @@ internal class QueryManagerTest {
     @Test
     fun relationsWithData() {
         val system = object : TickingSystem() {
-            val ResultScope.withData by relationWithData<RelationTestWithData>()
+            val ResultScope.withData by relation<Any, RelationTestWithData>()
 
             override fun ResultScope.tick() {
-                withData.parentData.shouldBeInstanceOf<RelationTestWithData>()
-                withData.componentData shouldBe "Test"
+                withData.value.shouldBeInstanceOf<RelationTestWithData>()
+                withData.key shouldBe "Test"
             }
         }
 
@@ -213,7 +215,7 @@ internal class QueryManagerTest {
         private val ResultScope.testComponent by get<TestComponent>()
 
         object Run : GearyHandler() {
-            override fun ResultScope.handle(event: EventResultScope) {
+            override fun ResultScope.handle(event: EventScope) {
                 ran++
             }
         }

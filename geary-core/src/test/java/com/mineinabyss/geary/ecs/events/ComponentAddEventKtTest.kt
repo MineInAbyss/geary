@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.ecs.events
 
-import com.mineinabyss.geary.ecs.accessors.EventResultScope
+import com.mineinabyss.geary.ecs.accessors.EventScope
 import com.mineinabyss.geary.ecs.accessors.ResultScope
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
@@ -28,7 +28,7 @@ internal class ComponentAddEventKtTest {
         val ResultScope.double by get<Double>()
 
         private inner class Increment(): ComponentAddHandler() {
-            override fun ResultScope.handle(event: EventResultScope) {
+            override fun ResultScope.handle(event: EventScope) {
                 inc++
             }
         }

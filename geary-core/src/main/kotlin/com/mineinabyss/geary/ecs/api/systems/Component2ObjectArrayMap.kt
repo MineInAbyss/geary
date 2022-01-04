@@ -20,7 +20,7 @@ internal class Component2ObjectArrayMap<T> {
     private val componentMap = Long2ObjectOpenHashMap<BitVector>()
 
     private fun GearyComponentId.toComponentMapId(): GearyComponentId =
-        toRelation()?.data?.id?.or(RELATION) ?: this
+        toRelation()?.value?.id?.or(RELATION) ?: this
 
     fun add(element: T, type: GearyType) {
         elements += element

@@ -26,7 +26,7 @@ internal class GearyEntityTests {
             setPersisting("Test")
         }
         val relations =
-            entity.type.getArchetype().relations[componentId<PersistingComponent>().toLong()]
+            entity.type.getArchetype().relationsByValue[componentId<PersistingComponent>().toLong()]
         relations.size shouldBe 1
         relations.first().key shouldBe componentId<String>()
         entity.getPersistingComponents().shouldContainExactly("Test")
@@ -50,7 +50,7 @@ internal class GearyEntityTests {
             setPersisting("Test")
         }
         val relations =
-            entity.type.getArchetype().relations[componentId<PersistingComponent>().toLong()]
+            entity.type.getArchetype().relationsByValue[componentId<PersistingComponent>().toLong()]
         relations.size shouldBe 1
         relations.first().key shouldBe (componentId<String>())
         entity.getPersistingComponents().shouldContainExactly("Test")

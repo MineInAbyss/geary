@@ -116,7 +116,7 @@ public open class GearyEngine : TickingEngine() {
         relationDataType: RelationDataType
     ): Set<Pair<GearyComponent, Relation>> = getRecord(entity)?.run {
         archetype
-            .relations[relationDataType.id.toLong()]
+            .relationsByValue[relationDataType.id.toLong()]
             ?.mapNotNullTo(mutableSetOf()) {
                 archetype[row, it.key.withRole(HOLDS_DATA)]?.to(Relation.of(relationDataType, it.key))
             }

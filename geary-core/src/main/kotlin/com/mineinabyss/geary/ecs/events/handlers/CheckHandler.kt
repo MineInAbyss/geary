@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.ecs.events.handlers
 
-import com.mineinabyss.geary.ecs.accessors.EventResultScope
+import com.mineinabyss.geary.ecs.accessors.EventScope
 import com.mineinabyss.geary.ecs.accessors.ResultScope
 import com.mineinabyss.geary.ecs.events.FailedCheck
 import com.mineinabyss.geary.ecs.events.RequestCheck
@@ -13,9 +13,9 @@ public abstract class CheckHandler : GearyHandler() {
         has<RequestCheck>()
     }
 
-    public abstract fun ResultScope.check(event: EventResultScope): Boolean
+    public abstract fun ResultScope.check(event: EventScope): Boolean
 
-    final override fun ResultScope.handle(event: EventResultScope) {
+    final override fun ResultScope.handle(event: EventScope) {
         if (!check(event)) event.entity.apply {
             remove<RequestCheck>()
             set(FailedCheck)

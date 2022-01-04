@@ -11,7 +11,7 @@ public fun GearyType.contains(relationDataType: RelationDataType, componentMustH
     val components = filter { !it.isRelation() }
     return mapNotNull { it.toRelation() }
         .any { relationInType ->
-            relationInType.data == relationDataType && components.any {
+            relationInType.value == relationDataType && components.any {
                 if (componentMustHoldData)
                     it == relationInType.key.withRole(HOLDS_DATA)
                 else

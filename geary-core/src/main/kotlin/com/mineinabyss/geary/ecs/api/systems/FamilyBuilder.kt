@@ -90,7 +90,7 @@ public abstract class MutableSelector : FamilyBuilder() {
     public fun has(componentIds: Collection<GearyComponentId>) {
         componentIds.forEach {
             it.toRelation()?.let { relation ->
-                add(MutableRelationLeaf(relation.data))
+                add(MutableRelationLeaf(relation.value))
             } ?: run {
                 add(MutableComponentLeaf(it))
             }

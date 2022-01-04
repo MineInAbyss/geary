@@ -86,14 +86,22 @@ public value class GearyEntity(public val id: GearyEntityId) {
         data: D,
         noEvent: Boolean = false
     ) {
-        Engine.setComponentFor(id, Relation.of(dataKClass, keyKClass).id, data, noEvent)
+        setRelation(Relation.of(dataKClass, keyKClass), data, noEvent)
+    }
+
+    public fun setRelation(relation: Relation, data: Any, noEvent: Boolean = false) {
+        Engine.setComponentFor(id, relation.id, data, noEvent)
+    }
+
+    public inline fun <reified Key : GearyComponent> setRelatedTo(data: Any) {
+        setRelation(Relation.of(data::class, Key::class), data)
     }
 
     public inline fun <reified T : GearyComponent, reified C : GearyComponent> removeRelation(): Boolean =
         removeRelation(Relation.of<T, C>())
 
     public fun removeRelation(relation: Relation): Boolean =
-        remove(Relation.of(relation.data, relation.key).id)
+        remove(Relation.of(relation.value, relation.key).id)
 
     /**
      * Adds a list of [component] to this entity

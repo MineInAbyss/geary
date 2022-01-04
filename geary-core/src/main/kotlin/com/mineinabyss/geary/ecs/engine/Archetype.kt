@@ -48,21 +48,28 @@ public data class Archetype(
     /** Edges to other archetypes where a single component has been removed. */
     internal val componentRemoveEdges = Long2ObjectOpenHashMap<Archetype>()
 
-    /** Map of relation parent id to a list of relations with that parent. */
-    internal val relations: Long2ObjectOpenHashMap<List<Relation>> = type
-        .mapNotNull { it.toRelation() }
-        .groupBy { it.data.id.toLong() }
+    internal val relations =  type.mapNotNull { it.toRelation() }
+
+    /** Map of relation [Relation.value] id to a list of relations with that [Relation.value]. */
+    internal val relationsByValue: Long2ObjectOpenHashMap<List<Relation>> = relations
+        .groupBy { it.value.id.toLong() }
+        .let { Long2ObjectOpenHashMap(it) }
+
+    /** Map of relation [Relation.key] id to a list of relations with that [Relation.key]. */
+    internal val relationsByKey: Long2ObjectOpenHashMap<List<Relation>> = relations
+        .groupBy { it.key.toLong() }
         .let { Long2ObjectOpenHashMap(it) }
 
     /** A map of a relation's data type id to full relations that store data of that type. */
     internal val dataHoldingRelations: Long2ObjectOpenHashMap<List<Relation>> by lazy {
         val map = Long2ObjectOpenHashMap<List<Relation>>()
-        relations.forEach { (key, value) ->
-            val dataHolding = value.filter { it.key.holdsData() }
+        relationsByValue.forEach { (key, values) ->
+            val dataHolding = values.filter { it.key.holdsData() }
             if (dataHolding.isNotEmpty()) map[key] = dataHolding
         }
         map
     }
+
 
     /** A map of component ids to index used internally in this archetype (ex. in [componentData])*/
     private val comp2indices = Long2IntOpenHashMap().apply {
@@ -89,11 +96,11 @@ public data class Archetype(
 
     // ==== Helper functions ====
 
-    /** @return This Archetype's [relations] that are also a part of [matchRelations]. */
+    /** @return This Archetype's [relationsByValue] that are also a part of [matchRelations]. */
     public fun matchedRelationsFor(matchRelations: Collection<RelationDataType>): Map<RelationDataType, List<Relation>> =
         matchRelations
-            .filter { it.id.toLong() in relations }
-            .associateWith { relations[it.id.toLong()]!! } //TODO handle null error
+            .filter { it.id.toLong() in relationsByValue }
+            .associateWith { relationsByValue[it.id.toLong()]!! } //TODO handle null error
 
     /**
      * Used to pack data closer together and avoid having hashmaps throughout the archetype.

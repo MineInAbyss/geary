@@ -16,7 +16,7 @@ import kotlin.reflect.KProperty
  */
 public abstract class Accessor<T>(
     public val index: Int
-) {
+): ReadOnlyProperty<GenericResultScope, T> {
     /**
      * An accessor will read data given
      */
@@ -39,4 +39,8 @@ public abstract class Accessor<T>(
         override fun getValue(thisRef: ArchetypeCacheScope, property: KProperty<*>): T =
             thisRef.perArchetypeData[index][cacheIndex] as T
     }
+
+    @Suppress("UNCHECKED_CAST")
+    public override fun getValue(thisRef: GenericResultScope, property: KProperty<*>): T =
+        thisRef.data[index] as T
 }

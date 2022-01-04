@@ -20,7 +20,7 @@ public abstract class GearyHandler : AccessorHolder() {
     public lateinit var parentHolder: AccessorHolder
         internal set
 
-    public abstract fun ResultScope.handle(event: EventResultScope)
+    public abstract fun ResultScope.handle(event: EventScope)
 
     /** Be sure [event] is of the same type as this listener wants! */
     public open fun runEvent(event: GearyEntity, entityScope: RawAccessorDataScope, eventScope: RawAccessorDataScope) {
@@ -28,7 +28,7 @@ public abstract class GearyHandler : AccessorHolder() {
             iteratorFor(eventScope).forEach { eventData ->
                 parentHolder.iteratorFor(entityScope).forEach { entityData ->
                     val entityResult = ResultScope(entityScope.entity, entityData)
-                    val eventResult = EventResultScope(event, eventData)
+                    val eventResult = EventScope(event, eventData)
                     preHandle(entityResult, eventResult)
                 }
             }
@@ -38,7 +38,7 @@ public abstract class GearyHandler : AccessorHolder() {
         }
     }
 
-    internal open fun preHandle(entityResult: ResultScope, eventResult: EventResultScope) {
+    internal open fun preHandle(entityResult: ResultScope, eventResult: EventScope) {
         entityResult.handle(eventResult)
     }
 

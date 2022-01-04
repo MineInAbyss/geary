@@ -3,7 +3,10 @@ package com.mineinabyss.geary.ecs.api.relations
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.engine.*
+import com.mineinabyss.geary.ecs.engine.RELATION
+import com.mineinabyss.geary.ecs.engine.RELATION_COMPONENT_MASK
+import com.mineinabyss.geary.ecs.engine.RELATION_PARENT_MASK
+import com.mineinabyss.geary.ecs.engine.isRelation
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
@@ -11,24 +14,24 @@ import kotlin.reflect.KClass
  * A combination of two [GearyComponentId]s into one that represents a relation between
  * the two. Used for "adding a component to another component."
  *
- * Data of the [data]'s type is stored under the relation's full [id] in archetypes.
+ * Data of the [value]'s type is stored under the relation's full [id] in archetypes.
  * The [key] points to another component this relation references.
  *
  * ```
- * Parent bits:     0x00FFFFFF00000000
- * Component bits:  0xFF000000FFFFFFFF
+ * [value] bits: 0x00FFFFFF00000000
+ * [key]   bits: 0xFF000000FFFFFFFF
  * ```
  *
- * @property data The part of the relation which determines the data type of the full relation.
+ * @property value The part of the relation which determines the data type of the full relation.
  * @property key The part of the relation that points to another component on the entity.
  *
  */
 @Serializable
 @JvmInline
-public value class Relation internal constructor(
+public value class Relation private constructor(
     public val id: GearyComponentId
 ) : Comparable<Relation> {
-    public val data: RelationDataType get() = RelationDataType(id and RELATION_PARENT_MASK shr 32)
+    public val value: RelationDataType get() = RelationDataType(id and RELATION_PARENT_MASK shr 32)
     public val key: GearyComponentId get() = id and RELATION_COMPONENT_MASK and RELATION.inv()
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
@@ -54,6 +57,8 @@ public value class Relation internal constructor(
 
         public inline fun <reified P : GearyComponent, reified C : GearyComponent> of(): Relation =
             of(componentId<P>(), componentId<C>())
+
+        public fun of(id: GearyComponentId): Relation? = Relation(id).takeIf { id.isRelation() }
     }
 }
 
@@ -67,5 +72,4 @@ public value class Relation internal constructor(
 @JvmInline
 public value class RelationDataType(public val id: GearyComponentId)
 
-public fun GearyComponentId.toRelation(): Relation? =
-    Relation(this).takeIf { isRelation() }
+public fun GearyComponentId.toRelation(): Relation? = Relation.of(this)
