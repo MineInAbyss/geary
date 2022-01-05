@@ -31,7 +31,7 @@ import kotlin.reflect.KClass
 public value class Relation private constructor(
     public val id: GearyComponentId
 ) : Comparable<Relation> {
-    public val value: RelationDataType get() = RelationDataType(id and RELATION_PARENT_MASK shr 32)
+    public val value: RelationValueId get() = RelationValueId(id and RELATION_PARENT_MASK shr 32)
     public val key: GearyComponentId get() = id and RELATION_COMPONENT_MASK and RELATION.inv()
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
@@ -41,22 +41,22 @@ public value class Relation private constructor(
 
     public companion object {
         public fun of(
-            parent: RelationDataType,
-            component: GearyComponentId
+            key: GearyComponentId,
+            value: RelationValueId
         ): Relation = Relation(
-            (parent.id shl 32 and RELATION_PARENT_MASK)
-                    or (component and RELATION_COMPONENT_MASK)
+            (value.id shl 32 and RELATION_PARENT_MASK)
+                    or (key and RELATION_COMPONENT_MASK)
                     or RELATION
         )
 
-        public fun of(parent: GearyComponentId, component: GearyComponentId = 0uL): Relation =
-            of(RelationDataType(parent), component)
+        public fun of(key: GearyComponentId, value: GearyComponentId): Relation =
+            of(key, RelationValueId(value))
 
-        public fun of(parent: KClass<*>, component: KClass<*>): Relation =
-            of(componentId(parent), componentId(component))
+        public fun of(key: KClass<*>, value: KClass<*>): Relation =
+            of(componentId(key), componentId(value))
 
-        public inline fun <reified P : GearyComponent, reified C : GearyComponent> of(): Relation =
-            of(componentId<P>(), componentId<C>())
+        public inline fun <reified K : GearyComponent, reified V : GearyComponent> of(): Relation =
+            of(componentId<K>(), componentId<V>())
 
         public fun of(id: GearyComponentId): Relation? = Relation(id).takeIf { id.isRelation() }
     }
@@ -70,6 +70,6 @@ public value class Relation private constructor(
  * ```
  */
 @JvmInline
-public value class RelationDataType(public val id: GearyComponentId)
+public value class RelationValueId(public val id: GearyComponentId)
 
 public fun GearyComponentId.toRelation(): Relation? = Relation.of(this)

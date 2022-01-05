@@ -1,15 +1,12 @@
 package com.mineinabyss.geary.ecs.api.systems
 
-import com.mineinabyss.geary.ecs.accessors.EventScope
-import com.mineinabyss.geary.ecs.accessors.ResultScope
-import com.mineinabyss.geary.ecs.accessors.get
-import com.mineinabyss.geary.ecs.accessors.relation
+import com.mineinabyss.geary.ecs.accessors.*
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.type
-import com.mineinabyss.geary.ecs.api.relations.RelationDataType
+import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.engine.*
 import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
 import com.mineinabyss.geary.ecs.query.contains
@@ -41,10 +38,10 @@ internal class QueryManagerTest {
         }
 
         val system = object : TickingSystem() {
-            val ResultScope.string by get<String>()
+            val AffectedScope.string by get<String>()
             val int = has<Int>()
 
-            override fun ResultScope.tick() {
+            override fun AffectedScope.tick() {
                 string shouldBe entity.get<String>()
                 entity.has<Int>() shouldBe true
             }
@@ -86,9 +83,9 @@ internal class QueryManagerTest {
         var ran = 0
 
         val removingSystem = object : TickingSystem() {
-            val ResultScope.string by get<String>()
+            val AffectedScope.string by get<String>()
 
-            override fun ResultScope.tick() {
+            override fun AffectedScope.tick() {
                 entity.remove<String>()
                 ran++
             }
@@ -118,14 +115,14 @@ internal class QueryManagerTest {
     fun relations() {
         var ran = 0
         val system = object : TickingSystem() {
-            val ResultScope.test by relation<RelationTestComponent>()
-            override fun ResultScope.tick() {
+            val AffectedScope.test by relation<RelationTestComponent>()
+            override fun AffectedScope.tick() {
                 ran++
                 family.relationDataTypes.map { it.id } shouldContain test.relation.id
                 test.data.shouldBeInstanceOf<RelationTestComponent>()
             }
         }
-        system.family.relationDataTypes.shouldContainExactly(RelationDataType(componentId<RelationTestComponent>()))
+        system.family.relationDataTypes.shouldContainExactly(RelationValueId(componentId<RelationTestComponent>()))
         QueryManager.trackQuery(system)
         val entity = Engine.entity {
             setRelation<RelationTestComponent, String>(RelationTestComponent())
@@ -155,9 +152,9 @@ internal class QueryManagerTest {
     fun relationPermutations() {
         var ran = 0
         val system = object : TickingSystem() {
-            val ResultScope.test1 by relation<RelationTestComponent1>()
-            val ResultScope.test2 by relation<RelationTestComponent2>()
-            override fun ResultScope.tick() {
+            val AffectedScope.test1 by relation<RelationTestComponent1>()
+            val AffectedScope.test2 by relation<RelationTestComponent2>()
+            override fun AffectedScope.tick() {
                 ran++
                 test1.data.shouldBeInstanceOf<RelationTestComponent1>()
                 test2.data.shouldBeInstanceOf<RelationTestComponent2>()
@@ -183,9 +180,9 @@ internal class QueryManagerTest {
     @Test
     fun relationsWithData() {
         val system = object : TickingSystem() {
-            val ResultScope.withData by relation<Any, RelationTestWithData>()
+            val AffectedScope.withData by relation<Any, RelationTestWithData>()
 
-            override fun ResultScope.tick() {
+            override fun AffectedScope.tick() {
                 withData.value.shouldBeInstanceOf<RelationTestWithData>()
                 withData.key shouldBe "Test"
             }
@@ -212,11 +209,11 @@ internal class QueryManagerTest {
     private class TestComponent()
     private object EventListener : GearyListener() {
         var ran = 0
-        private val ResultScope.testComponent by get<TestComponent>()
+        private val AffectedScope.testComponent by get<TestComponent>()
 
         object Run : GearyHandler() {
-            override fun ResultScope.handle(event: EventScope) {
-                ran++
+            override fun handle(source: SourceScope, target: TargetScope, event: EventScope) {
+                this@EventListener.ran++
             }
         }
     }

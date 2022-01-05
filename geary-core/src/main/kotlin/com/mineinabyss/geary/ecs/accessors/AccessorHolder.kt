@@ -11,7 +11,7 @@ import kotlin.reflect.KProperty
  *
  * @property family A lazily built immutable family that represents all data this holder needs to function.
  */
-public abstract class AccessorHolder : MutableAndSelector(), AccessorBuilderProvider {
+public open class AccessorHolder : MutableAndSelector(), AccessorBuilderProvider {
     public val family: AndSelector by lazy { build() }
     internal open val accessors = mutableListOf<Accessor<*>>()
     private val perArchetypeCache = mutableMapOf<Archetype, List<List<Any?>>>()
@@ -60,4 +60,6 @@ public abstract class AccessorHolder : MutableAndSelector(), AccessorBuilderProv
             return data.map { it[permutation % it.size] }
         }
     }
+
+    public val isEmpty: Boolean get() = family.and.isEmpty()
 }

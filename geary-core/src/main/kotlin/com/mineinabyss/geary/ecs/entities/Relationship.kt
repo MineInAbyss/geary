@@ -9,7 +9,7 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.entities.with
 import com.mineinabyss.geary.ecs.api.relations.NoInherit
-import com.mineinabyss.geary.ecs.api.relations.RelationDataType
+import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.api.systems.family
 import com.mineinabyss.geary.ecs.components.CopyToInstances
@@ -95,7 +95,7 @@ public fun GearyEntity.addPrefab(prefab: GearyEntity) {
     add(prefab.id.withRole(INSTANCEOF))
     //TODO this isn't copying over any relations
     val comp = prefab.getComponents()
-    val noInherit = prefab.getComponentsRelatedTo(RelationDataType(componentId<NoInherit>()))
+    val noInherit = prefab.getComponentsRelatedTo(RelationValueId(componentId<NoInherit>()))
     setAll((comp - noInherit), override = false) //TODO plan out more thoroughly and document overriding behaviour
     prefab.with { copy: CopyToInstances ->
         copy.decodeComponentsTo(this, override = false)

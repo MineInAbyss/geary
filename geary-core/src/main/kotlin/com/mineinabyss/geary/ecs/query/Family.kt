@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.ecs.query
 
 import com.mineinabyss.geary.ecs.api.GearyComponentId
-import com.mineinabyss.geary.ecs.api.relations.RelationDataType
+import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.engine.holdsData
 
 public sealed class Family
@@ -11,7 +11,7 @@ public class ComponentLeaf(
 ) : Family()
 
 public class RelationLeaf(
-    public val relationDataType: RelationDataType,
+    public val relationDataType: RelationValueId,
     public val componentMustHoldData: Boolean = false
 ) : Family()
 
@@ -26,7 +26,7 @@ public class AndSelector(
     public val componentsWithData: List<GearyComponentId>
             by lazy { components.filter { it.holdsData() } }
 
-    public val relationDataTypes: List<RelationDataType>
+    public val relationDataTypes: List<RelationValueId>
             by lazy { and.filterIsInstance<RelationLeaf>().map { it.relationDataType } }
 }
 

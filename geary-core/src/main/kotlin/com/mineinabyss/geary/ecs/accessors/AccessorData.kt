@@ -4,7 +4,7 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.engine.Archetype
 
 /**
- * Some raw data [Accessor]s process to eventually build up to a [ResultScope].
+ * Some raw data [Accessor]s process to eventually build up to a [AffectedScope].
  *
  * Extends [ArchetypeCacheScope] because anything in this scope should have access to
  * properties cached per archetype.
@@ -34,13 +34,13 @@ public open class GenericResultScope(
 /**
  * Stores data which is formatted.
  */
-public open class ResultScope(
+public open class AffectedScope(
     entity: GearyEntity,
     data: List<*>,
 ) : GenericResultScope(entity, data)
 
 /**
- * A [ResultScope] specific to the event system.
+ * A [AffectedScope] specific to the event system.
  */
 public class EventScope(
     entity: GearyEntity,
@@ -61,6 +61,11 @@ public open class SourceScope(
  * Stores data which is formatted.
  */
 public open class TargetScope(
+    entity: GearyEntity,
+    data: List<*>,
+) : GenericResultScope(entity, data)
+
+public open class Scope<T>(
     entity: GearyEntity,
     data: List<*>,
 ) : GenericResultScope(entity, data)

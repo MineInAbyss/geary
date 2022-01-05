@@ -3,9 +3,10 @@ package com.mineinabyss.geary.ecs.accessors
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationDataType
+import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.withRole
+import kotlin.reflect.KClass
 import kotlin.reflect.typeOf
 
 public fun interface AccessorBuilder<T : Accessor<*>> {
@@ -35,7 +36,7 @@ public inline fun <reified T : GearyComponent> AccessorBuilderProvider.get(): Ac
     }
 }
 
-public fun <T, R> AccessorBuilder<Accessor<T>>.map(
+public fun <T, R, A: Accessor<T>> AccessorBuilder<A>.map(
     transform: (T) -> R
 ): AccessorBuilder<Accessor<R>> = AccessorBuilder { holder, index ->
     MapAccessor(transform, this.build(holder, index))
@@ -65,16 +66,36 @@ public inline fun <reified K : GearyComponent?, reified V : GearyComponent> Acce
         val anyKey = typeOf<K>() == typeOf<Any>()
         val anyValue = typeOf<V>() == typeOf<Any>()
         val relationKey = if (anyKey) null else componentId<K>()
-        val relationValue = if (anyValue) null else RelationDataType(componentId<V>())
+        val relationValue = if (anyValue) null else RelationValueId(componentId<V>())
 
         when {
-            relationKey != null && relationValue != null -> holder.has(Relation.of(relationValue, relationKey))
+            relationKey != null && relationValue != null -> holder.has(Relation.of(relationKey, relationValue))
             relationValue != null -> holder.has(relationValue, componentMustHoldData = !keyIsNullable)
             //TODO need to add has check for key
         }
 
         RelationWithDataAccessor(index, keyIsNullable, relationValue, relationKey)
     }
+}
+
+public inline fun <T> AccessorBuilderProvider.added(): AccessorBuilder<Accessor<T>> {
+    TODO()
+}
+
+public inline fun AccessorBuilderProvider.allAdded(): AccessorBuilder<Accessor<*>> {
+    TODO()
+}
+
+public inline fun AccessorBuilderProvider.allAdded(vararg types: KClass<*>): AccessorBuilder<Accessor<Any>> {
+    TODO()
+}
+
+public inline fun <T> AccessorBuilderProvider.anyAdded(): AccessorBuilder<Accessor<*>> {
+    TODO()
+}
+
+public inline fun AccessorBuilderProvider.anyAdded(vararg types: KClass<*>): AccessorBuilder<Accessor<Any>> {
+    TODO()
 }
 
 public class MapAccessor<T, R>(

@@ -5,14 +5,10 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.full.extensionReceiverParameter
 import kotlin.reflect.typeOf
 
-public typealias EventRunner <T> = EventScope.(T) -> Unit
-
-public abstract class GearyListener : AccessorHolder(), GearySystem
-
-public abstract class GearyInteraction : GearySystem, AccessorBuilderProvider {
-    public val source: AccessorHolder = object : AccessorHolder() {}
-    public val target: AccessorHolder = object : AccessorHolder() {}
-    public val event: AccessorHolder = object : AccessorHolder() {}
+public abstract class GearyListener : GearySystem, AccessorBuilderProvider {
+    public val source: AccessorHolder = AccessorHolder()
+    public val target: AccessorHolder = AccessorHolder()
+    public val event: AccessorHolder = AccessorHolder()
 
     public operator fun <T : Accessor<*>> AccessorBuilder<T>.provideDelegate(
         thisRef: Any,
@@ -26,6 +22,18 @@ public abstract class GearyInteraction : GearySystem, AccessorBuilderProvider {
         }
         return holder.addAccessor { build(holder, it) }
     }
+
+    @Suppress("UNCHECKED_CAST")
+    public operator fun <T> Accessor<T>.getValue(thisRef: SourceScope, property: KProperty<*>): T =
+        thisRef.data[index] as T
+
+    @Suppress("UNCHECKED_CAST")
+    public operator fun <T> Accessor<T>.getValue(thisRef: TargetScope, property: KProperty<*>): T =
+        thisRef.data[index] as T
+
+    @Suppress("UNCHECKED_CAST")
+    public operator fun <T> Accessor<T>.getValue(thisRef: EventScope, property: KProperty<*>): T =
+        thisRef.data[index] as T
 }
 
 public annotation class Handler

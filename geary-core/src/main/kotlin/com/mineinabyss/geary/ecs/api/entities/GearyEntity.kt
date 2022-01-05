@@ -8,10 +8,11 @@ import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.temporaryEntity
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationDataType
+import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 import com.mineinabyss.geary.ecs.engine.INSTANCEOF
+import com.mineinabyss.geary.ecs.engine.Record
 import com.mineinabyss.geary.ecs.engine.withRole
 import com.mineinabyss.geary.ecs.events.AddedComponent
 import kotlinx.serialization.Serializable
@@ -68,7 +69,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
         key: KClass<*>
     ): D? {
         @Suppress("UNCHECKED_CAST") // internally ensured to always be true
-        return get(Relation.of(data, key).id) as? D
+        return get(Relation.of(key, data).id) as? D
     }
 
     public inline fun <reified D : GearyComponent, reified Key : GearyComponent> setRelation(
@@ -86,22 +87,27 @@ public value class GearyEntity(public val id: GearyEntityId) {
         data: D,
         noEvent: Boolean = false
     ) {
-        setRelation(Relation.of(dataKClass, keyKClass), data, noEvent)
+        setRelation(Relation.of(keyKClass, dataKClass), data, noEvent)
     }
 
     public fun setRelation(relation: Relation, data: Any, noEvent: Boolean = false) {
         Engine.setComponentFor(id, relation.id, data, noEvent)
     }
 
+    public fun setRelation(key: GearyComponentId, value: Any, noEvent: Boolean = false) {
+        setRelation(Relation.of(key, componentId(value::class)), value, noEvent)
+    }
+
+
     public inline fun <reified Key : GearyComponent> setRelatedTo(data: Any) {
-        setRelation(Relation.of(data::class, Key::class), data)
+        setRelation(Relation.of(Key::class, data::class), data)
     }
 
     public inline fun <reified T : GearyComponent, reified C : GearyComponent> removeRelation(): Boolean =
         removeRelation(Relation.of<T, C>())
 
     public fun removeRelation(relation: Relation): Boolean =
-        remove(Relation.of(relation.value, relation.key).id)
+        remove(Relation.of(relation.key, relation.value).id)
 
     /**
      * Adds a list of [component] to this entity
@@ -191,7 +197,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
 
     /** Removes all components related to a parent of type [T] on the entity. */
     public inline fun <reified T : GearyComponent> removeRelations(): Set<GearyComponent> {
-        val comps = Engine.getRelationsFor(id, RelationDataType(componentId<T>()))
+        val comps = Engine.getRelationsFor(id, RelationValueId(componentId<T>()))
         comps.forEach { (_, relation) ->
             removeRelation(relation)
         }
@@ -200,15 +206,15 @@ public value class GearyEntity(public val id: GearyEntityId) {
 
     /** Gets a list of components related to the component represented by [T]. */
     public inline fun <reified T : GearyComponent> getComponentsRelatedTo(): Set<GearyComponent> =
-        getComponentsRelatedTo(RelationDataType(componentId<T>()))
+        getComponentsRelatedTo(RelationValueId(componentId<T>()))
 
-    /** Gets a list of components related to the component represented by [relationDataType]. */
-    public inline fun getComponentsRelatedTo(relationDataType: RelationDataType): Set<GearyComponent> =
-        Engine.getRelationsFor(id, relationDataType).mapTo(mutableSetOf()) { it.first }
+    /** Gets a list of components related to the component represented by [relationValueId]. */
+    public inline fun getComponentsRelatedTo(relationValueId: RelationValueId): Set<GearyComponent> =
+        Engine.getRelationsFor(id, relationValueId).mapTo(mutableSetOf()) { it.first }
 
     /** Gets all the active persisting components on this entity. */
     public inline fun getPersistingComponents(): Set<GearyComponent> =
-        getComponentsRelatedTo(RelationDataType(componentId<PersistingComponent>()))
+        getComponentsRelatedTo(RelationValueId(componentId<PersistingComponent>()))
 
     //TODO update javadoc
     /** Gets all the active non-persisting components on this entity. */
@@ -244,7 +250,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
     }
 
     public inline fun callEvent(event: GearyEntity) {
-        Engine.getRecord(id)?.apply {
+        record.apply {
             archetype.callEvent(event, row)
         }
     }
@@ -259,7 +265,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
         init: (event: GearyEntity) -> Unit,
         result: (event: GearyEntity) -> T
     ): T {
-        Engine.getRecord(id)?.apply {
+        record.apply {
             Engine.temporaryEntity { event ->
                 init(event)
                 archetype.callEvent(event, row)
@@ -269,5 +275,6 @@ public value class GearyEntity(public val id: GearyEntityId) {
         error("Failed to get an entity while calling event that expects a result returned")
     }
 
+    public inline val record: Record get() = Engine.getRecord(id)
     public operator fun component1(): GearyEntityId = id
 }

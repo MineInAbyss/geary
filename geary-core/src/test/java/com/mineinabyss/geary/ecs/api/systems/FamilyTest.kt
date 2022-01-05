@@ -3,7 +3,7 @@
 package com.mineinabyss.geary.ecs.api.systems
 
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationDataType
+import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.query.contains
 import io.kotest.matchers.shouldBe
@@ -23,23 +23,23 @@ internal class FamilyTest {
     @Test
     fun `contains relation`() {
         val family = family {
-            has(RelationDataType(15uL))
+            has(RelationValueId(15uL))
         }
         
-        (sortedSetOf(Relation.of(14uL, 1uL).id, 1uL) in family) shouldBe false
-        (sortedSetOf(Relation.of(15uL, 1uL).id) in family) shouldBe false
-        (sortedSetOf(Relation.of(15uL, 1uL).id, 1uL) in family) shouldBe true
+        (sortedSetOf(Relation.of(1uL, 14uL).id, 1uL) in family) shouldBe false
+        (sortedSetOf(Relation.of(1uL, 15uL).id) in family) shouldBe false
+        (sortedSetOf(Relation.of(1uL, 15uL).id, 1uL) in family) shouldBe true
     }
 
     @Test
     fun `contains relation with data`() {
         val family = family {
-            has(RelationDataType(15uL), componentMustHoldData = true)
+            has(RelationValueId(15uL), componentMustHoldData = true)
         }
 
-        (sortedSetOf(Relation.of(14uL, 1uL).id, 1uL) in family) shouldBe false
-        (sortedSetOf(Relation.of(15uL, 1uL).id) in family) shouldBe false
-        (sortedSetOf(Relation.of(15uL, 1uL).id, 1uL) in family) shouldBe false
-        (sortedSetOf(Relation.of(15uL, 1uL).id, 1uL or HOLDS_DATA) in family) shouldBe true
+        (sortedSetOf(Relation.of(1uL, 14uL).id, 1uL) in family) shouldBe false
+        (sortedSetOf(Relation.of(1uL, 15uL).id) in family) shouldBe false
+        (sortedSetOf(Relation.of(1uL, 15uL).id, 1uL) in family) shouldBe false
+        (sortedSetOf(Relation.of(1uL, 15uL).id, 1uL or HOLDS_DATA) in family) shouldBe true
     }
 }

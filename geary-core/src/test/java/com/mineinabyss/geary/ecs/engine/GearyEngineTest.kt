@@ -100,7 +100,7 @@ internal class GearyEngineTest {
             setRelation<String, Int>("String to int relation")
         }
         entity.type.shouldContainExactly(
-            Relation.of(componentId<String>(), componentId<Int>()).id
+            Relation.of(componentId<Int>(), componentId<String>()).id
         )
         entity.getComponents().shouldContainExactly("String to int relation")
     }

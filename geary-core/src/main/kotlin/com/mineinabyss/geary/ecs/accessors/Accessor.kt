@@ -11,12 +11,12 @@ import kotlin.reflect.KProperty
  * - A consumer provides an [RawAccessorDataScope] and uses it to create an iterator with [AccessorHolder.iteratorFor].
  * - The [iterator][AccessorHolder.AccessorCombinationsIterator] requests each accessor
  *   to [parse][readData] the raw data.
- * - The consumer creates a [ResultScope], for each iteration.
- * - The [ResultScope]'s scope allows appropriate accessors to read data efficiently.
+ * - The consumer creates a [AffectedScope], for each iteration.
+ * - The [AffectedScope]'s scope allows appropriate accessors to read data efficiently.
  */
 public abstract class Accessor<T>(
     public val index: Int
-): ReadOnlyProperty<GenericResultScope, T> {
+) {
     /**
      * An accessor will read data given
      */
@@ -39,8 +39,4 @@ public abstract class Accessor<T>(
         override fun getValue(thisRef: ArchetypeCacheScope, property: KProperty<*>): T =
             thisRef.perArchetypeData[index][cacheIndex] as T
     }
-
-    @Suppress("UNCHECKED_CAST")
-    public override fun getValue(thisRef: GenericResultScope, property: KProperty<*>): T =
-        thisRef.data[index] as T
 }

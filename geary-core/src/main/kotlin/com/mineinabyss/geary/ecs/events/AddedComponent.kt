@@ -1,7 +1,5 @@
 package com.mineinabyss.geary.ecs.events
 
-import com.mineinabyss.geary.ecs.api.GearyComponentId
-
 /**
  * Called every time an entity gets all of a listener's requested components added to it.
  *
@@ -11,6 +9,4 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
  * MAKE SURE YOUR LISTENER DOES NOT HAVE ANY LOGIC BRANCHES. Only the top level list of components are
  * guaranteed to match, nothing else is checked.
  */
-public class AddedComponent(
-    public val component: GearyComponentId
-)
+public class AddedComponent

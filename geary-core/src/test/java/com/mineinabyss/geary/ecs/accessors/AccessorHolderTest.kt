@@ -16,8 +16,8 @@ internal class AccessorHolderTest {
     }
 
     object FancyQuery : Query() {
-        val ResultScope.default by getOrDefault<String>("empty!")
-        val ResultScope.mapped by get<Int>().map { it.toString() }
+        val AffectedScope.default by getOrDefault<String>("empty!")
+        val AffectedScope.mapped by get<Int>().map { it.toString() }
     }
 
     @Test

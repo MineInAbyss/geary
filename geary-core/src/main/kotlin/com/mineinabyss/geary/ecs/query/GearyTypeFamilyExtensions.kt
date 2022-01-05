@@ -1,17 +1,17 @@
 package com.mineinabyss.geary.ecs.query
 
 import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.api.relations.RelationDataType
+import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.isRelation
 import com.mineinabyss.geary.ecs.engine.withRole
 
-public fun GearyType.contains(relationDataType: RelationDataType, componentMustHoldData: Boolean = false): Boolean {
+public fun GearyType.contains(relationValueId: RelationValueId, componentMustHoldData: Boolean = false): Boolean {
     val components = filter { !it.isRelation() }
     return mapNotNull { it.toRelation() }
         .any { relationInType ->
-            relationInType.value == relationDataType && components.any {
+            relationInType.value == relationValueId && components.any {
                 if (componentMustHoldData)
                     it == relationInType.key.withRole(HOLDS_DATA)
                 else
