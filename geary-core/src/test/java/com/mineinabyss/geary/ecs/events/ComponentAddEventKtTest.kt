@@ -1,8 +1,6 @@
 package com.mineinabyss.geary.ecs.events
 
 import com.mineinabyss.geary.ecs.accessors.TargetScope
-import com.mineinabyss.geary.ecs.accessors.EventScope
-import com.mineinabyss.geary.ecs.accessors.allAdded
 import com.mineinabyss.geary.ecs.accessors.get
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
@@ -25,22 +23,15 @@ internal class ComponentAddEventKtTest {
     var inc = 0
 
     //TODO write test for all methods of checking for added
-    inner class  SecondAddMethod: GearyListener() {
+    inner class OnStringAdd : GearyListener() {
         // All three get added
         val TargetScope.string by get<String>()
         val TargetScope.int by get<Int>()
         val TargetScope.double by get<Double>()
-        val EventScope.added by allAdded()
 
-        @Handler
-        fun increment() {
-            inc++
+        init {
+            allAdded()
         }
-    }
-
-    inner class OnStringAdd : GearyListener() {
-        // Either three gets added
-        val EventScope.added by allAdded(String::class, Int::class, Double::class)
 
         @Handler
         fun increment() {

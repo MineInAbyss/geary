@@ -11,6 +11,7 @@ import com.mineinabyss.geary.ecs.engine.holdsData
 import com.mineinabyss.geary.ecs.engine.withInvertedRole
 import com.mineinabyss.geary.ecs.query.*
 import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 public abstract class FamilyBuilder {
     public abstract fun build(): Family
@@ -29,12 +30,20 @@ public class MutableComponentLeaf(
     override fun build(): ComponentLeaf = ComponentLeaf(component)
 }
 
-public class MutableRelationLeaf(
+public class MutableRelationValueLeaf(
     public var relationDataType: RelationValueId,
     public val componentMustHoldData: Boolean = false
 ) : FamilyBuilder() {
-    override fun build(): RelationLeaf = RelationLeaf(relationDataType, componentMustHoldData)
+    override fun build(): RelationValueLeaf = RelationValueLeaf(relationDataType, componentMustHoldData)
 }
+
+public class MutableRelationKeyLeaf(
+    public var relationKeyId: GearyComponentId,
+    public val componentMustHoldData: Boolean = false
+) : FamilyBuilder() {
+    override fun build(): RelationKeyLeaf = RelationKeyLeaf(relationKeyId)
+}
+
 
 public abstract class MutableSelector : FamilyBuilder() {
     protected abstract val elements: MutableList<FamilyBuilder>
@@ -56,7 +65,7 @@ public abstract class MutableSelector : FamilyBuilder() {
                 _componentsWithData += comp
         }
 
-        if (element is MutableRelationLeaf)
+        if (element is MutableRelationValueLeaf)
             _relationValueIds += element.relationDataType
     }
 
@@ -91,22 +100,37 @@ public abstract class MutableSelector : FamilyBuilder() {
     public fun has(componentIds: Collection<GearyComponentId>) {
         componentIds.forEach {
             it.toRelation()?.let { relation ->
-                add(MutableRelationLeaf(relation.value))
+                add(MutableRelationValueLeaf(relation.value))
             } ?: run {
                 add(MutableComponentLeaf(it))
             }
         }
     }
 
-    public fun hasRelation(key: KType, value: GearyComponentId) {
-        TODO()
-    }
-    public fun hasRelation(key: GearyComponentId, value: KType) {
-        TODO()
+    public fun hasRelation(key: KType, value: KType) {
+        val anyKey = (key.classifier == Any::class)
+        val anyValue = (value.classifier == Any::class)
+        val relationKey = if (anyKey) null else componentId(key)
+        val relationValue = if (anyValue) null else componentId(value)
+
+        when {
+            relationKey != null && relationValue != null -> has(Relation.of(relationKey, relationValue))
+            relationValue != null -> hasRelation(key, relationValue)
+            relationKey != null -> hasRelation(relationKey, value)
+            else -> error("Has relation check cannot be Any to Any yet.")
+        }
     }
 
-    public fun has(relationValueId: RelationValueId, componentMustHoldData: Boolean = false) {
-        add(MutableRelationLeaf(relationValueId, componentMustHoldData))
+    public fun hasRelation(key: KType, value: GearyComponentId) {
+        // If key is Any, we treat this as matching any key
+        if(key.classifier == Any::class)
+            add(MutableRelationValueLeaf(RelationValueId(value), !key.isMarkedNullable))
+        else has(Relation.of(componentId(key), value))
+    }
+    public fun hasRelation(key: GearyComponentId, value: KType) {
+        if(value.classifier == Any::class)
+            add(MutableRelationKeyLeaf(key))
+        else has(Relation.of(key, componentId(value)))
     }
 
     public fun has(relation: Relation) {

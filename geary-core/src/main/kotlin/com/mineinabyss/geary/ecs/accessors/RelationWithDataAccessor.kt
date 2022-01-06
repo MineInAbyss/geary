@@ -3,8 +3,6 @@ package com.mineinabyss.geary.ecs.accessors
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.toGearyNoMask
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.engine.Archetype
@@ -44,11 +42,11 @@ public open class RelationWithDataAccessor<K : GearyComponent?, V : GearyCompone
     override fun RawAccessorDataScope.readData(): List<RelationWithData<K, V>> =
         matchedRelations.mapIndexed { i, relation ->
             RelationWithData(
-                key = archetype.componentData[keyDataIndices[i]][row] as K,
+                // Key can be nullable but value cannot
+                key = archetype.componentData.getOrNull(keyDataIndices[i])?.get(row) as K,
                 value = archetype.componentData[valueDataIndices[i]][row] as V,
-                //TODO is this ever useful?
-                relation = relation.value.id.toGearyNoMask(),
-                keyId = relation.key
+                keyId = relation.key,
+                valueId = relation.value.id,
             )
         }
 }
@@ -56,6 +54,6 @@ public open class RelationWithDataAccessor<K : GearyComponent?, V : GearyCompone
 public class RelationWithData<K : GearyComponent?, V : GearyComponent>(
     public val key: K,
     public val value: V,
-    public val relation: GearyEntity,
-    public val keyId: GearyEntityId
+    public val keyId: GearyEntityId,
+    public val valueId: GearyEntityId,
 )

@@ -117,7 +117,7 @@ internal class QueryManagerTest {
             val TargetScope.test by relation<Any?, RelationTestComponent>()
             override fun TargetScope.tick() {
                 ran++
-                family.relationDataTypes.map { it.id } shouldContain test.relation.id
+                family.relationDataTypes.map { it.id } shouldContain test.valueId
                 test.value.shouldBeInstanceOf<RelationTestComponent>()
             }
         }

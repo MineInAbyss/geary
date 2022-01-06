@@ -4,8 +4,8 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.engine.RELATION
-import com.mineinabyss.geary.ecs.engine.RELATION_COMPONENT_MASK
-import com.mineinabyss.geary.ecs.engine.RELATION_PARENT_MASK
+import com.mineinabyss.geary.ecs.engine.RELATION_KEY_MASK
+import com.mineinabyss.geary.ecs.engine.RELATION_VALUE_MASK
 import com.mineinabyss.geary.ecs.engine.isRelation
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
@@ -31,8 +31,8 @@ import kotlin.reflect.KClass
 public value class Relation private constructor(
     public val id: GearyComponentId
 ) : Comparable<Relation> {
-    public val value: RelationValueId get() = RelationValueId(id and RELATION_PARENT_MASK shr 32)
-    public val key: GearyComponentId get() = id and RELATION_COMPONENT_MASK and RELATION.inv()
+    public val value: RelationValueId get() = RelationValueId(id and RELATION_VALUE_MASK shr 32)
+    public val key: GearyComponentId get() = id and RELATION_KEY_MASK and RELATION.inv()
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
 
@@ -44,8 +44,8 @@ public value class Relation private constructor(
             key: GearyComponentId,
             value: RelationValueId
         ): Relation = Relation(
-            (value.id shl 32 and RELATION_PARENT_MASK)
-                    or (key and RELATION_COMPONENT_MASK)
+            (value.id shl 32 and RELATION_VALUE_MASK)
+                    or (key and RELATION_KEY_MASK)
                     or RELATION
         )
 

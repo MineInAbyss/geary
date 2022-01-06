@@ -17,10 +17,10 @@ class GearyTypeFamilyExtensionsKtTest {
     @Test
     fun containsRelation() {
         val type = sortedSetOf(Relation.of(2uL, 1uL).id, 2uL)
-        type.contains(RelationValueId(1uL)) shouldBe true
-        type.contains(RelationValueId(2uL)) shouldBe false
+        type.containsRelationValue(RelationValueId(1uL)) shouldBe true
+        type.containsRelationValue(RelationValueId(2uL)) shouldBe false
 
         val typeWithoutRelation = sortedSetOf(Relation.of(2uL, 1uL).id)
-        typeWithoutRelation.contains(RelationValueId(1uL)) shouldBe false
+        typeWithoutRelation.containsRelationValue(RelationValueId(1uL)) shouldBe false
     }
 }

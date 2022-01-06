@@ -6,6 +6,7 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.components.ComponentInfo
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
 
 public fun Engine.entity(): GearyEntity = getNextId().toGeary()
 
@@ -27,6 +28,8 @@ public inline fun <reified T> componentId(): GearyComponentId = componentId(T::c
 
 @Deprecated("Should not be getting an id for an id!", ReplaceWith("componentId(component)"))
 public fun componentId(id: KClass<out GearyComponentId>): Nothing = error("Trying to access id for component id")
+
+public fun componentId(kType: KType): GearyComponentId = componentId(kType.classifier as KClass<*>)
 
 public fun componentId(kClass: KClass<*>): GearyComponentId = Engine.getOrRegisterComponentIdForClass(kClass)
 

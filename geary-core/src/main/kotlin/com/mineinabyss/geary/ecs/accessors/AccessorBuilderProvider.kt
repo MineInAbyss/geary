@@ -62,41 +62,33 @@ public fun <T, A: Accessor<T>> AccessorBuilder<A>.together(): AccessorBuilder<Li
  */
 public inline fun <reified K : GearyComponent?, reified V : GearyComponent> AccessorBuilderProvider.relation(): AccessorBuilder<RelationWithDataAccessor<K, V>> {
     return AccessorBuilder { holder, index ->
-        val keyIsNullable = typeOf<K>().isMarkedNullable
-        val anyKey = typeOf<K>() == typeOf<Any>()
-        val anyValue = typeOf<V>() == typeOf<Any>()
-        val relationKey = if (anyKey) null else componentId<K>()
-        val relationValue = if (anyValue) null else RelationValueId(componentId<V>())
-
-        when {
-            relationKey != null && relationValue != null -> holder.has(Relation.of(relationKey, relationValue))
-            relationValue != null -> holder.has(relationValue, componentMustHoldData = !keyIsNullable)
-            //TODO need to add has check for key
-        }
-
+        val key = typeOf<K>()
+        val value = typeOf<V>()
+        val keyIsNullable = key.isMarkedNullable
+        val relationKey = if (key.classifier == Any::class) null else componentId(key)
+        val relationValue = if (value.classifier == Any::class) null else RelationValueId(componentId(value))
+        //TODO could we reuse code between hasRelation and here?
+        holder.hasRelation(key, value)
         RelationWithDataAccessor(index, keyIsNullable, relationValue, relationKey)
     }
 }
 
-public inline fun <T> AccessorBuilderProvider.added(): AccessorBuilder<Accessor<T>> {
-    TODO()
-}
+//public inline fun <T> AccessorBuilderProvider.added(): AccessorBuilder<Accessor<T>> {
+//    TODO()
+//}
 
-public inline fun AccessorBuilderProvider.allAdded(): AccessorBuilder<Accessor<*>> {
-    TODO()
-}
 
-public inline fun AccessorBuilderProvider.allAdded(vararg types: KClass<*>): AccessorBuilder<Accessor<Any>> {
-    TODO()
-}
-
-public inline fun <T> AccessorBuilderProvider.anyAdded(): AccessorBuilder<Accessor<*>> {
-    TODO()
-}
-
-public inline fun AccessorBuilderProvider.anyAdded(vararg types: KClass<*>): AccessorBuilder<Accessor<Any>> {
-    TODO()
-}
+//public inline fun AccessorBuilderProvider.allAdded(vararg types: KClass<*>): AccessorBuilder<Accessor<Any>> {
+//    TODO()
+//}
+//
+//public inline fun <T> AccessorBuilderProvider.anyAdded(): AccessorBuilder<Accessor<*>> {
+//    TODO()
+//}
+//
+//public inline fun AccessorBuilderProvider.anyAdded(vararg types: KClass<*>): AccessorBuilder<Accessor<Any>> {
+//    TODO()
+//}
 
 public class MapAccessor<T, R>(
     private val transform: (T) -> R,
