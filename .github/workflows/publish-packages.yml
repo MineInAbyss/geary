@@ -41,7 +41,7 @@ jobs:
         shell: bash
         id: extract_version
         run: |
-          version=`./gradlew properties --no-daemon --console=plain -q | grep "^version:" | awk '{printf $2}'`
+          version=`./gradlew :geary-platform-papermc:properties --no-daemon --console=plain -q | grep "^version:" | awk '{printf $2}'`
           echo "::set-output name=version::$version"
 
       - name: Create GitHub Release
