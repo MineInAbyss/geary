@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.accessors
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
+import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGearyNoMask
 import com.mineinabyss.geary.ecs.api.relations.Relation
@@ -47,7 +48,7 @@ public open class RelationWithDataAccessor<K : GearyComponent?, V : GearyCompone
                 value = archetype.componentData[valueDataIndices[i]][row] as V,
                 //TODO is this ever useful?
                 relation = relation.value.id.toGearyNoMask(),
-                component = relation.key.toGearyNoMask()
+                keyId = relation.key
             )
         }
 }
@@ -56,5 +57,5 @@ public class RelationWithData<K : GearyComponent?, V : GearyComponent>(
     public val key: K,
     public val value: V,
     public val relation: GearyEntity,
-    public val component: GearyEntity
+    public val keyId: GearyEntityId
 )

@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.ecs.events
 
-import com.mineinabyss.geary.ecs.accessors.AffectedScope
+import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.EventScope
 import com.mineinabyss.geary.ecs.accessors.allAdded
 import com.mineinabyss.geary.ecs.accessors.get
@@ -27,9 +27,9 @@ internal class ComponentAddEventKtTest {
     //TODO write test for all methods of checking for added
     inner class  SecondAddMethod: GearyListener() {
         // All three get added
-        val AffectedScope.string by get<String>()
-        val AffectedScope.int by get<Int>()
-        val AffectedScope.double by get<Double>()
+        val TargetScope.string by get<String>()
+        val TargetScope.int by get<Int>()
+        val TargetScope.double by get<Double>()
         val EventScope.added by allAdded()
 
         @Handler
@@ -53,7 +53,7 @@ internal class ComponentAddEventKtTest {
         val listener = OnStringAdd()
         Engine.addSystem(listener)
         Engine.entity {
-            fun addedListeners() = type.getArchetype().eventListeners.count { it === listener }
+            fun addedListeners() = type.getArchetype().targetListeners.count { it === listener }
             set("")
             set(1)
             inc shouldBe 0

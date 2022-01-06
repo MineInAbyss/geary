@@ -38,7 +38,7 @@ public interface Engine {
      */
     public fun getRelationsFor(
         entity: GearyEntityId,
-        relationDataType: RelationValueId
+        relationValueId: RelationValueId
     ): Set<Pair<GearyComponent, Relation>>
 
     /** Gets a [componentId]'s data from an [entity] or null if not present/the component doesn't hold any data. */

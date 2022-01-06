@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.ecs.api.systems
 
-import com.mineinabyss.geary.ecs.accessors.AffectedScope
+import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.engine.ArchetypeIterator
 import com.mineinabyss.geary.ecs.query.Query
 
@@ -33,7 +33,7 @@ public abstract class TickingSystem(
         forEach { it.tick() }
     }
 
-    protected open fun AffectedScope.tick() {}
+    protected open fun TargetScope.tick() {}
 
     protected fun every(iterations: Int): Boolean =
         iteration.mod(iterations) == 0
@@ -43,7 +43,7 @@ public abstract class TickingSystem(
         return null
     }
 
-    public inline fun withEach(action: AffectedScope.() -> Unit) {
+    public inline fun withEach(action: TargetScope.() -> Unit) {
         forEach { result -> result.action() }
     }
 

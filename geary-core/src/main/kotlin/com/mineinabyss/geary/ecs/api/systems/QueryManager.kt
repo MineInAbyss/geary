@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.ecs.api.systems
 
-import com.mineinabyss.geary.ecs.accessors.AffectedScope
 import com.mineinabyss.geary.ecs.accessors.EventScope
 import com.mineinabyss.geary.ecs.accessors.SourceScope
 import com.mineinabyss.geary.ecs.accessors.TargetScope
@@ -8,12 +7,16 @@ import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.engine.Archetype
+import com.mineinabyss.geary.ecs.events.handlers.CheckHandler
 import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
 import com.mineinabyss.geary.ecs.query.Family
 import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
+import kotlin.reflect.KFunction
+import kotlin.reflect.KType
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.hasAnnotation
+import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.typeOf
 
 public object QueryManager {
@@ -32,23 +35,35 @@ public object QueryManager {
         listener::class.functions
             .filter { it.hasAnnotation<Handler>() }
             .map { func ->
-                val paramTypes = func.parameters.map { it.type }
-                val sourceIndex = paramTypes.indexOf(typeOf<SourceScope>())
-                val targetIndex = paramTypes.indexOf(typeOf<AffectedScope>())
-                val eventIndex = paramTypes.indexOf(typeOf<EventScope>())
-                object : GearyHandler(listener) {
-                    override fun handle(source: SourceScope?, target: TargetScope?, event: EventScope?) {
-                        val params = arrayOfNulls<Any?>(paramTypes.size)
-                        params[0] = this@QueryManager
+                class FunctionCaller(val kFunction: KFunction<*>, val params: List<KType>) {
+                    val types = kFunction.parameters.map { it.type }
+                    val indices = params.map { types.indexOf(it) }
+                    fun call(vararg args: Any?): Any? {
                         // Pass parameters in the order they need to be, allowing them to be omitted if desired.
                         // handle won't be called if a param is null when it shouldn't be unless misused by end user
-                        //TODO throw error on registration when a user misuses it :p
-                        if (sourceIndex != -1) params[sourceIndex] = source
-                        if (targetIndex != -1) params[targetIndex] = target
-                        if (eventIndex != -1) params[eventIndex] = event
-                        func.call(*params)
+                        val argArray = arrayOfNulls<Any?>(types.size)
+                        argArray[0] = listener//TODO throw error on registration when a user misuses it :p
+                        indices.forEachIndexed { i, arrIndex ->
+                            if (arrIndex != -1) argArray[arrIndex] = args[i]
+                        }
+                        kFunction.isAccessible = true
+                        return kFunction.call(*argArray)
                     }
                 }
+                val caller = FunctionCaller(func, listOf(typeOf<SourceScope>(), typeOf<TargetScope>(), typeOf<EventScope>()))
+
+                if (func.returnType == typeOf<Boolean>())
+                    object : CheckHandler(listener) {
+                        override fun check(source: SourceScope?, target: TargetScope?, event: EventScope?): Boolean {
+                            return caller.call(source, target, event) as Boolean
+                        }
+                    }
+                else
+                    object : GearyHandler(listener) {
+                        override fun handle(source: SourceScope?, target: TargetScope?, event: EventScope?) {
+                            caller.call(source, target, event)
+                        }
+                    }
             }
             .forEach { handler ->
                 // Add handlers to any matched event entities

@@ -102,6 +102,10 @@ public class MapAccessor<T, R>(
     private val transform: (T) -> R,
     private val other: Accessor<T>
 ) : Accessor<R>(other.index) {
+    init {
+        _cached.addAll(other.cached)
+    }
+
     override fun RawAccessorDataScope.readData(): List<R> {
         return other.run { readData() }.map(transform)
     }

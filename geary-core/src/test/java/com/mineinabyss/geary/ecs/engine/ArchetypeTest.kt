@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
+import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import io.kotest.matchers.collections.shouldContainExactly
@@ -12,21 +13,36 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class ArchetypeTest {
+    val engine: GearyEngine = GearyEngine()
+
+    init {
+        setEngineServiceProvider(engine)
+    }
+
+    @Test
+    fun `ids assigned correctly`() {
+        Engine.rootArchetype.id shouldBe 0
+        (Engine.rootArchetype + 1u).id shouldBe 1
+        (Engine.rootArchetype + 1u + 2u).id shouldBe 2
+        (Engine.rootArchetype + 1u).id shouldBe 1
+    }
+
     @Nested
     inner class MovingBetweenArchetypes {
         @Test
         fun `empty type equals empty archetype`() {
-            GearyType().getArchetype() shouldBe root
+            GearyType().getArchetype() shouldBe Engine.rootArchetype
         }
 
         @Test
         fun `get type equals archetype adding`() {
-            root + 1u + 2u + 3u - 1u + 1u shouldBe sortedSetOf<GearyComponentId>(1u, 2u, 3u).getArchetype()
+            Engine.rootArchetype + 1u + 2u + 3u - 1u + 1u shouldBe
+                    sortedSetOf<GearyComponentId>(1u, 2u, 3u).getArchetype()
         }
 
         @Test
         fun `reach same archetype from different starting positions`() {
-            root + 1u + 2u + 3u shouldBe root + 3u + 2u + 1u
+            Engine.rootArchetype + 1u + 2u + 3u shouldBe Engine.rootArchetype + 3u + 2u + 1u
         }
     }
 
@@ -36,7 +52,7 @@ internal class ArchetypeTest {
             sortedSetOf(
                 Relation.of(1uL or HOLDS_DATA, 10uL).id,
                 Relation.of(2uL or HOLDS_DATA, 10uL).id,
-            )
+            ), 0
         )
         val relation = RelationValueId(10uL)
         val matched = arc.matchedRelationsFor(listOf(relation))

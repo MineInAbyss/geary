@@ -70,7 +70,6 @@ public open class GearyEngine : TickingEngine() {
                 QueryManager.trackEventListener(system)
                 registeredListeners.add(system)
             }
-            is GearyListener -> TODO()
         }
     }
 
@@ -107,14 +106,14 @@ public open class GearyEngine : TickingEngine() {
     }
 
     override fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent> =
-        getRecord(entity)?.run {
+        getRecord(entity).run {
             archetype.getComponents(row).toSet()
-        } ?: emptySet()
+        }
 
     override fun getRelationsFor(
         entity: GearyEntityId,
         relationValueId: RelationValueId
-    ): Set<Pair<GearyComponent, Relation>> = getRecord(entity)?.run {
+    ): Set<Pair<GearyComponent, Relation>> = getRecord(entity).run {
         archetype
             .relationsByValue[relationValueId.id.toLong()]
             ?.mapNotNullTo(mutableSetOf()) {
@@ -161,7 +160,7 @@ public open class GearyEngine : TickingEngine() {
     }
 
     override fun removeComponentFor(entity: GearyEntityId, componentId: GearyComponentId): Boolean {
-        return getRecord(entity)?.apply {
+        return getRecord(entity).apply {
             val record = archetype.removeComponent(entity, row, componentId.withRole(HOLDS_DATA))
                 ?: archetype.removeComponent(entity, row, componentId)
             typeMap[entity] = record ?: return false
@@ -211,7 +210,7 @@ public open class GearyEngine : TickingEngine() {
 
     private fun createArchetype(prevNode: Archetype, componentEdge: GearyComponentId): Archetype {
         val arc = synchronized(archetypes) {
-            Archetype(prevNode.type.plus(componentEdge), archetypes.lastIndex).also {
+            Archetype(prevNode.type.plus(componentEdge), archetypes.size).also {
                 archetypes += it
             }
         }

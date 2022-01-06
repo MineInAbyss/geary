@@ -11,8 +11,8 @@ import kotlin.reflect.KProperty
  * - A consumer provides an [RawAccessorDataScope] and uses it to create an iterator with [AccessorHolder.iteratorFor].
  * - The [iterator][AccessorHolder.AccessorCombinationsIterator] requests each accessor
  *   to [parse][readData] the raw data.
- * - The consumer creates a [AffectedScope], for each iteration.
- * - The [AffectedScope]'s scope allows appropriate accessors to read data efficiently.
+ * - The consumer creates a [TargetScope], for each iteration.
+ * - The [TargetScope]'s scope allows appropriate accessors to read data efficiently.
  */
 public abstract class Accessor<T>(
     public val index: Int
@@ -26,17 +26,19 @@ public abstract class Accessor<T>(
     protected val _cached: MutableList<PerArchetypeCache<*>> = mutableListOf()
 
     protected inline fun <T> cached(crossinline operation: ArchetypeCacheScope.() -> T): PerArchetypeCache<T> =
-        object : PerArchetypeCache<T>(_cached.size) {
+        object : PerArchetypeCache<T>(index, _cached.size) {
             override fun ArchetypeCacheScope.calculate(): T = operation()
         }.also { _cached += it }
 
-    public abstract inner class PerArchetypeCache<T>(
-        public val cacheIndex: Int
-    ) : ReadOnlyProperty<ArchetypeCacheScope, T> {
-        public abstract fun ArchetypeCacheScope.calculate(): T
+}
 
-        @Suppress("UNCHECKED_CAST")
-        override fun getValue(thisRef: ArchetypeCacheScope, property: KProperty<*>): T =
-            thisRef.perArchetypeData[index][cacheIndex] as T
-    }
+public abstract class PerArchetypeCache<T>(
+    public val index: Int,
+    public val cacheIndex: Int
+) : ReadOnlyProperty<ArchetypeCacheScope, T> {
+    public abstract fun ArchetypeCacheScope.calculate(): T
+
+    @Suppress("UNCHECKED_CAST")
+    override fun getValue(thisRef: ArchetypeCacheScope, property: KProperty<*>): T =
+        thisRef.perArchetypeData[index][cacheIndex] as T
 }
