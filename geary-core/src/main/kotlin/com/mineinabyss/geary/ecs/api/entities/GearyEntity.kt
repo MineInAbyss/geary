@@ -243,8 +243,8 @@ public value class GearyEntity(public val id: GearyEntityId) {
         eventEntity.setAll(components.toList())
     }, result = result)
 
-    public inline fun callEvent(vararg components: Any) {
-        callEvent { eventEntity ->
+    public inline fun callEvent(vararg components: Any, source: GearyEntity? = null) {
+        callEvent(source) { eventEntity ->
             eventEntity.setAll(components.toList())
         }
     }
@@ -256,19 +256,21 @@ public value class GearyEntity(public val id: GearyEntityId) {
     }
 
     public inline fun callEvent(
-        initEvent: (event: GearyEntity) -> Unit
+        source: GearyEntity? = null,
+        initEvent: (event: GearyEntity) -> Unit,
     ) {
-        callEvent(initEvent) {}
+        callEvent(initEvent, source) {}
     }
 
     public inline fun <T> callEvent(
         init: (event: GearyEntity) -> Unit,
-        result: (event: GearyEntity) -> T
+        source: GearyEntity? = null,
+        result: (event: GearyEntity) -> T,
     ): T {
         record.apply {
             Engine.temporaryEntity { event ->
                 init(event)
-                archetype.callEvent(event, row)
+                archetype.callEvent(event, row, source)
                 return result(event)
             }
         }
