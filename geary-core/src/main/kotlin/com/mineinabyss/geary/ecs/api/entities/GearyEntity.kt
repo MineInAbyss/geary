@@ -61,50 +61,32 @@ public value class GearyEntity(public val id: GearyEntityId) {
         }
     }
 
-    public inline fun <reified D : GearyComponent, reified Key : GearyComponent> getRelation(): D? =
-        getRelation(D::class, Key::class)
+    public inline fun <reified K : GearyComponent, reified V : GearyComponent> getRelation(): V? =
+        getRelation(K::class, V::class)
 
-    public inline fun <D : GearyComponent> getRelation(
-        data: KClass<D>,
-        key: KClass<*>
-    ): D? {
+    public inline fun <V : GearyComponent> getRelation(key: KClass<*>, value: KClass<V>): V? {
         @Suppress("UNCHECKED_CAST") // internally ensured to always be true
-        return get(Relation.of(key, data).id) as? D
-    }
-
-    public inline fun <reified D : GearyComponent, reified Key : GearyComponent> setRelation(
-        data: D,
-    ) {
-        setRelation(D::class, Key::class, data)
+        return get(Relation.of(key, value).id) as? V
     }
 
     /**
      * @param noEvent If true, will not fire a [AddedComponent].
      */
-    public fun <D : GearyComponent> setRelation(
-        dataKClass: KClass<D>,
-        keyKClass: KClass<*>,
-        data: D,
+    public inline fun <reified V : GearyComponent> setRelation(
+        keyClass: KClass<*>,
+        value: V,
+        valueClass: KClass<V> = V::class,
         noEvent: Boolean = false
     ) {
-        setRelation(Relation.of(keyKClass, dataKClass), data, noEvent)
-    }
-
-    public fun setRelation(relation: Relation, data: Any, noEvent: Boolean = false) {
-        Engine.setComponentFor(id, relation.id, data, noEvent)
+        Engine.setComponentFor(id, Relation.of(keyClass, valueClass).id, value, noEvent)
     }
 
     public fun setRelation(key: GearyComponentId, value: Any, noEvent: Boolean = false) {
-        setRelation(Relation.of(key, componentId(value::class)), value, noEvent)
+        Engine.setComponentFor(id, Relation.of(key, componentId(value::class)).id, value, noEvent)
     }
 
-
-    public inline fun <reified Key : GearyComponent> setRelatedTo(data: Any) {
-        setRelation(Relation.of(Key::class, data::class), data)
-    }
-
-    public inline fun <reified T : GearyComponent, reified C : GearyComponent> removeRelation(): Boolean =
-        removeRelation(Relation.of<T, C>())
+    public inline fun <reified K : GearyComponent, reified V : GearyComponent> removeRelation(): Boolean =
+        removeRelation(Relation.of<K, V>())
 
     public fun removeRelation(relation: Relation): Boolean =
         remove(Relation.of(relation.key, relation.value).id)
@@ -133,11 +115,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
      */
     public inline fun <reified T : GearyComponent> setPersisting(component: T, kClass: KClass<out T> = T::class): T {
         set(component, kClass)
-        setRelation(
-            dataKClass = PersistingComponent::class,
-            keyKClass = kClass,
-            data = PersistingComponent(),
-        )
+        setRelation(kClass, PersistingComponent())
         return component
     }
 

@@ -62,7 +62,7 @@ public object PrefabManager {
 
             val key = PrefabKey.of(namespace, name)
             entity.set(Prefab(file))
-            entity.setRelation<NoInherit, Prefab>(NoInherit)
+            entity.setRelation(Prefab::class, NoInherit)
             registerPrefab(key, entity)
             entity
         }.onFailure {

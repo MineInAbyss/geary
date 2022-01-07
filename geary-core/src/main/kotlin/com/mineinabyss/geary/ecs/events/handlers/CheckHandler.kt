@@ -15,10 +15,10 @@ public abstract class CheckHandler(parentListener: GearyListener) : GearyHandler
         parentListener.event.has<RequestCheck>()
     }
 
-    public abstract fun check(source: SourceScope?, target: TargetScope?, event: EventScope?): Boolean
+    public abstract fun check(source: SourceScope?, target: TargetScope, event: EventScope): Boolean
 
-    override fun handle(source: SourceScope?, target: TargetScope?, event: EventScope?) {
-        if (!check(source, target, event)) event!!.entity.apply {
+    override fun handle(source: SourceScope?, target: TargetScope, event: EventScope) {
+        if (!check(source, target, event)) event.entity.apply {
             remove<RequestCheck>()
             set(FailedCheck)
         }

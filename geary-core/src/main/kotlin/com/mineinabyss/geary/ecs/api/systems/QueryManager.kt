@@ -54,13 +54,13 @@ public object QueryManager {
 
                 if (func.returnType == typeOf<Boolean>())
                     object : CheckHandler(listener) {
-                        override fun check(source: SourceScope?, target: TargetScope?, event: EventScope?): Boolean {
+                        override fun check(source: SourceScope?, target: TargetScope, event: EventScope): Boolean {
                             return caller.call(source, target, event) as Boolean
                         }
                     }
                 else
                     object : GearyHandler(listener) {
-                        override fun handle(source: SourceScope?, target: TargetScope?, event: EventScope?) {
+                        override fun handle(source: SourceScope?, target: TargetScope, event: EventScope) {
                             caller.call(source, target, event)
                         }
                     }

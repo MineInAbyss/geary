@@ -64,11 +64,11 @@ internal class GearyEntityTests {
         fun `getRelation reified`() {
             val testData = TestRelation()
             val entity = Engine.entity {
-                setRelation<TestRelation, String>(testData)
+                setRelation(String::class, testData)
                 add<String>()
             }
 
-            entity.getRelation<TestRelation, String>() shouldBe testData
+            entity.getRelation<String, TestRelation>() shouldBe testData
         }
     }
 }

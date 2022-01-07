@@ -3,8 +3,11 @@ package com.mineinabyss.geary.ecs.engine
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.componentId
+import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
+import com.mineinabyss.geary.ecs.components.RelationComponent
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
@@ -65,5 +68,15 @@ internal class ArchetypeTest {
         val wrongRelation = RelationValueId(11uL)
         val matched2 = arc.matchedRelationsFor(listOf(wrongRelation))
         matched2 shouldNotContainKey wrongRelation
+    }
+
+    @Test
+    fun `getComponents with relations`() {
+        Engine.entity {
+            set("Test")
+            setRelation(String::class, 10)
+            setRelation(Int::class, 15)
+        }.getComponents() shouldContainExactly
+                setOf("Test", RelationComponent(componentId<String>(), 10), RelationComponent(componentId<Int>(), 15))
     }
 }

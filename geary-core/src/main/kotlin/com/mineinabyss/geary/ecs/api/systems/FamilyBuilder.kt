@@ -29,10 +29,10 @@ public class MutableComponentLeaf(
 }
 
 public class MutableRelationValueLeaf(
-    public var relationDataType: RelationValueId,
+    public var relationValueId: RelationValueId,
     public val componentMustHoldData: Boolean = false
 ) : FamilyBuilder() {
-    override fun build(): RelationValueLeaf = RelationValueLeaf(relationDataType, componentMustHoldData)
+    override fun build(): RelationValueLeaf = RelationValueLeaf(relationValueId, componentMustHoldData)
 }
 
 public class MutableRelationKeyLeaf(
@@ -48,7 +48,7 @@ public abstract class MutableSelector : FamilyBuilder() {
 
     public val components: List<GearyComponentId> get() = _components
     public val componentsWithData: List<GearyComponentId> get() = _componentsWithData
-    public val relationDataTypes: List<RelationValueId> get() = _relationValueIds
+    public val relationValueIds: List<RelationValueId> get() = _relationValueIds
 
     private val _components = mutableListOf<GearyComponentId>()
     private val _componentsWithData = mutableListOf<GearyComponentId>()
@@ -64,7 +64,7 @@ public abstract class MutableSelector : FamilyBuilder() {
         }
 
         if (element is MutableRelationValueLeaf)
-            _relationValueIds += element.relationDataType
+            _relationValueIds += element.relationValueId
     }
 
     public fun not(init: MutableAndNotSelector.() -> Unit) {

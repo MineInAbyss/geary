@@ -5,6 +5,7 @@ import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.components.ComponentInfo
+import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
@@ -28,6 +29,9 @@ public inline fun <reified T> componentId(): GearyComponentId = componentId(T::c
 
 @Deprecated("Should not be getting an id for an id!", ReplaceWith("componentId(component)"))
 public fun componentId(id: KClass<out GearyComponentId>): Nothing = error("Trying to access id for component id")
+
+public fun componentId(serialName: String): GearyComponentId =
+    componentId(Formats.getClassFor(serialName))
 
 public fun componentId(kType: KType): GearyComponentId = componentId(kType.classifier as KClass<*>)
 

@@ -32,6 +32,7 @@ public interface Engine {
     /** Gets a list of all the components [entity] has. */
     public fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent>
 
+    //TODO clean up so it's consistent with Accessor format
     /**
      * Gets a list of components related to the component represented by [relationDataType], and pairs them with
      * the id of the child part of the relation.

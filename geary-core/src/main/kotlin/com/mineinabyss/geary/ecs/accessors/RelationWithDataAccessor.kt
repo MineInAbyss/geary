@@ -47,13 +47,15 @@ public open class RelationWithDataAccessor<K : GearyComponent?, V : GearyCompone
                 value = archetype.componentData[valueDataIndices[i]][row] as V,
                 keyId = relation.key,
                 valueId = relation.value.id,
+                relation = relation
             )
         }
 }
 
-public class RelationWithData<K : GearyComponent?, V : GearyComponent>(
+public data class RelationWithData<K : GearyComponent?, V : GearyComponent>(
     public val key: K,
     public val value: V,
     public val keyId: GearyEntityId,
     public val valueId: GearyEntityId,
+    public val relation: Relation,
 )

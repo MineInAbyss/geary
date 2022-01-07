@@ -124,15 +124,15 @@ internal class QueryManagerTest {
         system.family.relationValueTypes.shouldContainExactly(RelationValueId(componentId<RelationTestComponent>()))
         QueryManager.trackQuery(system)
         val entity = Engine.entity {
-            setRelation<RelationTestComponent, String>(RelationTestComponent())
+            setRelation(String::class, RelationTestComponent())
             add<String>()
         }
         val entity2 = Engine.entity {
-            setRelation<RelationTestComponent, Int>(RelationTestComponent())
+            setRelation(Int::class, RelationTestComponent())
             add<Int>()
         }
         val entity3 = Engine.entity {
-            setRelation<String, RelationTestComponent>("")
+            setRelation(RelationTestComponent::class, "")
             add<RelationTestComponent>()
         }
         system.matchedArchetypes.shouldContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
@@ -161,10 +161,10 @@ internal class QueryManagerTest {
         QueryManager.trackQuery(system)
 
         Engine.entity {
-            setRelation<RelationTestComponent1, String>(RelationTestComponent1())
-            setRelation<RelationTestComponent1, Int>(RelationTestComponent1())
-            setRelation<RelationTestComponent2, String>(RelationTestComponent2())
-            setRelation<RelationTestComponent2, Int>(RelationTestComponent2())
+            setRelation(String::class, RelationTestComponent1())
+            setRelation(Int::class, RelationTestComponent1())
+            setRelation(String::class, RelationTestComponent2())
+            setRelation(Int::class, RelationTestComponent2())
             add<String>()
         }
 
@@ -187,12 +187,12 @@ internal class QueryManagerTest {
         }
 
         val entity = Engine.entity {
-            setRelation<RelationTestWithData, String>(RelationTestWithData())
+            setRelation(String::class, RelationTestWithData())
             add<String>()
         }
 
         val entityWithData = Engine.entity {
-            setRelation<RelationTestWithData, String>(RelationTestWithData())
+            setRelation(String::class, RelationTestWithData())
             set("Test")
         }
 

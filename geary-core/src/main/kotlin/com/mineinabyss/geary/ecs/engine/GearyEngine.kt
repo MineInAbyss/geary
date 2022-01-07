@@ -15,6 +15,7 @@ import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.ComponentInfo
+import com.mineinabyss.geary.ecs.components.RelationComponent
 import com.mineinabyss.geary.ecs.entities.children
 import com.mineinabyss.geary.ecs.events.AddedComponent
 import com.mineinabyss.idofront.messaging.logError
@@ -107,7 +108,12 @@ public open class GearyEngine : TickingEngine() {
 
     override fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent> =
         getRecord(entity).run {
-            archetype.getComponents(row).toSet()
+            archetype.getComponents(row).also { array ->
+                for(relation in archetype.relations) {
+                    val i = archetype.indexOf(relation.id)
+                    array[i] = RelationComponent(relation.key, array[i])
+                }
+            }.toSet()
         }
 
     override fun getRelationsFor(
