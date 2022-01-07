@@ -30,7 +30,7 @@ public class AndSelector(
     public val componentsWithData: List<GearyComponentId>
             by lazy { components.filter { it.holdsData() } }
 
-    public val relationDataTypes: List<RelationValueId>
+    public val relationValueTypes: List<RelationValueId>
             by lazy { and.filterIsInstance<RelationValueLeaf>().map { it.relationValueId } }
 }
 

@@ -1,5 +1,9 @@
 package com.mineinabyss.geary.ecs.query
 
+import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.componentId
+import com.mineinabyss.geary.ecs.api.engine.entity
+import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.engine.GearyEngine
@@ -19,8 +23,11 @@ class GearyTypeFamilyExtensionsKtTest {
         val type = sortedSetOf(Relation.of(2uL, 1uL).id, 2uL)
         type.containsRelationValue(RelationValueId(1uL)) shouldBe true
         type.containsRelationValue(RelationValueId(2uL)) shouldBe false
+    }
 
-        val typeWithoutRelation = sortedSetOf(Relation.of(2uL, 1uL).id)
-        typeWithoutRelation.containsRelationValue(RelationValueId(1uL)) shouldBe false
+    @Test
+    fun contains() {
+        val type = Engine.entity { setRelation(10uL, "") }.type
+        RelationValueLeaf(RelationValueId(componentId<String>())).contains(type) shouldBe true
     }
 }

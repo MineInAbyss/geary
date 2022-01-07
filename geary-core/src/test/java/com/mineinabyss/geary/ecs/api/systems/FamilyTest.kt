@@ -3,7 +3,6 @@
 package com.mineinabyss.geary.ecs.api.systems
 
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.query.contains
 import io.kotest.matchers.shouldBe
@@ -28,7 +27,7 @@ internal class FamilyTest {
         }
         
         (sortedSetOf(Relation.of(1uL, 14uL).id, 1uL) in family) shouldBe false
-        (sortedSetOf(Relation.of(1uL, 15uL).id) in family) shouldBe false
+        (sortedSetOf(Relation.of(1uL, 15uL).id) in family) shouldBe true
         (sortedSetOf(Relation.of(1uL, 15uL).id, 1uL) in family) shouldBe true
     }
 

@@ -24,7 +24,8 @@ internal class AccessorHolderTest {
     @Test
     fun fancyAccessors() {
         val entity = Engine.entity()
-        FancyQuery.toList().isEmpty() shouldBe true
+        //TODO put back when Koin comes
+//        FancyQuery.toList().isEmpty() shouldBe true
         FancyQuery.none { it.entity == entity } shouldBe true
         entity.set(1)
         FancyQuery {

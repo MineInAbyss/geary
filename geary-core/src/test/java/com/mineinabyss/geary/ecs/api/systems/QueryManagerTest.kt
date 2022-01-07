@@ -117,11 +117,11 @@ internal class QueryManagerTest {
             val TargetScope.test by relation<Any?, RelationTestComponent>()
             override fun TargetScope.tick() {
                 ran++
-                family.relationDataTypes.map { it.id } shouldContain test.valueId
+                family.relationValueTypes.map { it.id } shouldContain test.valueId
                 test.value.shouldBeInstanceOf<RelationTestComponent>()
             }
         }
-        system.family.relationDataTypes.shouldContainExactly(RelationValueId(componentId<RelationTestComponent>()))
+        system.family.relationValueTypes.shouldContainExactly(RelationValueId(componentId<RelationTestComponent>()))
         QueryManager.trackQuery(system)
         val entity = Engine.entity {
             setRelation<RelationTestComponent, String>(RelationTestComponent())
@@ -135,7 +135,6 @@ internal class QueryManagerTest {
             setRelation<String, RelationTestComponent>("")
             add<RelationTestComponent>()
         }
-        family { has(entity.type) }.relationDataTypes.first() shouldBe system.family.relationDataTypes.first()
         system.matchedArchetypes.shouldContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
         system.matchedArchetypes.shouldNotContain(entity3.type.getArchetype())
 

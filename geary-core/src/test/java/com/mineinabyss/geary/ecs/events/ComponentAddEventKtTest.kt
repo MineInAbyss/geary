@@ -2,14 +2,14 @@ package com.mineinabyss.geary.ecs.events
 
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.get
-import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.engine.type
+import com.mineinabyss.geary.ecs.api.engine.*
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.api.systems.Handler
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.engine.getArchetype
 import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
+import com.mineinabyss.geary.ecs.query.contains
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
@@ -43,6 +43,7 @@ internal class ComponentAddEventKtTest {
     fun componentAddEvent() {
         val listener = OnStringAdd()
         Engine.addSystem(listener)
+
         Engine.entity {
             fun addedListeners() = type.getArchetype().targetListeners.count { it === listener }
             set("")
