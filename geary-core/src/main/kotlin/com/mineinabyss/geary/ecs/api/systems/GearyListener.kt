@@ -43,4 +43,5 @@ public abstract class GearyListener : GearySystem, AccessorBuilderProvider {
     }
 }
 
+@Target(AnnotationTarget.FUNCTION)
 public annotation class Handler

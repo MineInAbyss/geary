@@ -5,9 +5,7 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
-import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
-import com.mineinabyss.geary.ecs.engine.holdsData
-import com.mineinabyss.geary.ecs.engine.withInvertedRole
+import com.mineinabyss.geary.ecs.engine.*
 import com.mineinabyss.geary.ecs.query.*
 import kotlin.reflect.KType
 
@@ -108,7 +106,13 @@ public abstract class MutableSelector : FamilyBuilder() {
         val relationValue = if (anyValue) null else componentId(value)
 
         when {
-            relationKey != null && relationValue != null -> hasRelation(Relation.of(relationKey, relationValue))
+            relationKey != null && relationValue != null -> {
+                if(key.isMarkedNullable) or {
+                    hasRelation(Relation.of(relationKey.withRole(HOLDS_DATA), relationValue))
+                    hasRelation(Relation.of(relationKey.withoutRole(HOLDS_DATA), relationValue))
+                } else
+                    hasRelation(Relation.of(relationKey, relationValue))
+            }
             relationValue != null -> hasRelation(key, relationValue)
             relationKey != null -> hasRelation(relationKey, value)
             else -> error("Has relation check cannot be Any to Any yet.")

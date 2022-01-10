@@ -69,13 +69,17 @@ public value class GearyEntity(public val id: GearyEntityId) {
         return get(Relation.of(key, value).id) as? V
     }
 
+    public inline fun <reified V : Any> getRelation(key: GearyEntityId, value: KClass<V>): V? {
+        return get(Relation.of(key, componentId(value)).id) as? V
+    }
+
     /**
      * @param noEvent If true, will not fire a [AddedComponent].
      */
-    public inline fun <reified V : GearyComponent> setRelation(
+    public fun setRelation(
         keyClass: KClass<*>,
-        value: V,
-        valueClass: KClass<V> = V::class,
+        value: Any,
+        valueClass: KClass<*> = value::class,
         noEvent: Boolean = false
     ) {
         Engine.setComponentFor(id, Relation.of(keyClass, valueClass).id, value, noEvent)
@@ -216,32 +220,33 @@ public value class GearyEntity(public val id: GearyEntityId) {
 
     public inline fun <T> callEvent(
         vararg components: Any,
+        source: GearyEntity? = null,
         result: (event: GearyEntity) -> T
-    ): T = callEvent({ eventEntity ->
-        eventEntity.setAll(components.toList())
-    }, result = result)
+    ): T = callEvent({
+        setAll(components.toList())
+    }, source = source, result = result)
 
     public inline fun callEvent(vararg components: Any, source: GearyEntity? = null) {
-        callEvent(source) { eventEntity ->
-            eventEntity.setAll(components.toList())
+        callEvent(source = source) {
+            setAll(components.toList())
         }
     }
 
-    public inline fun callEvent(event: GearyEntity) {
+    public inline fun callEvent(event: GearyEntity, source: GearyEntity) {
         record.apply {
-            archetype.callEvent(event, row)
+            archetype.callEvent(event, row, source)
         }
     }
 
     public inline fun callEvent(
         source: GearyEntity? = null,
-        initEvent: (event: GearyEntity) -> Unit,
+        initEvent: GearyEntity.() -> Unit,
     ) {
         callEvent(initEvent, source) {}
     }
 
     public inline fun <T> callEvent(
-        init: (event: GearyEntity) -> Unit,
+        init: GearyEntity.() -> Unit,
         source: GearyEntity? = null,
         result: (event: GearyEntity) -> T,
     ): T {

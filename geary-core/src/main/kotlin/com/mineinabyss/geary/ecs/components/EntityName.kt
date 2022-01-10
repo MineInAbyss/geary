@@ -2,10 +2,8 @@ package com.mineinabyss.geary.ecs.components
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.reflect.KClassifier
 
+@JvmInline
 @Serializable
-@SerialName("geary:component_info")
-public data class ComponentInfo(
-    val kClass: KClassifier
-)
+@SerialName("geary:name")
+public value class EntityName(public val name: String)

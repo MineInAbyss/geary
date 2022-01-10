@@ -13,12 +13,9 @@ import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
-import com.mineinabyss.geary.ecs.components.RelationComponent
-import com.mineinabyss.geary.ecs.components.RelationOnPrefab
 import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
 import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
-import com.mineinabyss.geary.ecs.serialization.Formats
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongArrayList
@@ -335,8 +332,8 @@ public data class Archetype(
             if (source == null && !handler.parentListener.source.isEmpty) continue
 
             // Check that this handler has a listener associated with it.
-            if (handler.parentListener !in targetArchetype.targetListeners) continue
-            if (newSourceArchetype != null && handler.parentListener !in newSourceArchetype.sourceListeners) continue
+            if (!handler.parentListener.target.isEmpty && handler.parentListener !in targetArchetype.targetListeners) continue
+            if (newSourceArchetype != null && !handler.parentListener.source.isEmpty && handler.parentListener !in newSourceArchetype.sourceListeners) continue
 
             // Check that we still match the data if archetype of any involved entities changed.
             if (targetArchetype != this && entity.type !in handler.parentListener.target.family) continue
@@ -357,7 +354,7 @@ public data class Archetype(
             )
             val sourceScope = if (source == null) null else RawAccessorDataScope(
                 archetype = sourceArchetype!!,
-                perArchetypeData = handler.parentListener.target.cacheForArchetype(targetArchetype),
+                perArchetypeData = handler.parentListener.source.cacheForArchetype(sourceArchetype),
                 row = sourceRecord!!.row,
                 entity = source
             )

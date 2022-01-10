@@ -17,6 +17,8 @@ import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.ComponentInfo
 import com.mineinabyss.geary.ecs.components.RelationComponent
 import com.mineinabyss.geary.ecs.entities.children
+import com.mineinabyss.geary.ecs.entities.parents
+import com.mineinabyss.geary.ecs.entities.removeParent
 import com.mineinabyss.geary.ecs.events.AddedComponent
 import com.mineinabyss.idofront.messaging.logError
 import kotlin.reflect.KClass
@@ -109,7 +111,7 @@ public open class GearyEngine : TickingEngine() {
     override fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent> =
         getRecord(entity).run {
             archetype.getComponents(row).also { array ->
-                for(relation in archetype.relations) {
+                for (relation in archetype.relations) {
                     val i = archetype.indexOf(relation.id)
                     array[i] = RelationComponent(relation.key, array[i])
                 }
@@ -185,7 +187,10 @@ public open class GearyEngine : TickingEngine() {
     override fun removeEntity(entity: GearyEntityId) {
         // remove all children of this entity from the ECS as well
         entity.toGeary().apply {
-            children.forEach { it.removeEntity() }
+            children.forEach {
+                if (parents == setOf(this)) it.removeEntity()
+                else it.removeParent(this)
+            }
         }
 
         clearEntity(entity)

@@ -36,8 +36,7 @@ public value class Relation private constructor(
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
 
-    override fun toString(): String =
-        id.toString(2)
+    override fun toString(): String = "$key to $value"
 
     public companion object {
         public fun of(

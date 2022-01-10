@@ -15,7 +15,8 @@ public annotation class WrongScope
  * specified components gets fired on an entity matching the listener's components.
  */
 public abstract class GearyHandler(
-    public val parentListener: GearyListener
+    public val parentListener: GearyListener,
+    public val sourceNullable: Boolean,
 ) {
     public abstract fun handle(source: SourceScope?, target: TargetScope, event: EventScope)
 
@@ -25,6 +26,7 @@ public abstract class GearyHandler(
         targetScope: RawAccessorDataScope,
         eventScope: RawAccessorDataScope,
     ) {
+        if(!sourceNullable && sourceScope == null) return
         try {
             // Get iterator or empty if scope was null
             val sourceIterator = if (sourceScope == null) listOf<List<*>?>(null).iterator()

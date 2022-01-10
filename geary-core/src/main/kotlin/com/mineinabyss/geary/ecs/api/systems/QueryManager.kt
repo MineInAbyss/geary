@@ -12,8 +12,8 @@ import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
 import com.mineinabyss.geary.ecs.query.Family
 import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
+import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
-import kotlin.reflect.KType
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.jvm.isAccessible
@@ -35,8 +35,8 @@ public object QueryManager {
         listener::class.functions
             .filter { it.hasAnnotation<Handler>() }
             .map { func ->
-                class FunctionCaller(val kFunction: KFunction<*>, val params: List<KType>) {
-                    val types = kFunction.parameters.map { it.type }
+                class FunctionCaller(val kFunction: KFunction<*>, val params: List<KClass<*>>) {
+                    val types = kFunction.parameters.map { it.type.classifier }
                     val indices = params.map { types.indexOf(it) }
                     fun call(vararg args: Any?): Any? {
                         // Pass parameters in the order they need to be, allowing them to be omitted if desired.
@@ -50,16 +50,17 @@ public object QueryManager {
                         return kFunction.call(*argArray)
                     }
                 }
-                val caller = FunctionCaller(func, listOf(typeOf<SourceScope>(), typeOf<TargetScope>(), typeOf<EventScope>()))
+                val caller = FunctionCaller(func, listOf(SourceScope::class, TargetScope::class, EventScope::class))
+                val sourceNullable = typeOf<SourceScope>() !in func.parameters.map { it.type }
 
                 if (func.returnType == typeOf<Boolean>())
-                    object : CheckHandler(listener) {
+                    object : CheckHandler(listener, sourceNullable) {
                         override fun check(source: SourceScope?, target: TargetScope, event: EventScope): Boolean {
                             return caller.call(source, target, event) as Boolean
                         }
                     }
                 else
-                    object : GearyHandler(listener) {
+                    object : GearyHandler(listener, sourceNullable) {
                         override fun handle(source: SourceScope?, target: TargetScope, event: EventScope) {
                             caller.call(source, target, event)
                         }

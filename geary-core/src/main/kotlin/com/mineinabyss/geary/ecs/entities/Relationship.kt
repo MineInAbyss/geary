@@ -97,6 +97,7 @@ public fun GearyEntity.addPrefab(prefab: GearyEntity) {
     val comp = prefab.getComponents()
     val noInherit = prefab.getComponentsRelatedTo(RelationValueId(componentId<NoInherit>()))
     setAll((comp - noInherit), override = false) //TODO plan out more thoroughly and document overriding behaviour
+    prefab.children.forEach { it.addParent(this) }
     prefab.with { copy: CopyToInstances ->
         copy.decodeComponentsTo(this, override = false)
     }

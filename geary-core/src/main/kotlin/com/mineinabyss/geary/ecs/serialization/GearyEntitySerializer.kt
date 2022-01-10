@@ -2,8 +2,13 @@ package com.mineinabyss.geary.ecs.serialization
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.entities.toGeary
+import com.mineinabyss.geary.ecs.components.EntityName
+import com.mineinabyss.geary.ecs.entities.children
+import com.mineinabyss.geary.ecs.entities.parent
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.ListSerializer
@@ -28,5 +33,29 @@ public object GearyEntitySerializer : KSerializer<GearyEntity> {
         return Engine.entity {
             setAll(decoder.decodeSerializableValue(componentListSerializer))
         }
+    }
+}
+
+public fun GearyEntity.parseEntity(expression: String): GearyEntity {
+    return when {
+        expression.contains(':') -> componentId(expression).toGeary()
+        expression.startsWith("parent") -> {
+            val parent = (parent ?: error("Failed to read expression, entity had no parent: $expression"))
+
+            if (expression.startsWith("parent."))
+                parent.parseEntity(expression.removePrefix("parent."))
+            else parent
+        }
+        expression.startsWith("children") -> {
+            val childName = expression.substringAfter('[').substringBefore(']')
+            val child = (children.find { it.get<EntityName>()?.name == childName }
+                ?: error("No child named $childName found: $expression"))
+            val childExpression = expression.substringAfter("].", missingDelimiterValue = "")
+
+            if (childExpression != "")
+                child.parseEntity(childExpression)
+            else child
+        }
+        else -> error("Malformed expression for getting entity: $expression")
     }
 }
