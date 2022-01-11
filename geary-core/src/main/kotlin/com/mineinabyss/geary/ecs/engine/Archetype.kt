@@ -6,7 +6,6 @@ import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
@@ -344,19 +343,16 @@ public data class Archetype(
                 archetype = targetArchetype,
                 perArchetypeData = handler.parentListener.target.cacheForArchetype(targetArchetype),
                 row = targetRecord.row,
-                entity = entity
             )
             val eventScope = RawAccessorDataScope(
                 archetype = eventArchetype,
                 perArchetypeData = handler.parentListener.event.cacheForArchetype(eventArchetype),
                 row = newEventRecord.row,
-                entity = event
             )
             val sourceScope = if (source == null) null else RawAccessorDataScope(
                 archetype = sourceArchetype!!,
                 perArchetypeData = handler.parentListener.source.cacheForArchetype(sourceArchetype),
                 row = sourceRecord!!.row,
-                entity = source
             )
             handler.runEvent(sourceScope, targetScope, eventScope)
         }

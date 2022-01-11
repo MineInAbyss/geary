@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.ecs.api.engine
 
 import com.mineinabyss.geary.ecs.api.GearyComponentId
-import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.components.ComponentInfo
@@ -38,5 +37,3 @@ public fun componentId(kType: KType): GearyComponentId = componentId(kType.class
 public fun componentId(kClass: KClass<*>): GearyComponentId = Engine.getOrRegisterComponentIdForClass(kClass)
 
 public fun GearyComponentId.getComponentInfo(): ComponentInfo? = this.toGeary().get()
-
-public val GearyEntity.type: GearyType get() = Engine.getType(id)

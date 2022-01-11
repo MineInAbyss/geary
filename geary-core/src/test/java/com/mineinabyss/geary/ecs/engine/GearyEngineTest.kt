@@ -3,7 +3,6 @@ package com.mineinabyss.geary.ecs.engine
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.components.RelationComponent
 import io.kotest.matchers.collections.shouldContainExactly

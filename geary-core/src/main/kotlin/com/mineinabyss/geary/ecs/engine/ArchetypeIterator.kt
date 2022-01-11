@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.accessors.AccessorHolder
-import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.RawAccessorDataScope
+import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 
 public data class ArchetypeIterator(
@@ -38,7 +38,6 @@ public data class ArchetypeIterator(
                 RawAccessorDataScope(
                     archetype = archetype,
                     row = destinationRow,
-                    entity = entity,
                     perArchetypeData = perArchCache
                 )
             )

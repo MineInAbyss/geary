@@ -1,9 +1,6 @@
 package com.mineinabyss.geary.ecs.api.entities
 
-import com.mineinabyss.geary.ecs.api.ComponentClass
-import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.GearyComponentId
-import com.mineinabyss.geary.ecs.api.GearyEntityId
+import com.mineinabyss.geary.ecs.api.*
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.temporaryEntity
@@ -261,5 +258,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
     }
 
     public inline val record: Record get() = Engine.getRecord(id)
+    public inline val type: GearyType get() = record.archetype.type
+
     public operator fun component1(): GearyEntityId = id
 }

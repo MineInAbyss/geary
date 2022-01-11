@@ -1,5 +1,8 @@
-package com.mineinabyss.geary.ecs.accessors
+package com.mineinabyss.geary.ecs.accessors.types
 
+import com.mineinabyss.geary.ecs.accessors.Accessor
+import com.mineinabyss.geary.ecs.accessors.ArchetypeCacheScope
+import com.mineinabyss.geary.ecs.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyEntityId
@@ -41,6 +44,7 @@ public open class RelationWithDataAccessor<K : GearyComponent?, V : GearyCompone
 
     override fun RawAccessorDataScope.readData(): List<RelationWithData<K, V>> =
         matchedRelations.mapIndexed { i, relation ->
+            @Suppress("UNCHECKED_CAST") // Index assignment ensures this should always be true
             RelationWithData(
                 // Key can be nullable but value cannot
                 key = archetype.componentData.getOrNull(keyDataIndices[i])?.get(row) as K,

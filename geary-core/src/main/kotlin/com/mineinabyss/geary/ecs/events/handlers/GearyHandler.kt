@@ -4,12 +4,6 @@ import com.mineinabyss.geary.ecs.accessors.*
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.idofront.messaging.logError
 
-@RequiresOptIn(
-    level = RequiresOptIn.Level.ERROR,
-    message = "Trying to use entity scope in event, use EventResultScope instead"
-)
-public annotation class WrongScope
-
 /**
  * Placed within a [GearyListener] as an `object` or `inner class` to fire when an event matching
  * specified components gets fired on an entity matching the listener's components.

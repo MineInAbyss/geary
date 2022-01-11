@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.ecs.prefab
 
 import com.mineinabyss.geary.ecs.accessors.TargetScope
-import com.mineinabyss.geary.ecs.accessors.get
+import com.mineinabyss.geary.ecs.accessors.building.get
 import com.mineinabyss.geary.ecs.api.autoscan.AutoScan
+import com.mineinabyss.geary.ecs.api.autoscan.Handler
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
-import com.mineinabyss.geary.ecs.api.systems.Handler
 import com.mineinabyss.geary.ecs.components.ChildOnPrefab
 import com.mineinabyss.geary.ecs.components.ChildrenOnPrefab
 import com.mineinabyss.geary.ecs.components.EntityName

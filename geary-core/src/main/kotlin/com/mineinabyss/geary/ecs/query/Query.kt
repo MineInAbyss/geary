@@ -2,8 +2,8 @@ package com.mineinabyss.geary.ecs.query
 
 import com.mineinabyss.geary.ecs.accessors.Accessor
 import com.mineinabyss.geary.ecs.accessors.AccessorHolder
-import com.mineinabyss.geary.ecs.accessors.ComponentAccessor
 import com.mineinabyss.geary.ecs.accessors.TargetScope
+import com.mineinabyss.geary.ecs.accessors.types.ComponentAccessor
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.engine.Archetype

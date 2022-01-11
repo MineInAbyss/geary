@@ -206,9 +206,6 @@ public open class GearyEngine : TickingEngine() {
         typeMap.remove(entity)
     }
 
-    public override fun getType(entity: GearyEntityId): GearyType =
-        typeMap[entity]?.archetype?.type ?: GearyType()
-
     override fun getArchetype(id: Int): Archetype = archetypes[id]
 
     override fun getArchetype(type: GearyType): Archetype {

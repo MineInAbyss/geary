@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.ecs.accessors
 
+import com.mineinabyss.geary.ecs.accessors.building.AccessorBuilder
+import com.mineinabyss.geary.ecs.accessors.building.AccessorBuilderProvider
 import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.query.AndSelector
@@ -7,7 +9,7 @@ import kotlin.reflect.KProperty
 
 
 /**
- * A holder of [Accessor]s which provides helper functions for creating them.
+ * A holder of [Accessor]s that provides logic for reading data off them and calculating their per-archetype cache.
  *
  * @property family A lazily built immutable family that represents all data this holder needs to function.
  */
@@ -27,6 +29,8 @@ public open class AccessorHolder : MutableAndSelector(), AccessorBuilderProvider
         return accessor
     }
 
+    /** Calculates, or gets cached values for an [archetype] */
+    //TODO return inline class for type safety
     public fun cacheForArchetype(archetype: Archetype): List<List<Any?>> =
         perArchetypeCache.getOrPut(archetype) {
             val accessorCache: List<MutableList<Any?>> = accessors.map { it.cached.mapTo(mutableListOf()) { null } }
@@ -40,26 +44,26 @@ public open class AccessorHolder : MutableAndSelector(), AccessorBuilderProvider
             accessorCache
         }
 
-    // ==== Iteration ====
-
+    /** Gets an iterator that will process [dataScope] with all possible combinations calculated by Accessors */
     internal fun iteratorFor(dataScope: RawAccessorDataScope): AccessorCombinationsIterator =
         AccessorCombinationsIterator(dataScope)
 
     internal inner class AccessorCombinationsIterator(val dataScope: RawAccessorDataScope) : Iterator<List<*>> {
         /** All sets of data each accessor wants. Will iterate over all combinations of items from each list. */
-        val data: List<List<*>> = accessors.map { with(it) { dataScope.readData() } }
+        private val data: List<List<*>> = accessors.map { with(it) { dataScope.readData() } }
 
         /** The total number of combinations that can be made with all elements in each list. */
-        val combinationsCount = data.fold(1) { acc, b -> acc * b.size }
-        var permutation = 0
+        private val totalCombinations = data.fold(1) { acc, b -> acc * b.size }
+        private var index = 0
 
-        override fun hasNext() = permutation < combinationsCount
+        override fun hasNext() = index < totalCombinations
 
         override fun next(): List<*> {
-            val permutation = permutation++
+            val permutation = index++
             return data.map { it[permutation % it.size] }
         }
     }
 
+    /** Is the family of this holder not restricted in any way? */
     public val isEmpty: Boolean get() = family.and.isEmpty()
 }

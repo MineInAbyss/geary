@@ -1,30 +1,40 @@
 package com.mineinabyss.geary.ecs.accessors
 
-import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KProperty
+import com.mineinabyss.geary.ecs.accessors.building.AccessorBuilderProvider
+import com.mineinabyss.geary.ecs.api.systems.GearyListener
 
 /**
  * Accessors allow us to read components off an entity after a data preprocessing step.
  *
- * The whole Accessor system works as follows:
- * - An [AccessorHolder] provides a DSL for creating and registering accessors into it.
+ * Accessor system summary:
+ * - An [AccessorBuilderProvider] provides a DSL for creating accessor builders.
+ * - Other classes provide functions for building and adding those accessors onto an [AccessorHolder].
+ *   This is done to allow registering multiple holders, ex in [GearyListener].
  * - A consumer provides an [RawAccessorDataScope] and uses it to create an iterator with [AccessorHolder.iteratorFor].
  * - The [iterator][AccessorHolder.AccessorCombinationsIterator] requests each accessor
  *   to [parse][readData] the raw data.
- * - The consumer creates a [TargetScope], for each iteration.
- * - The [TargetScope]'s scope allows appropriate accessors to read data efficiently.
+ * - The consumer creates [ResultScope]s, for each iteration.
+ * - The scope allows appropriate accessors to read parsed data without recalculating it each time.
  */
 public abstract class Accessor<T>(
     public val index: Int
 ) {
     /**
-     * An accessor will read data given
+     * Processes a [RawAccessorDataScope] with an entity.
+     *
+     * If more than one item is returned, systems will individually handle each combination.
      */
     internal abstract fun RawAccessorDataScope.readData(): List<T>
 
+    /**
+     * A list of indices and operations to calculate a cached value on this accessor.
+     *
+     * @see cached
+     */
     internal val cached: List<PerArchetypeCache<*>> get() = _cached
     protected val _cached: MutableList<PerArchetypeCache<*>> = mutableListOf()
 
+    /** Calculates an [operation] once per archetype this accessor gets matched against. */
     protected inline fun <T> cached(crossinline operation: ArchetypeCacheScope.() -> T): PerArchetypeCache<T> =
         object : PerArchetypeCache<T>(index, _cached.size) {
             override fun ArchetypeCacheScope.calculate(): T = operation()
@@ -32,13 +42,3 @@ public abstract class Accessor<T>(
 
 }
 
-public abstract class PerArchetypeCache<T>(
-    public val index: Int,
-    public val cacheIndex: Int
-) : ReadOnlyProperty<ArchetypeCacheScope, T> {
-    public abstract fun ArchetypeCacheScope.calculate(): T
-
-    @Suppress("UNCHECKED_CAST")
-    override fun getValue(thisRef: ArchetypeCacheScope, property: KProperty<*>): T =
-        thisRef.perArchetypeData[index][cacheIndex] as T
-}

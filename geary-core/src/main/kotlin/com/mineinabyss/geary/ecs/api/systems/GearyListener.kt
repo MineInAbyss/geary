@@ -1,6 +1,8 @@
 package com.mineinabyss.geary.ecs.api.systems
 
 import com.mineinabyss.geary.ecs.accessors.*
+import com.mineinabyss.geary.ecs.accessors.building.AccessorBuilder
+import com.mineinabyss.geary.ecs.accessors.building.AccessorBuilderProvider
 import com.mineinabyss.geary.ecs.events.AddedComponent
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.extensionReceiverParameter
@@ -36,12 +38,12 @@ public abstract class GearyListener : GearySystem, AccessorBuilderProvider {
     public operator fun <T> Accessor<T>.getValue(thisRef: EventScope, property: KProperty<*>): T =
         thisRef.data[index] as T
 
-    public fun allAdded()/*: AccessorBuilder<Accessor<*>>*/ {
+    //TODO allow checking that all components were added on source
+    //TODO an Accessor which returns the specific component added.
+    public fun allAdded() {
         event.or {
             target.family.components.forEach { hasRelation(it, typeOf<AddedComponent>()) }
         }
     }
 }
 
-@Target(AnnotationTarget.FUNCTION)
-public annotation class Handler

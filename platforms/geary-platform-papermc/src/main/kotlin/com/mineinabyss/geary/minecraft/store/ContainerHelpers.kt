@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.minecraft.store
 
-import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.components.PersistingComponent
@@ -15,7 +14,7 @@ import java.util.*
 public fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
     val persisting = getPersistingComponents()
 
-    //Update hashes
+    // Update hashes
     persisting.forEach {
         getRelation(it::class, PersistingComponent::class)?.hash = it.hashCode()
     }
@@ -42,7 +41,7 @@ public fun GearyEntity.decodeComponentsFrom(pdc: PersistentDataContainer) {
 public fun GearyEntity.decodeComponentsFrom(decodedEntityData: DecodedEntityData) {
     val (components, type) = decodedEntityData
 
-    //components written to this entity's PDC will override the ones defined in type
+    // Components written to this entity's PDC will override the ones defined in type
     setAllPersisting(components)
     for (id in type) {
         addPrefab(id.toGeary())

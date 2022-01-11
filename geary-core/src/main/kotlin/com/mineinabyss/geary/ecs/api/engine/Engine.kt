@@ -77,9 +77,6 @@ public interface Engine {
     /** Registers an entity with a [ComponentInfo] component that will represent this [kClass]'s component type. */
     public fun registerComponentIdForClass(kClass: KClass<*>): GearyComponentId
 
-    /** Gets the [GearyType] of this [entity] (i.e. a list of all the component/entity ids it holds) */
-    public fun getType(entity: GearyEntityId): GearyType
-
     public fun getArchetype(id: Int): Archetype
 
     public fun getArchetype(type: GearyType): Archetype
