@@ -36,9 +36,9 @@ public object GearyEntitySerializer : KSerializer<GearyEntity> {
     }
 }
 
+//TODO this should be handled within a serializer of sorts for GearyEntity
 public fun GearyEntity.parseEntity(expression: String): GearyEntity {
     return when {
-        expression.contains(':') -> componentId(expression).toGeary()
         expression.startsWith("parent") -> {
             val parent = (parent ?: error("Failed to read expression, entity had no parent: $expression"))
 
@@ -46,8 +46,8 @@ public fun GearyEntity.parseEntity(expression: String): GearyEntity {
                 parent.parseEntity(expression.removePrefix("parent."))
             else parent
         }
-        expression.startsWith("children") -> {
-            val childName = expression.substringAfter('[').substringBefore(']')
+        expression.startsWith("child") -> {
+            val childName = expression.substringAfter('(').substringBefore(')')
             val child = (children.find { it.get<EntityName>()?.name == childName }
                 ?: error("No child named $childName found: $expression"))
             val childExpression = expression.substringAfter("].", missingDelimiterValue = "")
@@ -56,6 +56,7 @@ public fun GearyEntity.parseEntity(expression: String): GearyEntity {
                 child.parseEntity(childExpression)
             else child
         }
+        expression.contains(':') -> componentId(expression).toGeary()
         else -> error("Malformed expression for getting entity: $expression")
     }
 }

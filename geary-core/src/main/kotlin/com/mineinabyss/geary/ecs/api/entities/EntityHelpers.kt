@@ -2,8 +2,6 @@ package com.mineinabyss.geary.ecs.api.entities
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyEntityId
-import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 
 /** Gets the entity associated with [this@toGeary] and runs code on it. */
@@ -43,11 +41,4 @@ public inline fun <reified T : GearyComponent> GearyEntity?.swapComponent(with: 
         this?.remove<T>()
 
     return component != null || otherComponent != null
-}
-
-public fun Collection<GearyComponent>.createEntity(): GearyEntity {
-    return Engine.entity {
-        setAll(this@createEntity)
-        //TODO special components for serializing parents, prefabs, etc
-    }
 }

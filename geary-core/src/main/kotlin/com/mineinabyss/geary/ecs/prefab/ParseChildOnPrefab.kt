@@ -10,7 +10,7 @@ import com.mineinabyss.geary.ecs.api.systems.Handler
 import com.mineinabyss.geary.ecs.components.ChildOnPrefab
 import com.mineinabyss.geary.ecs.components.ChildrenOnPrefab
 import com.mineinabyss.geary.ecs.components.EntityName
-import com.mineinabyss.geary.ecs.entities.addChild
+import com.mineinabyss.geary.ecs.entities.addParent
 
 @AutoScan
 public class ParseChildOnPrefab : GearyListener() {
@@ -23,7 +23,10 @@ public class ParseChildOnPrefab : GearyListener() {
     @Handler
     private fun TargetScope.convertToRelation() {
 //        entity.parseEntity(child.new)
-        entity.addChild(Engine.entity { setAll(child.new) })
+        Engine.entity {
+            addParent(entity)
+            setAll(child.new)
+        }
         entity.remove<ChildOnPrefab>()
     }
 }
@@ -40,10 +43,11 @@ public class ParseChildrenOnPrefab : GearyListener() {
     private fun TargetScope.convertToRelation() {
 //        entity.parseEntity(child.new)
         children.nameToComponents.forEach { (name, components) ->
-            entity.addChild(Engine.entity {
+            Engine.entity {
+                addParent(entity)
                 set(EntityName(name))
                 setAll(components)
-            })
+            }
         }
         entity.remove<ChildrenOnPrefab>()
     }
