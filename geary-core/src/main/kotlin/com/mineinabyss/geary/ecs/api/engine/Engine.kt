@@ -9,8 +9,10 @@ import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.api.services.gearyService
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.components.ComponentInfo
+import com.mineinabyss.geary.ecs.components.RelationComponent
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.Record
+import com.mineinabyss.geary.ecs.events.AddedComponent
 import kotlin.reflect.KClass
 
 /**
@@ -33,13 +35,12 @@ public interface Engine {
     /** Gets a [componentId]'s data from an [entity] or null if not present/the component doesn't hold any data. */
     public fun getComponentFor(entity: GearyEntity, componentId: GearyComponentId): GearyComponent?
 
-    /** Gets a list of all the components [entity] has. */
+    /** Gets a list of all the components [entity] has, as well as relations in the form of [RelationComponent]. */
     public fun getComponentsFor(entity: GearyEntity): Set<GearyComponent>
 
-    //TODO clean up so it's consistent with Accessor format
+    //TODO clean up so it's consistent with Accessor's relation format
     /**
-     * Gets a list of components related to the component represented by [relationDataType], and pairs them with
-     * the id of the child part of the relation.
+     * Gets a list of relations on [entity] with to value [relationValueId].
      */
     public fun getRelationsFor(
         entity: GearyEntity,
@@ -50,10 +51,14 @@ public interface Engine {
     /** Checks whether an [entity] has a [componentId] */
     public fun hasComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean
 
-    /** Adds this [component] to the [entity]'s type but doesn't store any data. */
+    /** Adds this [componentId] to the [entity]'s type but doesn't store any data. */
     public fun addComponentFor(entity: GearyEntity, componentId: GearyComponentId, noEvent: Boolean)
 
-    /** Associates this component's data with this entity. */
+    /**
+     * Sets [data] under a [componentId] for an [entity].
+     *
+     * @param noEvent Whether to fire an [AddedComponent] event.
+     */
     public fun setComponentFor(
         entity: GearyEntity,
         componentId: GearyComponentId,
@@ -67,7 +72,7 @@ public interface Engine {
     /** Removes an entity from the ECS, freeing up its entity id. */
     public fun removeEntity(entity: GearyEntity)
 
-    /** Clears all components on an entity. */
+    /** Removes all components from an entity. */
     public fun clearEntity(entity: GearyEntity)
 
     /**
@@ -76,14 +81,15 @@ public interface Engine {
      */
     public fun getOrRegisterComponentIdForClass(kClass: KClass<*>): GearyComponentId
 
+    /** Gets an archetype by id or throws an error if it doesn't exist in this engine. */
     public fun getArchetype(id: Int): Archetype
 
+    /** Gets or creates an archetype from a [type]. */
     public fun getArchetype(type: GearyType): Archetype
 
     /** Gets the record of a given entity, or throws an error if the entity id is not active in the engine. */
     public fun getRecord(entity: GearyEntity): Record
 
-    /** Updates the record of a given entity*/
+    /** Updates the record of a given entity */
     public fun setRecord(entity: GearyEntity, record: Record)
-
 }

@@ -20,8 +20,7 @@ public data class CopyToInstances(
     private val temporary: Set<@Polymorphic GearyComponent> = setOf(),
     private val persisting: Set<@Polymorphic GearyComponent> = setOf(),
 ) {
-    //TODO This seems to be the safest and cleanest way to deep-copy.
-    // Check how this performs vs DeepCopy's reflection method.
+    // This is the safest and cleanest way to deep-copy, even if a little performance intense.
     private val serializedComponents by lazy {
         Formats.cborFormat.encodeToByteArray(serializer(), this)
     }

@@ -99,13 +99,12 @@ internal class QueryManagerTest {
             QueryManager.trackQuery(removingSystem)
         }
 
-        //FIXME who needs systems to work properly anyways
         @Test
         fun `concurrent modification`() {
             val entities = (0 until 10).map { Engine.entity { set("Test") } }
             val total =
                 QueryManager.getEntitiesMatching(family {
-                    hasData<String>()
+                    hasSet<String>()
                 }).count()
             removingSystem.doTick()
             ran shouldBe total

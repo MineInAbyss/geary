@@ -81,8 +81,6 @@ public data class Archetype(
     public val size: Int get() = ids.size
 
     private val _sourceListeners = mutableSetOf<GearyListener>()
-
-    /** TODO. */
     public val sourceListeners: Set<GearyListener> = _sourceListeners
 
     private val _targetListeners = mutableSetOf<GearyListener>()

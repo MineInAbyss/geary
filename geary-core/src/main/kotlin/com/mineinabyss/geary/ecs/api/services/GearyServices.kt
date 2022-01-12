@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.api.services
 
 import kotlin.reflect.KClass
 
+//TODO replace with Koin
 public object GearyServices {
     private val serviceGetters = mutableListOf<GearyServiceProvider>()
 

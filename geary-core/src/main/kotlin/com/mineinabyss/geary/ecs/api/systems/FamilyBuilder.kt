@@ -77,16 +77,19 @@ public abstract class MutableSelector : FamilyBuilder() {
         add(MutableOrSelector().apply(init))
     }
 
-    //TODO version of has that doesnt care about whether data is set
     public inline fun <reified T : GearyComponent> has() {
         or {
             has(componentId<T>())
             has(componentId<T>().withInvertedRole(HOLDS_DATA))
         }
     }
+    public inline fun <reified T : GearyComponent> hasAdded() {
+        has(componentId<T>())
 
-    public inline fun <reified T : GearyComponent> hasData() {
-        has(componentId<T>() or HOLDS_DATA)
+    }
+
+    public inline fun <reified T : GearyComponent> hasSet() {
+        has(componentId<T>().withRole(HOLDS_DATA))
     }
 
     public fun has(vararg componentIds: GearyComponentId) {

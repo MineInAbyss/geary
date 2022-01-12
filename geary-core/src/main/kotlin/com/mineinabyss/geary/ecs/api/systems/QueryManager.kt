@@ -36,14 +36,20 @@ public object QueryManager {
         listener::class.functions
             .filter { it.hasAnnotation<Handler>() }
             .map { func ->
-                class FunctionCaller(val kFunction: KFunction<*>, val params: List<KClass<*>>) {
+                class FunctionCaller(val kFunction: KFunction<*>, params: List<KClass<*>>) {
                     val types = kFunction.parameters.map { it.type.classifier }
+
+                    init {
+                        if (types.any { it !in params })
+                            error("Event handler on ${listener::class.simpleName} had parameters other than $params")
+                    }
+
                     val indices = params.map { types.indexOf(it) }
                     fun call(vararg args: Any?): Any? {
                         // Pass parameters in the order they need to be, allowing them to be omitted if desired.
                         // handle won't be called if a param is null when it shouldn't be unless misused by end user
                         val argArray = arrayOfNulls<Any?>(types.size)
-                        argArray[0] = listener//TODO throw error on registration when a user misuses it :p
+                        argArray[0] = listener
                         indices.forEachIndexed { i, arrIndex ->
                             if (arrIndex != -1) argArray[arrIndex] = args[i]
                         }
@@ -51,6 +57,7 @@ public object QueryManager {
                         return kFunction.call(*argArray)
                     }
                 }
+
                 val caller = FunctionCaller(func, listOf(SourceScope::class, TargetScope::class, EventScope::class))
                 val sourceNullable = typeOf<SourceScope>() !in func.parameters.map { it.type }
 
