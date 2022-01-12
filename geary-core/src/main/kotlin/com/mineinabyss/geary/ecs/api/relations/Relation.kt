@@ -57,7 +57,11 @@ public value class Relation private constructor(
         public inline fun <reified K : GearyComponent, reified V : GearyComponent> of(): Relation =
             of(componentId<K>(), componentId<V>())
 
-        public fun of(id: GearyComponentId): Relation? = Relation(id).takeIf { id.isRelation() }
+        /**
+         * Creates a relation from an id that is assumed to be valid. Use this to avoid boxing Relation because of
+         * the nullable type on [toRelation].
+         */
+        public fun of(id: GearyComponentId): Relation = Relation(id)
     }
 }
 
@@ -71,4 +75,4 @@ public value class Relation private constructor(
 @JvmInline
 public value class RelationValueId(public val id: GearyComponentId)
 
-public fun GearyComponentId.toRelation(): Relation? = Relation.of(this)
+public fun GearyComponentId.toRelation(): Relation? = Relation.of(this).takeIf { isRelation() }

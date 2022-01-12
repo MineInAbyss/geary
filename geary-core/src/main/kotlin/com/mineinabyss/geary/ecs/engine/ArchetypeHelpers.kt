@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.ecs.engine
 
-import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 
@@ -11,10 +10,3 @@ public fun Archetype.countChildren(vis: MutableSet<Archetype> = mutableSetOf()):
     vis.addAll(componentAddEdges.values)
     return vis.count()
 }
-
-
-public fun GearyType.plus(id: GearyComponentId): GearyType =
-    GearyType(this).apply { add(id) }
-
-public fun GearyType.minus(id: GearyComponentId): GearyType =
-    GearyType(this).apply { remove(id) }

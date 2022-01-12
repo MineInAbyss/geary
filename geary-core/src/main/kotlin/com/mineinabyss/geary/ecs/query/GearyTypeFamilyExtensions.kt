@@ -2,8 +2,8 @@ package com.mineinabyss.geary.ecs.query
 
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
+import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
-import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.isRelation
 import com.mineinabyss.geary.ecs.engine.withRole
@@ -13,17 +13,21 @@ public fun GearyType.containsRelationValue(
     componentMustHoldData: Boolean = false
 ): Boolean {
     val components = filter { !it.isRelation() }
-    return mapNotNull { it.toRelation() }
-        .any { relationInType ->
-            relationInType.value == relationValueId &&
-                    (!componentMustHoldData || components.any {
-                        it == relationInType.key.withRole(HOLDS_DATA)
-                    })
-        }
+    return any {
+        if (!it.isRelation()) return@any false
+        val relationInType = Relation.of(it)
+        relationInType.value == relationValueId &&
+                (!componentMustHoldData || components.any {
+                    it == relationInType.key.withRole(HOLDS_DATA)
+                })
+    }
 }
 
 public fun GearyType.containsRelationKey(relationKeyId: GearyComponentId): Boolean {
-    return any { it.toRelation()?.key == relationKeyId }
+    forEach {
+        if (Relation.of(it).key == relationKeyId) return true
+    }
+    return true
 }
 
 public operator fun Family.contains(type: GearyType): Boolean = when (this) {

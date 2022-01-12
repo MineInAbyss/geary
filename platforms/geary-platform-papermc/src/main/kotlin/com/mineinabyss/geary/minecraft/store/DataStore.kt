@@ -77,8 +77,8 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
         encode(value)
 
     val prefabs = type.filter { it.isInstance() }
-    if (prefabs.isNotEmpty())
-        encodePrefabs(prefabs.mapNotNull { it.toGeary().get<PrefabKey>() })
+    if (!prefabs.inner.isEmpty())
+        encodePrefabs(prefabs.inner.mapNotNull { it.toGeary().get<PrefabKey>() })
 }
 
 /**
@@ -126,5 +126,5 @@ public fun PersistentDataContainer.decodeComponents(): DecodedEntityData =
                 decode(it)
             }
             .toSet(),
-        type = decodePrefabs().mapNotNullTo(sortedSetOf()) { it.toEntity()?.id }
+        type = GearyType(decodePrefabs().mapNotNull { it.toEntity()?.id })
     )

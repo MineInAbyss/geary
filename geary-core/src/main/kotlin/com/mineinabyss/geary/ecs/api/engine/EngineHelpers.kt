@@ -8,9 +8,9 @@ import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
-public fun Engine.entity(): GearyEntity = getNextId().toGeary()
+public fun Engine.entity(): GearyEntity = newEntity()
 
-public inline fun Engine.entity(run: GearyEntity.() -> Unit): GearyEntity = getNextId().toGeary(run)
+public inline fun Engine.entity(run: GearyEntity.() -> Unit): GearyEntity = newEntity().apply(run)
 
 /** Creates an entity that will get removed once [run] completes or fails. */
 public inline fun Engine.temporaryEntity(run: (GearyEntity) -> Unit) {
@@ -27,6 +27,7 @@ public inline fun Engine.temporaryEntity(run: (GearyEntity) -> Unit) {
 public inline fun <reified T> componentId(): GearyComponentId = componentId(T::class)
 
 @Deprecated("Should not be getting an id for an id!", ReplaceWith("componentId(component)"))
+@Suppress("UNUSED_PARAMETER")
 public fun componentId(id: KClass<out GearyComponentId>): Nothing = error("Trying to access id for component id")
 
 public fun componentId(serialName: String): GearyComponentId =

@@ -23,7 +23,6 @@ public open class RelationWithDataAccessor<K : GearyComponent?, V : GearyCompone
     private val ArchetypeCacheScope.matchedRelations: List<Relation> by cached {
         val relations = when {
             // If we match a specific key and value, we are looking for a specific relation
-            //TODO does this need to ensure the archetype has this relation?
             relationValue != null && relationKey != null -> listOf(Relation.of(relationKey, relationValue))
             // If we match a specific value, we can have any key
             relationValue != null -> archetype.relationsByValue[relationValue.id.toLong()]

@@ -3,7 +3,6 @@ package com.mineinabyss.geary.ecs.engine
 import com.mineinabyss.geary.ecs.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
-import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
@@ -40,7 +39,8 @@ public data class Archetype(
     private val dataHoldingType = type.filter { it.holdsData() || it.isRelation() }
 
     /** An outer list with indices for component ids, and sub-lists with data indexed by entity [ids]. */
-    internal val componentData: List<MutableList<GearyComponent>> = dataHoldingType.map { mutableListOf() }
+    internal val componentData: List<MutableList<GearyComponent>> =
+        dataHoldingType.inner.map { mutableListOf() }
 
     /** Edges to other archetypes where a single component has been added. */
     internal val componentAddEdges = Long2ObjectOpenHashMap<Archetype>()
@@ -48,7 +48,7 @@ public data class Archetype(
     /** Edges to other archetypes where a single component has been removed. */
     internal val componentRemoveEdges = Long2ObjectOpenHashMap<Archetype>()
 
-    internal val relations = type.mapNotNull { it.toRelation() }
+    internal val relations = type.inner.mapNotNull { it.toULong().toRelation() }
 
     /** Map of relation [Relation.value] id to a list of relations with that [Relation.value]. */
     internal val relationsByValue: Long2ObjectOpenHashMap<List<Relation>> = relations
@@ -159,10 +159,10 @@ public data class Archetype(
      */
     @Synchronized
     internal fun addEntityWithData(
-        entity: GearyEntityId,
+        entity: GearyEntity,
         data: List<GearyComponent>
     ): Record {
-        ids.add(entity.toLong())
+        ids.add(entity.id.toLong())
         componentData.forEachIndexed { i, compArray ->
             compArray.add(data[i])
         }
@@ -181,7 +181,7 @@ public data class Archetype(
      */
     @Synchronized
     internal fun addComponent(
-        entity: GearyEntityId,
+        entity: GearyEntity,
         row: Int,
         component: GearyComponentId
     ): Record? {
@@ -206,7 +206,7 @@ public data class Archetype(
      */
     @Synchronized
     internal fun setComponent(
-        entity: GearyEntityId,
+        entity: GearyEntity,
         row: Int,
         componentId: GearyComponentId,
         data: GearyComponent
@@ -249,7 +249,7 @@ public data class Archetype(
      */
     @Synchronized
     internal fun removeComponent(
-        entity: GearyEntityId,
+        entity: GearyEntity,
         row: Int,
         component: GearyComponentId
     ): Record? {
@@ -290,7 +290,7 @@ public data class Archetype(
             runningIterators.forEach {
                 it.addMovedRow(lastIndex, row)
             }
-            Engine.setRecord(replacement.toULong(), Record.of(this, row))
+            Engine.setRecord(replacement.toGeary(), Record.of(this, row))
         }
     }
 

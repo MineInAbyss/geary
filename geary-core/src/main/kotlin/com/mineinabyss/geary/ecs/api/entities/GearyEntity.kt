@@ -26,7 +26,7 @@ import kotlin.reflect.KClass
 public value class GearyEntity(public val id: GearyEntityId) {
     /** Remove this entity from the ECS. */
     public fun removeEntity() {
-        Engine.removeEntity(id)
+        Engine.removeEntity(this)
     }
 
     /**
@@ -39,7 +39,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
         kClass: KClass<out T> = T::class,
         noEvent: Boolean = false
     ): T {
-        Engine.setComponentFor(id, componentId(kClass), component, noEvent)
+        Engine.setComponentFor(this, componentId(kClass), component, noEvent)
         return component
     }
 
@@ -79,11 +79,11 @@ public value class GearyEntity(public val id: GearyEntityId) {
         valueClass: KClass<*> = value::class,
         noEvent: Boolean = false
     ) {
-        Engine.setComponentFor(id, Relation.of(keyClass, valueClass).id, value, noEvent)
+        Engine.setComponentFor(this, Relation.of(keyClass, valueClass).id, value, noEvent)
     }
 
     public fun setRelation(key: GearyComponentId, value: Any, noEvent: Boolean = false) {
-        Engine.setComponentFor(id, Relation.of(key, componentId(value::class)).id, value, noEvent)
+        Engine.setComponentFor(this, Relation.of(key, componentId(value::class)).id, value, noEvent)
     }
 
     public inline fun <reified K : GearyComponent, reified V : GearyComponent> removeRelation(): Boolean =
@@ -98,7 +98,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
      * @param noEvent If true, will not fire a [AddedComponent].
      */
     public inline fun add(component: GearyComponentId, noEvent: Boolean = false) {
-        Engine.addComponentFor(id, component, noEvent)
+        Engine.addComponentFor(this, component, noEvent)
     }
 
     public inline fun <reified T : GearyComponent> add() {
@@ -142,14 +142,14 @@ public value class GearyEntity(public val id: GearyEntityId) {
         remove(componentId(kClass))
 
     public inline fun remove(component: GearyComponentId): Boolean =
-        Engine.removeComponentFor(id, component)
+        Engine.removeComponentFor(this, component)
 
     public inline fun removeAll(components: Collection<GearyComponentId>): Boolean =
         components.any { remove(it) }
 
     /** Clears the components on this entity. */
     public fun clear() {
-        Engine.clearEntity(id)
+        Engine.clearEntity(this)
     }
 
     /** Gets a component of type [T] on this entity. */
@@ -158,7 +158,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
 
     /** Gets a [component] which holds data from this entity. Use [has] if the component is not to hold data. */
     public inline fun get(component: GearyComponentId): GearyComponent? =
-        Engine.getComponentFor(id, component)
+        Engine.getComponentFor(this, component)
 
     /** Gets a component of type [T] or adds a [default] if no component was present. */
     public inline fun <reified T : GearyComponent> getOrSet(kClass: KClass<out T> = T::class, default: () -> T): T =
@@ -171,12 +171,12 @@ public value class GearyEntity(public val id: GearyEntityId) {
     ): T = get(kClass) ?: default().also { setPersisting(it, kClass) }
 
     /** Gets all the active components on this entity. */
-    public inline fun getComponents(): Set<GearyComponent> = Engine.getComponentsFor(id)
+    public inline fun getComponents(): Set<GearyComponent> = Engine.getComponentsFor(this)
 
 
     /** Removes all components related to a parent of type [T] on the entity. */
     public inline fun <reified T : GearyComponent> removeRelations(): Set<GearyComponent> {
-        val comps = Engine.getRelationsFor(id, RelationValueId(componentId<T>()))
+        val comps = Engine.getRelationsFor(this, RelationValueId(componentId<T>()))
         comps.forEach { (_, relation) ->
             removeRelation(relation)
         }
@@ -189,7 +189,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
 
     /** Gets a list of components related to the component represented by [relationValueId]. */
     public inline fun getComponentsRelatedTo(relationValueId: RelationValueId): Set<GearyComponent> =
-        Engine.getRelationsFor(id, relationValueId).mapTo(mutableSetOf()) { it.first }
+        Engine.getRelationsFor(this, relationValueId).mapTo(mutableSetOf()) { it.first }
 
     /** Gets all the active persisting components on this entity. */
     public inline fun getPersistingComponents(): Set<GearyComponent> =
@@ -209,7 +209,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
 
     /** Checks whether this entity has a [component], regardless of whether or not it holds data. */
     public inline fun has(component: GearyComponentId): Boolean =
-        Engine.hasComponentFor(id, component)
+        Engine.hasComponentFor(this, component)
 
     /** Checks whether an entity has all of a list of [components].
      * @see has */
@@ -257,7 +257,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
         error("Failed to get an entity while calling event that expects a result returned")
     }
 
-    public inline val record: Record get() = Engine.getRecord(id)
+    public inline val record: Record get() = Engine.getRecord(this)
     public inline val type: GearyType get() = record.archetype.type
 
     public operator fun component1(): GearyEntityId = id

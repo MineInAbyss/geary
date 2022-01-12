@@ -1,8 +1,7 @@
 package com.mineinabyss.geary.minecraft.engine
 
 import co.aikar.timings.Timings
-import com.mineinabyss.geary.ecs.api.GearyEntityId
-import com.mineinabyss.geary.ecs.api.entities.toGeary
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.minecraft.GearyPlugin
@@ -40,9 +39,10 @@ public class SpigotEngine : GearyEngine() {
         }
     }
 
-    override fun removeEntity(entity: GearyEntityId) {
-        if (entity.toGeary().has<UUID>())
-            GearyEntityRemoveEvent(entity.toGeary()).call()
+    override fun removeEntity(entity: GearyEntity) {
+        if (entity.has<UUID>())
+            //TODO this should be unnecessary now
+            GearyEntityRemoveEvent(entity).call()
         super.removeEntity(entity)
     }
 }

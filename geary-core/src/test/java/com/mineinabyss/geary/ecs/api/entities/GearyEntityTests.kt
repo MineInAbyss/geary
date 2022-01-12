@@ -40,7 +40,7 @@ internal class GearyEntityTests {
         val entitySetAll = Engine.entity {
             setAll(listOf("Test", 1))
         }
-        entity.type shouldContainExactly entitySetAll.type
+        entity.type.inner shouldContainExactly entitySetAll.type.inner
     }
 
     @Test

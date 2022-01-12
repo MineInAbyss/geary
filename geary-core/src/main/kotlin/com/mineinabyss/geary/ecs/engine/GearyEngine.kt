@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.engine.temporaryEntity
+import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
@@ -34,11 +35,10 @@ import kotlin.reflect.KClass
 public open class GearyEngine : TickingEngine() {
     private val typeMap = TypeMap()
     private var currId: GearyEntityId = 0uL
-
     final override val rootArchetype: Archetype = Archetype(GearyType(), 0)
     private val archetypes = mutableListOf(rootArchetype)
     private val removedEntities = EntityStack()
-    private val classToComponentMap = mutableMapOf<KClass<*>, GearyEntityId>()
+    private val classToComponentMap = ClassToComponentMap()
 
     init {
         //Register an entity for the ComponentInfo component, otherwise getComponentIdForClass does a StackOverflow
@@ -47,17 +47,41 @@ public open class GearyEngine : TickingEngine() {
 //        componentInfo.set(ComponentInfo(ComponentInfo::class)) //FIXME causes an error
     }
 
-    //TODO Proper pipeline with different stages
     private val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
     private val registeredListeners: MutableSet<GearyListener> = mutableSetOf()
 
-    override fun getOrRegisterComponentIdForClass(kClass: KClass<*>): GearyComponentId =
-        classToComponentMap.getOrElse(kClass) { registerComponentIdForClass(kClass) }
+    /** Describes how to individually tick each system */
+    protected open fun TickingSystem.runSystem() {
+        doTick()
+    }
 
-    override fun registerComponentIdForClass(kClass: KClass<*>): GearyComponentId =
-        classToComponentMap.getOrPut(kClass) { entity().id }.also {
-            it.toGeary().set(ComponentInfo(kClass))
+    private fun getOrCreateRecord(entity: GearyEntity): Record {
+        if (!typeMap.contains(entity)) {
+            val record = rootArchetype.addEntityWithData(entity, listOf())
+            typeMap[entity] = record
+            return record
         }
+        return typeMap[entity]
+    }
+
+    private fun createArchetype(prevNode: Archetype, componentEdge: GearyComponentId): Archetype {
+        val arc = synchronized(archetypes) {
+            Archetype(prevNode.type.plus(componentEdge), archetypes.size).also {
+                archetypes += it
+            }
+        }
+        arc.componentRemoveEdges[componentEdge] = prevNode
+        prevNode.componentAddEdges[componentEdge] = arc
+        QueryManager.registerArchetype(arc)
+        return arc
+    }
+
+    @Synchronized
+    override fun newEntity(): GearyEntity {
+        val entity = if (!removedEntities.isEmpty()) removedEntities.pop() else (currId++).toGeary()
+        setRecord(entity, rootArchetype.addEntityWithData(entity, listOf()))
+        return entity
+    }
 
     override fun addSystem(system: GearySystem) {
         // Track systems right at startup since they are likely going to tick very soon anyways and we don't care about
@@ -76,39 +100,22 @@ public open class GearyEngine : TickingEngine() {
         }
     }
 
-    //TODO support suspending functions for systems
-    // perhaps async support in the future
-    override fun tick(currentTick: Long) {
-        registeredSystems
-            .filter { currentTick % it.interval == 0L }
-            .forEach {
-                try {
-                    it.runSystem()
-                } catch (e: Exception) {
-                    logError("Error while running system ${it.javaClass.name}")
-                    e.printStackTrace()
-                }
-            }
+    override fun getRecord(entity: GearyEntity): Record = typeMap[entity]
+
+    override fun setRecord(entity: GearyEntity, record: Record) {
+        typeMap[entity] = record
     }
 
-    /** Describes how to individually tick each system */
-    protected open fun TickingSystem.runSystem() {
-        doTick()
-    }
+    override fun getComponentFor(entity: GearyEntity, componentId: GearyComponentId): GearyComponent? =
+        getRecord(entity).run {
+            archetype[row, componentId.let { if (it.hasRole(RELATION)) it else it.withRole(HOLDS_DATA) }]
+        }
 
     override fun scheduleSystemTicking() {
         TODO("Implement a system for ticking independent of spigot")
     }
 
-
-    @Synchronized
-    override fun getNextId(): GearyEntityId {
-        val id = if (!removedEntities.isEmpty()) removedEntities.pop() else currId++
-        setRecord(id, rootArchetype.addEntityWithData(id, listOf()))
-        return id
-    }
-
-    override fun getComponentsFor(entity: GearyEntityId): Set<GearyComponent> =
+    override fun getComponentsFor(entity: GearyEntity): Set<GearyComponent> =
         getRecord(entity).run {
             archetype.getComponents(row).also { array ->
                 for (relation in archetype.relations) {
@@ -119,7 +126,7 @@ public open class GearyEngine : TickingEngine() {
         }
 
     override fun getRelationsFor(
-        entity: GearyEntityId,
+        entity: GearyEntity,
         relationValueId: RelationValueId
     ): Set<Pair<GearyComponent, Relation>> = getRecord(entity).run {
         archetype
@@ -131,11 +138,11 @@ public open class GearyEngine : TickingEngine() {
 
 
     override fun addComponentFor(
-        entity: GearyEntityId,
+        entity: GearyEntity,
         componentId: GearyComponentId,
         noEvent: Boolean
     ) {
-        getOrAddRecord(entity).apply {
+        getOrCreateRecord(entity).apply {
             val newRecord = archetype.addComponent(entity, row, HOLDS_DATA.inv() and componentId)
             typeMap[entity] = newRecord ?: return
             if (!noEvent)
@@ -147,12 +154,12 @@ public open class GearyEngine : TickingEngine() {
     }
 
     override fun setComponentFor(
-        entity: GearyEntityId,
+        entity: GearyEntity,
         componentId: GearyComponentId,
         data: GearyComponent,
         noEvent: Boolean
     ) {
-        getOrAddRecord(entity).apply {
+        getOrCreateRecord(entity).apply {
             // Only add HOLDS_DATA if this isn't a relation. All relations implicitly hold data currently and that bit
             // corresponds to the component part of the relation.
             val role = if (!componentId.hasRole(RELATION)) HOLDS_DATA else NO_ROLE
@@ -167,27 +174,23 @@ public open class GearyEngine : TickingEngine() {
         }
     }
 
-    override fun removeComponentFor(entity: GearyEntityId, componentId: GearyComponentId): Boolean {
-        return getRecord(entity).apply {
+    override fun removeComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean {
+        getRecord(entity).apply {
             val record = archetype.removeComponent(entity, row, componentId.withRole(HOLDS_DATA))
                 ?: archetype.removeComponent(entity, row, componentId)
             typeMap[entity] = record ?: return false
-        } != null
+        }
+        return true
     }
 
-    override fun getComponentFor(entity: GearyEntityId, componentId: GearyComponentId): GearyComponent? =
-        getRecord(entity)?.run {
-            archetype[row, componentId.let { if (it.hasRole(RELATION)) it else it.withRole(HOLDS_DATA) }]
-        }
+    override fun hasComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean =
+        getRecord(entity).archetype.contains(componentId)
 
-    override fun hasComponentFor(entity: GearyEntityId, componentId: GearyComponentId): Boolean =
-        getRecord(entity)?.archetype?.contains(componentId) ?: false
-
-    //TODO might be a smarter way of storing removed entities as an implicit list within a larger list of entities eventually
-    override fun removeEntity(entity: GearyEntityId) {
+    override fun removeEntity(entity: GearyEntity) {
         // remove all children of this entity from the ECS as well
-        entity.toGeary().apply {
+        entity.apply {
             children.forEach {
+                // Remove self from the child's parents or remove the child if it no longer has parents
                 if (parents == setOf(this)) it.removeEntity()
                 else it.removeParent(this)
             }
@@ -199,8 +202,8 @@ public open class GearyEngine : TickingEngine() {
         removedEntities.push(entity)
     }
 
-    override fun clearEntity(entity: GearyEntityId) {
-        getRecord(entity)?.apply {
+    override fun clearEntity(entity: GearyEntity) {
+        getRecord(entity).apply {
             archetype.removeEntity(row)
         }
         typeMap.remove(entity)
@@ -216,31 +219,29 @@ public open class GearyEngine : TickingEngine() {
         return node
     }
 
-    private fun createArchetype(prevNode: Archetype, componentEdge: GearyComponentId): Archetype {
-        val arc = synchronized(archetypes) {
-            Archetype(prevNode.type.plus(componentEdge), archetypes.size).also {
-                archetypes += it
+    override fun getOrRegisterComponentIdForClass(kClass: KClass<*>): GearyComponentId {
+        val id = classToComponentMap[kClass]
+        if (id == (-1L).toULong()) return registerComponentIdForClass(kClass)
+        return id
+    }
+
+    private fun registerComponentIdForClass(kClass: KClass<*>): GearyComponentId {
+        val compEntity = newEntity()
+        classToComponentMap[kClass] = compEntity.id
+        compEntity.set(ComponentInfo(kClass))
+        return compEntity.id
+    }
+
+    override fun tick(currentTick: Long) {
+        registeredSystems
+            .filter { currentTick % it.interval == 0L }
+            .forEach {
+                try {
+                    it.runSystem()
+                } catch (e: Exception) {
+                    logError("Error while running system ${it.javaClass.name}")
+                    e.printStackTrace()
+                }
             }
-        }
-        arc.componentRemoveEdges[componentEdge] = prevNode
-        prevNode.componentAddEdges[componentEdge] = arc
-        QueryManager.registerArchetype(arc)
-        return arc
-    }
-
-
-    public override fun getRecord(entity: GearyEntityId): Record = typeMap[entity]
-
-    override fun setRecord(entity: GearyEntityId, record: Record) {
-        typeMap[entity] = record
-    }
-
-    private fun getOrAddRecord(entity: GearyEntityId): Record {
-        if (!typeMap.contains(entity)) {
-            val record = rootArchetype.addEntityWithData(entity, listOf())
-            typeMap[entity] = record
-            return record
-        }
-        return typeMap[entity]
     }
 }

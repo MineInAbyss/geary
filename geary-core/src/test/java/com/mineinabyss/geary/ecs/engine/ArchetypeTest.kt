@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.ecs.engine
 
-import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
@@ -43,7 +42,7 @@ internal class ArchetypeTest {
         @Test
         fun `get type equals archetype adding`() {
             Engine.rootArchetype + 1u + 2u + 3u - 1u + 1u shouldBe
-                    sortedSetOf<GearyComponentId>(1u, 2u, 3u).getArchetype()
+                    GearyType(1u, 2u, 3u).getArchetype()
         }
 
         @Test
@@ -55,7 +54,7 @@ internal class ArchetypeTest {
     @Test
     fun matchedRelations() {
         val arc = Archetype(
-            sortedSetOf(
+            GearyType(
                 Relation.of(1uL or HOLDS_DATA, 10uL).id,
                 Relation.of(2uL or HOLDS_DATA, 10uL).id,
             ), 0

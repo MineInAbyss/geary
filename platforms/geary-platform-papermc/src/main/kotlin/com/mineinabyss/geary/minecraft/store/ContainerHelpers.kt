@@ -8,7 +8,6 @@ import com.mineinabyss.idofront.items.editItemMeta
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataHolder
-import java.util.*
 
 /** Encodes this entity's persisting components into a [PersistentDataContainer] */
 public fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
@@ -18,8 +17,7 @@ public fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
     persisting.forEach {
         getRelation(it::class, PersistingComponent::class)?.hash = it.hashCode()
     }
-
-    pdc.encodeComponents(persisting, type.toCollection(TreeSet()))
+    pdc.encodeComponents(persisting, type)
 }
 
 public fun GearyEntity.encodeComponentsTo(holder: PersistentDataHolder) {
@@ -43,8 +41,8 @@ public fun GearyEntity.decodeComponentsFrom(decodedEntityData: DecodedEntityData
 
     // Components written to this entity's PDC will override the ones defined in type
     setAllPersisting(components)
-    for (id in type) {
-        addPrefab(id.toGeary())
+    type.forEach {
+        addPrefab(it.toGeary())
     }
 }
 

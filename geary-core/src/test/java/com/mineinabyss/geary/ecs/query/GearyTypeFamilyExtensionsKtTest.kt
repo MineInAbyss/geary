@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.ecs.query
 
+import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
@@ -19,7 +20,7 @@ class GearyTypeFamilyExtensionsKtTest {
 
     @Test
     fun containsRelation() {
-        val type = sortedSetOf(Relation.of(2uL, 1uL).id, 2uL)
+        val type = GearyType(Relation.of(2uL, 1uL).id, 2uL)
         type.containsRelationValue(RelationValueId(1uL)) shouldBe true
         type.containsRelationValue(RelationValueId(2uL)) shouldBe false
     }

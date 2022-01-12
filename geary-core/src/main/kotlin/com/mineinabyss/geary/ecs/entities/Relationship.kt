@@ -2,7 +2,6 @@ package com.mineinabyss.geary.ecs.entities
 
 //TODO add documentation and maybe split into two files
 
-import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
@@ -57,7 +56,10 @@ public fun GearyEntity.clearChildren() {
 
 /** Gets the first parent of this entity */
 public val GearyEntity.parent: GearyEntity?
-    get() = type.firstOrNull { it.isChild() }?.let { (it and ENTITY_MASK).toGeary() }
+    get() {
+        type.forEach { if (it.isChild()) return (it and ENTITY_MASK).toGeary() }
+        return null
+    }
 
 /** Runs code on the first parent of this entity. */
 public inline fun GearyEntity.onParent(parent: GearyEntity? = this.parent, run: GearyEntity.() -> Unit) {
@@ -68,8 +70,9 @@ public inline fun GearyEntity.onParent(parent: GearyEntity? = this.parent, run: 
 public val GearyEntity.parents: Set<GearyEntity>
     get() {
         val parents = mutableSetOf<GearyEntity>()
-        for (id in type) if (id.isChild())
-            parents.add((id and ENTITY_MASK).toGeary())
+        type.forEach {
+            if (id.isChild()) parents.add((id and ENTITY_MASK).toGeary())
+        }
         return parents
     }
 
@@ -84,10 +87,10 @@ public val GearyEntity.instances: List<GearyEntity>
     })
 
 public val GearyEntity.prefabKeys: List<PrefabKey>
-    get() = prefabs.mapNotNull { it.toGeary().get<PrefabKey>() }
+    get() = prefabs.mapNotNull { it.get<PrefabKey>() }
 
-public val GearyEntity.prefabs: List<GearyEntityId>
-    get() = type.filter { it.isInstance() }
+public val GearyEntity.prefabs: List<GearyEntity>
+    get() = type.filter { it.isInstance() }.inner.map { it.toGeary() }
 
 /** Adds a [prefab] entity to this entity.  */
 public fun GearyEntity.addPrefab(prefab: GearyEntity) {

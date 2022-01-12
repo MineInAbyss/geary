@@ -2,6 +2,7 @@
 
 package com.mineinabyss.geary.ecs.api.systems
 
+import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.query.contains
@@ -15,9 +16,9 @@ internal class FamilyTest {
         val family = family {
             has(1uL, 2uL, 3uL)
         }
-        (sortedSetOf(1uL, 2uL) in family) shouldBe false
-        (sortedSetOf(1uL, 2uL, 3uL) in family) shouldBe true
-        (sortedSetOf(1uL, 2uL, 3uL, 4uL) in family) shouldBe true
+        (GearyType(1uL, 2uL) in family) shouldBe false
+        (GearyType(1uL, 2uL, 3uL) in family) shouldBe true
+        (GearyType(1uL, 2uL, 3uL, 4uL) in family) shouldBe true
     }
 
     @Test
@@ -26,9 +27,9 @@ internal class FamilyTest {
             hasRelation(typeOf<Any?>(), 15uL)
         }
         
-        (sortedSetOf(Relation.of(1uL, 14uL).id, 1uL) in family) shouldBe false
-        (sortedSetOf(Relation.of(1uL, 15uL).id) in family) shouldBe true
-        (sortedSetOf(Relation.of(1uL, 15uL).id, 1uL) in family) shouldBe true
+        (GearyType(Relation.of(1uL, 14uL).id, 1uL) in family) shouldBe false
+        (GearyType(Relation.of(1uL, 15uL).id) in family) shouldBe true
+        (GearyType(Relation.of(1uL, 15uL).id, 1uL) in family) shouldBe true
     }
 
     @Test
@@ -37,9 +38,9 @@ internal class FamilyTest {
             hasRelation(typeOf<Any>(), 15uL)
         }
 
-        (sortedSetOf(Relation.of(1uL, 14uL).id, 1uL) in family) shouldBe false
-        (sortedSetOf(Relation.of(1uL, 15uL).id) in family) shouldBe false
-        (sortedSetOf(Relation.of(1uL, 15uL).id, 1uL) in family) shouldBe false
-        (sortedSetOf(Relation.of(1uL, 15uL).id, 1uL or HOLDS_DATA) in family) shouldBe true
+        (GearyType(Relation.of(1uL, 14uL).id, 1uL) in family) shouldBe false
+        (GearyType(Relation.of(1uL, 15uL).id) in family) shouldBe false
+        (GearyType(Relation.of(1uL, 15uL).id, 1uL) in family) shouldBe false
+        (GearyType(Relation.of(1uL, 15uL).id, 1uL or HOLDS_DATA) in family) shouldBe true
     }
 }

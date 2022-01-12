@@ -15,7 +15,7 @@ private val Collection<GearyComponent>.names: String get() = mapNotNull { it.ser
 /** Neatly lists all the components on this entity. */
 public fun GearyEntity.listComponents(): String {
     return """
-        Type: ${type.mapNotNull { it.toGeary().get<PrefabKey>() }}
+        Type: ${type.inner.mapNotNull { it.toGeary().get<PrefabKey>() }}
         Instance: ${getInstanceComponents().names}
         Persisting: ${getPersistingComponents().names}
     """.trimIndent()
