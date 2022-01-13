@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.ecs.prefab
+package com.mineinabyss.geary.prefabs
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

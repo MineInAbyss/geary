@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.ecs.components
+package com.mineinabyss.geary.prefabs.configuration.components
 
 import java.io.File
 

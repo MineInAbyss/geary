@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.ecs.prefab
+package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.building.get
@@ -7,10 +7,10 @@ import com.mineinabyss.geary.ecs.api.autoscan.Handler
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
-import com.mineinabyss.geary.ecs.components.ChildOnPrefab
-import com.mineinabyss.geary.ecs.components.ChildrenOnPrefab
 import com.mineinabyss.geary.ecs.components.EntityName
 import com.mineinabyss.geary.ecs.entities.addParent
+import com.mineinabyss.geary.prefabs.configuration.components.ChildOnPrefab
+import com.mineinabyss.geary.prefabs.configuration.components.ChildrenOnPrefab
 
 @AutoScan
 public class ParseChildOnPrefab : GearyListener() {

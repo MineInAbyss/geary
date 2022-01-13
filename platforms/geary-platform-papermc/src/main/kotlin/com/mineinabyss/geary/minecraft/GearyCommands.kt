@@ -3,14 +3,13 @@ package com.mineinabyss.geary.minecraft
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.engine.countChildren
 import com.mineinabyss.geary.ecs.engine.getArchetype
-import com.mineinabyss.geary.ecs.prefab.PrefabKey
-import com.mineinabyss.geary.ecs.prefab.PrefabManager
+import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.execution.stopCommand
 import com.mineinabyss.idofront.messaging.info
 import com.rylinaux.plugman.util.PluginUtil
-import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 
@@ -53,7 +52,7 @@ internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
 
     override fun onTabComplete(
         sender: CommandSender,
-        command: Command,
+        command: org.bukkit.command.Command,
         alias: String,
         args: Array<out String>
     ): List<String> {
@@ -66,9 +65,9 @@ internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
             2 -> {
                 when (args[0]) {
                     "reread" -> PrefabManager.keys.filter {
-                            val arg = args[1].lowercase()
-                            it.name.startsWith(arg) || it.key.startsWith(arg)
-                        }.map { it.toString() }
+                        val arg = args[1].lowercase()
+                        it.name.startsWith(arg) || it.key.startsWith(arg)
+                    }.map { it.toString() }
                     else -> listOf()
                 }
             }

@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.ecs.prefab
+package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.serialization.DescriptorWrapper

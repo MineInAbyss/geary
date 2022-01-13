@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.ecs.prefab
+package com.mineinabyss.geary.prefabs
 
 public data class PersistingPrefabs(
     val prefabs: Set<PrefabKey>

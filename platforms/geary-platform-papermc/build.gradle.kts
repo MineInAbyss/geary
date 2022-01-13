@@ -26,6 +26,7 @@ dependencies {
     api(project(":geary-core")) {
         exclude(module = "kotlin-reflect")
     }
+    api(project(":geary-prefabs"))
     implementation("org.reflections:reflections:0.9.12")
 }
 

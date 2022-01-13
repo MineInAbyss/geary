@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.minecraft.components
 
-import com.mineinabyss.geary.ecs.prefab.PrefabKey
-import com.mineinabyss.geary.ecs.prefab.PrefabManager
+import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.prefabs.PrefabManager
 import org.bukkit.plugin.Plugin
 
 public fun PrefabKey.Companion.of(plugin: Plugin, name: String): PrefabKey =

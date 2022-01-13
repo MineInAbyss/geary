@@ -27,6 +27,7 @@ pluginManagement {
 
 include(
     "geary-core",
+    "geary-prefabs",
     "geary-platform-papermc",
 )
 

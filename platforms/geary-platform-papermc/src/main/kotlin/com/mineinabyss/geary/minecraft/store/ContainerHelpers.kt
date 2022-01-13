@@ -3,7 +3,7 @@ package com.mineinabyss.geary.minecraft.store
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.components.PersistingComponent
-import com.mineinabyss.geary.ecs.entities.addPrefab
+import com.mineinabyss.geary.prefabs.helpers.addPrefab
 import com.mineinabyss.idofront.items.editItemMeta
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
