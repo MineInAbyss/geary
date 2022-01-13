@@ -3,8 +3,12 @@ package com.mineinabyss.geary.ecs.api.systems
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.engine.ArchetypeIterator
 import com.mineinabyss.geary.ecs.query.Query
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
+ * #### [Guide: Ticking systems](https://wiki.mineinabyss.com/geary/guide/ticking-systems)
+ *
  * A system for the ECS that will run every [interval] ticks.
  *
  * @param interval How often to run this system in ticks.
@@ -12,7 +16,7 @@ import com.mineinabyss.geary.ecs.query.Query
  * @see [ArchetypeIterator]
  */
 public abstract class TickingSystem(
-    public val interval: Long = 1,
+    public val interval: Duration = 20.milliseconds,
     init: (TickingSystem.() -> Unit)? = null
 ) : Query(), GearySystem {
     protected var iteration: Int = 0

@@ -352,7 +352,7 @@ public data class Archetype(
                 perArchetypeData = handler.parentListener.source.cacheForArchetype(sourceArchetype),
                 row = sourceRecord!!.row,
             )
-            handler.runEvent(sourceScope, targetScope, eventScope)
+            handler.processAndHandle(sourceScope, targetScope, eventScope)
         }
     }
 

@@ -40,7 +40,8 @@ public object QueryManager {
                     val types = kFunction.parameters.map { it.type.classifier }
 
                     init {
-                        if (types.any { it !in params })
+                        // First param is the class itself, we only care about function params
+                        if (types.drop(1).any { it !in params })
                             error("Event handler on ${listener::class.simpleName} had parameters other than $params")
                     }
 

@@ -19,7 +19,6 @@ public fun family(init: MutableAndSelector.() -> Unit): AndSelector {
     return MutableAndSelector().apply(init).build()
 }
 
-//TODO perhaps different hierarchy for leaves so we don't have to make mutable versions for nothing
 public class MutableComponentLeaf(
     public var component: GearyComponentId
 ) : FamilyBuilder() {

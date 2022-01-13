@@ -5,17 +5,17 @@ import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.idofront.messaging.logError
 
 /**
- * Placed within a [GearyListener] as an `object` or `inner class` to fire when an event matching
- * specified components gets fired on an entity matching the listener's components.
+ * Generated within a [GearyListener]. Will handle events matching specified components on source/target/event entities.
  */
 public abstract class GearyHandler(
     public val parentListener: GearyListener,
     public val sourceNullable: Boolean,
 ) {
+    /** Runs when a matching event is fired. */
     public abstract fun handle(source: SourceScope?, target: TargetScope, event: EventScope)
 
-    /** Be sure [event] is of the same type as this listener wants! */
-    public open fun runEvent(
+    /** Reads necessary data and iterates over combinations as appropriate, calling the [handle] function on each. */
+    public open fun processAndHandle(
         sourceScope: RawAccessorDataScope?,
         targetScope: RawAccessorDataScope,
         eventScope: RawAccessorDataScope,

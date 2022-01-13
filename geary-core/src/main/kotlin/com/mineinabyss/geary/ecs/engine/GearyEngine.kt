@@ -22,6 +22,7 @@ import com.mineinabyss.geary.ecs.entities.parents
 import com.mineinabyss.geary.ecs.entities.removeParent
 import com.mineinabyss.geary.ecs.events.AddedComponent
 import com.mineinabyss.idofront.messaging.logError
+import com.mineinabyss.idofront.time.inWholeTicks
 import kotlin.reflect.KClass
 
 /**
@@ -234,7 +235,7 @@ public open class GearyEngine : TickingEngine() {
 
     override fun tick(currentTick: Long) {
         registeredSystems
-            .filter { currentTick % it.interval == 0L }
+            .filter { currentTick % it.interval.inWholeTicks == 0L }
             .forEach {
                 try {
                     it.runSystem()
