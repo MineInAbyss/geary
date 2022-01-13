@@ -1,15 +1,14 @@
 package com.mineinabyss.geary.ecs.events
 
-import com.mineinabyss.geary.ecs.accessors.EventResultScope
-import com.mineinabyss.geary.ecs.accessors.ResultScope
+import com.mineinabyss.geary.ecs.accessors.TargetScope
+import com.mineinabyss.geary.ecs.accessors.building.get
+import com.mineinabyss.geary.ecs.api.autoscan.Handler
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.engine.getArchetype
 import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
-import com.mineinabyss.geary.ecs.events.handlers.ComponentAddHandler
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
@@ -22,15 +21,20 @@ internal class ComponentAddEventKtTest {
 
     var inc = 0
 
+    //TODO write test for all methods of checking for added
     inner class OnStringAdd : GearyListener() {
-        val ResultScope.string by get<String>()
-        val ResultScope.int by get<Int>()
-        val ResultScope.double by get<Double>()
+        // All three get added
+        val TargetScope.string by get<String>()
+        val TargetScope.int by get<Int>()
+        val TargetScope.double by get<Double>()
 
-        private inner class Increment(): ComponentAddHandler() {
-            override fun ResultScope.handle(event: EventResultScope) {
-                inc++
-            }
+        init {
+            allAdded()
+        }
+
+        @Handler
+        fun increment() {
+            inc++
         }
     }
 
@@ -38,8 +42,9 @@ internal class ComponentAddEventKtTest {
     fun componentAddEvent() {
         val listener = OnStringAdd()
         Engine.addSystem(listener)
+
         Engine.entity {
-            fun addedListeners() = type.getArchetype().eventListeners.count { it === listener }
+            fun addedListeners() = type.getArchetype().targetListeners.count { it === listener }
             set("")
             set(1)
             inc shouldBe 0

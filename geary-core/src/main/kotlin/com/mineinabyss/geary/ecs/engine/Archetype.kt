@@ -3,14 +3,12 @@ package com.mineinabyss.geary.ecs.engine
 import com.mineinabyss.geary.ecs.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
-import com.mineinabyss.geary.ecs.api.GearyEntityId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationDataType
+import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
@@ -30,6 +28,7 @@ import java.util.*
  */
 public data class Archetype(
     public val type: GearyType,
+    public val id: Int
 ) {
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     //TODO aim to make private
@@ -40,7 +39,8 @@ public data class Archetype(
     private val dataHoldingType = type.filter { it.holdsData() || it.isRelation() }
 
     /** An outer list with indices for component ids, and sub-lists with data indexed by entity [ids]. */
-    internal val componentData: List<MutableList<GearyComponent>> = dataHoldingType.map { mutableListOf() }
+    internal val componentData: List<MutableList<GearyComponent>> =
+        dataHoldingType.inner.map { mutableListOf() }
 
     /** Edges to other archetypes where a single component has been added. */
     internal val componentAddEdges = Long2ObjectOpenHashMap<Archetype>()
@@ -48,21 +48,28 @@ public data class Archetype(
     /** Edges to other archetypes where a single component has been removed. */
     internal val componentRemoveEdges = Long2ObjectOpenHashMap<Archetype>()
 
-    /** Map of relation parent id to a list of relations with that parent. */
-    internal val relations: Long2ObjectOpenHashMap<List<Relation>> = type
-        .mapNotNull { it.toRelation() }
-        .groupBy { it.data.id.toLong() }
+    internal val relations = type.inner.mapNotNull { it.toULong().toRelation() }
+
+    /** Map of relation [Relation.value] id to a list of relations with that [Relation.value]. */
+    internal val relationsByValue: Long2ObjectOpenHashMap<List<Relation>> = relations
+        .groupBy { it.value.id.toLong() }
+        .let { Long2ObjectOpenHashMap(it) }
+
+    /** Map of relation [Relation.key] id to a list of relations with that [Relation.key]. */
+    internal val relationsByKey: Long2ObjectOpenHashMap<List<Relation>> = relations
+        .groupBy { it.key.toLong() }
         .let { Long2ObjectOpenHashMap(it) }
 
     /** A map of a relation's data type id to full relations that store data of that type. */
     internal val dataHoldingRelations: Long2ObjectOpenHashMap<List<Relation>> by lazy {
         val map = Long2ObjectOpenHashMap<List<Relation>>()
-        relations.forEach { (key, value) ->
-            val dataHolding = value.filter { it.key.holdsData() }
+        relationsByValue.forEach { (key, values) ->
+            val dataHolding = values.filter { it.key.holdsData() }
             if (dataHolding.isNotEmpty()) map[key] = dataHolding
         }
         map
     }
+
 
     /** A map of component ids to index used internally in this archetype (ex. in [componentData])*/
     private val comp2indices = Long2IntOpenHashMap().apply {
@@ -73,12 +80,14 @@ public data class Archetype(
     /** The amount of entities stored in this archetype. */
     public val size: Int get() = ids.size
 
-    private val _eventListeners = mutableSetOf<GearyListener>()
+    private val _sourceListeners = mutableSetOf<GearyListener>()
+    public val sourceListeners: Set<GearyListener> = _sourceListeners
 
-    /** TODO. */
-    public val eventListeners: Set<GearyListener> = _eventListeners
+    private val _targetListeners = mutableSetOf<GearyListener>()
+    public val targetListeners: Set<GearyListener> = _targetListeners
 
     private val _eventHandlers = mutableSetOf<GearyHandler>()
+
     //TODO update doc
     /** A map of event class type to a set of event handlers which fire on that event. */
     public val eventHandlers: Set<GearyHandler> = _eventHandlers
@@ -89,11 +98,11 @@ public data class Archetype(
 
     // ==== Helper functions ====
 
-    /** @return This Archetype's [relations] that are also a part of [matchRelations]. */
-    public fun matchedRelationsFor(matchRelations: Collection<RelationDataType>): Map<RelationDataType, List<Relation>> =
+    /** @return This Archetype's [relationsByValue] that are also a part of [matchRelations]. */
+    public fun matchedRelationsFor(matchRelations: Collection<RelationValueId>): Map<RelationValueId, List<Relation>> =
         matchRelations
-            .filter { it.id.toLong() in relations }
-            .associateWith { relations[it.id.toLong()]!! } //TODO handle null error
+            .filter { it.id.toLong() in relationsByValue }
+            .associateWith { relationsByValue[it.id.toLong()]!! } //TODO handle null error
 
     /**
      * Used to pack data closer together and avoid having hashmaps throughout the archetype.
@@ -148,14 +157,14 @@ public data class Archetype(
      */
     @Synchronized
     internal fun addEntityWithData(
-        entity: GearyEntityId,
+        entity: GearyEntity,
         data: List<GearyComponent>
     ): Record {
-        ids.add(entity.toLong())
+        ids.add(entity.id.toLong())
         componentData.forEachIndexed { i, compArray ->
             compArray.add(data[i])
         }
-        return Record(this, size - 1)
+        return Record.of(this, size - 1)
     }
 
     // For the following few functions, both entity and row are passed to avoid doing several array look-ups
@@ -170,7 +179,7 @@ public data class Archetype(
      */
     @Synchronized
     internal fun addComponent(
-        entity: GearyEntityId,
+        entity: GearyEntity,
         row: Int,
         component: GearyComponentId
     ): Record? {
@@ -195,7 +204,7 @@ public data class Archetype(
      */
     @Synchronized
     internal fun setComponent(
-        entity: GearyEntityId,
+        entity: GearyEntity,
         row: Int,
         componentId: GearyComponentId,
         data: GearyComponent
@@ -238,7 +247,7 @@ public data class Archetype(
      */
     @Synchronized
     internal fun removeComponent(
-        entity: GearyEntityId,
+        entity: GearyEntity,
         row: Int,
         component: GearyComponentId
     ): Record? {
@@ -279,7 +288,7 @@ public data class Archetype(
             runningIterators.forEach {
                 it.addMovedRow(lastIndex, row)
             }
-            Engine.setRecord(replacement.toULong(), Record(this, row))
+            Engine.setRecord(replacement.toGeary(), Record.of(this, row))
         }
     }
 
@@ -290,36 +299,60 @@ public data class Archetype(
         _eventHandlers += handler
     }
 
-    public fun addEventListener(handler: GearyListener) {
-        _eventListeners += handler
+    public fun addSourceListener(handler: GearyListener) {
+        _sourceListeners += handler
     }
 
+    public fun addTargetListener(handler: GearyListener) {
+        _targetListeners += handler
+    }
+
+
     /** Calls an event with data in an [event entity][event]. */
-    public fun callEvent(event: GearyEntity, row: Int) {
+    public fun callEvent(event: GearyEntity, row: Int, source: GearyEntity? = null) {
         val entity = getEntity(row)
 
-        val eventRecord = Engine.getRecord(event.id)!!
-        val eventArchetype = eventRecord.archetype
+        val eventArchetype = event.record.archetype
+        val sourceArchetype = source?.record?.archetype
 
         //TODO performance upgrade will come when we figure out a solution in QueryManager as well.
         for (handler in eventArchetype.eventHandlers) {
             // If an event handler has moved the entity to a new archetype, make sure we follow it.
-            val archetype = Engine.getRecord(entity.id)!!.archetype
-            val newEventArchetype = Engine.getRecord(event.id)!!.archetype
+            val targetRecord = entity.record
+            val targetArchetype = entity.record.archetype
+            val sourceRecord = source?.record
+            val newSourceArchetype = sourceRecord?.archetype
+            val newEventRecord = event.record
+            val newEventArchetype = newEventRecord.archetype
+
+            // If there's no source but the handler needs a source, skip
+            if (source == null && !handler.parentListener.source.isEmpty) continue
 
             // Check that this handler has a listener associated with it.
-            if (handler.parentHolder !in archetype._eventListeners) continue
+            if (!handler.parentListener.target.isEmpty && handler.parentListener !in targetArchetype.targetListeners) continue
+            if (newSourceArchetype != null && !handler.parentListener.source.isEmpty && handler.parentListener !in newSourceArchetype.sourceListeners) continue
 
-            // Check that we still match the data if archetype changed.
-            if (archetype != this && entity.type !in handler.parentHolder.family) continue
-            if (newEventArchetype != this && event.type !in handler.family) continue
+            // Check that we still match the data if archetype of any involved entities changed.
+            if (targetArchetype != this && entity.type !in handler.parentListener.target.family) continue
+            if (newEventArchetype != eventArchetype && event.type !in handler.parentListener.event.family) continue
+            if (newSourceArchetype != sourceArchetype && event.type !in handler.parentListener.source.family) continue
 
-            val entityScope =
-                RawAccessorDataScope(archetype, handler.parentHolder.cacheForArchetype(archetype), row, entity)
-            val eventScope =
-                RawAccessorDataScope(eventArchetype, handler.cacheForArchetype(eventArchetype), eventRecord.row, event)
-
-            handler.runEvent(event, entityScope, eventScope)
+            val targetScope = RawAccessorDataScope(
+                archetype = targetArchetype,
+                perArchetypeData = handler.parentListener.target.cacheForArchetype(targetArchetype),
+                row = targetRecord.row,
+            )
+            val eventScope = RawAccessorDataScope(
+                archetype = eventArchetype,
+                perArchetypeData = handler.parentListener.event.cacheForArchetype(eventArchetype),
+                row = newEventRecord.row,
+            )
+            val sourceScope = if (source == null) null else RawAccessorDataScope(
+                archetype = sourceArchetype!!,
+                perArchetypeData = handler.parentListener.source.cacheForArchetype(sourceArchetype),
+                row = sourceRecord!!.row,
+            )
+            handler.processAndHandle(sourceScope, targetScope, eventScope)
         }
     }
 

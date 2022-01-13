@@ -4,11 +4,11 @@ import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.engine.isInstance
-import com.mineinabyss.geary.ecs.prefab.PrefabKey
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
 import com.mineinabyss.geary.minecraft.hasComponentsEncoded
+import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.util.toMCKey
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
@@ -77,8 +77,8 @@ public fun PersistentDataContainer.encodeComponents(components: Collection<Geary
         encode(value)
 
     val prefabs = type.filter { it.isInstance() }
-    if (prefabs.isNotEmpty())
-        encodePrefabs(prefabs.mapNotNull { it.toGeary().get<PrefabKey>() })
+    if (!prefabs.inner.isEmpty())
+        encodePrefabs(prefabs.inner.mapNotNull { it.toGeary().get<PrefabKey>() })
 }
 
 /**
@@ -126,5 +126,5 @@ public fun PersistentDataContainer.decodeComponents(): DecodedEntityData =
                 decode(it)
             }
             .toSet(),
-        type = decodePrefabs().mapNotNullTo(sortedSetOf()) { it.toEntity()?.id }
+        type = GearyType(decodePrefabs().mapNotNull { it.toEntity()?.id })
     )

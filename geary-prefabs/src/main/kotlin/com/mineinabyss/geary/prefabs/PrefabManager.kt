@@ -1,14 +1,14 @@
-package com.mineinabyss.geary.ecs.prefab
+package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.with
 import com.mineinabyss.geary.ecs.api.relations.NoInherit
-import com.mineinabyss.geary.ecs.components.Prefab
-import com.mineinabyss.geary.ecs.prefab.PrefabManager.keys
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.GearyEntitySerializer
+import com.mineinabyss.geary.prefabs.PrefabManager.keys
+import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.idofront.messaging.logError
 import com.uchuhimo.collections.MutableBiMap
 import com.uchuhimo.collections.mutableBiMapOf
@@ -41,6 +41,7 @@ public object PrefabManager {
         prefabs.clear()
     }
 
+    /** If this entity has a [Prefab] component, clears it and loads components from its file. */
     public fun reread(entity: GearyEntity) {
         entity.with { prefab: Prefab, key: PrefabKey ->
             entity.clear()
@@ -49,6 +50,7 @@ public object PrefabManager {
         }
     }
 
+    /** Registers an entity with components defined in a [file], adding a [Prefab] component. */
     public fun loadFromFile(namespace: String, file: File, writeTo: GearyEntity? = null): GearyEntity? {
         val name = file.nameWithoutExtension
         return runCatching {
@@ -62,7 +64,7 @@ public object PrefabManager {
 
             val key = PrefabKey.of(namespace, name)
             entity.set(Prefab(file))
-            entity.setRelation<NoInherit, Prefab>(NoInherit)
+            entity.setRelation(Prefab::class, NoInherit)
             registerPrefab(key, entity)
             entity
         }.onFailure {

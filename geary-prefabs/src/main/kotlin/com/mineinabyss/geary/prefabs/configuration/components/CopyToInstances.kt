@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.ecs.components
+package com.mineinabyss.geary.prefabs.configuration.components
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
@@ -8,6 +8,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * > geary:copy_to_instances
+ *
  * A component prefabs may use to specify a list of components which should be copied to instances of itself.
  *
  * These components are not active on the prefab itself and will be instantiated for every new instance of this class.
@@ -20,8 +22,7 @@ public data class CopyToInstances(
     private val temporary: Set<@Polymorphic GearyComponent> = setOf(),
     private val persisting: Set<@Polymorphic GearyComponent> = setOf(),
 ) {
-    //TODO This seems to be the safest and cleanest way to deep-copy.
-    // Check how this performs vs DeepCopy's reflection method.
+    // This is the safest and cleanest way to deep-copy, even if a little performance intense.
     private val serializedComponents by lazy {
         Formats.cborFormat.encodeToByteArray(serializer(), this)
     }

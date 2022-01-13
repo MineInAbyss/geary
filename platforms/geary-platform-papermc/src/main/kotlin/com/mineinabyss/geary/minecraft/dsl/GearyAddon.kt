@@ -6,10 +6,10 @@ import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoScan
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
-import com.mineinabyss.geary.ecs.prefab.PrefabKey
-import com.mineinabyss.geary.ecs.prefab.PrefabManager
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.minecraft.access.BukkitEntityAssociations
+import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.idofront.plugin.registerEvents
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer

@@ -3,9 +3,7 @@ package com.mineinabyss.geary.ecs.api.systems
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.relations.toRelation
-import com.mineinabyss.geary.ecs.engine.RELATION
-import com.mineinabyss.geary.ecs.engine.get
-import com.mineinabyss.geary.ecs.engine.withRole
+import com.mineinabyss.geary.ecs.engine.*
 import com.mineinabyss.geary.ecs.query.*
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import net.onedaybeard.bitvector.BitVector
@@ -19,15 +17,20 @@ internal class Component2ObjectArrayMap<T> {
     private val elementTypes = mutableListOf<GearyType>()
     private val componentMap = Long2ObjectOpenHashMap<BitVector>()
 
-    private fun GearyComponentId.toComponentMapId(): GearyComponentId =
-        toRelation()?.data?.id?.or(RELATION) ?: this
-
     fun add(element: T, type: GearyType) {
         elements += element
         elementTypes += type
         val index = elements.lastIndex
-        type.map { it.toComponentMapId() }.forEach { id ->
-            componentMap.getOrPut(id.toLong()) { bitsOf() }.set(index)
+        type.forEach { id ->
+            fun set(i: GearyComponentId) = componentMap.getOrPut(i.toLong()) { bitsOf() }.set(index)
+
+            if (id.isRelation()) {
+                val relation = id.toRelation()!!
+                // If this is a relation, we additionally set a bit for key/value, so we can make queries with them
+                set(relation.id.and(RELATION_VALUE_MASK).withRole(RELATION))
+                set(relation.id.and(RELATION_KEY_MASK).withRole(RELATION))
+            }
+            set(id)
         }
     }
 
@@ -47,17 +50,22 @@ internal class Component2ObjectArrayMap<T> {
             is AndNotSelector -> family.andNot.reduceToBits(BitVector::andNot)
             is OrSelector -> family.or.reduceToBits(BitVector::or)
             is ComponentLeaf -> componentMap[family.component]?.copy() ?: bitsOf()
-            is RelationLeaf -> {
-                val relationId = family.relationDataType.id.withRole(RELATION)
+            is RelationValueLeaf -> {
+                // Shift left to match the mask we used above
+                val relationId = family.relationValueId.id.shl(32).withRole(RELATION)
                 componentMap[relationId]?.copy()?.apply {
                     if (family.componentMustHoldData) {
                         forEachBit { index ->
                             val type = elementTypes[index]
-                            if (!type.contains(family.relationDataType, componentMustHoldData = true))
+                            if (!type.containsRelationValue(family.relationValueId, componentMustHoldData = true))
                                 clear(index)
                         }
                     }
                 } ?: bitsOf()
+            }
+            is RelationKeyLeaf -> {
+                val relationId = family.relationKeyId.withRole(RELATION)
+                componentMap[relationId]?.copy() ?: bitsOf()
             }
         }
     }

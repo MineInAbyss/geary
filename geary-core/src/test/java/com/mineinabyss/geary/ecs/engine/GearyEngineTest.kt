@@ -3,8 +3,9 @@ package com.mineinabyss.geary.ecs.engine
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.engine.type
+import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.components.RelationComponent
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
@@ -48,7 +49,7 @@ internal class GearyEngineTest {
         Engine.entity {
             add<String>()
             set(1)
-        }.type.getArchetype() shouldBe root + componentId<String>() + (HOLDS_DATA or componentId<Int>())
+        }.type.getArchetype() shouldBe Engine.rootArchetype + componentId<String>() + (HOLDS_DATA or componentId<Int>())
     }
 
     @Test
@@ -56,7 +57,7 @@ internal class GearyEngineTest {
         Engine.entity {
             set("Test")
             remove<String>()
-        }.type.getArchetype() shouldBe root
+        }.type.getArchetype() shouldBe Engine.rootArchetype
     }
 
     @Test
@@ -64,7 +65,7 @@ internal class GearyEngineTest {
         Engine.entity {
             add<String>()
             set("Test")
-        }.type.getArchetype() shouldBe root + (componentId<String>() or HOLDS_DATA)
+        }.type.getArchetype() shouldBe Engine.rootArchetype + (componentId<String>() or HOLDS_DATA)
     }
 
     @Test
@@ -97,12 +98,10 @@ internal class GearyEngineTest {
     @Test
     fun setRelation() {
         val entity = Engine.entity {
-            setRelation<String, Int>("String to int relation")
+            setRelation(Int::class, "String to int relation")
         }
-        entity.type.shouldContainExactly(
-            Relation.of(componentId<String>(), componentId<Int>()).id
-        )
-        entity.getComponents().shouldContainExactly("String to int relation")
+        entity.type.inner.shouldContainExactly(Relation.of<Int, String>().id.toLong())
+        entity.getComponents().shouldContainExactly(RelationComponent(componentId<Int>(), "String to int relation"))
     }
 
     @Nested
@@ -110,7 +109,7 @@ internal class GearyEngineTest {
         @Test
         fun `entity removal and reuse`() {
             //TODO I hate having to do an offset like this, figure out how to reset this Engine singleton via reflection
-            val offset = Engine.getNextId() + 1uL
+            val offset = Engine.newEntity().id + 1uL
             repeat(10) {
                 Engine.entity {
                     add(100uL)
@@ -118,16 +117,16 @@ internal class GearyEngineTest {
             }
 
             // We filled up ids 0..9, so next should be at 10
-            Engine.getNextId() shouldBe offset + 10uL
+            Engine.newEntity().id shouldBe offset + 10uL
 
             (0..9).forEach {
-                Engine.removeEntity(offset + it.toULong())
+                Engine.removeEntity((offset + it.toULong()).toGeary())
             }
 
             // Since we removed the first 10 entities, the last entity we removed (at 9) should be the next one that's
             // ready to be freed up, then 8, etc...
-            Engine.getNextId() shouldBe offset + 9uL
-            Engine.getNextId() shouldBe offset + 8uL
+            Engine.newEntity().id shouldBe offset + 9uL
+            Engine.newEntity().id shouldBe offset + 8uL
         }
     }
 }

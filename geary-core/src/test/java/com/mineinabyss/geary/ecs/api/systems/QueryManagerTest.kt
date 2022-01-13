@@ -1,15 +1,18 @@
 package com.mineinabyss.geary.ecs.api.systems
 
-import com.mineinabyss.geary.ecs.accessors.EventResultScope
-import com.mineinabyss.geary.ecs.accessors.ResultScope
+import com.mineinabyss.geary.ecs.accessors.TargetScope
+import com.mineinabyss.geary.ecs.accessors.building.get
+import com.mineinabyss.geary.ecs.accessors.building.relation
 import com.mineinabyss.geary.ecs.api.GearyType
+import com.mineinabyss.geary.ecs.api.autoscan.Handler
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.engine.type
-import com.mineinabyss.geary.ecs.api.relations.RelationDataType
-import com.mineinabyss.geary.ecs.engine.*
-import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
+import com.mineinabyss.geary.ecs.api.relations.RelationValueId
+import com.mineinabyss.geary.ecs.engine.GearyEngine
+import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
+import com.mineinabyss.geary.ecs.engine.getArchetype
+import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
 import com.mineinabyss.geary.ecs.query.contains
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
@@ -39,10 +42,10 @@ internal class QueryManagerTest {
         }
 
         val system = object : TickingSystem() {
-            val ResultScope.string by get<String>()
+            val TargetScope.string by get<String>()
             val int = has<Int>()
 
-            override fun ResultScope.tick() {
+            override fun TargetScope.tick() {
                 string shouldBe entity.get<String>()
                 entity.has<Int>() shouldBe true
             }
@@ -50,7 +53,7 @@ internal class QueryManagerTest {
         val stringId = componentId<String>() or HOLDS_DATA
         val intId = componentId<Int>()
 
-        val correctArchetype = root + stringId + intId
+        val correctArchetype = Engine.rootArchetype + stringId + intId
 
         init {
             QueryManager.trackQuery(system)
@@ -58,7 +61,7 @@ internal class QueryManagerTest {
 
         @Test
         fun `family type is correct`() {
-            GearyType(system.family.components).getArchetype() shouldBe root + stringId
+            GearyType(system.family.components).getArchetype() shouldBe Engine.rootArchetype + stringId
         }
 
         @Test
@@ -84,9 +87,9 @@ internal class QueryManagerTest {
         var ran = 0
 
         val removingSystem = object : TickingSystem() {
-            val ResultScope.string by get<String>()
+            val TargetScope.string by get<String>()
 
-            override fun ResultScope.tick() {
+            override fun TargetScope.tick() {
                 entity.remove<String>()
                 ran++
             }
@@ -96,13 +99,12 @@ internal class QueryManagerTest {
             QueryManager.trackQuery(removingSystem)
         }
 
-        //FIXME who needs systems to work properly anyways
         @Test
         fun `concurrent modification`() {
             val entities = (0 until 10).map { Engine.entity { set("Test") } }
             val total =
                 QueryManager.getEntitiesMatching(family {
-                    hasData<String>()
+                    hasSet<String>()
                 }).count()
             removingSystem.doTick()
             ran shouldBe total
@@ -116,28 +118,27 @@ internal class QueryManagerTest {
     fun relations() {
         var ran = 0
         val system = object : TickingSystem() {
-            val ResultScope.test by relation<RelationTestComponent>()
-            override fun ResultScope.tick() {
+            val TargetScope.test by relation<Any?, RelationTestComponent>()
+            override fun TargetScope.tick() {
                 ran++
-                family.relationDataTypes.map { it.id } shouldContain test.relation.id
-                test.parentData.shouldBeInstanceOf<RelationTestComponent>()
+                family.relationValueTypes.map { it.id } shouldContain test.valueId
+                test.value.shouldBeInstanceOf<RelationTestComponent>()
             }
         }
-        system.family.relationDataTypes.shouldContainExactly(RelationDataType(componentId<RelationTestComponent>()))
+        system.family.relationValueTypes.shouldContainExactly(RelationValueId(componentId<RelationTestComponent>()))
         QueryManager.trackQuery(system)
         val entity = Engine.entity {
-            setRelation<RelationTestComponent, String>(RelationTestComponent())
+            setRelation(String::class, RelationTestComponent())
             add<String>()
         }
         val entity2 = Engine.entity {
-            setRelation<RelationTestComponent, Int>(RelationTestComponent())
+            setRelation(Int::class, RelationTestComponent())
             add<Int>()
         }
         val entity3 = Engine.entity {
-            setRelation<String, RelationTestComponent>("")
+            setRelation(RelationTestComponent::class, "")
             add<RelationTestComponent>()
         }
-        family { has(entity.type) }.relationDataTypes.first() shouldBe system.family.relationDataTypes.first()
         system.matchedArchetypes.shouldContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
         system.matchedArchetypes.shouldNotContain(entity3.type.getArchetype())
 
@@ -153,21 +154,21 @@ internal class QueryManagerTest {
     fun relationPermutations() {
         var ran = 0
         val system = object : TickingSystem() {
-            val ResultScope.test1 by relation<RelationTestComponent1>()
-            val ResultScope.test2 by relation<RelationTestComponent2>()
-            override fun ResultScope.tick() {
+            val TargetScope.test1 by relation<Any?, RelationTestComponent1>()
+            val TargetScope.test2 by relation<Any?, RelationTestComponent2>()
+            override fun TargetScope.tick() {
                 ran++
-                test1.parentData.shouldBeInstanceOf<RelationTestComponent1>()
-                test2.parentData.shouldBeInstanceOf<RelationTestComponent2>()
+                test1.value.shouldBeInstanceOf<RelationTestComponent1>()
+                test2.value.shouldBeInstanceOf<RelationTestComponent2>()
             }
         }
         QueryManager.trackQuery(system)
 
         Engine.entity {
-            setRelation<RelationTestComponent1, String>(RelationTestComponent1())
-            setRelation<RelationTestComponent1, Int>(RelationTestComponent1())
-            setRelation<RelationTestComponent2, String>(RelationTestComponent2())
-            setRelation<RelationTestComponent2, Int>(RelationTestComponent2())
+            setRelation(String::class, RelationTestComponent1())
+            setRelation(Int::class, RelationTestComponent1())
+            setRelation(String::class, RelationTestComponent2())
+            setRelation(Int::class, RelationTestComponent2())
             add<String>()
         }
 
@@ -181,21 +182,21 @@ internal class QueryManagerTest {
     @Test
     fun relationsWithData() {
         val system = object : TickingSystem() {
-            val ResultScope.withData by relationWithData<RelationTestWithData>()
+            val TargetScope.withData by relation<Any, RelationTestWithData>()
 
-            override fun ResultScope.tick() {
-                withData.parentData.shouldBeInstanceOf<RelationTestWithData>()
-                withData.componentData shouldBe "Test"
+            override fun TargetScope.tick() {
+                withData.value.shouldBeInstanceOf<RelationTestWithData>()
+                withData.key shouldBe "Test"
             }
         }
 
         val entity = Engine.entity {
-            setRelation<RelationTestWithData, String>(RelationTestWithData())
+            setRelation(String::class, RelationTestWithData())
             add<String>()
         }
 
         val entityWithData = Engine.entity {
-            setRelation<RelationTestWithData, String>(RelationTestWithData())
+            setRelation(String::class, RelationTestWithData())
             set("Test")
         }
 
@@ -207,23 +208,22 @@ internal class QueryManagerTest {
         system.doTick()
     }
 
-    private class TestComponent()
+    private class TestComponent
     private object EventListener : GearyListener() {
         var ran = 0
-        private val ResultScope.testComponent by get<TestComponent>()
+        private val TargetScope.testComponent by get<TestComponent>()
 
-        object Run : GearyHandler() {
-            override fun ResultScope.handle(event: EventResultScope) {
-                ran++
-            }
+        @Handler
+        fun handle(target: TargetScope) {
+            this@EventListener.ran++
         }
     }
 
     @Test
     fun `empty event handler`() {
-        (root.type in EventListener.Run.family) shouldBe true
+        (Engine.rootArchetype.type in EventListener.event.family) shouldBe true
         Engine.addSystem(EventListener)
-        root.eventHandlers shouldContain EventListener.Run
+        Engine.rootArchetype.eventHandlers.map { it.parentListener } shouldContain EventListener
         Engine.entity {
             set(TestComponent())
         }.callEvent()

@@ -12,6 +12,14 @@ repositories {
     mavenCentral()
 }
 
+object GearyDeps {
+    val bimap = "com.uchuhimo:kotlinx-bimap:1.2"
+    val bitvector = "net.onedaybeard.bitvector:bitvector-jvm:0.1.4"
+    val fastutil = "it.unimi.dsi:fastutil:8.5.4"
+    val reflections = "org.reflections:reflections:0.9.12"
+    val plugman = "com.rylinaux:PlugMan:2.2.5"
+}
+
 dependencies {
     // MineInAbyss platform
     compileOnly(Deps.kotlin.stdlib)

@@ -3,7 +3,6 @@ package com.mineinabyss.geary.ecs.api.entities
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.engine.type
 import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.engine.getArchetype
@@ -26,7 +25,7 @@ internal class GearyEntityTests {
             setPersisting("Test")
         }
         val relations =
-            entity.type.getArchetype().relations[componentId<PersistingComponent>().toLong()]
+            entity.type.getArchetype().relationsByValue[componentId<PersistingComponent>().toLong()]
         relations.size shouldBe 1
         relations.first().key shouldBe componentId<String>()
         entity.getPersistingComponents().shouldContainExactly("Test")
@@ -41,7 +40,7 @@ internal class GearyEntityTests {
         val entitySetAll = Engine.entity {
             setAll(listOf("Test", 1))
         }
-        entity.type shouldContainExactly entitySetAll.type
+        entity.type.inner shouldContainExactly entitySetAll.type.inner
     }
 
     @Test
@@ -50,7 +49,7 @@ internal class GearyEntityTests {
             setPersisting("Test")
         }
         val relations =
-            entity.type.getArchetype().relations[componentId<PersistingComponent>().toLong()]
+            entity.type.getArchetype().relationsByValue[componentId<PersistingComponent>().toLong()]
         relations.size shouldBe 1
         relations.first().key shouldBe (componentId<String>())
         entity.getPersistingComponents().shouldContainExactly("Test")
@@ -64,11 +63,11 @@ internal class GearyEntityTests {
         fun `getRelation reified`() {
             val testData = TestRelation()
             val entity = Engine.entity {
-                setRelation<TestRelation, String>(testData)
+                setRelation(String::class, testData)
                 add<String>()
             }
 
-            entity.getRelation<TestRelation, String>() shouldBe testData
+            entity.getRelation<String, TestRelation>() shouldBe testData
         }
     }
 }
