@@ -6,6 +6,8 @@ import kotlinx.serialization.Serializable
 
 /**
  * > geary:inherit
+ *
+ * Will make this entity an instance of all entities defined in [from]
  */
 @Serializable
 @SerialName("geary:inherit")

@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.prefabs
+package com.mineinabyss.geary.prefabs.configuration.systems
 
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.building.get
@@ -22,10 +22,9 @@ public class ParseChildOnPrefab : GearyListener() {
 
     @Handler
     private fun TargetScope.convertToRelation() {
-//        entity.parseEntity(child.new)
         Engine.entity {
             addParent(entity)
-            setAll(child.new)
+            setAll(child.components)
         }
         entity.remove<ChildOnPrefab>()
     }
@@ -41,7 +40,6 @@ public class ParseChildrenOnPrefab : GearyListener() {
 
     @Handler
     private fun TargetScope.convertToRelation() {
-//        entity.parseEntity(child.new)
         children.nameToComponents.forEach { (name, components) ->
             Engine.entity {
                 addParent(entity)

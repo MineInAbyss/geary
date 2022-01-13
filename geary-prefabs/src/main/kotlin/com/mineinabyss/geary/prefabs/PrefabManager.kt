@@ -41,6 +41,7 @@ public object PrefabManager {
         prefabs.clear()
     }
 
+    /** If this entity has a [Prefab] component, clears it and loads components from its file. */
     public fun reread(entity: GearyEntity) {
         entity.with { prefab: Prefab, key: PrefabKey ->
             entity.clear()
@@ -49,6 +50,7 @@ public object PrefabManager {
         }
     }
 
+    /** Registers an entity with components defined in a [file], adding a [Prefab] component. */
     public fun loadFromFile(namespace: String, file: File, writeTo: GearyEntity? = null): GearyEntity? {
         val name = file.nameWithoutExtension
         return runCatching {

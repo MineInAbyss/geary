@@ -1,5 +1,6 @@
-package com.mineinabyss.geary.prefabs
+package com.mineinabyss.geary.prefabs.serializers
 
+import com.mineinabyss.geary.prefabs.PrefabKey
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor

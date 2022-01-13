@@ -29,7 +29,6 @@ public object GearyEntitySerializer : KSerializer<GearyEntity> {
     }
 
     override fun deserialize(decoder: Decoder): GearyEntity {
-        //TODO serialize and deserialize in the same way we convert from list of components to entities
         return Engine.entity {
             setAll(decoder.decodeSerializableValue(componentListSerializer))
         }

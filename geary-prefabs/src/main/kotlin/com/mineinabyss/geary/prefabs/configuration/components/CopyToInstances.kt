@@ -8,6 +8,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * > geary:copy_to_instances
+ *
  * A component prefabs may use to specify a list of components which should be copied to instances of itself.
  *
  * These components are not active on the prefab itself and will be instantiated for every new instance of this class.

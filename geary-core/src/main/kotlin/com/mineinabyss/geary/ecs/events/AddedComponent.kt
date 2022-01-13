@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.ecs.events
 
 /**
- * Called every time an entity gets all of a listener's requested components added to it.
+ * When a component is added to an entity, an event fires with this class as the value in a relation.
  *
- * For example, if listening to `A`, `B`, `C`, the event triggers when any of the components is added,
+ * The relation key describes the added component and allows event handlers to run when a specific component
+ * gets added or replaced.
+ *
+ * For example, if listening to `A`, `B`, `C`, the event handler runs when one of the components is added,
  * as long as all three are present after the addition.
- *
- * MAKE SURE YOUR LISTENER DOES NOT HAVE ANY LOGIC BRANCHES. Only the top level list of components are
- * guaranteed to match, nothing else is checked.
  */
 public class AddedComponent

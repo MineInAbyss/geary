@@ -5,11 +5,14 @@ import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * > geary:child
+ *
+ * A component that adds a child entity to this entity from the components defined in [components]
+ */
 @JvmInline
 @Serializable
 @SerialName("geary:child")
 public value class ChildOnPrefab(
-//    public val get: String,
-//    @Serializable(with = GearyEntitySerializer::class)
-    public val new: List<@Polymorphic GearyComponent> //GearyEntity//? = null
+    public val components: List<@Polymorphic GearyComponent>
 )

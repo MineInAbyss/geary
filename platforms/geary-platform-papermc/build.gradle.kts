@@ -1,4 +1,5 @@
 import Com_mineinabyss_conventions_platform_gradle.Deps
+import Geary_kotlin_conventions_gradle.GearyDeps
 
 plugins {
     id("geary.kotlin-conventions")
@@ -20,14 +21,14 @@ dependencies {
     compileOnly(Deps.kotlin.reflect) { isTransitive = false }
 
     // Other plugins
-    compileOnly("com.rylinaux:PlugMan:2.2.5")
+    compileOnly(GearyDeps.plugman)
 
     // Shaded
     api(project(":geary-core")) {
         exclude(module = "kotlin-reflect")
     }
     api(project(":geary-prefabs"))
-    implementation("org.reflections:reflections:0.9.12")
+    implementation(GearyDeps.reflections)
 }
 
 tasks {
