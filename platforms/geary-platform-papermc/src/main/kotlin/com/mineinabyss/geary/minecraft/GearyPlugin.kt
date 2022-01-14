@@ -25,6 +25,8 @@ import java.util.*
 import kotlin.io.path.div
 import kotlin.reflect.KClass
 
+public val gearyPlugin: GearyPlugin = Bukkit.getPluginManager().getPlugin("Geary") as GearyPlugin
+
 public class GearyPlugin : JavaPlugin() {
     override fun onLoad() {
         IdofrontPlatforms.load(this, "mineinabyss")

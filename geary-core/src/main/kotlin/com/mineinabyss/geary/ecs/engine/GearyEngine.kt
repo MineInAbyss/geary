@@ -235,7 +235,7 @@ public open class GearyEngine : TickingEngine() {
 
     override fun tick(currentTick: Long) {
         registeredSystems
-            .filter { currentTick % it.interval.inWholeTicks == 0L }
+            .filter { currentTick % it.interval.inWholeTicks.coerceAtLeast(1) == 0L }
             .forEach {
                 try {
                     it.runSystem()

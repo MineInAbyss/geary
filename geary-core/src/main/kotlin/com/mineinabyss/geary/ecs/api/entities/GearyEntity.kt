@@ -108,6 +108,19 @@ public value class GearyEntity(public val id: GearyEntityId) {
     public fun removeRelation(relation: Relation): Boolean =
         remove(Relation.of(relation.key, relation.value).id)
 
+    /** Removes all relations with a value of type [V] on the entity. */
+    public inline fun <reified V : GearyComponent> removeRelationsByValue(): Set<GearyComponent> =
+        removeRelationsByValue(componentId<V>())
+
+    /** Removes all relations with a value with id [componentId] on the entity. */
+    public fun removeRelationsByValue(componentId: GearyComponentId): Set<GearyComponent> {
+        val comps = Engine.getRelationsFor(this, RelationValueId(componentId))
+        comps.forEach { (_, relation) ->
+            removeRelation(relation)
+        }
+        return comps.mapTo(mutableSetOf()) { it.first }
+    }
+
     /**
      * Adds a [component] to this entity's type, setting no data.
      *

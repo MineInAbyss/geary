@@ -30,7 +30,7 @@ public value class GearyType private constructor(
     public fun last(): GearyComponentId = inner.lastLong().toULong()
 
     public inline fun forEach(run: (GearyComponentId) -> Unit) {
-        val iterator = inner.longIterator()
+        val iterator = inner.iterator()
         while (iterator.hasNext()) {
             run(iterator.nextLong().toULong())
         }
@@ -42,7 +42,7 @@ public value class GearyType private constructor(
     }
 
     public inline fun forEachIndexed(run: (Int, GearyComponentId) -> Unit) {
-        val iterator = inner.longIterator()
+        val iterator = inner.iterator()
         var i = 0
         forEach { run(i++, iterator.nextLong().toULong()) }
     }

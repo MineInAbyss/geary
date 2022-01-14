@@ -10,7 +10,6 @@ import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.minecraft.access.BukkitEntityAssociations
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.PrefabManager
-import com.mineinabyss.idofront.plugin.registerEvents
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -20,7 +19,6 @@ import kotlinx.serialization.modules.SerializersModuleBuilder
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.serializerOrNull
 import org.bukkit.entity.Entity
-import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
 import java.io.File
 import kotlin.reflect.KClass
@@ -145,7 +143,6 @@ public class GearyAddon(
 
     /** Registers a list of [systems]. */
     public fun systems(vararg systems: GearySystem) {
-        plugin.registerEvents(*systems.filterIsInstance<Listener>().toTypedArray())
         systems.forEach { system(it) }
     }
 

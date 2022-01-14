@@ -2,14 +2,18 @@ package com.mineinabyss.geary.minecraft.engine
 
 import co.aikar.timings.Timings
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.minecraft.GearyPlugin
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
+import com.mineinabyss.geary.minecraft.gearyPlugin
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.plugin.registerEvents
 import com.okkero.skedule.schedule
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
+import org.bukkit.event.Listener
 import java.util.*
 
 public class SpigotEngine : GearyEngine() {
@@ -28,6 +32,13 @@ public class SpigotEngine : GearyEngine() {
         }.getOrThrow()
     }
 
+    override fun addSystem(system: GearySystem) {
+        super.addSystem(system)
+
+        if (system is Listener)
+            gearyPlugin.registerEvents(system)
+    }
+
     override fun scheduleSystemTicking() {
         //tick all systems every interval ticks
         GearyPlugin.instance.schedule {
@@ -41,7 +52,7 @@ public class SpigotEngine : GearyEngine() {
 
     override fun removeEntity(entity: GearyEntity) {
         if (entity.has<UUID>())
-            //TODO this should be unnecessary now
+        //TODO this should be unnecessary now
             GearyEntityRemoveEvent(entity).call()
         super.removeEntity(entity)
     }
