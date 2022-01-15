@@ -43,10 +43,10 @@ public data class Archetype(
         dataHoldingType.inner.map { mutableListOf() }
 
     /** Edges to other archetypes where a single component has been added. */
-    internal val componentAddEdges = Long2ObjectOpenHashMap<Archetype>()
+    internal val componentAddEdges = CompId2ArchetypeMap()
 
     /** Edges to other archetypes where a single component has been removed. */
-    internal val componentRemoveEdges = Long2ObjectOpenHashMap<Archetype>()
+    internal val componentRemoveEdges = CompId2ArchetypeMap()
 
     internal val relations = type.inner.mapNotNull { it.toULong().toRelation() }
 
@@ -133,16 +133,21 @@ public data class Archetype(
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
     public operator fun plus(componentId: GearyComponentId): Archetype =
-        componentAddEdges[componentId] ?: type.let {
-            // Ensure that when adding an ID that holds data, we remove the non-data-holding ID
-            if (componentId.holdsData() && !componentId.isRelation())
-                it.minus(componentId.withoutRole(HOLDS_DATA))
-            else it
-        }.plus(componentId).getArchetype()
+        if (componentId in componentAddEdges)
+            componentAddEdges[componentId]
+        else
+            type.let {
+                // Ensure that when adding an ID that holds data, we remove the non-data-holding ID
+                if (componentId.holdsData() && !componentId.isRelation())
+                    it.minus(componentId.withoutRole(HOLDS_DATA))
+                else it
+            }.plus(componentId).getArchetype()
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
     public operator fun minus(componentId: GearyComponentId): Archetype =
-        componentRemoveEdges[componentId] ?: type.minus(componentId).getArchetype().also {
+        if (componentId in componentRemoveEdges)
+            componentRemoveEdges[componentId]
+        else type.minus(componentId).getArchetype().also {
             componentRemoveEdges[componentId] = it
         }
 

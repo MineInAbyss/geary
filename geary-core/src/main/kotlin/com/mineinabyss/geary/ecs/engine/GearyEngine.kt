@@ -215,7 +215,9 @@ public open class GearyEngine : TickingEngine() {
     override fun getArchetype(type: GearyType): Archetype {
         var node = rootArchetype
         type.forEach { compId ->
-            node = node.componentAddEdges[compId] ?: createArchetype(node, compId)
+            node =
+                if (compId in node.componentAddEdges) node.componentAddEdges[compId]
+                else createArchetype(node, compId)
         }
         return node
     }

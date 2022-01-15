@@ -8,6 +8,7 @@ import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.ClasspathHelper
 import org.reflections.util.ConfigurationBuilder
 import org.reflections.util.FilterBuilder
+import kotlin.reflect.KClass
 
 /**
  * DSL for configuring automatic scanning of classes to be registered into Geary's [SerializersModule].
@@ -56,6 +57,10 @@ public class AutoScanner(private val classLoader: ClassLoader) {
             return null
         }
         return reflections
+    }
+
+    public inline fun <reified T : Any> getSubclassesOf(): List<KClass<out T>> {
+        return getReflections()?.getSubTypesOf(T::class.java)?.map { it.kotlin } ?: listOf()
     }
 
 
