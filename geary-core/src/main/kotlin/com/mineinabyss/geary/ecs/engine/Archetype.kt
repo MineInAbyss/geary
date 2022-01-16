@@ -342,21 +342,28 @@ public data class Archetype(
             if (newEventArchetype != eventArchetype && event.type !in handler.parentListener.event.family) continue
             if (newSourceArchetype != sourceArchetype && event.type !in handler.parentListener.source.family) continue
 
-            val targetScope = RawAccessorDataScope(
-                archetype = targetArchetype,
-                perArchetypeData = handler.parentListener.target.cacheForArchetype(targetArchetype),
-                row = targetRecord.row,
-            )
-            val eventScope = RawAccessorDataScope(
-                archetype = eventArchetype,
-                perArchetypeData = handler.parentListener.event.cacheForArchetype(eventArchetype),
-                row = newEventRecord.row,
-            )
-            val sourceScope = if (source == null) null else RawAccessorDataScope(
-                archetype = sourceArchetype!!,
-                perArchetypeData = handler.parentListener.source.cacheForArchetype(sourceArchetype),
-                row = sourceRecord!!.row,
-            )
+            val listenerName = handler.parentListener::class.simpleName
+            val targetScope = runCatching {
+                RawAccessorDataScope(
+                    archetype = targetArchetype,
+                    perArchetypeData = handler.parentListener.target.cacheForArchetype(targetArchetype),
+                    row = targetRecord.row,
+                )
+            }.getOrElse { throw IllegalStateException("Failed while reading target scope on $listenerName", it) }
+            val eventScope = runCatching {
+                RawAccessorDataScope(
+                    archetype = newEventArchetype,
+                    perArchetypeData = handler.parentListener.event.cacheForArchetype(eventArchetype),
+                    row = newEventRecord.row,
+                )
+            }.getOrElse { throw IllegalStateException("Failed while reading event scope on $listenerName", it) }
+            val sourceScope = if (source == null) null else runCatching {
+                RawAccessorDataScope(
+                    archetype = newSourceArchetype!!,
+                    perArchetypeData = handler.parentListener.source.cacheForArchetype(newSourceArchetype),
+                    row = sourceRecord.row,
+                )
+            }.getOrElse { throw IllegalStateException("Failed while reading source scope on $listenerName", it) }
             handler.processAndHandle(sourceScope, targetScope, eventScope)
         }
     }
