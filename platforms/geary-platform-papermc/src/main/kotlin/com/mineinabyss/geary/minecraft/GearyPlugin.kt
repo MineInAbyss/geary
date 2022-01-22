@@ -8,6 +8,7 @@ import com.mineinabyss.geary.ecs.serialization.withSerialName
 import com.mineinabyss.geary.minecraft.access.BukkitAssociations
 import com.mineinabyss.geary.minecraft.access.BukkitEntityAssociations
 import com.mineinabyss.geary.minecraft.access.toGeary
+import com.mineinabyss.geary.minecraft.config.GearyConfig
 import com.mineinabyss.geary.minecraft.dsl.GearyLoadPhase
 import com.mineinabyss.geary.minecraft.dsl.gearyAddon
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
@@ -15,6 +16,7 @@ import com.mineinabyss.geary.minecraft.listeners.GearyAttemptSpawnListener
 import com.mineinabyss.geary.minecraft.listeners.InheritPrefabsOnLoad
 import com.mineinabyss.geary.minecraft.store.FileSystemStore
 import com.mineinabyss.geary.minecraft.store.GearyStore
+import com.mineinabyss.geary.webconsole.GearyWebConsole
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
@@ -38,6 +40,7 @@ public class GearyPlugin : JavaPlugin() {
 
         saveDefaultConfig()
         reloadConfig()
+        GearyConfig.load()
         GearyServices.setServiceProvider(object : GearyServiceProvider {
             override fun <T : Any> getService(service: KClass<T>): T? {
                 return Bukkit.getServer().servicesManager.load(service.java)

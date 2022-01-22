@@ -197,7 +197,10 @@ public open class GearyEngine : TickingEngine() {
             }
         }
 
-        clearEntity(entity)
+        getRecord(entity).apply {
+            archetype.removeEntity(row)
+        }
+        typeMap.remove(entity)
 
         //add current id into queue for reuse
         removedEntities.push(entity)
@@ -207,7 +210,7 @@ public open class GearyEngine : TickingEngine() {
         getRecord(entity).apply {
             archetype.removeEntity(row)
         }
-        typeMap.remove(entity)
+        typeMap[entity] = rootArchetype.addEntityWithData(entity, listOf())
     }
 
     override fun getArchetype(id: Int): Archetype = archetypes[id]

@@ -16,7 +16,6 @@ import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
-import it.unimi.dsi.fastutil.longs.LongArrayList
 import java.util.*
 
 /**
@@ -32,7 +31,7 @@ public data class Archetype(
 ) {
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     //TODO aim to make private
-    internal val ids: LongArrayList = LongArrayList()
+    internal val ids = mutableListOf<Long>()
 
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
@@ -124,7 +123,7 @@ public data class Archetype(
     }
 
     /** @return The entity stored at a given [row] in this archetype. */
-    internal fun getEntity(row: Int): GearyEntity = ids.getLong(row).toGeary()
+    internal fun getEntity(row: Int): GearyEntity = ids.get(row).toGeary()
 
     /** @return Whether this archetype has a [componentId] in its type, regardless of the [HOLDS_DATA] role. */
     public operator fun contains(componentId: GearyComponentId): Boolean =
@@ -279,21 +278,25 @@ public data class Archetype(
     /** Removes the entity at a [row] in this archetype, notifying running archetype iterators. */
     @Synchronized
     internal fun removeEntity(row: Int) {
-        val replacement = ids.last()
-        val lastIndex = ids.lastIndex
-        ids[row] = replacement
+        try {
+            val lastIndex = ids.lastIndex
+            val replacement = ids.get(lastIndex)
+            ids[row] = replacement
 
-        if (lastIndex != row)
-            componentData.forEach { it[row] = it.last() }
+            if (lastIndex != row)
+                componentData.forEach { it[row] = it.last() }
 
-        ids.removeLastOrNull()
-        componentData.forEach { it.removeLastOrNull() }
+            ids.removeLastOrNull()
+            componentData.forEach { it.removeLastOrNull() }
 
-        if (lastIndex != row) {
-            runningIterators.forEach {
-                it.addMovedRow(lastIndex, row)
+            if (lastIndex != row) {
+                runningIterators.forEach {
+                    it.addMovedRow(lastIndex, row)
+                }
+                Engine.setRecord(replacement.toGeary(), Record.of(this, row))
             }
-            Engine.setRecord(replacement.toGeary(), Record.of(this, row))
+        } catch (e: IndexOutOfBoundsException) {
+            throw IllegalStateException("Error while removing entity at row $row for archetype $this", e)
         }
     }
 

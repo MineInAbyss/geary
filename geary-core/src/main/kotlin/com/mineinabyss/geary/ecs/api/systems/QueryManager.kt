@@ -55,7 +55,9 @@ public object QueryManager {
                             if (arrIndex != -1) argArray[arrIndex] = args[i]
                         }
                         kFunction.isAccessible = true
-                        return kFunction.call(*argArray)
+                        return runCatching { kFunction.call(*argArray) }
+                            // Don't print the whole reflection error, just the cause
+                            .getOrElse { throw it.cause ?: it }
                     }
                 }
 
