@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.engine.*
 import com.mineinabyss.geary.ecs.query.*
+import org.koin.core.component.KoinComponent
 import kotlin.reflect.KType
 
 public abstract class FamilyBuilder {
@@ -40,7 +41,7 @@ public class MutableRelationKeyLeaf(
 }
 
 
-public abstract class MutableSelector : FamilyBuilder() {
+public abstract class MutableSelector : FamilyBuilder(), KoinComponent {
     protected abstract val elements: MutableList<FamilyBuilder>
 
     public val components: List<GearyComponentId> get() = _components

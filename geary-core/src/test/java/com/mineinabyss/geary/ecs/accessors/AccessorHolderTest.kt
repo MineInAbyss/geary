@@ -3,21 +3,14 @@ package com.mineinabyss.geary.ecs.accessors
 import com.mineinabyss.geary.ecs.accessors.building.get
 import com.mineinabyss.geary.ecs.accessors.building.getOrDefault
 import com.mineinabyss.geary.ecs.accessors.building.map
-import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.engine.GearyEngine
-import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
 import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.invoke
+import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-internal class AccessorHolderTest {
-    val engine: GearyEngine = GearyEngine()
-
-    init {
-        setEngineServiceProvider(engine)
-    }
+internal class AccessorHolderTest : GearyTest() {
 
     object FancyQuery : Query() {
         val TargetScope.default by getOrDefault<String>("empty!")
@@ -26,7 +19,7 @@ internal class AccessorHolderTest {
 
     @Test
     fun fancyAccessors() {
-        val entity = Engine.entity()
+        val entity = entity()
         //TODO put back when Koin comes
 //        FancyQuery.toList().isEmpty() shouldBe true
         FancyQuery.none { it.entity == entity } shouldBe true

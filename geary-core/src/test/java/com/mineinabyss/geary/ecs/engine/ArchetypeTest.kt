@@ -1,28 +1,20 @@
 package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.components.RelationComponent
+import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
-internal class ArchetypeTest {
-    val engine: GearyEngine = GearyEngine()
-
-    init {
-        setEngineServiceProvider(engine)
-    }
-
+internal class ArchetypeTest : GearyTest() {
     //TODO bring this back when we switch to Koin DI
 //    @Test
 //    fun `ids assigned correctly`() {
@@ -36,18 +28,18 @@ internal class ArchetypeTest {
     inner class MovingBetweenArchetypes {
         @Test
         fun `empty type equals empty archetype`() {
-            GearyType().getArchetype() shouldBe Engine.rootArchetype
+            GearyType().getArchetype() shouldBe engine.rootArchetype
         }
 
         @Test
         fun `get type equals archetype adding`() {
-            Engine.rootArchetype + 1u + 2u + 3u - 1u + 1u shouldBe
+            engine.rootArchetype + 1u + 2u + 3u - 1u + 1u shouldBe
                     GearyType(1u, 2u, 3u).getArchetype()
         }
 
         @Test
         fun `reach same archetype from different starting positions`() {
-            Engine.rootArchetype + 1u + 2u + 3u shouldBe Engine.rootArchetype + 3u + 2u + 1u
+            engine.rootArchetype + 1u + 2u + 3u shouldBe engine.rootArchetype + 3u + 2u + 1u
         }
     }
 
@@ -71,7 +63,7 @@ internal class ArchetypeTest {
 
     @Test
     fun `getComponents with relations`() {
-        Engine.entity {
+        entity {
             set("Test")
             setRelation(String::class, 10)
             setRelation(Int::class, 15)

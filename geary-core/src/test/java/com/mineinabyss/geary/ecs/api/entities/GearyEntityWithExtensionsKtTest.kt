@@ -1,22 +1,14 @@
 package com.mineinabyss.geary.ecs.api.entities
 
-import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.engine.GearyEngine
-import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
+import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-internal class GearyEntityWithExtensionsKtTest {
-    val engine: GearyEngine = GearyEngine()
-
-    init {
-        setEngineServiceProvider(engine)
-    }
-
+internal class GearyEntityWithExtensionsKtTest : GearyTest() {
     @Test
     fun nullable_with_extensions() {
-        val entity = Engine.entity {
+        val entity = entity {
             set("")
             set(1)
         }

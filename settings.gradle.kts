@@ -9,6 +9,8 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         mavenCentral()
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        google()
         maven("https://repo.mineinabyss.com/releases")
     }
 
@@ -49,10 +51,15 @@ dependencyResolutionManagement {
 include(
     "geary-core",
     "geary-prefabs",
-    "geary-platform-papermc",
     "geary-web-console",
+    "geary-platform-papermc",
+    "geary-platform-papermc-core",
+    "geary-platform-papermc-plugin",
 )
 
 project(":geary-platform-papermc").projectDir = file("./platforms/geary-platform-papermc")
+project(":geary-platform-papermc-core").projectDir = file("./platforms/geary-platform-papermc/core")
+project(":geary-platform-papermc-plugin").projectDir = file("./platforms/geary-platform-papermc/plugin")
 
 includeBuild("geary-conventions")
+includeBuild("../Idofront")

@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.prefabs
 
-import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.with
@@ -12,6 +11,7 @@ import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.idofront.messaging.logError
 import com.uchuhimo.collections.MutableBiMap
 import com.uchuhimo.collections.mutableBiMapOf
+import org.koin.core.component.KoinComponent
 import java.io.File
 
 /**
@@ -19,7 +19,7 @@ import java.io.File
  *
  * @property keys A list of registered [PrefabKey]s.
  */
-public object PrefabManager {
+public object PrefabManager: KoinComponent {
     public val keys: List<PrefabKey> get() = prefabs.keys.toList()
 
     private val prefabs: MutableBiMap<PrefabKey, GearyEntity> = mutableBiMapOf()
@@ -59,7 +59,7 @@ public object PrefabManager {
                 "json" -> Formats.jsonFormat
                 else -> error("Unknown file format $ext")
             }
-            val entity = writeTo ?: Engine.entity()
+            val entity = writeTo ?: entity()
             entity.setAll(format.decodeFromString(GearyEntitySerializer.componentListSerializer, file.readText()))
 
             val key = PrefabKey.of(namespace, name)

@@ -1,11 +1,11 @@
 package com.mineinabyss.geary.ecs.engine
 
-import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.globalEngine
 
 @JvmInline
 public value class Record(public val id: Long) {
     //Upper 32 bits are row id
-    public val archetype: Archetype get() = Engine.getArchetype((id shr 32).toInt())
+    public val archetype: Archetype get() = globalEngine.getArchetype((id shr 32).toInt())
 
     //Lower 32 bits are row id
     public val row: Int get() = id.toInt()

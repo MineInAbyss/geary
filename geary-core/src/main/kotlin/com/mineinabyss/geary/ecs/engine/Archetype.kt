@@ -16,6 +16,8 @@ import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.*
 
 /**
@@ -28,7 +30,9 @@ import java.util.*
 public data class Archetype(
     public val type: GearyType,
     public val id: Int
-) {
+) : KoinComponent {
+    private val engine by inject<Engine>()
+
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     //TODO aim to make private
     internal val ids = mutableListOf<Long>()
@@ -293,7 +297,7 @@ public data class Archetype(
                 runningIterators.forEach {
                     it.addMovedRow(lastIndex, row)
                 }
-                Engine.setRecord(replacement.toGeary(), Record.of(this, row))
+                engine.setRecord(replacement.toGeary(), Record.of(this, row))
             }
         } catch (e: IndexOutOfBoundsException) {
             throw IllegalStateException("Error while removing entity at row $row for archetype $this", e)

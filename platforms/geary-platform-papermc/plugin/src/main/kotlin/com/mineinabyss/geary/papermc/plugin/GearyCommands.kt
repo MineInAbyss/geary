@@ -1,8 +1,9 @@
-package com.mineinabyss.geary.minecraft
+package com.mineinabyss.geary.papermc.plugin
 
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.engine.countChildren
 import com.mineinabyss.geary.ecs.engine.getArchetype
+import com.mineinabyss.geary.minecraft.StartupEventListener
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.idofront.commands.arguments.stringArg

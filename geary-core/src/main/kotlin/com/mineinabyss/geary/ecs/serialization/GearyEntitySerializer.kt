@@ -1,13 +1,11 @@
 package com.mineinabyss.geary.ecs.serialization
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.components.EntityName
-import com.mineinabyss.geary.ecs.entities.children
 import com.mineinabyss.geary.ecs.entities.parent
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
@@ -15,11 +13,12 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import org.koin.core.component.KoinComponent
 
 /**
  * A serializer which loads a new entity from a list of components.
  */
-public object GearyEntitySerializer : KSerializer<GearyEntity> {
+public object GearyEntitySerializer : KSerializer<GearyEntity>, KoinComponent {
     public val componentListSerializer: KSerializer<List<GearyComponent>> =
         ListSerializer(PolymorphicSerializer(GearyComponent::class))
     override val descriptor: SerialDescriptor = componentListSerializer.descriptor
@@ -29,7 +28,7 @@ public object GearyEntitySerializer : KSerializer<GearyEntity> {
     }
 
     override fun deserialize(decoder: Decoder): GearyEntity {
-        return Engine.entity {
+        return entity {
             setAll(decoder.decodeSerializableValue(componentListSerializer))
         }
     }

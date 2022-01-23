@@ -8,6 +8,7 @@ import com.mineinabyss.geary.ecs.engine.RELATION_KEY_MASK
 import com.mineinabyss.geary.ecs.engine.RELATION_VALUE_MASK
 import com.mineinabyss.geary.ecs.engine.isRelation
 import kotlinx.serialization.Serializable
+import org.koin.core.component.KoinComponent
 import kotlin.reflect.KClass
 
 /**
@@ -38,7 +39,7 @@ public value class Relation private constructor(
 
     override fun toString(): String = "$key to $value"
 
-    public companion object {
+    public companion object: KoinComponent {
         public fun of(
             key: GearyComponentId,
             value: RelationValueId

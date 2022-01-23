@@ -3,22 +3,14 @@ package com.mineinabyss.geary.ecs.events
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.building.get
 import com.mineinabyss.geary.ecs.api.autoscan.Handler
-import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
-import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.engine.getArchetype
-import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
+import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-internal class ComponentAddEventKtTest {
-    val engine: GearyEngine = GearyEngine()
-
-    init {
-        setEngineServiceProvider(engine)
-    }
-
+internal class ComponentAddEventKtTest : GearyTest() {
     var inc = 0
 
     //TODO write test for all methods of checking for added
@@ -41,9 +33,9 @@ internal class ComponentAddEventKtTest {
     @Test
     fun componentAddEvent() {
         val listener = OnStringAdd()
-        Engine.addSystem(listener)
+        engine.addSystem(listener)
 
-        Engine.entity {
+        entity {
             fun addedListeners() = type.getArchetype().targetListeners.count { it === listener }
             set("")
             set(1)

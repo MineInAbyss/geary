@@ -4,7 +4,6 @@ import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
@@ -19,11 +18,12 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import org.koin.core.component.KoinComponent
 
 internal typealias OnEntityRegister = GearyEntity.(Entity) -> Unit
 internal typealias OnEntityUnregister = GearyEntity.(Entity) -> Unit
 
-public object BukkitEntityAssociations : Listener {
+public object BukkitEntityAssociations : Listener, KoinComponent {
     //TODO this should be done through events
     private val onBukkitEntityRegister: MutableList<OnEntityRegister> = mutableListOf()
     private val onBukkitEntityUnregister: MutableList<OnEntityUnregister> = mutableListOf()
@@ -40,7 +40,7 @@ public object BukkitEntityAssociations : Listener {
         val uuid = entity.uniqueId
         BukkitAssociations[uuid]?.let { return it }
 
-        val gearyEntity = Engine.entity()
+        val gearyEntity = entity()
 
         gearyEntity.apply {
             setAll(

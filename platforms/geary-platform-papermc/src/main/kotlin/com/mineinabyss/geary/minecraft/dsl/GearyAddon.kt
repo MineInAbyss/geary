@@ -3,7 +3,7 @@ package com.mineinabyss.geary.minecraft.dsl
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.autoscan.AutoScan
 import com.mineinabyss.geary.ecs.api.autoscan.ExcludeAutoScan
-import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.globalEngine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.serialization.Formats
@@ -138,7 +138,7 @@ public class GearyAddon(
 
     /** Registers a [system]. */
     public fun system(system: GearySystem) {
-        Engine.addSystem(system)
+        globalEngine.addSystem(system)
     }
 
     /** Registers a list of [systems]. */

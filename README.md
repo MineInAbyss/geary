@@ -54,7 +54,7 @@ class Velocity(...) {
 An entity to get us started:
 
 ```kotlin
-Engine.entity {
+entity {
    setAll(Textures(...), Render(...), Velocity(...))
 }
 ```

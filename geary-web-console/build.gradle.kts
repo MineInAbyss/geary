@@ -1,4 +1,6 @@
-import Com_mineinabyss_conventions_platform_gradle.Deps
+import org.jetbrains.compose.compose
+
+val serverVersion: String by project
 
 plugins {
     java
@@ -7,20 +9,24 @@ plugins {
     id("com.mineinabyss.conventions.platform")
 //    id("com.mineinabyss.conventions.publication")
 //    id("com.mineinabyss.conventions.testing")
+    id("org.jetbrains.compose") version "1.0.1"
 }
 
 repositories {
     mavenCentral()
+    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    google()
+    maven("https://repo.codemc.io/repository/nms/")
+    maven("https://papermc.io/repo/repository/maven-public/")
 }
 
 kotlin {
     jvm {
         withJava()
     }
-    js {
-        browser {
-            binaries.executable()
-        }
+    js(IR) {
+        browser()
+        binaries.executable()
     }
 
     sourceSets {
@@ -30,6 +36,7 @@ kotlin {
                 compileOnly(libs.kotlin.stdlib)
                 compileOnly(libs.kotlinx.serialization.json)
                 compileOnly(libs.ktor.client.core)
+                compileOnly(compose.runtime)
             }
         }
         val commonTest by getting {
@@ -41,6 +48,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
+                compileOnly("io.papermc.paper:paper-api:$serverVersion")
                 compileOnly(project(":geary-core"))
                 compileOnly(libs.kotlin.stdlib)
                 compileOnly(libs.ktor.serialization)
@@ -48,6 +56,7 @@ kotlin {
                 compileOnly(libs.ktor.server.netty)
                 compileOnly(libs.logback.classic)
                 compileOnly(libs.kmongo.coroutine.serialization)
+                compileOnly(project(":geary-platform-papermc"))
             }
         }
 
@@ -56,6 +65,8 @@ kotlin {
                 implementation(libs.ktor.client.js)
                 implementation(libs.ktor.client.json)
                 implementation(libs.ktor.client.serialization)
+                implementation(compose.web.core)
+                implementation(compose.runtime)
             }
         }
     }

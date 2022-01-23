@@ -2,10 +2,10 @@ package com.mineinabyss.geary.minecraft
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.minecraft.access.toGeary
-import com.mineinabyss.geary.minecraft.config.GearyConfig
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
 import com.mineinabyss.geary.minecraft.events.GearyAttemptMinecraftSpawnEvent
 import com.mineinabyss.geary.minecraft.events.GearyMinecraftSpawnEvent
+import com.mineinabyss.geary.papermc.GearyConfig
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.geary.prefabs.helpers.addPrefab
@@ -16,9 +16,11 @@ import org.bukkit.NamespacedKey
 import org.bukkit.entity.Entity
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 
-internal fun debug(message: Any?) {
-    if (GearyConfig.data.debug) broadcast(message)
+internal fun KoinComponent.debug(message: Any?) {
+    if (get<GearyConfig>().debug) broadcast(message)
 }
 
 /** Verifies a [PersistentDataContainer] has a tag identifying it as containing Geary components. */

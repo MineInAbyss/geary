@@ -9,12 +9,13 @@ import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.withRole
+import org.koin.core.component.KoinComponent
 import kotlin.reflect.typeOf
 
 /**
  * An empty interface that limits [AccessorBuilder] helper functions only to classes that use [Accessor]s.
  */
-public interface AccessorBuilderProvider
+public interface AccessorBuilderProvider: KoinComponent
 
 /** Gets a component, ensuring it is on the entity. */
 public inline fun <reified T : GearyComponent> AccessorBuilderProvider.get(): AccessorBuilder<ComponentAccessor<T>> {

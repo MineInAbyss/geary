@@ -6,8 +6,11 @@ import com.mineinabyss.geary.minecraft.GearyPlugin
 import com.mineinabyss.geary.minecraft.events.GearyPrefabLoadEvent
 import com.mineinabyss.idofront.events.call
 import com.okkero.skedule.schedule
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-public object GearyLoadManager {
+public object GearyLoadManager: KoinComponent {
+    private val plugin by inject<GearyPlugin>()
     internal val loadingPrefabs = mutableListOf<GearyEntity>()
     private val actions = sortedMapOf<GearyLoadPhase, MutableList<() -> Unit>>()
 
@@ -20,12 +23,12 @@ public object GearyLoadManager {
     private fun MutableList<() -> Unit>.runAll() = forEach { it() }
 
     private fun scheduleLoadTasks() {
-        GearyPlugin.instance.schedule {
+        plugin.schedule {
             waitFor(1)
-            GearyPlugin.instance.logger.info("Registering Serializers")
+            plugin.logger.info("Registering Serializers")
             actions[GearyLoadPhase.REGISTER_SERIALIZERS]?.runAll()
             Formats.createFormats()
-            GearyPlugin.instance.logger.info("Loading prefabs")
+            plugin.logger.info("Loading prefabs")
             actions[GearyLoadPhase.LOAD_PREFABS]?.runAll()
             loadingPrefabs.forEach {
                 GearyPrefabLoadEvent(it).call()
@@ -33,7 +36,7 @@ public object GearyLoadManager {
             loadingPrefabs.clear()
 
             waitFor(1)
-            GearyPlugin.instance.logger.info("Running final startup tasks")
+            plugin.logger.info("Running final startup tasks")
             actions[GearyLoadPhase.ENABLE]?.runAll()
             actions.clear()
         }

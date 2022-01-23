@@ -41,4 +41,3 @@ public abstract class Accessor<T>(
         }.also { _cached += it }
 
 }
-

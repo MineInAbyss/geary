@@ -6,13 +6,13 @@ import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
-import com.mineinabyss.geary.ecs.api.services.gearyService
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.components.ComponentInfo
 import com.mineinabyss.geary.ecs.components.RelationComponent
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.Record
 import com.mineinabyss.geary.ecs.events.AddedComponent
+import org.koin.core.component.KoinComponent
 import kotlin.reflect.KClass
 
 /**
@@ -20,9 +20,7 @@ import kotlin.reflect.KClass
  *
  * Its companion object gets a service via Bukkit as its implementation.
  */
-public interface Engine {
-    public companion object : Engine by gearyService()
-
+public interface Engine: KoinComponent {
     /** The root archetype representing a type of no components */
     public val rootArchetype: Archetype
 
