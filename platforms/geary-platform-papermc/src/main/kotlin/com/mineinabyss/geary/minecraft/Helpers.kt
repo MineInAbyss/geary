@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.minecraft
 
+import com.mineinabyss.geary.ecs.api.engine.globalEngine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.minecraft.access.toGeary
 import com.mineinabyss.geary.minecraft.engine.SpigotEngine
@@ -25,12 +26,12 @@ internal fun KoinComponent.debug(message: Any?) {
 
 /** Verifies a [PersistentDataContainer] has a tag identifying it as containing Geary components. */
 public var PersistentDataContainer.hasComponentsEncoded: Boolean
-    get() = has(SpigotEngine.componentsKey, PersistentDataType.BYTE)
+    get() = has((globalEngine as SpigotEngine).componentsKey, PersistentDataType.BYTE)
     set(value) {
         when {
             //TODO are there any empty marker keys?
-            value -> if (!hasComponentsEncoded) set(SpigotEngine.componentsKey, PersistentDataType.BYTE, 1)
-            else -> remove(SpigotEngine.componentsKey)
+            value -> if (!hasComponentsEncoded) set((globalEngine as SpigotEngine).componentsKey, PersistentDataType.BYTE, 1)
+            else -> remove((globalEngine as SpigotEngine).componentsKey)
         }
     }
 

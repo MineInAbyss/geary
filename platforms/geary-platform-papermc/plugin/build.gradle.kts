@@ -6,14 +6,16 @@ plugins {
     kotlin("plugin.serialization")
 }
 
+configurations {
+    runtimeClasspath {
+        exclude(group = "io.insert-koin", module = "koin-core")
+    }
+}
 repositories {
     maven("https://raw.githubusercontent.com/TheBlackEntity/PlugMan/repository/")
 }
 
 dependencies {
-    // MineInAbyss platform
-    compileOnly(libs.koin.core)
-
     // Shaded
     implementation(project(":geary-platform-papermc"))
     implementation(project(":geary-web-console"))

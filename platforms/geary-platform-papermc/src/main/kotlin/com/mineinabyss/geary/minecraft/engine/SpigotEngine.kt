@@ -5,7 +5,6 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.engine.GearyEngine
-import com.mineinabyss.geary.minecraft.GearyPlugin
 import com.mineinabyss.geary.minecraft.events.GearyEntityRemoveEvent
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.plugin.registerEvents
@@ -15,13 +14,10 @@ import org.bukkit.NamespacedKey
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 import java.util.*
 
 public class SpigotEngine(private val plugin: Plugin) : GearyEngine(), KoinComponent {
-    public companion object : KoinComponent {
-        public val componentsKey: NamespacedKey = NamespacedKey(get<GearyPlugin>(), "components")
-    }
+    public val componentsKey: NamespacedKey = NamespacedKey(plugin, "components")
 
     override fun TickingSystem.runSystem() {
         // Adds a line in timings report showing which systems take up more time.

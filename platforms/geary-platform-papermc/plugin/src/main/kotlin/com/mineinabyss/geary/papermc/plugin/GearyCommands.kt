@@ -13,9 +13,11 @@ import com.mineinabyss.idofront.messaging.info
 import com.rylinaux.plugman.util.PluginUtil
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
+import org.bukkit.plugin.Plugin
+import org.bukkit.plugin.java.JavaPlugin
 
-internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
-    override val commands = commands(GearyPlugin.instance) {
+internal class GearyCommands(val plugin: JavaPlugin) : IdofrontCommandExecutor(), TabCompleter {
+    override val commands = commands(plugin) {
         "geary" {
             "reread" {
                 val prefab by stringArg()
@@ -29,7 +31,7 @@ internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
                 action {
                     val depends = StartupEventListener.getGearyDependants()
                     depends.forEach { PluginUtil.unload(it) }
-                    PluginUtil.reload(GearyPlugin.instance)
+                    PluginUtil.reload(plugin)
                     depends.forEach { PluginUtil.load(it.name) }
                 }
             }

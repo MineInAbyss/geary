@@ -2,7 +2,7 @@ name: Geary
 version: ${plugin_version}
 author: Offz
 load: STARTUP
-main: com.mineinabyss.geary.minecraft.GearyPlugin
+main: com.mineinabyss.geary.papermc.plugin.GearyPluginImpl
 api-version: 1.17
 
 prefix: Geary

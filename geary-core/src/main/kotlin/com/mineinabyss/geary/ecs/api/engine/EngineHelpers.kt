@@ -57,4 +57,4 @@ public fun KoinComponent.componentId(kClass: KClass<out GearyComponentId>): Noth
 public fun GearyComponentId.getComponentInfo(): ComponentInfo? = this.toGeary().get()
 
 @Deprecated("This will be replaced with multi-receiver access in Kotlin 1.6.20")
-public val globalEngine: Engine get() = KoinPlatformTools.defaultContext().get().get()
+public val globalEngine: Engine get() = KoinPlatformTools.defaultContext().get().get<Engine>()

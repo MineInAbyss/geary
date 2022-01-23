@@ -3,6 +3,7 @@ package com.mineinabyss.geary.webconsole
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.helpers.listComponents
+import com.mineinabyss.geary.ecs.helpers.GearyKoinComponent
 import com.mineinabyss.geary.minecraft.access.toGeary
 import com.mineinabyss.geary.webconsole.data.EntityInfo
 import io.ktor.application.*
@@ -16,6 +17,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.GlobalScope.coroutineContext
 import org.bukkit.Bukkit
+import org.koin.core.component.get
 import org.slf4j.LoggerFactory
 
 class GearyWebConsole(
@@ -84,3 +86,5 @@ class GearyWebConsole(
         runningServer?.stop(1000, 2000)
     }
 }
+
+val GearyKoinComponent.webConsole get() = get<GearyWebConsole>()

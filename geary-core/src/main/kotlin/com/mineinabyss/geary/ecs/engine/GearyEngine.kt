@@ -40,12 +40,16 @@ public open class GearyEngine : TickingEngine() {
     private val removedEntities = EntityStack()
     private val classToComponentMap = ClassToComponentMap()
 
+    internal fun init() {
+        //Register an entity for the ComponentInfo component, otherwise getComponentIdForClass does a StackOverflow
+        val componentInfo = newEntity()
+        classToComponentMap[ComponentInfo::class] = componentInfo.id
+
+    }
     override fun start(): Boolean {
         return super.start().also {
             if (it) {
-                //Register an entity for the ComponentInfo component, otherwise getComponentIdForClass does a StackOverflow
-                val componentInfo = newEntity()
-                classToComponentMap[ComponentInfo::class] = componentInfo.id
+                init()
 //              componentInfo.set(ComponentInfo(ComponentInfo::class)) //FIXME causes an error
             }
         }

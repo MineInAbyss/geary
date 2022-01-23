@@ -13,8 +13,6 @@ dependencies {
     compileOnly(libs.kotlinx.coroutines)
     compileOnly(libs.minecraft.skedule)
     compileOnly(libs.kotlin.reflect) { isTransitive = false }
-    compileOnly(libs.koin.core)
-
 
     // Shaded
     api(project(":geary-core")) {

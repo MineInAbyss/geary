@@ -19,15 +19,16 @@ abstract class GearyTest : KoinTest {
     }
 
     private fun startKoinWithGeary() {
+        val engine = GearyEngine()
+        val queryManager = QueryManager(engine)
         @Suppress("RemoveExplicitTypeArguments")
         startKoin {
             modules(module {
-                val engine = GearyEngine()
-                val queryManager = QueryManager(engine)
                 factory<QueryManager> { queryManager }
                 factory<Engine> { engine }
             })
         }
+        engine.init()
     }
 
     @AfterAll

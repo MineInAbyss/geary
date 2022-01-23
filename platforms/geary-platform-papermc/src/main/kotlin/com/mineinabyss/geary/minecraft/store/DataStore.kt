@@ -2,6 +2,7 @@ package com.mineinabyss.geary.minecraft.store
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyType
+import com.mineinabyss.geary.ecs.api.engine.globalEngine
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.engine.isInstance
 import com.mineinabyss.geary.ecs.serialization.Formats
@@ -71,7 +72,7 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
 public fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>, type: GearyType) {
     hasComponentsEncoded = true
     //remove all keys present on the PDC so we only end up with the new list of components being encoded
-    keys.filter { it.namespace == "geary" && it != SpigotEngine.componentsKey }.forEach { remove(it) }
+    keys.filter { it.namespace == "geary" && it != (globalEngine as SpigotEngine).componentsKey }.forEach { remove(it) }
 
     for (value in components)
         encode(value)

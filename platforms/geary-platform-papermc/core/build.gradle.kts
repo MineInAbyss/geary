@@ -6,6 +6,3 @@ plugins {
 repositories {
     maven("https://raw.githubusercontent.com/TheBlackEntity/PlugMan/repository/")
 }
-
-dependencies {
-}

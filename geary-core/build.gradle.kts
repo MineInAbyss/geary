@@ -8,7 +8,7 @@ plugins {
 }
 
 dependencies {
-    api(libs.koin.core)
+    api(libs.koin.core) { isTransitive = false }
 
     //ecs-related libs
     implementation(gearylibs.bimap) { isTransitive = false }

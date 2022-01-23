@@ -1,8 +1,12 @@
 package com.mineinabyss.geary.papermc.plugin
 
+import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.withSerialName
+import com.mineinabyss.geary.ecs.helpers.GearyKoinComponent
+import com.mineinabyss.geary.minecraft.GearyPlugin
 import com.mineinabyss.geary.minecraft.StartupEventListener
 import com.mineinabyss.geary.minecraft.access.BukkitAssociations
 import com.mineinabyss.geary.minecraft.access.BukkitEntityAssociations
@@ -16,6 +20,7 @@ import com.mineinabyss.geary.minecraft.store.FileSystemStore
 import com.mineinabyss.geary.minecraft.store.GearyStore
 import com.mineinabyss.geary.papermc.GearyConfig
 import com.mineinabyss.geary.webconsole.GearyWebConsole
+import com.mineinabyss.geary.webconsole.webConsole
 import com.mineinabyss.idofront.config.singleConfig
 import com.mineinabyss.idofront.config.startOrAppendKoin
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
@@ -23,16 +28,12 @@ import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
 import com.mineinabyss.idofront.serialization.UUIDSerializer
 import org.bukkit.Bukkit
-import org.bukkit.plugin.java.JavaPlugin
-import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.dsl.module
 import java.util.*
 import kotlin.io.path.div
 
-public val gearyPlugin: GearyPlugin = Bukkit.getPluginManager().getPlugin("Geary") as GearyPlugin
-
-public class GearyPlugin : JavaPlugin(), KoinComponent {
+public class GearyPluginImpl : GearyPlugin() {
     override fun onLoad() {
         IdofrontPlatforms.load(this, "mineinabyss")
     }
@@ -40,22 +41,25 @@ public class GearyPlugin : JavaPlugin(), KoinComponent {
     //    private var module: Module? = null
     @Suppress("RemoveExplicitTypeArguments")
     override fun onEnable() {
-        instance = this
         registerEvents(StartupEventListener)
 
         saveDefaultConfig()
         reloadConfig()
+        val webConsole = GearyWebConsole()
+        val engine = SpigotEngine(this@GearyPluginImpl)
+        val queryManager = QueryManager(engine)
         startOrAppendKoin(module {
-            single<GearyPlugin> { this@GearyPlugin }
-            single<GearyWebConsole> { GearyWebConsole() }
-            single<GearyEngine> { SpigotEngine(this@GearyPlugin).apply { start() } }
-            singleConfig(GearyConfig.serializer(), this@GearyPlugin)
+            single<GearyPlugin> { this@GearyPluginImpl }
+            single<GearyWebConsole> { webConsole }
+            single<QueryManager> { queryManager }
+            single<Engine> { engine }
+            singleConfig(GearyConfig.serializer(), this@GearyPluginImpl)
         })
-
-        get<GearyWebConsole>().start()
+        engine.start()
+        webConsole.start()
 
         // Register commands.
-        GearyCommands()
+        GearyCommands(this)
 
         registerEvents(
             BukkitEntityAssociations,
@@ -89,11 +93,8 @@ public class GearyPlugin : JavaPlugin(), KoinComponent {
 
     override fun onDisable() {
         server.scheduler.cancelTasks(this)
-        get<GearyWebConsole>().stop()
-    }
-
-    public companion object {
-        /** Gets [GearyPlugin] via Bukkit once, then sends that reference back afterwards */
-        public lateinit var instance: GearyPlugin
+        GearyKoinComponent().apply {
+            webConsole.stop()
+        }
     }
 }
