@@ -2,10 +2,12 @@ package com.mineinabyss.geary.ecs.accessors
 
 import com.mineinabyss.geary.ecs.accessors.building.AccessorBuilder
 import com.mineinabyss.geary.ecs.accessors.building.AccessorBuilderProvider
+import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.query.AndSelector
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+import org.koin.core.component.inject
 import kotlin.reflect.KProperty
 
 
@@ -15,6 +17,8 @@ import kotlin.reflect.KProperty
  * @property family A lazily built immutable family that represents all data this holder needs to function.
  */
 public open class AccessorHolder : MutableAndSelector(), AccessorBuilderProvider {
+    override val engine: Engine by inject()
+
     public val family: AndSelector by lazy { build() }
     internal open val accessors = mutableListOf<Accessor<*>>()
     private val perArchetypeCache = Int2ObjectOpenHashMap<List<List<Any?>>>()

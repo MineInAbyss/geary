@@ -16,6 +16,9 @@ import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
+import it.unimi.dsi.fastutil.longs.LongArrayList
+import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.sync.Mutex
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.*
@@ -35,7 +38,7 @@ public data class Archetype(
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     //TODO aim to make private
-    internal val ids = mutableListOf<Long>()
+    internal val ids: LongArrayList = LongArrayList()
 
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
@@ -122,12 +125,11 @@ public data class Archetype(
     public operator fun get(row: Int, componentId: GearyComponentId): GearyComponent? {
         val compIndex = indexOf(componentId)
         if (compIndex == -1) return null
-
         return componentData[compIndex][row]
     }
 
     /** @return The entity stored at a given [row] in this archetype. */
-    internal fun getEntity(row: Int): GearyEntity = ids.get(row).toGeary()
+    internal fun getEntity(row: Int): GearyEntity = ids.getLong(row).toGeary()
 
     /** @return Whether this archetype has a [componentId] in its type, regardless of the [HOLDS_DATA] role. */
     public operator fun contains(componentId: GearyComponentId): Boolean =
@@ -239,10 +241,13 @@ public data class Archetype(
         val moveTo = this + dataComponent
         val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
         val componentData = getComponents(row).apply {
+            //TODO this will throw an error if row changed when something else removed the entity from here.
+            // For now we try to move it as early as possible :s
+            removeEntity(row)
             add(newCompIndex, data)
         }
 
-        return moveTo.addEntityWithData(entity, componentData).also { removeEntity(row) }
+        return moveTo.addEntityWithData(entity, componentData)
     }
 
     /**
@@ -284,7 +289,7 @@ public data class Archetype(
     internal fun removeEntity(row: Int) {
         try {
             val lastIndex = ids.lastIndex
-            val replacement = ids.get(lastIndex)
+            val replacement = ids.getLong(lastIndex)
             ids[row] = replacement
 
             if (lastIndex != row)

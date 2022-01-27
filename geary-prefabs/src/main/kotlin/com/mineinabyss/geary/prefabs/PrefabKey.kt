@@ -3,6 +3,8 @@ package com.mineinabyss.geary.prefabs
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.prefabs.serializers.PrefabKeySerializer
 import kotlinx.serialization.Serializable
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 
 /**
  * An inline class which represents a key build from a [namespace] and [name], separated
@@ -10,11 +12,14 @@ import kotlinx.serialization.Serializable
  */
 @Serializable(with = PrefabKeySerializer::class)
 @JvmInline
-public value class PrefabKey private constructor(public val key: String) {
+public value class PrefabKey private constructor(public val key: String) : KoinComponent {
     public val namespace: String get() = key.substringBefore(':')
     public val name: String get() = key.substringAfter(':')
 
-    public fun toEntity(): GearyEntity? = PrefabManager[this]
+    //TODO multiple receivers
+    private val prefabManager: PrefabManager get() = get()
+
+    public fun toEntity(): GearyEntity? = prefabManager[this]
 
     override fun toString(): String = "$namespace:$name"
 

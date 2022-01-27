@@ -42,24 +42,30 @@ dependencyResolutionManagement {
             alias("bimap").to("com.uchuhimo", "kotlinx-bimap").versionRef("bimap-test")
             alias("bitvector").to("net.onedaybeard.bitvector:bitvector-jvm:0.1.4")
             alias("fastutil").to("it.unimi.dsi:fastutil:8.2.2") //Version on minecraft server
-            alias("reflections").to("org.reflections:reflections:0.9.12")
             alias("plugman").to("com.rylinaux:PlugMan:2.2.5")
         }
     }
 }
 
 include(
+    "geary-autoscan",
+    "geary-addon",
     "geary-core",
     "geary-prefabs",
     "geary-web-console",
-    "geary-platform-papermc",
-    "geary-platform-papermc-core",
-    "geary-platform-papermc-plugin",
+    "geary-papermc",
 )
 
-project(":geary-platform-papermc").projectDir = file("./platforms/geary-platform-papermc")
-project(":geary-platform-papermc-core").projectDir = file("./platforms/geary-platform-papermc/core")
-project(":geary-platform-papermc-plugin").projectDir = file("./platforms/geary-platform-papermc/plugin")
+project(":geary-papermc").projectDir = file("./platforms/papermc")
+
+file("./platforms/papermc")
+    .listFiles()!!
+    .filter { it.isDirectory && it.name !in setOf("src", "build") }
+    .forEach {
+        val name = "geary-papermc-${it.name}"
+        include(name)
+        project(":$name").projectDir = it
+    }
 
 includeBuild("geary-conventions")
 includeBuild("../Idofront")

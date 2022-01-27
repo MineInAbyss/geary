@@ -63,5 +63,5 @@ public value class GearyType private constructor(
 
     override fun toString(): String = inner
         .map { (it.toULong().getComponentInfo()?.kClass as KClass<*>).simpleName ?: it }
-        .joinToString { ", " }
+        .joinToString(", ")
 }

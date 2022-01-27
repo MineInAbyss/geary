@@ -6,7 +6,6 @@ plugins {
     java
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    id("com.mineinabyss.conventions.platform")
 //    id("com.mineinabyss.conventions.publication")
 //    id("com.mineinabyss.conventions.testing")
     id("org.jetbrains.compose") version "1.0.1"
@@ -50,13 +49,13 @@ kotlin {
             dependencies {
                 compileOnly("io.papermc.paper:paper-api:$serverVersion")
                 compileOnly(project(":geary-core"))
+                compileOnly(project(":geary-papermc-core"))
                 compileOnly(libs.kotlin.stdlib)
                 compileOnly(libs.ktor.serialization)
                 compileOnly(libs.ktor.server.core)
                 compileOnly(libs.ktor.server.netty)
                 compileOnly(libs.logback.classic)
                 compileOnly(libs.kmongo.coroutine.serialization)
-                compileOnly(project(":geary-platform-papermc"))
             }
         }
 

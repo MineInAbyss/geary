@@ -2,8 +2,8 @@ package com.mineinabyss.geary.prefabs.configuration.systems
 
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.building.get
-import com.mineinabyss.geary.ecs.api.autoscan.AutoScan
-import com.mineinabyss.geary.ecs.api.autoscan.Handler
+import com.mineinabyss.geary.autoscan.AutoScan
+import com.mineinabyss.geary.ecs.api.annotations.Handler
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.components.EntityName
@@ -13,11 +13,7 @@ import com.mineinabyss.geary.prefabs.configuration.components.ChildrenOnPrefab
 
 @AutoScan
 public class ParseChildOnPrefab : GearyListener() {
-    private val TargetScope.child by get<ChildOnPrefab>()
-
-    init {
-        allAdded()
-    }
+    private val TargetScope.child by added<ChildOnPrefab>()
 
     @Handler
     private fun TargetScope.convertToRelation() {
@@ -31,11 +27,7 @@ public class ParseChildOnPrefab : GearyListener() {
 
 @AutoScan
 public class ParseChildrenOnPrefab : GearyListener() {
-    private val TargetScope.children by get<ChildrenOnPrefab>()
-
-    init {
-        allAdded()
-    }
+    private val TargetScope.children by added<ChildrenOnPrefab>()
 
     @Handler
     private fun TargetScope.convertToRelation() {

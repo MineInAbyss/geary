@@ -1,17 +1,18 @@
 package com.mineinabyss.geary.prefabs
 
+import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.EngineScope
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.with
 import com.mineinabyss.geary.ecs.api.relations.NoInherit
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.GearyEntitySerializer
-import com.mineinabyss.geary.prefabs.PrefabManager.keys
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
+import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
 import com.mineinabyss.idofront.messaging.logError
 import com.uchuhimo.collections.MutableBiMap
 import com.uchuhimo.collections.mutableBiMapOf
-import org.koin.core.component.KoinComponent
 import java.io.File
 
 /**
@@ -19,7 +20,9 @@ import java.io.File
  *
  * @property keys A list of registered [PrefabKey]s.
  */
-public object PrefabManager: KoinComponent {
+public class PrefabManager(
+    override val engine: Engine
+) : EngineScope {
     public val keys: List<PrefabKey> get() = prefabs.keys.toList()
 
     private val prefabs: MutableBiMap<PrefabKey, GearyEntity> = mutableBiMapOf()

@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.helpers
 
 import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.EngineScope
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import org.junit.jupiter.api.AfterAll
@@ -10,8 +11,8 @@ import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.get
 
-abstract class GearyTest : KoinTest {
-    val engine get() = get<Engine>()
+abstract class GearyTest : KoinTest, EngineScope {
+    override val engine get() = get<Engine>()
     val queryManager get() = get<QueryManager>()
 
     init {

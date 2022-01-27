@@ -18,6 +18,7 @@ import com.mineinabyss.geary.ecs.components.RelationComponent
 import com.mineinabyss.geary.ecs.entities.parents
 import com.mineinabyss.geary.ecs.entities.removeParent
 import com.mineinabyss.geary.ecs.events.AddedComponent
+import com.mineinabyss.geary.ecs.events.EntityRemoved
 import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.time.inWholeTicks
 import org.koin.core.component.inject
@@ -46,6 +47,7 @@ public open class GearyEngine : TickingEngine() {
         classToComponentMap[ComponentInfo::class] = componentInfo.id
 
     }
+
     override fun start(): Boolean {
         return super.start().also {
             if (it) {
@@ -194,12 +196,14 @@ public open class GearyEngine : TickingEngine() {
     override fun hasComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean =
         getRecord(entity).archetype.contains(componentId)
 
-    override fun removeEntity(entity: GearyEntity) {
+    override fun removeEntity(entity: GearyEntity, callRemoveEvent: Boolean) {
+        if (callRemoveEvent)
+            entity.callEvent(EntityRemoved())
         // remove all children of this entity from the ECS as well
         entity.apply {
             children.forEach {
                 // Remove self from the child's parents or remove the child if it no longer has parents
-                if (parents == setOf(this)) it.removeEntity()
+                if (parents == setOf(this)) it.removeEntity(callRemoveEvent)
                 else it.removeParent(this)
             }
         }

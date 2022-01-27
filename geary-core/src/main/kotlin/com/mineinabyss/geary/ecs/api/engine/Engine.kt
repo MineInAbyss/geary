@@ -20,7 +20,9 @@ import kotlin.reflect.KClass
  *
  * Its companion object gets a service via Bukkit as its implementation.
  */
-public interface Engine: KoinComponent {
+public interface Engine : KoinComponent, EngineScope {
+    override val engine: Engine get() = this
+
     /** The root archetype representing a type of no components */
     public val rootArchetype: Archetype
 
@@ -68,7 +70,7 @@ public interface Engine: KoinComponent {
     public fun removeComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean
 
     /** Removes an entity from the ECS, freeing up its entity id. */
-    public fun removeEntity(entity: GearyEntity)
+    public fun removeEntity(entity: GearyEntity, callRemoveEvent: Boolean = true)
 
     /** Removes all components from an entity. */
     public fun clearEntity(entity: GearyEntity)

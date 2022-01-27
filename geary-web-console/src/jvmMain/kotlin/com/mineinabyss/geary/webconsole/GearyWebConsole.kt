@@ -4,7 +4,7 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.helpers.listComponents
 import com.mineinabyss.geary.ecs.helpers.GearyKoinComponent
-import com.mineinabyss.geary.minecraft.access.toGeary
+import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.webconsole.data.EntityInfo
 import io.ktor.application.*
 import io.ktor.features.*

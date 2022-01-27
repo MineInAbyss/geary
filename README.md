@@ -2,7 +2,7 @@
 
 # Geary
 [![Java CI with Gradle](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml/badge.svg)](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml)
-[![Package](https://img.shields.io/maven-metadata/v?metadataUrl=https://repo.mineinabyss.com/releases/com/mineinabyss/geary-platform-papermc/maven-metadata.xml)](https://repo.mineinabyss.com/#/releases/com/mineinabyss/geary-platform-papermc)
+[![Package](https://img.shields.io/maven-metadata/v?metadataUrl=https://repo.mineinabyss.com/releases/com/mineinabyss/geary-papermc-core/maven-metadata.xml)](https://repo.mineinabyss.com/#/releases/com/mineinabyss/geary-papermc-core)
 [![Wiki](https://img.shields.io/badge/-Project%20Wiki-blueviolet?logo=Wikipedia&labelColor=gray)](https://wiki.mineinabyss.com/geary)
 [![Contribute](https://shields.io/badge/Contribute-e57be5?logo=github%20sponsors&style=flat&logoColor=white)](https://wiki.mineinabyss.com/contribute)
 </div>
@@ -124,7 +124,7 @@ repositories {
 dependencies {
     compileOnly 'com.mineinabyss:geary:<version>'
     // Use the line below if you want to use Geary for your PaperMC plugin
-    compileOnly 'com.mineinabyss:geary-platform-papermc:<version>'
+    compileOnly 'com.mineinabyss:geary-papermc-core:<version>'
 }
 ```
 
