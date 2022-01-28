@@ -1,8 +1,8 @@
-package com.mineinabyss.geary.prefabs
+package com.mineinabyss.geary.prefabs.helpers
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
-import com.mineinabyss.geary.prefabs.helpers.addPrefab
 
 /**
  * Adds prefabs to this entity from an [InheritPrefabs] component. Will make sure parents have their prefabs

@@ -9,11 +9,13 @@ public abstract class TickingEngine : Engine {
     //TODO should this be an abstract class and tick be protected?
     public abstract fun tick(currentTick: Long)
 
-    public fun start() {
+    public open fun start(): Boolean {
         if (!started) {
             scheduleSystemTicking()
             started = true
+            return true
         }
+        return false
     }
 
     public abstract fun scheduleSystemTicking()

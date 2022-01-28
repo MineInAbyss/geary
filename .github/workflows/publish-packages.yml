@@ -28,20 +28,23 @@ jobs:
         run: gradle build publish -PmineinabyssMavenUsername=${{ secrets.MAVEN_PUBLISH_USERNAME }} -PmineinabyssMavenPassword=${{ secrets.MAVEN_PUBLISH_PASSWORD }}
 
       - name: Generate Dokka
-        run: gradle dokkaHtmlMultiModule
+        # TODO figure out dokka for kotlin multiplatform
+#        run: gradle dokkaHtmlMultiModule
+        run: gradle geary-core:dokkaHtml
 
       - name: Publish documentation to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/dokka/htmlMultiModule
+#          publish_dir: ./build/dokka/htmlMultiModule
+          publish_dir: ./geary-core/build/dokka/html
           force_orphan: true
 
       - name: Get version from gradle
         shell: bash
         id: extract_version
         run: |
-          version=`./gradlew :geary-platform-papermc:properties --no-daemon --console=plain -q | grep "^version:" | awk '{printf $2}'`
+          version=`./gradlew :geary-papermc-core:properties --no-daemon --console=plain -q | grep "^version:" | awk '{printf $2}'`
           echo "::set-output name=version::$version"
 
       - name: Create GitHub Release
@@ -51,4 +54,4 @@ jobs:
           prerelease: false
           automatic_release_tag: v${{ steps.extract_version.outputs.version }}
           files: |
-            platforms/geary-platform-papermc/build/libs/*-all.jar
+            platforms/papermc/build/libs/*-all.jar

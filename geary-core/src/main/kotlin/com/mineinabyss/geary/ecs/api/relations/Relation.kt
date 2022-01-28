@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.engine.RELATION
 import com.mineinabyss.geary.ecs.engine.RELATION_KEY_MASK
 import com.mineinabyss.geary.ecs.engine.RELATION_VALUE_MASK
 import com.mineinabyss.geary.ecs.engine.isRelation
+import com.mineinabyss.geary.ecs.helpers.GearyKoinComponent
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
@@ -51,11 +52,13 @@ public value class Relation private constructor(
         public fun of(key: GearyComponentId, value: GearyComponentId): Relation =
             of(key, RelationValueId(value))
 
-        public fun of(key: KClass<*>, value: KClass<*>): Relation =
+        public fun of(key: KClass<*>, value: KClass<*>): Relation = GearyKoinComponent {
             of(componentId(key), componentId(value))
+        }
 
-        public inline fun <reified K : GearyComponent, reified V : GearyComponent> of(): Relation =
+        public inline fun <reified K : GearyComponent, reified V : GearyComponent> of(): Relation = GearyKoinComponent {
             of(componentId<K>(), componentId<V>())
+        }
 
         /**
          * Creates a relation from an id that is assumed to be valid. Use this to avoid boxing Relation because of

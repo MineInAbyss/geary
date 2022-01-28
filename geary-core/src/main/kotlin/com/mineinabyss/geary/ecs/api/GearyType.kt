@@ -1,8 +1,10 @@
 package com.mineinabyss.geary.ecs.api
 
+import com.mineinabyss.geary.ecs.api.engine.getComponentInfo
 import it.unimi.dsi.fastutil.longs.LongAVLTreeSet
 import it.unimi.dsi.fastutil.longs.LongSortedSet
 import it.unimi.dsi.fastutil.longs.LongSortedSets
+import kotlin.reflect.KClass
 
 /**
  * An inlined class used for tracking the components an entity/archetype has.
@@ -58,4 +60,8 @@ public value class GearyType private constructor(
 
     public operator fun minus(id: GearyComponentId): GearyType =
         GearyType(LongAVLTreeSet(inner).apply { remove(id.toLong()) })
+
+    override fun toString(): String = inner
+        .map { (it.toULong().getComponentInfo()?.kClass as KClass<*>).simpleName ?: it }
+        .joinToString(", ")
 }

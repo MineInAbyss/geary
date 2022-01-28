@@ -4,9 +4,10 @@ package com.mineinabyss.geary.ecs.entities
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
-import com.mineinabyss.geary.ecs.api.systems.QueryManager
-import com.mineinabyss.geary.ecs.api.systems.family
-import com.mineinabyss.geary.ecs.engine.*
+import com.mineinabyss.geary.ecs.engine.CHILDOF
+import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
+import com.mineinabyss.geary.ecs.engine.isChild
+import com.mineinabyss.geary.ecs.engine.withRole
 
 /** Adds a [parent] entity to this entity.  */
 public fun GearyEntity.addParent(parent: GearyEntity) {
@@ -69,13 +70,3 @@ public val GearyEntity.parents: Set<GearyEntity>
         }
         return parents
     }
-
-public val GearyEntity.children: List<GearyEntity>
-    get() = QueryManager.getEntitiesMatching(family {
-        has(id.withRole(CHILDOF))
-    })
-
-public val GearyEntity.instances: List<GearyEntity>
-    get() = QueryManager.getEntitiesMatching(family {
-        has(id.withRole(INSTANCEOF))
-    })

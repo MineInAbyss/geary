@@ -1,42 +1,28 @@
 package com.mineinabyss.geary.ecs.engine
 
-import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.components.RelationComponent
+import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
-internal class GearyEngineTest {
-    val engine: GearyEngine = GearyEngine()
-
-    init {
-        setEngineServiceProvider(engine)
-    }
-
-    @Test
-    fun `engine service set successfully`() {
-        Engine.entity { }.id shouldNotBe engine.entity { }.id
-    }
-
+internal class GearyEngineTest : GearyTest() {
     @Test
     fun `adding component to entity`() {
-        Engine.entity {
+        entity {
             set("Test")
         }.get<String>() shouldBe "Test"
     }
 
     @Test
     fun `entity has component works via add or set`() {
-        val entity = Engine.entity {
+        val entity = entity {
             add<String>()
             set(1)
         }
@@ -46,31 +32,31 @@ internal class GearyEngineTest {
 
     @Test
     fun `entity archetype was set`() {
-        Engine.entity {
+        entity {
             add<String>()
             set(1)
-        }.type.getArchetype() shouldBe Engine.rootArchetype + componentId<String>() + (HOLDS_DATA or componentId<Int>())
+        }.type.getArchetype() shouldBe engine.rootArchetype + componentId<String>() + (HOLDS_DATA or componentId<Int>())
     }
 
     @Test
     fun `component removal`() {
-        Engine.entity {
+        entity {
             set("Test")
             remove<String>()
-        }.type.getArchetype() shouldBe Engine.rootArchetype
+        }.type.getArchetype() shouldBe engine.rootArchetype
     }
 
     @Test
     fun `add then set`() {
-        Engine.entity {
+        entity {
             add<String>()
             set("Test")
-        }.type.getArchetype() shouldBe Engine.rootArchetype + (componentId<String>() or HOLDS_DATA)
+        }.type.getArchetype() shouldBe engine.rootArchetype + (componentId<String>() or HOLDS_DATA)
     }
 
     @Test
     fun getComponents() {
-        Engine.entity {
+        entity {
             set("Test")
             set(1)
             add<Long>()
@@ -79,7 +65,7 @@ internal class GearyEngineTest {
 
     @Test
     fun clear() {
-        val entity = Engine.entity {
+        val entity = entity {
             set("Test")
             add<Int>()
         }
@@ -89,7 +75,7 @@ internal class GearyEngineTest {
 
     @Test
     fun setAll() {
-        Engine.entity {
+        entity {
             setAll(listOf("Test", 1))
             add<Long>()
         }.getComponents().shouldContainExactlyInAnyOrder("Test", 1)
@@ -97,7 +83,7 @@ internal class GearyEngineTest {
 
     @Test
     fun setRelation() {
-        val entity = Engine.entity {
+        val entity = entity {
             setRelation(Int::class, "String to int relation")
         }
         entity.type.inner.shouldContainExactly(Relation.of<Int, String>().id.toLong())
@@ -109,24 +95,24 @@ internal class GearyEngineTest {
         @Test
         fun `entity removal and reuse`() {
             //TODO I hate having to do an offset like this, figure out how to reset this Engine singleton via reflection
-            val offset = Engine.newEntity().id + 1uL
+            val offset = entity().id + 1uL
             repeat(10) {
-                Engine.entity {
+                entity {
                     add(100uL)
                 }
             }
 
             // We filled up ids 0..9, so next should be at 10
-            Engine.newEntity().id shouldBe offset + 10uL
+            entity().id shouldBe offset + 10uL
 
             (0..9).forEach {
-                Engine.removeEntity((offset + it.toULong()).toGeary())
+                engine.removeEntity((offset + it.toULong()).toGeary())
             }
 
             // Since we removed the first 10 entities, the last entity we removed (at 9) should be the next one that's
             // ready to be freed up, then 8, etc...
-            Engine.newEntity().id shouldBe offset + 9uL
-            Engine.newEntity().id shouldBe offset + 8uL
+            entity().id shouldBe offset + 9uL
+            entity().id shouldBe offset + 8uL
         }
     }
 }

@@ -1,27 +1,19 @@
 package com.mineinabyss.geary.ecs.api.entities
 
-import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.components.PersistingComponent
-import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.engine.getArchetype
-import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
+import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-internal class GearyEntityTests {
-    val engine: GearyEngine = GearyEngine()
-
-    init {
-        setEngineServiceProvider(engine)
-    }
-
+internal class GearyEntityTests : GearyTest() {
     @Test
     fun setPersisting() {
-        val entity = Engine.entity {
+        val entity = entity {
             setPersisting("Test")
         }
         val relations =
@@ -33,11 +25,11 @@ internal class GearyEntityTests {
 
     @Test
     fun setAllPersisting() {
-        val entity = Engine.entity {
+        val entity = entity {
             set("Test")
             set(1)
         }
-        val entitySetAll = Engine.entity {
+        val entitySetAll = entity {
             setAll(listOf("Test", 1))
         }
         entity.type.inner shouldContainExactly entitySetAll.type.inner
@@ -45,7 +37,7 @@ internal class GearyEntityTests {
 
     @Test
     fun clear() {
-        val entity = Engine.entity {
+        val entity = entity {
             setPersisting("Test")
         }
         val relations =
@@ -62,7 +54,7 @@ internal class GearyEntityTests {
         @Test
         fun `getRelation reified`() {
             val testData = TestRelation()
-            val entity = Engine.entity {
+            val entity = entity {
                 setRelation(String::class, testData)
                 add<String>()
             }

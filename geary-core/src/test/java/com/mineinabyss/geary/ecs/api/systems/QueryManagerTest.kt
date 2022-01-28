@@ -4,16 +4,14 @@ import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.building.get
 import com.mineinabyss.geary.ecs.accessors.building.relation
 import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.api.autoscan.Handler
-import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.annotations.Handler
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
-import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.getArchetype
-import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
 import com.mineinabyss.geary.ecs.query.contains
+import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
@@ -23,22 +21,13 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-internal class QueryManagerTest {
-    val engine: GearyEngine = GearyEngine()
-
-    init {
-        setEngineServiceProvider(engine)
-    }
-
+internal class QueryManagerTest : GearyTest() {
     @Nested
     inner class FamilyMatchingTest {
-        val entity = Engine.entity {
-            set("Test")
-            add<Int>()
-        }
-        val entity2 = Engine.entity {
-            set("Test")
-            set(1)
+        val stringId = componentId<String>() or HOLDS_DATA
+        val intId = componentId<Int>()
+        init {
+            println("Inner class")
         }
 
         val system = object : TickingSystem() {
@@ -50,18 +39,16 @@ internal class QueryManagerTest {
                 entity.has<Int>() shouldBe true
             }
         }
-        val stringId = componentId<String>() or HOLDS_DATA
-        val intId = componentId<Int>()
 
-        val correctArchetype = Engine.rootArchetype + stringId + intId
+        val correctArchetype = engine.rootArchetype + stringId + intId
 
         init {
-            QueryManager.trackQuery(system)
+            queryManager.trackQuery(system)
         }
 
         @Test
         fun `family type is correct`() {
-            GearyType(system.family.components).getArchetype() shouldBe Engine.rootArchetype + stringId
+            GearyType(system.family.components).getArchetype() shouldBe engine.rootArchetype + stringId
         }
 
         @Test
@@ -71,7 +58,15 @@ internal class QueryManagerTest {
 
         @Test
         fun `get entities matching family`() {
-            QueryManager.getEntitiesMatching(system.family).apply {
+            val entity = entity {
+                set("Test")
+                add<Int>()
+            }
+            val entity2 = entity {
+                set("Test")
+                set(1)
+            }
+            queryManager.getEntitiesMatching(system.family).apply {
                 shouldContainAll(entity, entity2)
             }
         }
@@ -96,14 +91,14 @@ internal class QueryManagerTest {
         }
 
         init {
-            QueryManager.trackQuery(removingSystem)
+            queryManager.trackQuery(removingSystem)
         }
 
         @Test
         fun `concurrent modification`() {
-            val entities = (0 until 10).map { Engine.entity { set("Test") } }
+            val entities = (0 until 10).map { entity { set("Test") } }
             val total =
-                QueryManager.getEntitiesMatching(family {
+                queryManager.getEntitiesMatching(family {
                     hasSet<String>()
                 }).count()
             removingSystem.doTick()
@@ -126,16 +121,16 @@ internal class QueryManagerTest {
             }
         }
         system.family.relationValueTypes.shouldContainExactly(RelationValueId(componentId<RelationTestComponent>()))
-        QueryManager.trackQuery(system)
-        val entity = Engine.entity {
+        queryManager.trackQuery(system)
+        val entity = entity {
             setRelation(String::class, RelationTestComponent())
             add<String>()
         }
-        val entity2 = Engine.entity {
+        val entity2 = entity {
             setRelation(Int::class, RelationTestComponent())
             add<Int>()
         }
-        val entity3 = Engine.entity {
+        val entity3 = entity {
             setRelation(RelationTestComponent::class, "")
             add<RelationTestComponent>()
         }
@@ -162,9 +157,9 @@ internal class QueryManagerTest {
                 test2.value.shouldBeInstanceOf<RelationTestComponent2>()
             }
         }
-        QueryManager.trackQuery(system)
+        queryManager.trackQuery(system)
 
-        Engine.entity {
+        entity {
             setRelation(String::class, RelationTestComponent1())
             setRelation(Int::class, RelationTestComponent1())
             setRelation(String::class, RelationTestComponent2())
@@ -190,17 +185,17 @@ internal class QueryManagerTest {
             }
         }
 
-        val entity = Engine.entity {
+        val entity = entity {
             setRelation(String::class, RelationTestWithData())
             add<String>()
         }
 
-        val entityWithData = Engine.entity {
+        val entityWithData = entity {
             setRelation(String::class, RelationTestWithData())
             set("Test")
         }
 
-        QueryManager.trackQuery(system)
+        queryManager.trackQuery(system)
 
         system.matchedArchetypes.shouldNotContain(entity.type.getArchetype())
         system.matchedArchetypes.shouldContain(entityWithData.type.getArchetype())
@@ -221,10 +216,10 @@ internal class QueryManagerTest {
 
     @Test
     fun `empty event handler`() {
-        (Engine.rootArchetype.type in EventListener.event.family) shouldBe true
-        Engine.addSystem(EventListener)
-        Engine.rootArchetype.eventHandlers.map { it.parentListener } shouldContain EventListener
-        Engine.entity {
+        (engine.rootArchetype.type in EventListener.event.family) shouldBe true
+        engine.addSystem(EventListener)
+        engine.rootArchetype.eventHandlers.map { it.parentListener } shouldContain EventListener
+        entity {
             set(TestComponent())
         }.callEvent()
         // 1 from setting, 1 from calling empty event

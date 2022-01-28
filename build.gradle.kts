@@ -1,22 +1,11 @@
-import Com_mineinabyss_conventions_platform_gradle.Deps
-
 plugins {
     java
-    kotlin("jvm")
-    id("org.jetbrains.dokka")
-    id("com.mineinabyss.conventions.platform")
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    compileOnly(Deps.kotlin.stdlib)
+//    kotlin("multiplatform")
+//    id("org.jetbrains.dokka")
 }
 
 tasks {
     build {
-        dependsOn(project(":geary-platform-papermc").tasks.build)
+        dependsOn(project(":geary-papermc").tasks.build)
     }
 }

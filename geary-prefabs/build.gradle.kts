@@ -1,5 +1,3 @@
-import Geary_kotlin_conventions_gradle.GearyDeps
-
 plugins {
     id("geary.kotlin-conventions")
     kotlin("plugin.serialization")
@@ -8,8 +6,9 @@ plugins {
 }
 
 dependencies {
-    compileOnly(GearyDeps.bimap) { isTransitive = false }
-    compileOnly(GearyDeps.fastutil)
+    compileOnly(gearylibs.bimap) { isTransitive = false }
+    compileOnly(gearylibs.fastutil)
 
     compileOnly(project(":geary-core"))
+    compileOnly(project(":geary-autoscan"))
 }

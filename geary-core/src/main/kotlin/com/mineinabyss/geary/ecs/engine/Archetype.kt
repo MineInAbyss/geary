@@ -17,6 +17,8 @@ import com.mineinabyss.geary.ecs.query.contains
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongArrayList
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.*
 
 /**
@@ -29,9 +31,12 @@ import java.util.*
 public data class Archetype(
     public val type: GearyType,
     public val id: Int
-) {
+) : KoinComponent {
+    private val engine: Engine by inject()
+
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     //TODO aim to make private
+    //TODO take a look at atomicfu for multiplatform support
     internal val ids: LongArrayList = LongArrayList()
 
     /** Component ids in the type that are to hold data */
@@ -119,7 +124,6 @@ public data class Archetype(
     public operator fun get(row: Int, componentId: GearyComponentId): GearyComponent? {
         val compIndex = indexOf(componentId)
         if (compIndex == -1) return null
-
         return componentData[compIndex][row]
     }
 
@@ -160,14 +164,17 @@ public data class Archetype(
      *
      * @return The new [Record] to be associated with this entity from now on.
      */
-    @Synchronized
     internal fun addEntityWithData(
         entity: GearyEntity,
         data: List<GearyComponent>
     ): Record {
-        ids.add(entity.id.toLong())
-        componentData.forEachIndexed { i, compArray ->
-            compArray.add(data[i])
+        synchronized(ids) {
+            ids.add(entity.id.toLong())
+        }
+        synchronized(componentData) {
+            componentData.forEachIndexed { i, compArray ->
+                compArray.add(data[i])
+            }
         }
         return Record.of(this, size - 1)
     }
@@ -182,12 +189,11 @@ public data class Archetype(
      *
      * @see Engine.addComponentFor
      */
-    @Synchronized
     internal fun addComponent(
         entity: GearyEntity,
         row: Int,
         component: GearyComponentId
-    ): Record? {
+    ): Record? = synchronized(ids) {
         // if already present in this archetype, stop here since we dont need to update any data
         if (contains(component)) return null
 
@@ -207,7 +213,6 @@ public data class Archetype(
      *
      * @see Engine.setComponentFor
      */
-    @Synchronized
     internal fun setComponent(
         entity: GearyEntity,
         row: Int,
@@ -221,25 +226,30 @@ public data class Archetype(
 
         //if component was added but not set, remove the old component before adding this one
         val addId = dataComponent.withoutRole(HOLDS_DATA)
-        if (addId in type) {
-            val removedRecord = removeComponent(entity, row, addId)!!
-            return removedRecord.archetype.setComponent(entity, removedRecord.row, dataComponent, data)
-        }
+        synchronized(ids) {
+            if (addId in type) {
+                val removedRecord = removeComponent(entity, row, addId)!!
+                return removedRecord.archetype.setComponent(entity, removedRecord.row, dataComponent, data)
+            }
 
-        //If component already in this type, just update the data
-        val addIndex = indexOf(dataComponent)
-        if (addIndex != -1) {
-            componentData[addIndex][row] = data
-            return null
-        }
+            //If component already in this type, just update the data
+            val addIndex = indexOf(dataComponent)
+            if (addIndex != -1) {
+                componentData[addIndex][row] = data
+                return null
+            }
 
-        val moveTo = this + dataComponent
-        val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
-        val componentData = getComponents(row).apply {
-            add(newCompIndex, data)
-        }
+            val moveTo = this + dataComponent
+            val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
+            val componentData = getComponents(row).apply {
+                //TODO this will throw an error if row changed when something else removed the entity from here.
+                // For now we try to move it as early as possible :s
+                removeEntity(row)
+                add(newCompIndex, data)
+            }
 
-        return moveTo.addEntityWithData(entity, componentData).also { removeEntity(row) }
+            return moveTo.addEntityWithData(entity, componentData)
+        }
     }
 
     /**
@@ -250,7 +260,6 @@ public data class Archetype(
      *
      * @see Engine.removeComponentFor
      */
-    @Synchronized
     internal fun removeComponent(
         entity: GearyEntity,
         row: Int,
@@ -263,13 +272,15 @@ public data class Archetype(
         val componentData = mutableListOf<GearyComponent>()
 
         val skipData = indexOf(component)
-        this.componentData.forEachIndexed { i, it ->
-            if (i != skipData)
-                componentData.add(it[row])
-        }
+        synchronized(ids) {
+            this.componentData.forEachIndexed { i, it ->
+                if (i != skipData)
+                    componentData.add(it[row])
+            }
 
-        removeEntity(row)
-        return moveTo.addEntityWithData(entity, componentData)
+            removeEntity(row)
+            return moveTo.addEntityWithData(entity, componentData)
+        }
     }
 
     /** Gets all the components associated with an entity at a [row]. */
@@ -277,23 +288,29 @@ public data class Archetype(
         componentData.mapTo(arrayListOf()) { it[row] }
 
     /** Removes the entity at a [row] in this archetype, notifying running archetype iterators. */
-    @Synchronized
     internal fun removeEntity(row: Int) {
-        val replacement = ids.last()
-        val lastIndex = ids.lastIndex
-        ids[row] = replacement
+        try {
+            synchronized(ids) {
 
-        if (lastIndex != row)
-            componentData.forEach { it[row] = it.last() }
+                val lastIndex = ids.lastIndex
+                val replacement = ids.getLong(lastIndex)
+                ids[row] = replacement
 
-        ids.removeLastOrNull()
-        componentData.forEach { it.removeLastOrNull() }
+                if (lastIndex != row)
+                    componentData.forEach { it[row] = it.last() }
 
-        if (lastIndex != row) {
-            runningIterators.forEach {
-                it.addMovedRow(lastIndex, row)
+                ids.removeLastOrNull()
+                componentData.forEach { it.removeLastOrNull() }
+
+                if (lastIndex != row) {
+                    runningIterators.forEach {
+                        it.addMovedRow(lastIndex, row)
+                    }
+                    engine.setRecord(replacement.toGeary(), Record.of(this, row))
+                }
             }
-            Engine.setRecord(replacement.toGeary(), Record.of(this, row))
+        } catch (e: IndexOutOfBoundsException) {
+            throw IllegalStateException("Error while removing entity at row $row for archetype $this", e)
         }
     }
 

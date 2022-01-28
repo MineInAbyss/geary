@@ -3,9 +3,15 @@ package com.mineinabyss.geary.ecs.api.systems
 import com.mineinabyss.geary.ecs.accessors.*
 import com.mineinabyss.geary.ecs.accessors.building.AccessorBuilder
 import com.mineinabyss.geary.ecs.accessors.building.AccessorBuilderProvider
-import com.mineinabyss.geary.ecs.api.autoscan.Handler
-import com.mineinabyss.geary.ecs.events.AddedComponent
+import com.mineinabyss.geary.ecs.accessors.building.get
+import com.mineinabyss.geary.ecs.accessors.types.ComponentAccessor
+import com.mineinabyss.geary.ecs.api.GearyComponent
+import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.componentId
+import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
+import com.mineinabyss.geary.ecs.engine.withRole
 import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
+import org.koin.core.component.inject
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.extensionReceiverParameter
 import kotlin.reflect.typeOf
@@ -19,6 +25,8 @@ import kotlin.reflect.typeOf
  * are the actual functions that run when a matching event is found.
  */
 public abstract class GearyListener : GearySystem, AccessorBuilderProvider {
+    override val engine: Engine by inject()
+
     public val source: AccessorHolder = AccessorHolder()
     public val target: AccessorHolder = AccessorHolder()
     public val event: AccessorHolder = AccessorHolder()
@@ -48,11 +56,18 @@ public abstract class GearyListener : GearySystem, AccessorBuilderProvider {
     public operator fun <T> Accessor<T>.getValue(thisRef: EventScope, property: KProperty<*>): T =
         thisRef.data[index] as T
 
+
+    /** Gets a component, ensuring it is on the entity. */
+    public inline fun <reified T : GearyComponent> added(): AccessorBuilder<ComponentAccessor<T>> {
+        event.onAdded(componentId<T>().withRole(HOLDS_DATA))
+        return get()
+    }
+
     //TODO allow checking that all components were added on source
     //TODO an Accessor which returns the specific component added.
-    public fun allAdded() {
-        event.or {
-            target.family.components.forEach { hasRelation(it, typeOf<AddedComponent>()) }
+    public fun AccessorHolder.allAdded() {
+        family.components.forEach {
+            event.onAdded(it)
         }
     }
 }

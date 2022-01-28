@@ -2,35 +2,23 @@ package com.mineinabyss.geary.ecs.events
 
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.building.get
-import com.mineinabyss.geary.ecs.api.autoscan.Handler
-import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.annotations.Handler
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
-import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.geary.ecs.engine.getArchetype
-import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
+import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-internal class ComponentAddEventKtTest {
-    val engine: GearyEngine = GearyEngine()
-
-    init {
-        setEngineServiceProvider(engine)
-    }
-
+internal class ComponentAddEventKtTest : GearyTest() {
     var inc = 0
 
     //TODO write test for all methods of checking for added
     inner class OnStringAdd : GearyListener() {
         // All three get added
-        val TargetScope.string by get<String>()
-        val TargetScope.int by get<Int>()
-        val TargetScope.double by get<Double>()
-
-        init {
-            allAdded()
-        }
+        val TargetScope.string by added<String>()
+        val TargetScope.int by added<Int>()
+        val TargetScope.double by added<Double>()
 
         @Handler
         fun increment() {
@@ -41,9 +29,9 @@ internal class ComponentAddEventKtTest {
     @Test
     fun componentAddEvent() {
         val listener = OnStringAdd()
-        Engine.addSystem(listener)
+        engine.addSystem(listener)
 
-        Engine.entity {
+        entity {
             fun addedListeners() = type.getArchetype().targetListeners.count { it === listener }
             set("")
             set(1)

@@ -7,12 +7,14 @@ import com.mineinabyss.geary.ecs.accessors.types.ComponentAccessor
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.engine.Archetype
+import org.koin.core.component.inject
 import kotlin.reflect.KProperty
 
 /**com.mineinabyss.geary.ecs.engine.iteration.accessors
  * @property matchedArchetypes A set of archetypes which have been matched to this query.
  */
 public abstract class Query : Iterable<TargetScope>, AccessorHolder() {
+    private val queryManager by inject<QueryManager>()
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
 
     private var registered = false
@@ -20,7 +22,7 @@ public abstract class Query : Iterable<TargetScope>, AccessorHolder() {
     //TODO restrict to calls within the scope of a Query
     public override fun iterator(): QueryIterator {
         if (!registered) {
-            QueryManager.trackQuery(this)
+            queryManager.trackQuery(this)
             registered = true
         }
         return QueryIterator(this)

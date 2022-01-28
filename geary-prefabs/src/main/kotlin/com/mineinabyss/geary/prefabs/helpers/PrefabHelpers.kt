@@ -10,7 +10,6 @@ import com.mineinabyss.geary.ecs.engine.INSTANCEOF
 import com.mineinabyss.geary.ecs.engine.isInstance
 import com.mineinabyss.geary.ecs.engine.withRole
 import com.mineinabyss.geary.ecs.entities.addParent
-import com.mineinabyss.geary.ecs.entities.children
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 

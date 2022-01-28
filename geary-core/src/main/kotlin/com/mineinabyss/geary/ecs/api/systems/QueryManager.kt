@@ -3,7 +3,7 @@ package com.mineinabyss.geary.ecs.api.systems
 import com.mineinabyss.geary.ecs.accessors.EventScope
 import com.mineinabyss.geary.ecs.accessors.SourceScope
 import com.mineinabyss.geary.ecs.accessors.TargetScope
-import com.mineinabyss.geary.ecs.api.autoscan.Handler
+import com.mineinabyss.geary.ecs.api.annotations.Handler
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
@@ -20,7 +20,7 @@ import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.typeOf
 
-public object QueryManager {
+public class QueryManager(private val engine: Engine) {
     private val queries = mutableListOf<Query>()
     private val sourceListeners = mutableListOf<GearyListener>()
     private val targetListeners = mutableListOf<GearyListener>()
@@ -29,7 +29,7 @@ public object QueryManager {
     private val archetypes = Component2ObjectArrayMap<Archetype>()
 
     init {
-        registerArchetype(Engine.rootArchetype)
+        registerArchetype(engine.rootArchetype)
     }
 
     public fun trackEventListener(listener: GearyListener) {
@@ -55,7 +55,9 @@ public object QueryManager {
                             if (arrIndex != -1) argArray[arrIndex] = args[i]
                         }
                         kFunction.isAccessible = true
-                        return kFunction.call(*argArray)
+                        return runCatching { kFunction.call(*argArray) }
+                            // Don't print the whole reflection error, just the cause
+                            .getOrElse { throw it.cause ?: it }
                     }
                 }
 

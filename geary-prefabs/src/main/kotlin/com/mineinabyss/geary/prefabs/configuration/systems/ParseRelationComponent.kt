@@ -2,18 +2,14 @@ package com.mineinabyss.geary.prefabs.configuration.systems
 
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.building.get
-import com.mineinabyss.geary.ecs.api.autoscan.AutoScan
-import com.mineinabyss.geary.ecs.api.autoscan.Handler
+import com.mineinabyss.geary.autoscan.AutoScan
+import com.mineinabyss.geary.ecs.api.annotations.Handler
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.components.RelationComponent
 
 @AutoScan
 public class ParseRelationComponent : GearyListener() {
-    private val TargetScope.relation by get<RelationComponent>()
-
-    init {
-        allAdded()
-    }
+    private val TargetScope.relation by added<RelationComponent>()
 
     @Handler
     private fun TargetScope.convertToRelation() {

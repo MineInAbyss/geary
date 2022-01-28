@@ -23,10 +23,10 @@ public const val ENTITY_MASK: ULong = 0x00FFFFFFFFFFFFFFuL
 public const val RELATION_VALUE_MASK: ULong = 0x00FFFFFF00000000uL
 public const val RELATION_KEY_MASK: ULong = 0xFF000000FFFFFFFFuL
 
-public fun GearyComponentId.isInstance(): Boolean = this.hasRole(INSTANCEOF)
-public fun GearyComponentId.isChild(): Boolean = this.hasRole(CHILDOF)
-public fun GearyComponentId.isRelation(): Boolean = this.hasRole(RELATION)
-public fun GearyComponentId.holdsData(): Boolean = this.hasRole(HOLDS_DATA)
+public inline fun GearyComponentId.isInstance(): Boolean = this.hasRole(INSTANCEOF)
+public inline fun GearyComponentId.isChild(): Boolean = this.hasRole(CHILDOF)
+public inline fun GearyComponentId.isRelation(): Boolean = this.hasRole(RELATION)
+public inline fun GearyComponentId.holdsData(): Boolean = this.hasRole(HOLDS_DATA)
 
 public inline fun GearyComponentId.hasRole(role: ULong): Boolean = this and role != 0uL
 

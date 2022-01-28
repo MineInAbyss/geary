@@ -4,22 +4,14 @@ import com.mineinabyss.geary.ecs.accessors.EventScope
 import com.mineinabyss.geary.ecs.accessors.SourceScope
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.building.get
-import com.mineinabyss.geary.ecs.api.autoscan.Handler
-import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.annotations.Handler
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
-import com.mineinabyss.geary.ecs.engine.GearyEngine
-import com.mineinabyss.geary.ecs.engine.setEngineServiceProvider
+import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-class SourceTargetEventTest {
-    val engine: GearyEngine = GearyEngine()
-
-    init {
-        setEngineServiceProvider(engine)
-    }
-
+class SourceTargetEventTest : GearyTest() {
     class Strength(val amount: Int)
     class Attack()
     data class Health(val amount: Int)
@@ -40,11 +32,11 @@ class SourceTargetEventTest {
 
     @Test
     fun interactions() {
-        Engine.addSystem(Interaction())
-        val source = Engine.entity {
+        engine.addSystem(Interaction())
+        val source = entity {
             set(Strength(10))
         }
-        val target = Engine.entity {
+        val target = entity {
             set(Health(10))
         }
         target.get<Health>()?.amount shouldBe 10

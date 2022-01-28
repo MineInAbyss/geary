@@ -11,3 +11,4 @@ out
 eclipse
 *.ipr
 *.iws
+kotlin-js-store/
