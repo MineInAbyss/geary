@@ -36,6 +36,7 @@ public data class Archetype(
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     //TODO aim to make private
+    //TODO take a look at atomicfu for multiplatform support
     internal val ids: LongArrayList = LongArrayList()
 
     /** Component ids in the type that are to hold data */

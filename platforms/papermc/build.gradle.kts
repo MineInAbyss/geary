@@ -7,6 +7,7 @@ plugins {
 repositories {
     mavenCentral()
     maven("https://jitpack.io")
+    maven("https://repo.mineinabyss.com/releases")
 }
 
 configurations {
@@ -26,10 +27,4 @@ configurations {
 dependencies {
     // Shaded
     implementation(project(":geary-papermc-plugin"))
-}
-
-tasks {
-    shadowJar {
-        archiveBaseName.set("Geary")
-    }
 }

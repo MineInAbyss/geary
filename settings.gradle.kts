@@ -29,13 +29,15 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
+    val idofrontConventions: String by settings
+
     repositories {
-        mavenLocal()
+        maven("https://repo.mineinabyss.com/releases")
     }
 
     versionCatalogs {
         create("libs") {
-            from("com.mineinabyss:catalog:1.6.10-DEV")
+            from("com.mineinabyss:catalog:$idofrontConventions")
         }
         create("gearylibs") {
             version("bimap-test", "1.2")
@@ -68,4 +70,3 @@ file("./platforms/papermc")
     }
 
 includeBuild("geary-conventions")
-includeBuild("../Idofront")
