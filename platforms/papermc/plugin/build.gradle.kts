@@ -11,7 +11,6 @@ repositories {
 dependencies {
     // Shaded
     api(project(":geary-papermc-core"))
-    api(project(":geary-web-console"))
 
     // Other plugins
     compileOnly(gearylibs.plugman)

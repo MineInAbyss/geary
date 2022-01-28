@@ -17,7 +17,6 @@ import com.mineinabyss.geary.ecs.components.RelationComponent
 import com.mineinabyss.geary.ecs.engine.*
 import com.mineinabyss.geary.ecs.events.AddedComponent
 import kotlinx.serialization.Serializable
-import org.koin.core.component.KoinComponent
 import kotlin.reflect.KClass
 import org.koin.core.component.get as koinGet
 
@@ -30,7 +29,7 @@ import org.koin.core.component.get as koinGet
 @JvmInline
 @Suppress("NOTHING_TO_INLINE")
 public value class GearyEntity(public val id: GearyEntityId) : EngineScope {
-    //TODO with multiple accessors, remove and require each functino call has scope
+    //TODO This is a huge performance hit. Change when we get context support in 1.6.20.
     override val engine: Engine get() = koinGet()
     /** Gets the record associated with this entity or throws an error if it is no longer active on the koinGet<Engine>(). */
     public inline val record: Record get() = koinGet<Engine>().getRecord(this)

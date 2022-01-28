@@ -4,7 +4,6 @@ import com.mineinabyss.geary.api.addon.GearyLoadPhase.ENABLE
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.entities.UUID2GearyMap
-import com.mineinabyss.geary.ecs.helpers.GearyKoinComponent
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.withSerialName
 import com.mineinabyss.geary.papermc.GearyConfig
@@ -19,8 +18,6 @@ import com.mineinabyss.geary.papermc.listeners.GearyAttemptSpawnListener
 import com.mineinabyss.geary.papermc.store.FileSystemStore
 import com.mineinabyss.geary.papermc.store.GearyStore
 import com.mineinabyss.geary.prefabs.PrefabManager
-import com.mineinabyss.geary.webconsole.GearyWebConsole
-import com.mineinabyss.geary.webconsole.webConsole
 import com.mineinabyss.idofront.config.singleConfig
 import com.mineinabyss.idofront.config.startOrAppendKoin
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
@@ -44,7 +41,6 @@ public class GearyPluginImpl : GearyPlugin() {
 
         saveDefaultConfig()
         reloadConfig()
-        val webConsole = GearyWebConsole()
         val engine = PaperMCEngine(this@GearyPluginImpl)
         val queryManager = QueryManager(engine)
         val bukkitEntity2Geary = BukkitEntity2Geary()
@@ -54,7 +50,6 @@ public class GearyPluginImpl : GearyPlugin() {
 
         startOrAppendKoin(module {
             single<GearyPlugin> { this@GearyPluginImpl }
-            single<GearyWebConsole> { webConsole }
             single<QueryManager> { queryManager }
             single<Engine> { engine }
             single<BukkitEntity2Geary> { bukkitEntity2Geary }
@@ -65,7 +60,6 @@ public class GearyPluginImpl : GearyPlugin() {
         })
 
         engine.start()
-        webConsole.start()
         uuid2GearyMap.startTracking()
         bukkitEntity2Geary.startTracking()
 
@@ -101,8 +95,5 @@ public class GearyPluginImpl : GearyPlugin() {
 
     override fun onDisable() {
         server.scheduler.cancelTasks(this)
-        GearyKoinComponent().apply {
-            webConsole.stop()
-        }
     }
 }
