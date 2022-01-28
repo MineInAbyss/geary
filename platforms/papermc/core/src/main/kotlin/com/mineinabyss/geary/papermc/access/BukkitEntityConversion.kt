@@ -4,10 +4,9 @@ import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.papermc.GearyMCKoinComponent
 import com.mineinabyss.idofront.typealiases.BukkitEntity
-import org.bukkit.entity.Entity
 
 public fun BukkitEntity.toGeary(): GearyEntity = GearyMCKoinComponent {
-    bukkitAssociations[entityId] ?: entity { set<BukkitEntity>(this@toGeary) }
+    bukkit2Geary[entityId] ?: entity { set<BukkitEntity>(this@toGeary) }
 }
 
 // Separate function because inline `run` cannot be nullable
@@ -16,7 +15,7 @@ public inline fun BukkitEntity.toGeary(init: GearyEntity.() -> Unit): GearyEntit
     toGeary().apply { init() }
 
 public fun BukkitEntity.toGearyOrNull(): GearyEntity? = GearyMCKoinComponent().run {
-    bukkitAssociations[entityId]
+    bukkit2Geary[entityId]
 }
 
 public fun GearyEntity.toBukkit(): BukkitEntity? = get()

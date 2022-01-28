@@ -25,7 +25,7 @@ public open class GearyMCKoinComponent : GearyKoinComponent(), GearyScope {
     public override val bukkitEntity2Geary: BukkitEntity2Geary by inject()
 
     public val geary: GearyPlugin by inject()
-    public val bukkitAssociations: BukkitEntity2Geary by inject()
+    public val bukkit2Geary: BukkitEntity2Geary by inject()
 
     public val uuid2entity: UUID2GearyMap by inject()
 
