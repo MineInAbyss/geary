@@ -17,9 +17,18 @@ import com.mineinabyss.geary.ecs.query.contains
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongArrayList
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.*
+import kotlin.collections.ArrayList
+
+private typealias IdList = LongArrayList
+
+///** @return The entity stored at a given [row] in this archetype. */
+//internal fun IdList.getEntity(row: Int): GearyEntity = getLong(row).toGeary()
 
 /**
  * Archetypes store a list of entities with the same [GearyType], and provide functions to
@@ -34,10 +43,14 @@ public data class Archetype(
 ) : KoinComponent {
     private val engine: Engine by inject()
 
+    internal var iterationJob: Job? = null
+
+    /** A mutex for anything which needs the size of ids to remain unchanged. */
+    private val entityAddition = Mutex()
+
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     //TODO aim to make private
-    //TODO take a look at atomicfu for multiplatform support
-    internal val ids: LongArrayList = LongArrayList()
+    internal val ids: IdList = IdList()
 
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
@@ -102,6 +115,13 @@ public data class Archetype(
     private val runningIterators = Collections.newSetFromMap(WeakHashMap<ArchetypeIterator, Boolean>())
 
     // ==== Helper functions ====
+    public suspend fun awaitIteration() {
+        iterationJob?.join()
+    }
+
+    public fun getEntity(row: Int): GearyEntity {
+        return ids.getLong(row).toGeary()
+    }
 
     /** @return This Archetype's [relationsByValue] that are also a part of [matchRelations]. */
     public fun matchedRelationsFor(matchRelations: Collection<RelationValueId>): Map<RelationValueId, List<Relation>> =
@@ -127,8 +147,6 @@ public data class Archetype(
         return componentData[compIndex][row]
     }
 
-    /** @return The entity stored at a given [row] in this archetype. */
-    internal fun getEntity(row: Int): GearyEntity = ids.getLong(row).toGeary()
 
     /** @return Whether this archetype has a [componentId] in its type, regardless of the [HOLDS_DATA] role. */
     public operator fun contains(componentId: GearyComponentId): Boolean =
@@ -164,19 +182,17 @@ public data class Archetype(
      *
      * @return The new [Record] to be associated with this entity from now on.
      */
-    internal fun addEntityWithData(
+    //TODO proper async add
+    internal suspend fun addEntityWithData(
         entity: GearyEntity,
         data: List<GearyComponent>
-    ): Record {
-        synchronized(ids) {
-            ids.add(entity.id.toLong())
+    ): Record = entityAddition.withLock {
+//        awaitIteration()
+        ids.add(entity.id.toLong())
+        componentData.forEachIndexed { i, compArray ->
+            compArray.add(data[i])
         }
-        synchronized(componentData) {
-            componentData.forEachIndexed { i, compArray ->
-                compArray.add(data[i])
-            }
-        }
-        return Record.of(this, size - 1)
+        Record.of(this, ids.lastIndex)
     }
 
     // For the following few functions, both entity and row are passed to avoid doing several array look-ups
@@ -189,18 +205,19 @@ public data class Archetype(
      *
      * @see Engine.addComponentFor
      */
-    internal fun addComponent(
+    internal suspend fun addComponent(
         entity: GearyEntity,
         row: Int,
         component: GearyComponentId
-    ): Record? = synchronized(ids) {
+    ): Record? {
         // if already present in this archetype, stop here since we dont need to update any data
         if (contains(component)) return null
 
         val moveTo = this + (component.withoutRole(HOLDS_DATA))
 
         val componentData = getComponents(row)
-        return moveTo.addEntityWithData(entity, componentData).also { removeEntity(row) }
+        removeEntity(row)
+        return moveTo.addEntityWithData(entity, componentData)
     }
 
     /**
@@ -213,7 +230,7 @@ public data class Archetype(
      *
      * @see Engine.setComponentFor
      */
-    internal fun setComponent(
+    internal suspend fun setComponent(
         entity: GearyEntity,
         row: Int,
         componentId: GearyComponentId,
@@ -224,32 +241,30 @@ public data class Archetype(
         // Relations should not add the HOLDS_DATA bit since the type roles are of the relation's child
         val dataComponent = if (isRelation) componentId else componentId.withRole(HOLDS_DATA)
 
-        //if component was added but not set, remove the old component before adding this one
-        val addId = dataComponent.withoutRole(HOLDS_DATA)
-        synchronized(ids) {
-            if (addId in type) {
-                val removedRecord = removeComponent(entity, row, addId)!!
-                return removedRecord.archetype.setComponent(entity, removedRecord.row, dataComponent, data)
-            }
 
-            //If component already in this type, just update the data
-            val addIndex = indexOf(dataComponent)
-            if (addIndex != -1) {
-                componentData[addIndex][row] = data
-                return null
-            }
-
-            val moveTo = this + dataComponent
-            val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
-            val componentData = getComponents(row).apply {
-                //TODO this will throw an error if row changed when something else removed the entity from here.
-                // For now we try to move it as early as possible :s
-                removeEntity(row)
-                add(newCompIndex, data)
-            }
-
-            return moveTo.addEntityWithData(entity, componentData)
+        //If component already in this type, just update the data
+        val addIndex = indexOf(dataComponent)
+        if (addIndex != -1) {
+            componentData[addIndex][row] = data
+            return null
         }
+
+        //if component was added but not set, remove the added component before setting this one
+        val addId = dataComponent.withoutRole(HOLDS_DATA)
+
+        if (addId in type) {
+            //TODO ensure this is safe while archetype is iterating
+            val removedRecord = removeComponent(entity, row, addId)!!
+            return removedRecord.archetype.setComponent(entity, removedRecord.row, dataComponent, data)
+        }
+
+
+        val moveTo = this + dataComponent
+        val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
+        val componentData = getComponents(row).apply { add(newCompIndex, data) }
+
+        removeEntity(row)
+        return moveTo.addEntityWithData(entity, componentData)
     }
 
     /**
@@ -260,7 +275,7 @@ public data class Archetype(
      *
      * @see Engine.removeComponentFor
      */
-    internal fun removeComponent(
+    internal suspend fun removeComponent(
         entity: GearyEntity,
         row: Int,
         component: GearyComponentId
@@ -272,15 +287,13 @@ public data class Archetype(
         val componentData = mutableListOf<GearyComponent>()
 
         val skipData = indexOf(component)
-        synchronized(ids) {
-            this.componentData.forEachIndexed { i, it ->
-                if (i != skipData)
-                    componentData.add(it[row])
-            }
-
-            removeEntity(row)
-            return moveTo.addEntityWithData(entity, componentData)
+        this.componentData.forEachIndexed { i, it ->
+            if (i != skipData)
+                componentData.add(it[row])
         }
+
+        removeEntity(row)
+        return moveTo.addEntityWithData(entity, componentData)
     }
 
     /** Gets all the components associated with an entity at a [row]. */
@@ -288,29 +301,38 @@ public data class Archetype(
         componentData.mapTo(arrayListOf()) { it[row] }
 
     /** Removes the entity at a [row] in this archetype, notifying running archetype iterators. */
-    internal fun removeEntity(row: Int) {
-        try {
-            synchronized(ids) {
+    internal suspend fun removeEntity(row: Int) {
+        while (true) {
+//            awaitIteration()
+            val lastIndex = ids.lastIndex
+            val lastEntity = ids.getLong(lastIndex).toGeary()
+            if (lastIndex != row) engine.lock(lastEntity)
 
-                val lastIndex = ids.lastIndex
-                val replacement = ids.getLong(lastIndex)
-                ids[row] = replacement
-
-                if (lastIndex != row)
-                    componentData.forEach { it[row] = it.last() }
-
-                ids.removeLastOrNull()
-                componentData.forEach { it.removeLastOrNull() }
-
-                if (lastIndex != row) {
-                    runningIterators.forEach {
-                        it.addMovedRow(lastIndex, row)
-                    }
-                    engine.setRecord(replacement.toGeary(), Record.of(this, row))
-                }
+            entityAddition.lock()
+            if (ids.lastIndex != lastIndex) {
+                entityAddition.unlock()
+                if (lastIndex != row) engine.unlock(lastEntity)
+                continue
             }
-        } catch (e: IndexOutOfBoundsException) {
-            throw IllegalStateException("Error while removing entity at row $row for archetype $this", e)
+            val replacement = ids.getLong(lastIndex)
+            ids[row] = replacement
+
+            // Move entity in last row to deleted row
+            if (lastIndex != row) {
+                componentData.forEach { it[row] = it.last() }
+                runningIterators.forEach {
+                    it.addMovedRow(lastIndex, row)
+                }
+                engine.setRecord(replacement.toGeary(), Record.of(this@Archetype, row))
+            }
+
+            // Delete last row's data
+            ids.removeLastOrNull()
+            componentData.forEach { it.removeLastOrNull() }
+
+            if (lastIndex != row) engine.unlock(lastEntity)
+            entityAddition.unlock()
+            return
         }
     }
 
@@ -329,59 +351,78 @@ public data class Archetype(
         _targetListeners += handler
     }
 
-
     /** Calls an event with data in an [event entity][event]. */
-    public fun callEvent(event: GearyEntity, row: Int, source: GearyEntity? = null) {
-        val entity = getEntity(row)
+    public suspend fun callEvent(event: GearyEntity, row: Int, source: GearyEntity? = null) {
+        callEvent(event, row, source, true)
+    }
 
-        val eventArchetype = event.record.archetype
-        val sourceArchetype = source?.record?.archetype
+    internal suspend fun callEvent(event: GearyEntity, row: Int, source: GearyEntity? = null, lock: Boolean) {
+        val target = getEntity(row)
+        val engine = (engine as GearyEngine) //TODO expose properly for internal api
+
+        val types = engine.typeMap
+        // Lock access to entities involved
+        val sMutex = source?.let { types.getMutex(it) }
+        val tMutex = types.getMutex(target)
+        val eMutex = types.getMutex(event)
+        if (lock) {
+            sMutex?.lock()
+            tMutex.lock()
+            eMutex.lock()
+        }
+
+        val origEventArc = types.unsafeGet(event).archetype
+        val origSourceArc = source?.let { types.unsafeGet(it) }?.archetype
 
         //TODO performance upgrade will come when we figure out a solution in QueryManager as well.
-        for (handler in eventArchetype.eventHandlers) {
+        for (handler in origEventArc.eventHandlers) {
             // If an event handler has moved the entity to a new archetype, make sure we follow it.
-            val targetRecord = entity.record
-            val targetArchetype = entity.record.archetype
-            val sourceRecord = source?.record
-            val newSourceArchetype = sourceRecord?.archetype
-            val newEventRecord = event.record
-            val newEventArchetype = newEventRecord.archetype
+            val (targetArc, targetRow) = types.unsafeGet(target)
+            val (eventArc, eventRow) = types.unsafeGet(target)
+            val sourceRecord = source?.let { types.unsafeGet(it) }
+            val sourceArc = sourceRecord?.archetype
+            val sourceRow = sourceRecord?.row
 
             // If there's no source but the handler needs a source, skip
             if (source == null && !handler.parentListener.source.isEmpty) continue
 
             // Check that this handler has a listener associated with it.
-            if (!handler.parentListener.target.isEmpty && handler.parentListener !in targetArchetype.targetListeners) continue
-            if (newSourceArchetype != null && !handler.parentListener.source.isEmpty && handler.parentListener !in newSourceArchetype.sourceListeners) continue
+            if (!handler.parentListener.target.isEmpty && handler.parentListener !in targetArc.targetListeners) continue
+            if (sourceArc != null && !handler.parentListener.source.isEmpty && handler.parentListener !in sourceArc.sourceListeners) continue
 
             // Check that we still match the data if archetype of any involved entities changed.
-            if (targetArchetype != this && entity.type !in handler.parentListener.target.family) continue
-            if (newEventArchetype != eventArchetype && event.type !in handler.parentListener.event.family) continue
-            if (newSourceArchetype != sourceArchetype && event.type !in handler.parentListener.source.family) continue
+            if (targetArc != this@Archetype && targetArc.type !in handler.parentListener.target.family) continue
+            if (eventArc != origEventArc && eventArc.type !in handler.parentListener.event.family) continue
+            if (sourceArc != origSourceArc && eventArc.type !in handler.parentListener.source.family) continue
 
             val listenerName = handler.parentListener::class.simpleName
             val targetScope = runCatching {
                 RawAccessorDataScope(
-                    archetype = targetArchetype,
-                    perArchetypeData = handler.parentListener.target.cacheForArchetype(targetArchetype),
-                    row = targetRecord.row,
+                    archetype = targetArc,
+                    perArchetypeData = handler.parentListener.target.cacheForArchetype(targetArc),
+                    row = targetRow,
                 )
             }.getOrElse { throw IllegalStateException("Failed while reading target scope on $listenerName", it) }
             val eventScope = runCatching {
                 RawAccessorDataScope(
-                    archetype = newEventArchetype,
-                    perArchetypeData = handler.parentListener.event.cacheForArchetype(eventArchetype),
-                    row = newEventRecord.row,
+                    archetype = eventArc,
+                    perArchetypeData = handler.parentListener.event.cacheForArchetype(eventArc),
+                    row = eventRow,
                 )
             }.getOrElse { throw IllegalStateException("Failed while reading event scope on $listenerName", it) }
-            val sourceScope = if (source == null) null else runCatching {
+            val sourceScope = if (sourceRecord == null) null else runCatching {
                 RawAccessorDataScope(
-                    archetype = newSourceArchetype!!,
-                    perArchetypeData = handler.parentListener.source.cacheForArchetype(newSourceArchetype),
-                    row = sourceRecord.row,
+                    archetype = sourceArc!!,
+                    perArchetypeData = handler.parentListener.source.cacheForArchetype(sourceArc),
+                    row = sourceRow!!,
                 )
             }.getOrElse { throw IllegalStateException("Failed while reading source scope on $listenerName", it) }
             handler.processAndHandle(sourceScope, targetScope, eventScope)
+        }
+        if (lock) {
+            sMutex?.unlock()
+            tMutex.unlock()
+            eMutex.unlock()
         }
     }
 

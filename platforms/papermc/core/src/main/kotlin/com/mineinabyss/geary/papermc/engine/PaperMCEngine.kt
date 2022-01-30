@@ -15,7 +15,7 @@ import org.koin.core.component.KoinComponent
 public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComponent {
     public val componentsKey: NamespacedKey = NamespacedKey(plugin, "components")
 
-    override fun TickingSystem.runSystem() {
+    override suspend fun TickingSystem.runSystem() {
         // Adds a line in timings report showing which systems take up more time.
         val timing = Timings.ofStart(plugin, javaClass.name)
         runCatching {
@@ -26,7 +26,7 @@ public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComp
         }.getOrThrow()
     }
 
-    override fun addSystem(system: GearySystem) {
+    override suspend fun addSystem(system: GearySystem) {
         super.addSystem(system)
 
         if (system is Listener)

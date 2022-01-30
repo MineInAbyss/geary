@@ -3,21 +3,20 @@ package com.mineinabyss.geary.ecs.engine
 import com.mineinabyss.geary.ecs.accessors.AccessorHolder
 import com.mineinabyss.geary.ecs.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.ecs.accessors.TargetScope
-import com.mineinabyss.geary.ecs.api.entities.toGeary
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 public data class ArchetypeIterator(
     public val archetype: Archetype,
     public val holder: AccessorHolder,
-) : Iterator<TargetScope> {
+) {
     private val perArchCache = holder.cacheForArchetype(archetype)
     private var row: Int = 0
 
-    override fun hasNext(): Boolean =
-        (row < archetype.size || movedRows.isNotEmpty() || combinationsIterator?.hasNext() == true)
-            .also { if (!it) archetype.finalizeIterator(this) }
-
     /** Set of elements moved during a component removal. Represents the resulting row to original row. */
-    private val movedRows = mutableSetOf<Int>()
+    private val movedRows: IntOpenHashSet = IntOpenHashSet()
 
     internal fun addMovedRow(originalRow: Int, resultingRow: Int) {
         if (resultingRow > row) return
@@ -25,27 +24,34 @@ public data class ArchetypeIterator(
         movedRows.add(resultingRow)
     }
 
-
-    private var combinationsIterator: AccessorHolder.AccessorCombinationsIterator? = null
-
-    override fun next(): TargetScope {
-        if (combinationsIterator?.hasNext() != true) {
-            val destinationRow = movedRows.firstOrNull() ?: row++
-            movedRows.remove(destinationRow)
-            val entity = archetype.ids.get( destinationRow).toGeary()
-
-            combinationsIterator = holder.iteratorFor(
-                RawAccessorDataScope(
-                    archetype = archetype,
-                    row = destinationRow,
-                    perArchetypeData = perArchCache
-                )
-            )
+    internal suspend inline fun forEach(crossinline run: suspend (TargetScope) -> Unit) = coroutineScope {
+        val job = launch(start = CoroutineStart.LAZY) {
+            while (row < archetype.size || movedRows.isNotEmpty()) {
+                val destinationRow = movedRows.firstOrNull().also {
+                    if (it != null) movedRows.remove(it)
+                } ?: row++
+                val dataScope =
+                    RawAccessorDataScope(
+                        archetype = archetype,
+                        row = destinationRow,
+                        perArchetypeData = perArchCache
+                    )
+                holder.forEachCombination(dataScope) { data ->
+                    run(
+                        TargetScope(
+                            entity = dataScope.entity,
+                            data = data
+                        )
+                    )
+                }
+            }
+        }
+        job.invokeOnCompletion {
+            archetype.iterationJob = null
         }
 
-        return TargetScope(
-            entity = combinationsIterator!!.dataScope.entity,
-            data = combinationsIterator!!.next()
-        )
+        archetype.iterationJob = job
+        job.start()
+        job.join()
     }
 }

@@ -8,6 +8,9 @@ import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.invoke
 import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
 internal class AccessorHolderTest : GearyTest() {
@@ -17,15 +20,16 @@ internal class AccessorHolderTest : GearyTest() {
         val TargetScope.mapped by get<Int>().map { it.toString() }
     }
 
+    @ExperimentalCoroutinesApi
     @Test
-    fun fancyAccessors() {
+    fun fancyAccessors() = runTest {
         val entity = entity()
         //TODO put back when Koin comes
 //        FancyQuery.toList().isEmpty() shouldBe true
-        FancyQuery.none { it.entity == entity } shouldBe true
+        FancyQuery.flow().firstOrNull { it.entity == entity } shouldBe null
         entity.set(1)
         FancyQuery {
-            first { it.entity == entity }.apply {
+            flow().first { it.entity == entity }.apply {
                 default shouldBe "empty!"
                 mapped shouldBe "1"
             }

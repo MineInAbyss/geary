@@ -16,7 +16,7 @@ public class ParseChildOnPrefab : GearyListener() {
     private val TargetScope.child by added<ChildOnPrefab>()
 
     @Handler
-    private fun TargetScope.convertToRelation() {
+    private suspend fun TargetScope.convertToRelation() {
         entity {
             addParent(entity)
             setAll(child.components)
@@ -30,7 +30,7 @@ public class ParseChildrenOnPrefab : GearyListener() {
     private val TargetScope.children by added<ChildrenOnPrefab>()
 
     @Handler
-    private fun TargetScope.convertToRelation() {
+    private suspend fun TargetScope.convertToRelation() {
         children.nameToComponents.forEach { (name, components) ->
             entity {
                 addParent(entity)

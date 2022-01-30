@@ -13,7 +13,7 @@ public class ParseRelationOnPrefab : GearyListener() {
     private val TargetScope.relation by added<RelationOnPrefab>()
 
     @Handler
-    private fun TargetScope.convertToRelation() {
+    private suspend fun TargetScope.convertToRelation() {
         try {
             entity.setRelation(entity.parseEntity(relation.key).id, relation.value)
         } finally {

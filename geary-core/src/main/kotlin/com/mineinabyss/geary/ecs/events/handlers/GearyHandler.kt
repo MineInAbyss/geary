@@ -1,6 +1,9 @@
 package com.mineinabyss.geary.ecs.events.handlers
 
-import com.mineinabyss.geary.ecs.accessors.*
+import com.mineinabyss.geary.ecs.accessors.EventScope
+import com.mineinabyss.geary.ecs.accessors.RawAccessorDataScope
+import com.mineinabyss.geary.ecs.accessors.SourceScope
+import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.idofront.messaging.logError
 
@@ -12,30 +15,28 @@ public abstract class GearyHandler(
     public val sourceNullable: Boolean,
 ) {
     /** Runs when a matching event is fired. */
-    public abstract fun handle(source: SourceScope?, target: TargetScope, event: EventScope)
+    public abstract suspend fun handle(source: SourceScope?, target: TargetScope, event: EventScope)
 
     /** Reads necessary data and iterates over combinations as appropriate, calling the [handle] function on each. */
-    public open fun processAndHandle(
+    public open suspend fun processAndHandle(
         sourceScope: RawAccessorDataScope?,
         targetScope: RawAccessorDataScope,
         eventScope: RawAccessorDataScope,
     ) {
-        if(!sourceNullable && sourceScope == null) return
+        if (!sourceNullable && sourceScope == null) return
         try {
-            // Get iterator or empty if scope was null
-            val sourceIterator = if (sourceScope == null) listOf<List<*>?>(null).iterator()
-            else parentListener.source.iteratorFor(sourceScope)
-            val targetIterator = //if (targetScope == null) listOf<List<*>?>(null).iterator()
-            /*else*/ parentListener.target.iteratorFor(targetScope)
-            val eventIterator = //if (eventScope == null) listOf<List<*>?>(null).iterator()
-            /*else*/ parentListener.event.iteratorFor(eventScope)
-
             // Handle all combinations of data as needed
-            for (eventData in eventIterator) for (sourceData in sourceIterator) for (targetData in targetIterator) {
-                val sourceResult = if (sourceScope == null) null else SourceScope(sourceScope.entity, sourceData!!)
-                val targetResult = /*if (targetScope == null) null else*/ TargetScope(targetScope.entity, targetData)
-                val eventResult = /*if (eventScope == null) null else*/ EventScope(eventScope.entity, eventData)
-                handle(sourceResult, targetResult, eventResult)
+            parentListener.event.forEachCombination(eventScope) { eventData ->
+                parentListener.target.forEachCombination(targetScope) { targetData ->
+                    val eventResult = EventScope(eventScope.entity, eventData)
+                    val targetResult = TargetScope(targetScope.entity, targetData)
+                    if (sourceScope != null) {
+                        parentListener.source.forEachCombination(sourceScope) { sourceData ->
+                            val sourceResult = SourceScope(sourceScope.entity, sourceData)
+                            handle(sourceResult, targetResult, eventResult)
+                        }
+                    } else handle(null, targetResult, eventResult)
+                }
             }
         } catch (e: Exception) {
             logError("Failed to run event ${parentListener::class.simpleName}")

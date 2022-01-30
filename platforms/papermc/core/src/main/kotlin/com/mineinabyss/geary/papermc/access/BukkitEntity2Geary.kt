@@ -18,6 +18,8 @@ import com.mineinabyss.geary.papermc.store.encodeComponentsTo
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.typealiases.BukkitEntity
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -54,7 +56,7 @@ public class BukkitEntity2Geary : Listener, GearyMCKoinComponent() {
         val TargetScope.bukkit by added<BukkitEntity>()
 
         @Handler
-        fun TargetScope.loadPersisted() {
+        suspend fun TargetScope.loadPersisted() {
             set(bukkit, entity)
 
             val pdc = bukkit.persistentDataContainer
@@ -72,12 +74,12 @@ public class BukkitEntity2Geary : Listener, GearyMCKoinComponent() {
     private inner class Unregister : GearyListener() {
         val TargetScope.bukkit by get<BukkitEntity>()
 
-        init {
+        override suspend fun onStart() {
             event.has<EntityRemoved>()
         }
 
         @Handler
-        fun TargetScope.persistComponents() {
+        suspend fun TargetScope.persistComponents() {
             remove(bukkit.entityId)
             entity.encodeComponentsTo(bukkit)
         }
@@ -88,12 +90,18 @@ public class BukkitEntity2Geary : Listener, GearyMCKoinComponent() {
     public fun EntityAddToWorldEvent.onBukkitEntityAdd() {
         // Only remove player from ECS on disconnect, not death
         if (entity is Player) return
+        runBlocking {
+
         entity.toGeary()
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public fun PlayerJoinEvent.onPlayerLogin() {
+        runBlocking {
+
         player.toGeary()
+        }
     }
 
     /** Remove entities from ECS when they are removed from Bukkit for any reason (Uses PaperMC event) */
@@ -101,12 +109,16 @@ public class BukkitEntity2Geary : Listener, GearyMCKoinComponent() {
     public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
         // Only remove player from ECS on disconnect, not death
         if (entity is Player) return
-        entity.toGearyOrNull()?.removeEntity()
+        engine.launch {
+            entity.toGearyOrNull()?.removeEntity()
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public fun PlayerQuitEvent.onPlayerLogout() {
-        player.toGearyOrNull()?.removeEntity()
+        engine.launch {
+            player.toGearyOrNull()?.removeEntity()
+        }
     }
 
     /** Player death counts as an entity being removed from the world so we should add them back after respawn */

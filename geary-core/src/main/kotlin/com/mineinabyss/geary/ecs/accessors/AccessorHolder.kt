@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.query.AndSelector
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+import kotlinx.coroutines.runBlocking
 import org.koin.core.component.inject
 import kotlin.reflect.KProperty
 
@@ -19,14 +20,26 @@ import kotlin.reflect.KProperty
 public open class AccessorHolder : MutableAndSelector(), AccessorBuilderProvider {
     override val engine: Engine by inject()
 
-    public val family: AndSelector by lazy { build() }
+    private var _family: AndSelector? = null
+    public val family: AndSelector by lazy {
+        _family ?: error("Tried to accesss family of accessor ${this::class.simpleName}, which was not registered yet.")
+    }
+
+    public suspend fun start() {
+        onStart()
+        _family = build()
+    }
+
+    protected open suspend fun onStart() {}
+
     internal open val accessors = mutableListOf<Accessor<*>>()
     private val perArchetypeCache = Int2ObjectOpenHashMap<List<List<Any?>>>()
 
     public operator fun <T : Accessor<*>> AccessorBuilder<T>.provideDelegate(
         thisRef: Any,
         property: KProperty<*>
-    ): T = addAccessor { build(this@AccessorHolder, it) }
+        //TODO check runblocking
+    ): T = addAccessor { runBlocking { build(this@AccessorHolder, it) } }
 
     public open fun <T : Accessor<*>> addAccessor(create: (index: Int) -> T): T {
         val accessor = create(accessors.size)
@@ -50,22 +63,16 @@ public open class AccessorHolder : MutableAndSelector(), AccessorBuilderProvider
         }
 
     /** Gets an iterator that will process [dataScope] with all possible combinations calculated by Accessors */
-    internal fun iteratorFor(dataScope: RawAccessorDataScope): AccessorCombinationsIterator =
-        AccessorCombinationsIterator(dataScope)
+//    internal fun iteratorFor(dataScope: RawAccessorDataScope): AccessorCombinationsIterator =
+//        AccessorCombinationsIterator(dataScope)
 
-    internal inner class AccessorCombinationsIterator(val dataScope: RawAccessorDataScope) : Iterator<List<*>> {
-        /** All sets of data each accessor wants. Will iterate over all combinations of items from each list. */
-        private val data: List<List<*>> = accessors.map { with(it) { dataScope.readData() } }
-
-        /** The total number of combinations that can be made with all elements in each list. */
-        private val totalCombinations = data.fold(1) { acc, b -> acc * b.size }
-        private var index = 0
-
-        override fun hasNext() = index < totalCombinations
-
-        override fun next(): List<*> {
-            val permutation = index++
-            return data.map { it[permutation % it.size] }
+    internal inline fun forEachCombination(dataScope: RawAccessorDataScope, run: (List<*>) -> Unit) {
+        // All sets of data each accessor wants. Will iterate over all combinations of items from each list.
+        val data: List<List<*>> = accessors.map { with(it) { dataScope.readData() } }
+        // The total number of combinations that can be made with all elements in each list.
+        val totalCombinations = data.fold(1) { acc, b -> acc * b.size }
+        for (permutation in 0 until totalCombinations) {
+            run(data.map { it[permutation % it.size] })
         }
     }
 

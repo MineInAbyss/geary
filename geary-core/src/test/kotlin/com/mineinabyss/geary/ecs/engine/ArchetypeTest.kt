@@ -11,6 +11,9 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.*
+import kotlinx.coroutines.test.runTest
+import net.onedaybeard.bitvector.BitVector
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -62,12 +65,53 @@ internal class ArchetypeTest : GearyTest() {
     }
 
     @Test
-    fun `getComponents with relations`() {
+    fun `getComponents with relations`() = runTest {
         entity {
             set("Test")
             setRelation(String::class, 10)
             setRelation(Int::class, 15)
         }.getComponents() shouldContainExactly
                 setOf("Test", RelationComponent(componentId<String>(), 10), RelationComponent(componentId<Int>(), 15))
+    }
+
+    private suspend inline fun concurrentOperation(
+        times: Int = 10000,
+        crossinline run: suspend (id: Int) -> Unit
+    ): List<Deferred<*>> {
+        return withContext(Dispatchers.Default) {
+            (0 until times).map { id ->
+                async { run(id) }
+            }
+        }
+    }
+
+    @Test
+    fun `bitvector concurrency`() {
+        val bits = BitVector()
+        runBlocking {
+            concurrentOperation(times = 1000) { id ->
+                bits.set(id)
+            }.awaitAll()
+            (0 until 1000).all { bits[it] } shouldBe true
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `set and remove concurrency`() = runTest {
+        concurrentOperation(100) {
+            val entity = entity()
+            repeat(1000) { id ->
+                launch {
+                    entity.withLock {
+                        println("Locked for ${entity.id}: $id, size ${engine.archetypeCount}")
+//                if (id % 2 == 0) entity.set("String")
+//                else entity.remove<String>()
+                        entity.setRelation(id.toULong(), "String")
+                    }
+                }
+            }
+        }.awaitAll()
+//        entity.getComponents().shouldBeEmpty()
     }
 }

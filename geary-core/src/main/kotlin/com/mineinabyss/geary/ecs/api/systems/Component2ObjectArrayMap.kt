@@ -49,11 +49,11 @@ internal class Component2ObjectArrayMap<T> {
             is AndSelector -> family.and.reduceToBits(BitVector::and)
             is AndNotSelector -> family.andNot.reduceToBits(BitVector::andNot)
             is OrSelector -> family.or.reduceToBits(BitVector::or)
-            is ComponentLeaf -> componentMap[family.component]?.copy() ?: bitsOf()
+            is ComponentLeaf -> componentMap.get(family.component.toLong())?.copy() ?: bitsOf()
             is RelationValueLeaf -> {
                 // Shift left to match the mask we used above
                 val relationId = family.relationValueId.id.shl(32).withRole(RELATION)
-                componentMap[relationId]?.copy()?.apply {
+                componentMap.get(relationId.toLong())?.copy()?.apply {
                     if (family.componentMustHoldData) {
                         forEachBit { index ->
                             val type = elementTypes[index]
@@ -65,7 +65,7 @@ internal class Component2ObjectArrayMap<T> {
             }
             is RelationKeyLeaf -> {
                 val relationId = family.relationKeyId.withRole(RELATION)
-                componentMap[relationId]?.copy() ?: bitsOf()
+                componentMap.get(relationId.toLong())?.copy() ?: bitsOf()
             }
         }
     }

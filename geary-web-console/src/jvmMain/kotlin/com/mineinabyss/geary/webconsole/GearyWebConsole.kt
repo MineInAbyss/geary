@@ -65,7 +65,7 @@ class GearyWebConsole(
                         call.respondText("Hello world")
                     }
                     route(EntityInfo.path) {
-                        fun infoFor(entity: GearyEntity) = EntityInfo(entity.listComponents())
+                        suspend fun infoFor(entity: GearyEntity) = EntityInfo(entity.listComponents())
                         get("/id/{id}") {
                             val entity = call.parameters["id"]?.toULong()?.toGeary() ?: error("Invalid get request")
                             call.respond(infoFor(entity))

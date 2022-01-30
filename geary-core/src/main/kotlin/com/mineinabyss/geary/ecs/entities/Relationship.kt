@@ -10,42 +10,42 @@ import com.mineinabyss.geary.ecs.engine.isChild
 import com.mineinabyss.geary.ecs.engine.withRole
 
 /** Adds a [parent] entity to this entity.  */
-public fun GearyEntity.addParent(parent: GearyEntity) {
+public suspend fun GearyEntity.addParent(parent: GearyEntity) {
     add(parent.id.withRole(CHILDOF))
 }
 
 /** Adds a list of [parents] entities to this entity. */
-public fun GearyEntity.addParents(parents: Array<GearyEntity>) {
+public suspend fun GearyEntity.addParents(parents: Array<GearyEntity>) {
     parents.forEach { addParent(it) }
 }
 
 /** Removes a [parent], also unlinking this child from that parent. */
-public fun GearyEntity.removeParent(parent: GearyEntity) {
+public suspend fun GearyEntity.removeParent(parent: GearyEntity) {
     remove(parent.id.withRole(CHILDOF))
 }
 
 /** Removes all of this entity's parents, also unlinking this child from them. */
-public fun GearyEntity.clearParents() {
+public suspend fun GearyEntity.clearParents() {
     parents.forEach { remove(it.id) }
 }
 
 /** Adds a [child] entity to this entity.  */
-public fun GearyEntity.addChild(child: GearyEntity) {
+public suspend fun GearyEntity.addChild(child: GearyEntity) {
     child.addParent(this)
 }
 
 /** Adds a list of [children] entities to this entity. */
-public fun GearyEntity.addChildren(children: Array<GearyEntity>) {
+public suspend fun GearyEntity.addChildren(children: Array<GearyEntity>) {
     children.forEach { addChild(it) }
 }
 
 /** Removes a [child], also unlinking this parent from that child. */
-public fun GearyEntity.removeChild(child: GearyEntity) {
+public suspend fun GearyEntity.removeChild(child: GearyEntity) {
     child.removeParent(this)
 }
 
 /** Removes all of this entity's children, also unlinking this parent from them. */
-public fun GearyEntity.clearChildren() {
+public suspend fun GearyEntity.clearChildren() {
     children.forEach { remove(it.id) }
 }
 

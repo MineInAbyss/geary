@@ -8,6 +8,7 @@ import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.engine.getArchetype
 import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
 internal class ComponentAddEventKtTest : GearyTest() {
@@ -27,7 +28,7 @@ internal class ComponentAddEventKtTest : GearyTest() {
     }
 
     @Test
-    fun componentAddEvent() {
+    fun componentAddEvent() = runTest {
         val listener = OnStringAdd()
         engine.addSystem(listener)
 

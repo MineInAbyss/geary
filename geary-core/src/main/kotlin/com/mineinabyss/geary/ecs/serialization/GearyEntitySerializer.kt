@@ -9,6 +9,7 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.components.EntityName
 import com.mineinabyss.geary.ecs.entities.parent
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.ListSerializer
@@ -28,18 +29,20 @@ public object GearyEntitySerializer : KSerializer<GearyEntity>, EngineScope {
     override val descriptor: SerialDescriptor = componentListSerializer.descriptor
 
     override fun serialize(encoder: Encoder, value: GearyEntity) {
-        encoder.encodeSerializableValue(componentListSerializer, value.getPersistingComponents().toList())
+        runBlocking {
+            encoder.encodeSerializableValue(componentListSerializer, value.getPersistingComponents().toList())
+        }
     }
 
     override fun deserialize(decoder: Decoder): GearyEntity {
-        return entity {
-            setAll(decoder.decodeSerializableValue(componentListSerializer))
+        return runBlocking {
+            entity { setAll(decoder.decodeSerializableValue(componentListSerializer)) }
         }
     }
 }
 
 //TODO this should be handled within a serializer of sorts for GearyEntity
-public fun GearyEntity.parseEntity(expression: String): GearyEntity {
+public suspend fun GearyEntity.parseEntity(expression: String): GearyEntity {
     return when {
         expression.startsWith("parent") -> {
             val parent = (parent ?: error("Failed to read expression, entity had no parent: $expression"))

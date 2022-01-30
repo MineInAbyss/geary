@@ -13,8 +13,12 @@ import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
 import com.mineinabyss.geary.ecs.query.Family
 import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
+import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.jvm.isAccessible
@@ -32,7 +36,7 @@ public class QueryManager(private val engine: Engine) {
         registerArchetype(engine.rootArchetype)
     }
 
-    public fun trackEventListener(listener: GearyListener) {
+    public suspend fun trackEventListener(listener: GearyListener) {
         listener::class.functions
             .filter { it.hasAnnotation<Handler>() }
             .map { func ->
@@ -46,7 +50,7 @@ public class QueryManager(private val engine: Engine) {
                     }
 
                     val indices = params.map { types.indexOf(it) }
-                    fun call(vararg args: Any?): Any? {
+                    fun call(vararg args: Any?): Deferred<Any?> {
                         // Pass parameters in the order they need to be, allowing them to be omitted if desired.
                         // handle won't be called if a param is null when it shouldn't be unless misused by end user
                         val argArray = arrayOfNulls<Any?>(types.size)
@@ -55,7 +59,11 @@ public class QueryManager(private val engine: Engine) {
                             if (arrIndex != -1) argArray[arrIndex] = args[i]
                         }
                         kFunction.isAccessible = true
-                        return runCatching { kFunction.call(*argArray) }
+                        return runCatching {
+                            engine.async {
+                                kFunction.callSuspend(*argArray)
+                            }
+                        }
                             // Don't print the whole reflection error, just the cause
                             .getOrElse { throw it.cause ?: it }
                     }
@@ -66,14 +74,14 @@ public class QueryManager(private val engine: Engine) {
 
                 if (func.returnType == typeOf<Boolean>())
                     object : CheckHandler(listener, sourceNullable) {
-                        override fun check(source: SourceScope?, target: TargetScope, event: EventScope): Boolean {
-                            return caller.call(source, target, event) as Boolean
+                        override suspend fun check(source: SourceScope?, target: TargetScope, event: EventScope): Boolean {
+                            return caller.call(source, target, event).await() as Boolean
                         }
                     }
                 else
                     object : GearyHandler(listener, sourceNullable) {
-                        override fun handle(source: SourceScope?, target: TargetScope, event: EventScope) {
-                            caller.call(source, target, event)
+                        override suspend fun handle(source: SourceScope?, target: TargetScope, event: EventScope) {
+                            caller.call(source, target, event).await()
                         }
                     }
             }
@@ -98,7 +106,8 @@ public class QueryManager(private val engine: Engine) {
         // Match source and target requirements
     }
 
-    public fun trackQuery(query: Query) {
+    public suspend fun trackQuery(query: Query) {
+        query.start()
         val matched = archetypes.match(query.family)
         query.matchedArchetypes += matched
         queries.add(query)

@@ -16,14 +16,13 @@ import kotlin.time.Duration
  * @see [ArchetypeIterator]
  */
 public abstract class TickingSystem(
-    public val interval: Duration = 1.ticks,
-    init: (TickingSystem.() -> Unit)? = null
+    public val interval: Duration = 1.ticks
 ) : Query(), GearySystem {
     protected var iteration: Int = 0
         private set
 
     //TODO better name differentiation between this and tick
-    public fun doTick() {
+    public suspend fun doTick() {
         iteration++
         tick()
 
@@ -33,11 +32,11 @@ public abstract class TickingSystem(
 
     }
 
-    protected open fun tick() {
-        forEach { it.tick() }
+    protected open suspend fun tick() {
+        forEach(run = { it.tick() })
     }
 
-    protected open fun TargetScope.tick() {}
+    protected open suspend fun TargetScope.tick() {}
 
     protected fun every(iterations: Int): Boolean =
         iteration.mod(iterations) == 0
@@ -45,13 +44,5 @@ public abstract class TickingSystem(
     protected inline fun <T> every(iterations: Int, run: () -> T): T? {
         if (every(iterations)) return run()
         return null
-    }
-
-    public inline fun withEach(action: TargetScope.() -> Unit) {
-        forEach { result -> result.action() }
-    }
-
-    init {
-        if (init != null) init()
     }
 }

@@ -9,12 +9,12 @@ import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
 
 @AutoScan
 public class InheritPrefabsOnLoad : GearyListener() {
-    init {
+    override suspend fun onStart() {
         event.has<PrefabLoaded>()
     }
 
     @Handler
-    private fun TargetScope.inheritOnLoad() {
+    private suspend fun TargetScope.inheritOnLoad() {
         entity.inheritPrefabs()
     }
 }

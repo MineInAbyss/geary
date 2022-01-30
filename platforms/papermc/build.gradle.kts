@@ -20,6 +20,7 @@ configurations {
         excludeDep(libs.koin.core)
         excludeDep(libs.fastutil)
         excludeDep(libs.kotlin.reflect)
+        excludeDep(libs.kotlinx.coroutines)
         excludeDep(libs.reflections)
     }
 }

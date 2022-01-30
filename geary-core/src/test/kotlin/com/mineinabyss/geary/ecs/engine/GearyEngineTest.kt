@@ -9,19 +9,20 @@ import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class GearyEngineTest : GearyTest() {
     @Test
-    fun `adding component to entity`() {
+    fun `adding component to entity`() = runTest {
         entity {
             set("Test")
         }.get<String>() shouldBe "Test"
     }
 
     @Test
-    fun `entity has component works via add or set`() {
+    fun `entity has component works via add or set`() = runTest {
         val entity = entity {
             add<String>()
             set(1)
@@ -31,7 +32,7 @@ internal class GearyEngineTest : GearyTest() {
     }
 
     @Test
-    fun `entity archetype was set`() {
+    fun `entity archetype was set`() = runTest {
         entity {
             add<String>()
             set(1)
@@ -39,7 +40,7 @@ internal class GearyEngineTest : GearyTest() {
     }
 
     @Test
-    fun `component removal`() {
+    fun `component removal`() = runTest {
         entity {
             set("Test")
             remove<String>()
@@ -47,7 +48,7 @@ internal class GearyEngineTest : GearyTest() {
     }
 
     @Test
-    fun `add then set`() {
+    fun `add then set`() = runTest {
         entity {
             add<String>()
             set("Test")
@@ -55,7 +56,7 @@ internal class GearyEngineTest : GearyTest() {
     }
 
     @Test
-    fun getComponents() {
+    fun getComponents() = runTest {
         entity {
             set("Test")
             set(1)
@@ -64,7 +65,7 @@ internal class GearyEngineTest : GearyTest() {
     }
 
     @Test
-    fun clear() {
+    fun clear() = runTest {
         val entity = entity {
             set("Test")
             add<Int>()
@@ -74,7 +75,7 @@ internal class GearyEngineTest : GearyTest() {
     }
 
     @Test
-    fun setAll() {
+    fun setAll() = runTest {
         entity {
             setAll(listOf("Test", 1))
             add<Long>()
@@ -82,7 +83,7 @@ internal class GearyEngineTest : GearyTest() {
     }
 
     @Test
-    fun setRelation() {
+    fun setRelation() = runTest {
         val entity = entity {
             setRelation(Int::class, "String to int relation")
         }
@@ -93,7 +94,7 @@ internal class GearyEngineTest : GearyTest() {
     @Nested
     inner class EntityRemoval {
         @Test
-        fun `entity removal and reuse`() {
+        fun `entity removal and reuse`() = runTest {
             //TODO I hate having to do an offset like this, figure out how to reset this Engine singleton via reflection
             val offset = entity().id + 1uL
             repeat(10) {

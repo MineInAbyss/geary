@@ -31,11 +31,11 @@ public var PersistentDataContainer.hasComponentsEncoded: Boolean
         }
     }
 
-public fun Location.spawnFromPrefab(prefab: PrefabKey): Entity? = GearyMCKoinComponent {
+public suspend fun Location.spawnFromPrefab(prefab: PrefabKey): Entity? = GearyMCKoinComponent {
     return spawnFromPrefab(prefabManager[prefab] ?: return null)
 }
 
-public fun Location.spawnFromPrefab(prefab: GearyEntity): Entity? {
+public suspend fun Location.spawnFromPrefab(prefab: GearyEntity): Entity? {
     val attemptSpawn = GearyAttemptMinecraftSpawnEvent(this, prefab)
     attemptSpawn.call()
     val bukkitEntity = attemptSpawn.bukkitEntity ?: return null

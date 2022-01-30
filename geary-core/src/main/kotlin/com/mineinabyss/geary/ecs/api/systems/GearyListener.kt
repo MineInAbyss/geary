@@ -11,6 +11,7 @@ import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.withRole
 import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
+import kotlinx.coroutines.runBlocking
 import org.koin.core.component.inject
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.extensionReceiverParameter
@@ -41,8 +42,17 @@ public abstract class GearyListener : GearySystem, AccessorBuilderProvider {
             typeOf<EventScope>() -> event
             else -> error("Can only define accessors for source, target, or event.")
         }
-        return holder.addAccessor { build(holder, it) }
+        return holder.addAccessor { runBlocking { build(holder, it) } }
     }
+
+    public suspend fun start() {
+        onStart()
+        // Build these after so subclasses can modify source/target/event in onStart
+        source.start()
+        target.start()
+        event.start()
+    }
+    protected open suspend fun onStart() {}
 
     @Suppress("UNCHECKED_CAST")
     public operator fun <T> Accessor<T>.getValue(thisRef: SourceScope, property: KProperty<*>): T =
@@ -59,8 +69,10 @@ public abstract class GearyListener : GearySystem, AccessorBuilderProvider {
 
     /** Gets a component, ensuring it is on the entity. */
     public inline fun <reified T : GearyComponent> added(): AccessorBuilder<ComponentAccessor<T>> {
-        event.onAdded(componentId<T>().withRole(HOLDS_DATA))
-        return get()
+        return AccessorBuilder { holder, index ->
+            event.onAdded(componentId<T>().withRole(HOLDS_DATA))
+            get<T>().build(holder, index)
+        }
     }
 
     //TODO allow checking that all components were added on source

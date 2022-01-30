@@ -18,7 +18,7 @@ public fun Long.toGeary(): GearyEntity = GearyEntity(toULong() and ENTITY_MASK)
  *
  * @return Whether at least one component of type [T] was present and swapped places.
  */
-public inline fun <reified T : GearyComponent> GearyEntity?.swapComponent(with: GearyEntity?): Boolean {
+public suspend inline fun <reified T : GearyComponent> GearyEntity?.swapComponent(with: GearyEntity?): Boolean {
     val component = this?.get<T>()
     val otherComponent = with?.get<T>()
 

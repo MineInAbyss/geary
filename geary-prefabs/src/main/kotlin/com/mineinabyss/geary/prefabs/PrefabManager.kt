@@ -13,6 +13,7 @@ import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
 import com.mineinabyss.idofront.messaging.logError
 import com.uchuhimo.collections.MutableBiMap
 import com.uchuhimo.collections.mutableBiMapOf
+import kotlinx.serialization.json.decodeFromStream
 import java.io.File
 
 /**
@@ -31,7 +32,7 @@ public class PrefabManager(
     public operator fun get(name: PrefabKey): GearyEntity? = prefabs[name]
 
     /** Registers a prefab with Geary. */
-    public fun registerPrefab(key: PrefabKey, prefab: GearyEntity) {
+    public suspend fun registerPrefab(key: PrefabKey, prefab: GearyEntity) {
         prefabs[key] = prefab
         prefab.set(key)
     }
@@ -45,7 +46,7 @@ public class PrefabManager(
     }
 
     /** If this entity has a [Prefab] component, clears it and loads components from its file. */
-    public fun reread(entity: GearyEntity) {
+    public suspend fun reread(entity: GearyEntity) {
         entity.with { prefab: Prefab, key: PrefabKey ->
             entity.clear()
             loadFromFile(key.namespace, prefab.file, entity)
@@ -54,16 +55,17 @@ public class PrefabManager(
     }
 
     /** Registers an entity with components defined in a [file], adding a [Prefab] component. */
-    public fun loadFromFile(namespace: String, file: File, writeTo: GearyEntity? = null): GearyEntity? {
+    public suspend fun loadFromFile(namespace: String, file: File, writeTo: GearyEntity? = null): GearyEntity? {
         val name = file.nameWithoutExtension
         return runCatching {
-            val format = when (val ext = file.extension) {
-                "yml" -> Formats.yamlFormat
-                "json" -> Formats.jsonFormat
+            val serializer = GearyEntitySerializer.componentListSerializer
+            val decoded = when (val ext = file.extension) {
+                "yml" -> Formats.yamlFormat.decodeFromStream(serializer, file.inputStream())
+                "json" -> Formats.jsonFormat.decodeFromStream(serializer, file.inputStream())
                 else -> error("Unknown file format $ext")
             }
             val entity = writeTo ?: entity()
-            entity.setAll(format.decodeFromString(GearyEntitySerializer.componentListSerializer, file.readText()))
+            entity.setAll(decoded)
 
             val key = PrefabKey.of(namespace, name)
             entity.set(Prefab(file))

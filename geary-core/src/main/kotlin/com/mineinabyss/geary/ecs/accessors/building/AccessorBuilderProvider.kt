@@ -10,7 +10,6 @@ import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.withRole
-import com.mineinabyss.idofront.typealiases.BukkitEntity
 import org.koin.core.component.KoinComponent
 import kotlin.reflect.typeOf
 
@@ -21,8 +20,8 @@ public interface AccessorBuilderProvider : EngineScope, KoinComponent
 
 /** Gets a component, ensuring it is on the entity. */
 public inline fun <reified T : GearyComponent> AccessorBuilderProvider.get(): AccessorBuilder<ComponentAccessor<T>> {
-    val component = componentId<T>().withRole(HOLDS_DATA)
     return AccessorBuilder { holder, index ->
+        val component = componentId<T>().withRole(HOLDS_DATA)
         holder.has(component)
         ComponentAccessor(index, component)
     }
@@ -32,8 +31,8 @@ public inline fun <reified T : GearyComponent> AccessorBuilderProvider.get(): Ac
 public inline fun <reified T : GearyComponent?> AccessorBuilderProvider.getOrDefault(
     default: T
 ): AccessorBuilder<ComponentOrDefaultAccessor<T>> {
-    val component = componentId<T>().withRole(HOLDS_DATA)
     return AccessorBuilder { _, index ->
+        val component = componentId<T>().withRole(HOLDS_DATA)
         ComponentOrDefaultAccessor(index, component, default)
     }
 }

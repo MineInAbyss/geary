@@ -7,12 +7,13 @@ import com.mineinabyss.geary.ecs.engine.getArchetype
 import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class GearyEntityTests : GearyTest() {
     @Test
-    fun setPersisting() {
+    fun setPersisting() = runTest {
         val entity = entity {
             setPersisting("Test")
         }
@@ -24,7 +25,7 @@ internal class GearyEntityTests : GearyTest() {
     }
 
     @Test
-    fun setAllPersisting() {
+    fun setAllPersisting() = runTest {
         val entity = entity {
             set("Test")
             set(1)
@@ -36,7 +37,7 @@ internal class GearyEntityTests : GearyTest() {
     }
 
     @Test
-    fun clear() {
+    fun clear() = runTest {
         val entity = entity {
             setPersisting("Test")
         }
@@ -52,7 +53,7 @@ internal class GearyEntityTests : GearyTest() {
         inner class TestRelation
 
         @Test
-        fun `getRelation reified`() {
+        fun `getRelation reified`() = runTest {
             val testData = TestRelation()
             val entity = entity {
                 setRelation(String::class, testData)

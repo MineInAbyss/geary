@@ -13,14 +13,14 @@ import com.mineinabyss.geary.ecs.entities.addParent
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 
-public val GearyEntity.prefabKeys: List<PrefabKey>
-    get() = prefabs.mapNotNull { it.get<PrefabKey>() }
+//public val GearyEntity.prefabKeys: List<PrefabKey>
+//    get() = prefabs.mapNotNull { it.get<PrefabKey>() }
 
 public val GearyEntity.prefabs: List<GearyEntity>
     get() = type.filter { it.isInstance() }.inner.map { it.toGeary() }
 
 /** Adds a [prefab] entity to this entity.  */
-public fun GearyEntity.addPrefab(prefab: GearyEntity) {
+public suspend fun GearyEntity.addPrefab(prefab: GearyEntity) {
     add(prefab.id.withRole(INSTANCEOF))
     //TODO this isn't copying over any relations
     val comp = prefab.getComponents()
@@ -33,6 +33,6 @@ public fun GearyEntity.addPrefab(prefab: GearyEntity) {
 }
 
 /** Adds a [prefab] entity to this entity.  */
-public fun GearyEntity.removePrefab(prefab: GearyEntity) {
+public suspend fun GearyEntity.removePrefab(prefab: GearyEntity) {
     remove(prefab.id.withRole(INSTANCEOF))
 }

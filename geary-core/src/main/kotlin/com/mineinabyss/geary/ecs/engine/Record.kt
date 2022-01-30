@@ -19,4 +19,7 @@ public value class Record(public val id: Long) : EngineScope {
         public fun of(archetype: Archetype, row: Int): Record =
             Record((archetype.id.toLong() shl 32) or row.toLong())
     }
+
+    public operator fun component1(): Archetype = archetype
+    public operator fun component2(): Int = row
 }

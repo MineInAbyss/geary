@@ -4,13 +4,12 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.prefabs.events.PrefabLoaded
 import com.mineinabyss.idofront.messaging.logInfo
-import org.koin.core.component.KoinComponent
 
-public abstract class AbstractAddonManager : KoinComponent {
+public abstract class AbstractAddonManager {
     internal val loadingPrefabs = mutableListOf<GearyEntity>()
-    private val actions = sortedMapOf<GearyLoadPhase, MutableList<() -> Unit>>()
+    private val actions = sortedMapOf<GearyLoadPhase, MutableList<suspend () -> Unit>>()
 
-    public fun add(phase: GearyLoadPhase, action: () -> Unit) {
+    public fun add(phase: GearyLoadPhase, action: suspend () -> Unit) {
         if (actions.isEmpty()) scheduleLoadTasks()
 
         actions.getOrPut(phase) { mutableListOf() }.add(action)
@@ -18,10 +17,10 @@ public abstract class AbstractAddonManager : KoinComponent {
 
     protected abstract fun scheduleLoadTasks()
 
-    private fun MutableList<() -> Unit>.runAll() = forEach { it() }
+    private suspend fun MutableList<suspend () -> Unit>.runAll() = forEach { it() }
 
     /** Tasks to run before all other addon startup tasks execute. */
-    public fun load() {
+    public suspend fun load() {
         logInfo("Registering Serializers")
         actions[GearyLoadPhase.REGISTER_SERIALIZERS]?.runAll()
         Formats.createFormats()
@@ -34,7 +33,7 @@ public abstract class AbstractAddonManager : KoinComponent {
     }
 
     /** Run addons startup tasks. */
-    public fun enableAddons() {
+    public suspend fun enableAddons() {
         logInfo("Running final startup tasks")
         actions[GearyLoadPhase.ENABLE]?.runAll()
         actions.clear()

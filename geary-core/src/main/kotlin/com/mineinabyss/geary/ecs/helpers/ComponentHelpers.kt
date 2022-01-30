@@ -4,7 +4,7 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.serialization.Formats
 
 /** Neatly lists all the components on this entity. */
-public fun GearyEntity.listComponents(): String {
+public suspend fun GearyEntity.listComponents(): String {
     return """
         Instance:
         ${getInstanceComponents().joinToString("\n") { "${it::class.simpleName}: $it" }}

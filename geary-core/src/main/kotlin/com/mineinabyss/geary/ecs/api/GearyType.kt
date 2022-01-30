@@ -2,8 +2,10 @@ package com.mineinabyss.geary.ecs.api
 
 import com.mineinabyss.geary.ecs.api.engine.getComponentInfo
 import it.unimi.dsi.fastutil.longs.LongAVLTreeSet
+import it.unimi.dsi.fastutil.longs.LongRBTreeSet
 import it.unimi.dsi.fastutil.longs.LongSortedSet
 import it.unimi.dsi.fastutil.longs.LongSortedSets
+import kotlinx.coroutines.runBlocking
 import kotlin.reflect.KClass
 
 /**
@@ -22,7 +24,7 @@ public value class GearyType private constructor(
             this(LongSortedSets.unmodifiable(ids) as LongSortedSets.UnmodifiableSortedSet)
 
     public constructor(ids: Collection<GearyComponentId>) :
-            this(LongAVLTreeSet(ids.map { it.toLong() }))
+            this(LongRBTreeSet().apply { for(id in ids) { add(id.toLong()) } })
 
     public operator fun contains(id: GearyComponentId): Boolean = inner.contains(id.toLong())
 
@@ -61,7 +63,10 @@ public value class GearyType private constructor(
     public operator fun minus(id: GearyComponentId): GearyType =
         GearyType(LongAVLTreeSet(inner).apply { remove(id.toLong()) })
 
-    override fun toString(): String = inner
-        .map { (it.toULong().getComponentInfo()?.kClass as KClass<*>).simpleName ?: it }
-        .joinToString(", ")
+    //TODO No idea if runBlocking works here
+//    override fun toString(): String = runBlocking {
+//        inner
+//            .map { (it.toULong().getComponentInfo()?.kClass as KClass<*>).simpleName ?: it }
+//            .joinToString(", ")
+//    }
 }

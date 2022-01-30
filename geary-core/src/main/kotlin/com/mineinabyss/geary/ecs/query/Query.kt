@@ -7,6 +7,9 @@ import com.mineinabyss.geary.ecs.accessors.types.ComponentAccessor
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.engine.Archetype
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.runBlocking
 import org.koin.core.component.inject
 import kotlin.reflect.KProperty
 
@@ -15,17 +18,38 @@ import kotlin.reflect.KProperty
  */
 public abstract class Query : Iterable<TargetScope>, AccessorHolder() {
     private val queryManager by inject<QueryManager>()
+
+    @PublishedApi
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
 
     private var registered = false
 
-    //TODO restrict to calls within the scope of a Query
-    public override fun iterator(): QueryIterator {
+    public fun flow(): Flow<TargetScope> {
+        return channelFlow {
+            forEach { targetScope ->
+                send(targetScope)
+            }
+        }
+    }
+
+    override fun iterator(): Iterator<TargetScope> {
+        val items = mutableListOf<TargetScope>()
+        runBlocking {
+            forEach(run = { items += it })
+        }
+        return items.iterator()
+    }
+
+    internal suspend inline fun forEach(crossinline run: suspend (TargetScope) -> Unit) {
         if (!registered) {
             queryManager.trackQuery(this)
             registered = true
         }
-        return QueryIterator(this)
+        for (archetype in matchedArchetypes) {
+            archetype.iteratorFor(this@Query).forEach { targetScope ->
+                run(targetScope)
+            }
+        }
     }
 
     @Suppress("unused") // Specifically
@@ -39,4 +63,4 @@ public abstract class Query : Iterable<TargetScope>, AccessorHolder() {
 
 }
 
-public operator fun <T : Query, R> T.invoke(run: T.() -> R): R = run(run)
+public suspend operator fun <T : Query, R> T.invoke(run: suspend T.() -> R): R = run { run() }

@@ -12,10 +12,14 @@ import com.mineinabyss.geary.prefabs.PrefabManagerScope
 import org.koin.core.component.inject
 
 public interface GearyScope : EngineScope, PrefabManagerScope,
-    AbstractAddonManagerScope, BukkitEntityAssociationsScope
+    AbstractAddonManagerScope, BukkitEntityAssociationsScope, PluginScope
 
 public interface BukkitEntityAssociationsScope {
     public val bukkitEntity2Geary: BukkitEntity2Geary
+}
+
+public interface PluginScope {
+    public val geary: GearyPlugin
 }
 
 public open class GearyMCKoinComponent : GearyKoinComponent(), GearyScope {
@@ -24,7 +28,7 @@ public open class GearyMCKoinComponent : GearyKoinComponent(), GearyScope {
     override val addonManager: GearyAddonManager by inject()
     public override val bukkitEntity2Geary: BukkitEntity2Geary by inject()
 
-    public val geary: GearyPlugin by inject()
+    public override val geary: GearyPlugin by inject()
     public val bukkit2Geary: BukkitEntity2Geary by inject()
 
     public val uuid2entity: UUID2GearyMap by inject()

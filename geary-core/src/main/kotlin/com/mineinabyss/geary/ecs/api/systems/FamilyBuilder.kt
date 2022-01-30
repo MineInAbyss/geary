@@ -15,40 +15,40 @@ import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 public abstract class FamilyBuilder<T : Family> {
-    public fun build(): T {
+    public suspend fun build(): T {
         preBuild()
         return buildFamily()
     }
 
-    protected abstract fun buildFamily(): T
+    protected abstract suspend fun buildFamily(): T
 
-    protected open fun preBuild() {}
+    protected open suspend fun preBuild() {}
 
     public operator fun not(): MutableAndNotSelector = MutableAndNotSelector(mutableListOf(this))
 }
 
-public fun family(init: MutableAndSelector.() -> Unit): AndSelector {
+public suspend inline fun family(init: MutableAndSelector.() -> Unit): AndSelector {
     return MutableAndSelector().apply(init).build()
 }
 
 public class MutableComponentLeaf(
     public var component: GearyComponentId
 ) : FamilyBuilder<ComponentLeaf>() {
-    override fun buildFamily(): ComponentLeaf = ComponentLeaf(component)
+    override suspend fun buildFamily(): ComponentLeaf = ComponentLeaf(component)
 }
 
 public class MutableRelationValueLeaf(
     public var relationValueId: RelationValueId,
     public val componentMustHoldData: Boolean = false
 ) : FamilyBuilder<RelationValueLeaf>() {
-    override fun buildFamily(): RelationValueLeaf = RelationValueLeaf(relationValueId, componentMustHoldData)
+    override suspend fun buildFamily(): RelationValueLeaf = RelationValueLeaf(relationValueId, componentMustHoldData)
 }
 
 public class MutableRelationKeyLeaf(
     public var relationKeyId: GearyComponentId,
     public val componentMustHoldData: Boolean = false
 ) : FamilyBuilder<RelationKeyLeaf>() {
-    override fun buildFamily(): RelationKeyLeaf = RelationKeyLeaf(relationKeyId)
+    override suspend fun buildFamily(): RelationKeyLeaf = RelationKeyLeaf(relationKeyId)
 }
 
 
@@ -65,7 +65,7 @@ public abstract class MutableSelector<T : Family> : FamilyBuilder<T>(), EngineSc
     private val _componentsWithData = mutableListOf<GearyComponentId>()
     private val _relationValueIds = mutableListOf<RelationValueId>()
 
-    override fun preBuild() {
+    override suspend fun preBuild() {
         if (onAdd.isNotEmpty()) or {
             this@MutableSelector.onAdd.forEach {
                 hasRelation(it, typeOf<AddedComponent>())
@@ -73,7 +73,8 @@ public abstract class MutableSelector<T : Family> : FamilyBuilder<T>(), EngineSc
         }
     }
 
-    protected fun add(element: FamilyBuilder<*>) {
+    @PublishedApi
+    internal fun add(element: FamilyBuilder<*>) {
         elements += element
         if (element is MutableComponentLeaf) {
             val comp = element.component
@@ -94,23 +95,23 @@ public abstract class MutableSelector<T : Family> : FamilyBuilder<T>(), EngineSc
         add(MutableAndSelector().apply(init))
     }
 
-    public fun or(init: MutableOrSelector.() -> Unit) {
+    public inline fun or(init: MutableOrSelector.() -> Unit) {
         add(MutableOrSelector().apply(init))
     }
 
-    public inline fun <reified T : GearyComponent> has() {
+    public suspend inline fun <reified T : GearyComponent> has() {
         or {
             has(componentId<T>())
             has(componentId<T>().withInvertedRole(HOLDS_DATA))
         }
     }
 
-    public inline fun <reified T : GearyComponent> hasAdded() {
+    public suspend inline fun <reified T : GearyComponent> hasAdded() {
         has(componentId<T>())
 
     }
 
-    public inline fun <reified T : GearyComponent> hasSet() {
+    public suspend inline fun <reified T : GearyComponent> hasSet() {
         has(componentId<T>().withRole(HOLDS_DATA))
     }
 
@@ -124,7 +125,7 @@ public abstract class MutableSelector<T : Family> : FamilyBuilder<T>(), EngineSc
         }
     }
 
-    public fun hasRelation(key: KType, value: KType) {
+    public suspend fun hasRelation(key: KType, value: KType) {
         val anyKey = (key.classifier == Any::class)
         val anyValue = (value.classifier == Any::class)
         val relationKey = if (anyKey) null else componentId(key)
@@ -144,14 +145,14 @@ public abstract class MutableSelector<T : Family> : FamilyBuilder<T>(), EngineSc
         }
     }
 
-    public fun hasRelation(key: KType, value: GearyComponentId) {
+    public suspend fun hasRelation(key: KType, value: GearyComponentId) {
         // If key is Any, we treat this as matching any key
         if (key.classifier == Any::class)
             add(MutableRelationValueLeaf(RelationValueId(value), !key.isMarkedNullable))
         else hasRelation(Relation.of(componentId(key), value))
     }
 
-    public fun hasRelation(key: GearyComponentId, value: KType) {
+    public suspend fun hasRelation(key: GearyComponentId, value: KType) {
         if (value.classifier == Any::class)
             add(MutableRelationKeyLeaf(key))
         else hasRelation(Relation.of(key, componentId(value)))
@@ -169,19 +170,19 @@ public abstract class MutableSelector<T : Family> : FamilyBuilder<T>(), EngineSc
 public open class MutableAndSelector(
     override val elements: MutableList<FamilyBuilder<*>> = mutableListOf()
 ) : MutableSelector<AndSelector>() {
-    override fun buildFamily(): AndSelector = AndSelector(elements.build())
+    override suspend fun buildFamily(): AndSelector = AndSelector(elements.build())
 }
 
 public class MutableAndNotSelector(
     override val elements: MutableList<FamilyBuilder<*>> = mutableListOf()
 ) : MutableSelector<AndNotSelector>() {
-    override fun buildFamily(): AndNotSelector = AndNotSelector(elements.build())
+    override suspend fun buildFamily(): AndNotSelector = AndNotSelector(elements.build())
 }
 
 public class MutableOrSelector(
     override val elements: MutableList<FamilyBuilder<*>> = mutableListOf()
 ) : MutableSelector<OrSelector>() {
-    override fun buildFamily(): OrSelector = OrSelector(elements.build())
+    override suspend fun buildFamily(): OrSelector = OrSelector(elements.build())
 }
 
-private fun List<FamilyBuilder<*>>.build() = map { it.build() }
+private suspend fun List<FamilyBuilder<*>>.build() = map { it.build() }
