@@ -1,8 +1,6 @@
 package com.mineinabyss.geary.papermc.plugin
 
-import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.engine.countChildren
-import com.mineinabyss.geary.ecs.engine.getArchetype
 import com.mineinabyss.geary.papermc.GearyMCKoinComponent
 import com.mineinabyss.geary.papermc.GearyScope
 import com.mineinabyss.geary.papermc.StartupEventListener
@@ -42,7 +40,7 @@ internal class GearyCommands(
             }
             "countArchetypes" {
                 action {
-                    sender.info("${GearyType().getArchetype().countChildren()} archetypes registered.")
+                    sender.info("${engine.rootArchetype.countChildren()} archetypes registered.")
                 }
 
             }

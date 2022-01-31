@@ -20,7 +20,6 @@ import com.mineinabyss.geary.ecs.events.AddedComponent
 import com.mineinabyss.geary.ecs.events.EntityRemoved
 import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.time.inWholeTicks
-import com.mineinabyss.idofront.typealiases.BukkitEntity
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.withLock
 import org.koin.core.component.inject
@@ -41,12 +40,11 @@ public open class GearyEngine : TickingEngine() {
     internal val typeMap: TypeMap = TypeMap()
     private val queryManager by inject<QueryManager>()
     private var currId = AtomicLong(0L)
-    final override val rootArchetype: Archetype = Archetype(GearyType(), 0)
+    final override val rootArchetype: Archetype = Archetype(this, GearyType(), 0)
     private val archetypes = mutableListOf(rootArchetype)
     private val removedEntities = EntityStack()
     private val classToComponentMap = ClassToComponentMap()
     override val coroutineContext: CoroutineContext =
-//    override val coroutineScope: CoroutineScope =
         (CoroutineScope(Dispatchers.Default) + CoroutineName("Geary Engine")).coroutineContext
 
     public val archetypeCount: Int get() = archetypes.size
@@ -86,10 +84,8 @@ public open class GearyEngine : TickingEngine() {
     }
 
     private fun createArchetype(prevNode: Archetype, componentEdge: GearyComponentId): Archetype {
-        val arc = synchronized(archetypes) {
-            Archetype(prevNode.type.plus(componentEdge), archetypes.size).also {
-                archetypes += it
-            }
+        val arc = Archetype(this, prevNode.type.plus(componentEdge), archetypes.size).also {
+            archetypes += it
         }
         arc.componentRemoveEdges[componentEdge] = prevNode
         prevNode.componentAddEdges[componentEdge] = arc
@@ -98,7 +94,11 @@ public open class GearyEngine : TickingEngine() {
     }
 
     override suspend fun newEntity(): GearyEntity {
-        val entity = if (!removedEntities.isEmpty()) removedEntities.pop() else (currId.getAndIncrement()).toGeary()
+        val entity = try {
+            removedEntities.pop()
+        } catch (e: Exception) {
+            currId.getAndIncrement().toGeary()
+        }
         createRecord(entity)
         return entity
     }
@@ -242,6 +242,7 @@ public open class GearyEngine : TickingEngine() {
 
     override fun getArchetype(id: Int): Archetype = archetypes[id]
 
+    @Synchronized
     override fun getArchetype(type: GearyType): Archetype {
         var node = rootArchetype
         type.forEach { compId ->
@@ -283,18 +284,16 @@ public open class GearyEngine : TickingEngine() {
         return value
     }
 
-    override fun tick(currentTick: Long) {
-        runBlocking {
-            registeredSystems
-                .filter { currentTick % it.interval.inWholeTicks.coerceAtLeast(1) == 0L }
-                .forEach {
-                    try {
-                        it.runSystem()
-                    } catch (e: Exception) {
-                        logError("Error while running system ${it.javaClass.name}")
-                        e.printStackTrace()
-                    }
+    override suspend fun tick(currentTick: Long) {
+        registeredSystems
+            .filter { currentTick % it.interval.inWholeTicks.coerceAtLeast(1) == 0L }
+            .forEach {
+                try {
+                    it.runSystem()
+                } catch (e: Exception) {
+                    logError("Error while running system ${it.javaClass.name}")
+                    e.printStackTrace()
                 }
-        }
+            }
     }
 }

@@ -5,9 +5,9 @@ import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.relations.toRelation
 import com.mineinabyss.geary.ecs.engine.*
 import com.mineinabyss.geary.ecs.query.*
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import net.onedaybeard.bitvector.BitVector
 import net.onedaybeard.bitvector.bitsOf
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * A map of [GearyComponentId]s to Arrays of objects with the ability to make fast queries based on component IDs.
@@ -15,7 +15,7 @@ import net.onedaybeard.bitvector.bitsOf
 internal class Component2ObjectArrayMap<T> {
     private val elements = mutableListOf<T>()
     private val elementTypes = mutableListOf<GearyType>()
-    private val componentMap = Long2ObjectOpenHashMap<BitVector>()
+    private val componentMap = ConcurrentHashMap<Long, BitVector>()
 
     fun add(element: T, type: GearyType) {
         elements += element

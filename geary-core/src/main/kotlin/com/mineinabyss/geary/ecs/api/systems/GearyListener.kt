@@ -66,7 +66,6 @@ public abstract class GearyListener : GearySystem, AccessorBuilderProvider {
     public operator fun <T> Accessor<T>.getValue(thisRef: EventScope, property: KProperty<*>): T =
         thisRef.data[index] as T
 
-
     /** Gets a component, ensuring it is on the entity. */
     public inline fun <reified T : GearyComponent> added(): AccessorBuilder<ComponentAccessor<T>> {
         return AccessorBuilder { holder, index ->

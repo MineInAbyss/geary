@@ -92,15 +92,14 @@ public class BukkitEntity2Geary : Listener, GearyMCKoinComponent() {
         if (entity is Player) return
         runBlocking {
 
-        entity.toGeary()
+            entity.toGeary()
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public fun PlayerJoinEvent.onPlayerLogin() {
         runBlocking {
-
-        player.toGeary()
+            player.toGeary()
         }
     }
 

@@ -20,10 +20,7 @@ import it.unimi.dsi.fastutil.longs.LongArrayList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import java.util.*
-import kotlin.collections.ArrayList
 
 private typealias IdList = LongArrayList
 
@@ -38,10 +35,10 @@ private typealias IdList = LongArrayList
  * gives a large performance boost to system iteration.
  */
 public data class Archetype(
+    private val engine: Engine,
     public val type: GearyType,
     public val id: Int
-) : KoinComponent {
-    private val engine: Engine by inject()
+) {
 
     internal var iterationJob: Job? = null
 
@@ -61,10 +58,10 @@ public data class Archetype(
         dataHoldingType.inner.map { mutableListOf() }
 
     /** Edges to other archetypes where a single component has been added. */
-    internal val componentAddEdges = CompId2ArchetypeMap()
+    internal val componentAddEdges = CompId2ArchetypeMap(engine)
 
     /** Edges to other archetypes where a single component has been removed. */
-    internal val componentRemoveEdges = CompId2ArchetypeMap()
+    internal val componentRemoveEdges = CompId2ArchetypeMap(engine)
 
     internal val relations = type.inner.mapNotNull { it.toULong().toRelation() }
 
@@ -154,22 +151,26 @@ public data class Archetype(
         componentId in type || componentId.withInvertedRole(HOLDS_DATA) in type
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
+    @Synchronized
     public operator fun plus(componentId: GearyComponentId): Archetype =
         if (componentId in componentAddEdges)
             componentAddEdges[componentId]
         else
-            type.let {
-                // Ensure that when adding an ID that holds data, we remove the non-data-holding ID
-                if (componentId.holdsData() && !componentId.isRelation())
-                    it.minus(componentId.withoutRole(HOLDS_DATA))
-                else it
-            }.plus(componentId).getArchetype()
+            engine.getArchetype(
+                type.let {
+                    // Ensure that when adding an ID that holds data, we remove the non-data-holding ID
+                    if (componentId.holdsData() && !componentId.isRelation())
+                        it.minus(componentId.withoutRole(HOLDS_DATA))
+                    else it
+                }.plus(componentId)
+            )
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
+    @Synchronized
     public operator fun minus(componentId: GearyComponentId): Archetype =
         if (componentId in componentRemoveEdges)
             componentRemoveEdges[componentId]
-        else type.minus(componentId).getArchetype().also {
+        else engine.getArchetype(type.minus(componentId)).also {
             componentRemoveEdges[componentId] = it
         }
 
@@ -378,7 +379,7 @@ public data class Archetype(
         for (handler in origEventArc.eventHandlers) {
             // If an event handler has moved the entity to a new archetype, make sure we follow it.
             val (targetArc, targetRow) = types.unsafeGet(target)
-            val (eventArc, eventRow) = types.unsafeGet(target)
+            val (eventArc, eventRow) = types.unsafeGet(event)
             val sourceRecord = source?.let { types.unsafeGet(it) }
             val sourceArc = sourceRecord?.archetype
             val sourceRow = sourceRecord?.row

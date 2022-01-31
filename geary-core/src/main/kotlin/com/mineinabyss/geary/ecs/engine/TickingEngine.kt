@@ -7,7 +7,7 @@ public abstract class TickingEngine : Engine() {
 
     /** Ticks the entire engine. Implementations may call at different speeds. */
     //TODO should this be an abstract class and tick be protected?
-    public abstract fun tick(currentTick: Long)
+    public abstract suspend fun tick(currentTick: Long)
 
     public open fun start(): Boolean {
         if (!started) {

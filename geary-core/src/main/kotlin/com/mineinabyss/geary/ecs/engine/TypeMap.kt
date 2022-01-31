@@ -1,22 +1,19 @@
 package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import it.unimi.dsi.fastutil.longs.Long2LongMap
-import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import kotlinx.coroutines.sync.Mutex
+import java.util.concurrent.ConcurrentHashMap
 
 public class TypeMap {
-    private val map: Long2LongMap = Long2LongOpenHashMap().apply { defaultReturnValue(-1L) }
-    private val mutexes: MutableMap<Long, Mutex> = mutableMapOf()// Long2ObjectOpenHashMap()
+    private val map: MutableMap<Long, Long> = ConcurrentHashMap<Long, Long>()
+    private val mutexes: MutableMap<Long, Mutex> = ConcurrentHashMap<Long, Mutex>()
 
     // We don't return nullable record to avoid boxing.
     // Accessing an entity that doesn't exist is indicative of a problem elsewhere and should be made obvious.
     @PublishedApi
     internal fun unsafeGet(entity: GearyEntity): Record {
         val id = map[entity.id.toLong()]
-        if (id == -1L) error("Tried to access components on an entity that no longer exists (${entity.id})")
+            ?: error("Tried to access components on an entity that no longer exists (${entity.id})")
         return Record(id)
     }
 
@@ -39,7 +36,7 @@ public class TypeMap {
 
     internal fun getMutex(entity: GearyEntity): Mutex {
         val id = entity.id.toLong()
-        return mutexes.get(id) ?: error("Mutex didn't exist for $entity")
+        return mutexes[id] ?: error("Mutex didn't exist for $entity")
     }
 
     public operator fun contains(entity: GearyEntity): Boolean = map.contains(entity.id.toLong())

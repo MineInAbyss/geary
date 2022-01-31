@@ -5,11 +5,15 @@ import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.idofront.plugin.registerEvents
-import com.okkero.skedule.schedule
+import com.mineinabyss.idofront.time.ticks
+import com.okkero.skedule.BukkitDispatcher
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
+import org.bukkit.plugin.java.JavaPlugin
 import org.koin.core.component.KoinComponent
 
 public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComponent {
@@ -22,7 +26,7 @@ public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComp
             doTick()
         }.apply {
             // We want to stop the timing no matter what, but still propagate error up
-            timing.stopTiming()
+            timing.stopTiming() //TODO doTick can suspend and then timings don't work
         }.getOrThrow()
     }
 
@@ -35,11 +39,11 @@ public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComp
 
     override fun scheduleSystemTicking() {
         //tick all systems every interval ticks
-        plugin.schedule {
-            repeating(1)
-            while (true) {
+        launch(BukkitDispatcher(plugin as JavaPlugin)) {
+//        Bukkit.getScheduler().scheduleSyncRepeatingTask(, {
+            while(true) {
                 tick(Bukkit.getServer().currentTick.toLong())
-                yield()
+                delay(1.ticks)
             }
         }
     }

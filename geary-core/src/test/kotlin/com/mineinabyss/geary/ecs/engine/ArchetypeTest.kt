@@ -13,9 +13,9 @@ import io.kotest.matchers.maps.shouldNotContainKey
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
-import net.onedaybeard.bitvector.BitVector
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import kotlin.time.measureTime
 
 internal class ArchetypeTest : GearyTest() {
     //TODO bring this back when we switch to Koin DI
@@ -30,18 +30,18 @@ internal class ArchetypeTest : GearyTest() {
     @Nested
     inner class MovingBetweenArchetypes {
         @Test
-        fun `empty type equals empty archetype`() {
+        fun `empty type equals empty archetype`() = runTest {
             GearyType().getArchetype() shouldBe engine.rootArchetype
         }
 
         @Test
-        fun `get type equals archetype adding`() {
+        fun `get type equals archetype adding`() = runTest {
             engine.rootArchetype + 1u + 2u + 3u - 1u + 1u shouldBe
                     GearyType(1u, 2u, 3u).getArchetype()
         }
 
         @Test
-        fun `reach same archetype from different starting positions`() {
+        fun `reach same archetype from different starting positions`() = runTest {
             engine.rootArchetype + 1u + 2u + 3u shouldBe engine.rootArchetype + 3u + 2u + 1u
         }
     }
@@ -49,6 +49,7 @@ internal class ArchetypeTest : GearyTest() {
     @Test
     fun matchedRelations() {
         val arc = Archetype(
+            engine,
             GearyType(
                 Relation.of(1uL or HOLDS_DATA, 10uL).id,
                 Relation.of(2uL or HOLDS_DATA, 10uL).id,
@@ -85,19 +86,8 @@ internal class ArchetypeTest : GearyTest() {
         }
     }
 
-    @Test
-    fun `bitvector concurrency`() {
-        val bits = BitVector()
-        runBlocking {
-            concurrentOperation(times = 1000) { id ->
-                bits.set(id)
-            }.awaitAll()
-            (0 until 1000).all { bits[it] } shouldBe true
-        }
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
+    // The two tests below are pretty beefy and more like benchmarks so they're disabled by default
+//    @Test
     fun `set and remove concurrency`() = runTest {
         concurrentOperation(100) {
             val entity = entity()
@@ -105,13 +95,24 @@ internal class ArchetypeTest : GearyTest() {
                 launch {
                     entity.withLock {
                         println("Locked for ${entity.id}: $id, size ${engine.archetypeCount}")
-//                if (id % 2 == 0) entity.set("String")
-//                else entity.remove<String>()
                         entity.setRelation(id.toULong(), "String")
                     }
                 }
             }
         }.awaitAll()
 //        entity.getComponents().shouldBeEmpty()
+    }
+
+//    @Test
+    fun `concurrent archetype creation`() = runTest {
+        clearEngine()
+        val iters = 5000
+        println(measureTime {
+            concurrentOperation(iters) { i ->
+                engine.getArchetype(GearyType((0uL..i.toULong()).toList()))
+                println("Creating arc $i, total: ${engine.archetypeCount}")
+            }.awaitAll()
+        })
+        engine.archetypeCount shouldBe iters + 1
     }
 }

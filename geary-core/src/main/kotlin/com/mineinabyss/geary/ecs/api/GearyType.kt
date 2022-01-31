@@ -1,12 +1,8 @@
 package com.mineinabyss.geary.ecs.api
 
-import com.mineinabyss.geary.ecs.api.engine.getComponentInfo
 import it.unimi.dsi.fastutil.longs.LongAVLTreeSet
-import it.unimi.dsi.fastutil.longs.LongRBTreeSet
 import it.unimi.dsi.fastutil.longs.LongSortedSet
 import it.unimi.dsi.fastutil.longs.LongSortedSets
-import kotlinx.coroutines.runBlocking
-import kotlin.reflect.KClass
 
 /**
  * An inlined class used for tracking the components an entity/archetype has.
@@ -24,7 +20,7 @@ public value class GearyType private constructor(
             this(LongSortedSets.unmodifiable(ids) as LongSortedSets.UnmodifiableSortedSet)
 
     public constructor(ids: Collection<GearyComponentId>) :
-            this(LongRBTreeSet().apply { for(id in ids) { add(id.toLong()) } })
+            this(LongAVLTreeSet().apply { for(id in ids) { add(id.toLong()) } })
 
     public operator fun contains(id: GearyComponentId): Boolean = inner.contains(id.toLong())
 
