@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 class GearyTypeFamilyExtensionsKtTest : GearyTest() {
     @Test
     fun containsRelation() {
-        val type = GearyType(Relation.of(2uL, 1uL).id, 2uL)
+        val type = GearyType(listOf(Relation.of(2uL, 1uL).id, 2uL))
         type.containsRelationValue(RelationValueId(1uL)) shouldBe true
         type.containsRelationValue(RelationValueId(2uL)) shouldBe false
     }

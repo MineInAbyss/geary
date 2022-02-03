@@ -5,11 +5,10 @@ import com.mineinabyss.geary.api.addon.GearyLoadPhase
 import com.mineinabyss.geary.autoscan.AutoScan
 import com.mineinabyss.geary.autoscan.ExcludeAutoScan
 import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.serialization.Formats
-import com.mineinabyss.geary.papermc.GearyMCKoinComponent
 import com.mineinabyss.geary.papermc.GearyScope
+import com.mineinabyss.geary.papermc.GearyScopeMC
 import com.mineinabyss.geary.prefabs.PrefabKey
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.InternalSerializationApi
@@ -18,7 +17,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.serializerOrNull
-import org.bukkit.entity.Entity
 import org.bukkit.plugin.Plugin
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
@@ -36,7 +34,7 @@ internal annotation class GearyAddonDSL
 @GearyAddonDSL
 public class GearyAddon(
     public val plugin: Plugin,
-) : AbstractGearyAddon(), GearyScope by GearyMCKoinComponent() {
+) : AbstractGearyAddon(), GearyScope by GearyScopeMC() {
     override val namespace: String = plugin.name.lowercase()
 
     public val classLoader: ClassLoader = plugin::class.java.classLoader

@@ -16,8 +16,6 @@ plugins {
 //apply(plugin = "kotlinx-atomicfu")
 
 dependencies {
-    implementation("co.touchlab:stately-isolate:1.2.1")
-    testImplementation("co.touchlab:stately-isolate:1.2.1")
     implementation(gearylibs.fastutil)
     implementation(libs.kotlin.reflect) { isTransitive = false }
     api(libs.koin.core) { isTransitive = false }
@@ -32,6 +30,7 @@ dependencies {
     testImplementation(libs.koin.test)
     testImplementation(libs.koin.test.junit5)
 }
+
 repositories {
     mavenCentral()
 }

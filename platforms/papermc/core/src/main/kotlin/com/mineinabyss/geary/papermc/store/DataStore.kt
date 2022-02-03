@@ -6,7 +6,7 @@ import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.engine.isInstance
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
-import com.mineinabyss.geary.papermc.GearyMCKoinComponent
+import com.mineinabyss.geary.papermc.GearyScopeMC
 import com.mineinabyss.geary.papermc.hasComponentsEncoded
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.util.toMCKey
@@ -69,7 +69,7 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
  * @see encode
  */
 public suspend fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>, type: GearyType): Unit =
-    GearyMCKoinComponent {
+    GearyScopeMC {
         hasComponentsEncoded = true
         //remove all keys present on the PDC so we only end up with the new list of components being encoded
         keys.filter { it.namespace == "geary" && it != engine.componentsKey }
@@ -79,8 +79,8 @@ public suspend fun PersistentDataContainer.encodeComponents(components: Collecti
             encode(value)
 
         val prefabs = type.filter { it.isInstance() }
-        if (!prefabs.inner.isEmpty())
-            encodePrefabs(prefabs.inner.mapNotNull { it.toGeary().get<PrefabKey>() })
+        if (prefabs.size != 0)
+            encodePrefabs(prefabs.map { it.toGeary().get<PrefabKey>() }.filterNotNull())
     }
 
 /**

@@ -29,7 +29,7 @@ public abstract class Engine : KoinComponent, EngineScope, CoroutineScope {
 
 
     /** Get the smallest free entity ID. */
-    public abstract suspend fun newEntity(): GearyEntity
+    public abstract fun newEntity(): GearyEntity
 
     /** Adds a [system] to the engine, which will be ticked appropriately by the engine */
     public abstract suspend fun addSystem(system: GearySystem)
@@ -38,7 +38,7 @@ public abstract class Engine : KoinComponent, EngineScope, CoroutineScope {
     public abstract fun getComponentFor(entity: GearyEntity, componentId: GearyComponentId): GearyComponent?
 
     /** Gets a list of all the components [entity] has, as well as relations in the form of [RelationComponent]. */
-    public abstract fun getComponentsFor(entity: GearyEntity): Set<GearyComponent>
+    public abstract fun getComponentsFor(entity: GearyEntity): Array<GearyComponent>
 
     //TODO clean up so it's consistent with Accessor's relation format
     /**
@@ -96,8 +96,6 @@ public abstract class Engine : KoinComponent, EngineScope, CoroutineScope {
 
     @PublishedApi
     internal abstract fun unlock(entity: GearyEntity)
-
-    public abstract suspend fun <T> withLock(entities: Set<GearyEntity>, run: () -> T): T
 
     /** Updates the record of a given entity */
     public abstract fun setRecord(entity: GearyEntity, record: Record)

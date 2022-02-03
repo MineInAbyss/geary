@@ -18,8 +18,6 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongArrayList
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import java.util.*
 
 private typealias IdList = LongArrayList
@@ -43,7 +41,7 @@ public data class Archetype(
     internal var iterationJob: Job? = null
 
     /** A mutex for anything which needs the size of ids to remain unchanged. */
-    private val entityAddition = Mutex()
+    private val entityAddition = Any()
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     //TODO aim to make private
@@ -184,10 +182,10 @@ public data class Archetype(
      * @return The new [Record] to be associated with this entity from now on.
      */
     //TODO proper async add
-    internal suspend fun addEntityWithData(
+    internal fun addEntityWithData(
         entity: GearyEntity,
-        data: List<GearyComponent>
-    ): Record = entityAddition.withLock {
+        data: Array<GearyComponent>
+    ): Record = synchronized(entityAddition) {
 //        awaitIteration()
         ids.add(entity.id.toLong())
         componentData.forEachIndexed { i, compArray ->
@@ -255,14 +253,14 @@ public data class Archetype(
 
         if (addId in type) {
             //TODO ensure this is safe while archetype is iterating
-            val removedRecord = removeComponent(entity, row, addId)!!
+            val removedRecord = removeComponent(entity, row, addId) ?: return null
             return removedRecord.archetype.setComponent(entity, removedRecord.row, dataComponent, data)
         }
 
 
         val moveTo = this + dataComponent
         val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
-        val componentData = getComponents(row).apply { add(newCompIndex, data) }
+        val componentData = getComponents(row, add = data to newCompIndex)
 
         removeEntity(row)
         return moveTo.addEntityWithData(entity, componentData)
@@ -285,21 +283,28 @@ public data class Archetype(
 
         val moveTo = this - component
 
-        val componentData = mutableListOf<GearyComponent>()
-
         val skipData = indexOf(component)
-        this.componentData.forEachIndexed { i, it ->
-            if (i != skipData)
-                componentData.add(it[row])
-        }
+        val componentData = Array<Any>((this.componentData.size - 1).coerceAtLeast(0)) {}
 
+        for (i in 0 until skipData) componentData[i] = this.componentData[i][row]
+        for (i in (skipData + 1)..this.componentData.lastIndex) componentData[i - 1] = this.componentData[i][row]
         removeEntity(row)
         return moveTo.addEntityWithData(entity, componentData)
     }
 
     /** Gets all the components associated with an entity at a [row]. */
-    internal fun getComponents(row: Int): ArrayList<GearyComponent> =
-        componentData.mapTo(arrayListOf()) { it[row] }
+    internal fun getComponents(row: Int, add: Pair<GearyComponent, Int>? = null): Array<GearyComponent> {
+        if (add != null) {
+            val arr = Array<Any?>(componentData.size + 1) { null }
+            val (addElement, addIndex) = add
+            for (i in 0 until addIndex) arr[i] = componentData[i][row]
+            arr[addIndex] = addElement
+            for (i in addIndex..componentData.lastIndex) arr[i + 1] = componentData[i][row]
+            @Suppress("UNCHECKED_CAST") // For loop above ensures no nulls
+            return arr as Array<GearyComponent>
+        } else
+            return Array(componentData.size) { i: Int -> componentData[i][row] }
+    }
 
     /** Removes the entity at a [row] in this archetype, notifying running archetype iterators. */
     internal suspend fun removeEntity(row: Int) {
@@ -309,31 +314,32 @@ public data class Archetype(
             val lastEntity = ids.getLong(lastIndex).toGeary()
             if (lastIndex != row) engine.lock(lastEntity)
 
-            entityAddition.lock()
-            if (ids.lastIndex != lastIndex) {
-                entityAddition.unlock()
-                if (lastIndex != row) engine.unlock(lastEntity)
-                continue
+            if (synchronized(entityAddition) {
+                    if (ids.lastIndex != lastIndex) {
+                        if (lastIndex != row) engine.unlock(lastEntity)
+                        return@synchronized false
+                    }
+                    val replacement = ids.getLong(lastIndex)
+                    ids[row] = replacement
+
+                    // Move entity in last row to deleted row
+                    if (lastIndex != row) {
+                        componentData.forEach { it[row] = it.last() }
+                        runningIterators.forEach {
+                            it.addMovedRow(lastIndex, row)
+                        }
+                        engine.setRecord(replacement.toGeary(), Record.of(this@Archetype, row))
+                    }
+
+                    // Delete last row's data
+                    ids.removeLastOrNull()
+                    componentData.forEach { it.removeLastOrNull() }
+
+                    if (lastIndex != row) engine.unlock(lastEntity)
+                    return@synchronized true
+                }) {
+                return
             }
-            val replacement = ids.getLong(lastIndex)
-            ids[row] = replacement
-
-            // Move entity in last row to deleted row
-            if (lastIndex != row) {
-                componentData.forEach { it[row] = it.last() }
-                runningIterators.forEach {
-                    it.addMovedRow(lastIndex, row)
-                }
-                engine.setRecord(replacement.toGeary(), Record.of(this@Archetype, row))
-            }
-
-            // Delete last row's data
-            ids.removeLastOrNull()
-            componentData.forEach { it.removeLastOrNull() }
-
-            if (lastIndex != row) engine.unlock(lastEntity)
-            entityAddition.unlock()
-            return
         }
     }
 

@@ -17,9 +17,9 @@ internal class FamilyTest {
         val family = family {
             has(1uL, 2uL, 3uL)
         }
-        (GearyType(1uL, 2uL) in family) shouldBe false
-        (GearyType(1uL, 2uL, 3uL) in family) shouldBe true
-        (GearyType(1uL, 2uL, 3uL, 4uL) in family) shouldBe true
+        (GearyType(listOf(1uL, 2uL)) in family) shouldBe false
+        (GearyType(listOf(1uL, 2uL, 3uL)) in family) shouldBe true
+        (GearyType(listOf(1uL, 2uL, 3uL, 4uL)) in family) shouldBe true
     }
 
     @Test
@@ -28,9 +28,9 @@ internal class FamilyTest {
             hasRelation(typeOf<Any?>(), 15uL)
         }
         
-        (GearyType(Relation.of(1uL, 14uL).id, 1uL) in family) shouldBe false
-        (GearyType(Relation.of(1uL, 15uL).id) in family) shouldBe true
-        (GearyType(Relation.of(1uL, 15uL).id, 1uL) in family) shouldBe true
+        (GearyType(listOf(Relation.of(1uL, 14uL).id, 1uL)) in family) shouldBe false
+        (GearyType(listOf(Relation.of(1uL, 15uL).id)) in family) shouldBe true
+        (GearyType(listOf(Relation.of(1uL, 15uL).id, 1uL)) in family) shouldBe true
     }
 
     @Test
@@ -39,9 +39,9 @@ internal class FamilyTest {
             hasRelation(typeOf<Any>(), 15uL)
         }
 
-        (GearyType(Relation.of(1uL, 14uL).id, 1uL) in family) shouldBe false
-        (GearyType(Relation.of(1uL, 15uL).id) in family) shouldBe false
-        (GearyType(Relation.of(1uL, 15uL).id, 1uL) in family) shouldBe false
-        (GearyType(Relation.of(1uL, 15uL).id, 1uL or HOLDS_DATA) in family) shouldBe true
+        (GearyType(listOf(Relation.of(1uL, 14uL).id, 1uL)) in family) shouldBe false
+        (GearyType(listOf(Relation.of(1uL, 15uL).id)) in family) shouldBe false
+        (GearyType(listOf(Relation.of(1uL, 15uL).id, 1uL)) in family) shouldBe false
+        (GearyType(listOf(Relation.of(1uL, 15uL).id, 1uL or HOLDS_DATA)) in family) shouldBe true
     }
 }

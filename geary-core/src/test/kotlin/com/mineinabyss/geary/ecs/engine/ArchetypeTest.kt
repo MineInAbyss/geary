@@ -3,6 +3,7 @@ package com.mineinabyss.geary.ecs.engine
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
+import com.mineinabyss.geary.ecs.api.engine.withLock
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.components.RelationComponent
@@ -37,7 +38,7 @@ internal class ArchetypeTest : GearyTest() {
         @Test
         fun `get type equals archetype adding`() = runTest {
             engine.rootArchetype + 1u + 2u + 3u - 1u + 1u shouldBe
-                    GearyType(1u, 2u, 3u).getArchetype()
+                    GearyType(listOf(1u, 2u, 3u)).getArchetype()
         }
 
         @Test
@@ -51,8 +52,10 @@ internal class ArchetypeTest : GearyTest() {
         val arc = Archetype(
             engine,
             GearyType(
-                Relation.of(1uL or HOLDS_DATA, 10uL).id,
-                Relation.of(2uL or HOLDS_DATA, 10uL).id,
+                listOf(
+                    Relation.of(1uL or HOLDS_DATA, 10uL).id,
+                    Relation.of(2uL or HOLDS_DATA, 10uL).id,
+                )
             ), 0
         )
         val relation = RelationValueId(10uL)
@@ -89,29 +92,45 @@ internal class ArchetypeTest : GearyTest() {
     // The two tests below are pretty beefy and more like benchmarks so they're disabled by default
 //    @Test
     fun `set and remove concurrency`() = runTest {
-        concurrentOperation(100) {
-            val entity = entity()
-            repeat(1000) { id ->
-                launch {
-                    entity.withLock {
-                        println("Locked for ${entity.id}: $id, size ${engine.archetypeCount}")
-                        entity.setRelation(id.toULong(), "String")
+        println(measureTime {
+            concurrentOperation(100) {
+                val entity = entity()
+                repeat(1000) { id ->
+                    launch {
+//                        entity.withLock {
+                            entity.setRelation(id.toULong(), "String")
+                            println("Locked for ${entity.id}: $id, size ${engine.archetypeCount}")
+//                        }
                     }
                 }
-            }
-        }.awaitAll()
+            }.awaitAll()
+        })
 //        entity.getComponents().shouldBeEmpty()
+    }
+
+//    @Test
+    fun `mutliple locks`() = runTest {
+        val a = entity()
+//        val b = entity()
+        concurrentOperation(10000) {
+            engine.withLock(setOf(a/*, b*/)) {
+                println("Locking")
+                delay(100)
+            }
+        }
     }
 
 //    @Test
     fun `concurrent archetype creation`() = runTest {
         clearEngine()
-        val iters = 5000
+        val iters = 10000
         println(measureTime {
-            concurrentOperation(iters) { i ->
+            for (i in 0 until iters) {
+//            concurrentOperation(iters) { i ->
                 engine.getArchetype(GearyType((0uL..i.toULong()).toList()))
                 println("Creating arc $i, total: ${engine.archetypeCount}")
-            }.awaitAll()
+//            }.awaitAll()
+            }
         })
         engine.archetypeCount shouldBe iters + 1
     }

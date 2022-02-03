@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.papermc.engine
 
-import co.aikar.timings.Timings
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.engine.GearyEngine
@@ -21,12 +20,12 @@ public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComp
 
     override suspend fun TickingSystem.runSystem() {
         // Adds a line in timings report showing which systems take up more time.
-        val timing = Timings.ofStart(plugin, javaClass.name)
+//        val timing = Timings.ofStart(plugin, javaClass.name)
         runCatching {
             doTick()
         }.apply {
             // We want to stop the timing no matter what, but still propagate error up
-            timing.stopTiming() //TODO doTick can suspend and then timings don't work
+//            timing.stopTiming() //TODO doTick can suspend and then timings don't work
         }.getOrThrow()
     }
 

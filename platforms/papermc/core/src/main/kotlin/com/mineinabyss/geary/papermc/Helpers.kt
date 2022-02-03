@@ -22,8 +22,8 @@ internal fun KoinComponent.debug(message: Any?) {
 
 /** Verifies a [PersistentDataContainer] has a tag identifying it as containing Geary components. */
 public var PersistentDataContainer.hasComponentsEncoded: Boolean
-    get() = GearyMCKoinComponent { has(engine.componentsKey, PersistentDataType.BYTE) }
-    set(value) = GearyMCKoinComponent {
+    get() = GearyScopeMC { has(engine.componentsKey, PersistentDataType.BYTE) }
+    set(value) = GearyScopeMC {
         when {
             //TODO are there any empty marker keys?
             value -> if (!hasComponentsEncoded) set(engine.componentsKey, PersistentDataType.BYTE, 1)
@@ -31,8 +31,9 @@ public var PersistentDataContainer.hasComponentsEncoded: Boolean
         }
     }
 
-public suspend fun Location.spawnFromPrefab(prefab: PrefabKey): Entity? = GearyMCKoinComponent {
-    return spawnFromPrefab(prefabManager[prefab] ?: return null)
+public suspend fun Location.spawnFromPrefab(prefab: PrefabKey): Entity? = GearyScopeMC {
+    val entity = prefabManager[prefab] ?: return null
+    return entity.withLock { spawnFromPrefab(entity) }
 }
 
 public suspend fun Location.spawnFromPrefab(prefab: GearyEntity): Entity? {

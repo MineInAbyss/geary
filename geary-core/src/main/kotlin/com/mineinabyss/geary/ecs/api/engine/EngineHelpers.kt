@@ -8,18 +8,20 @@ import com.mineinabyss.geary.ecs.components.ComponentInfo
 import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 /** Creates a new empty entity. May reuse recently deleted entity ids. */
-public suspend fun EngineScope.entity(): GearyEntity = engine.newEntity()
+public fun EngineScope.entity(): GearyEntity = engine.newEntity()
 
 /** @see entity */
-public suspend inline fun EngineScope.entity(run: GearyEntity.() -> Unit): GearyEntity = entity().apply(run)
+public inline fun EngineScope.entity(run: GearyEntity.() -> Unit): GearyEntity = entity().apply(run)
 
 /** Creates a new empty entity that will get removed once [run] completes or fails. */
-public suspend inline fun <T> EngineScope.temporaryEntity(callRemoveEvent: Boolean = false, run: (GearyEntity) -> T): T {
+public suspend inline fun <T> EngineScope.temporaryEntity(
+    callRemoveEvent: Boolean = false,
+    run: (GearyEntity) -> T
+): T {
     val entity = entity()
     return try {
         run(entity)
@@ -59,4 +61,15 @@ public suspend fun GearyComponentId.getComponentInfo(): ComponentInfo? = this.to
 
 public fun EngineScope.systems(vararg systems: GearySystem): List<Deferred<Unit>> {
     return systems.map { engine.async { engine.addSystem(it) } }
+}
+
+public suspend inline fun <T> Engine.withLock(entities: Collection<GearyEntity>, run: () -> T): T {
+    // We need to have consistent sorting so there's never a situation where the next entity we need is locked by a
+    // request that also needs one of the previous entities. If everyone is sorting the same way, this is impossible.
+    entities.sortedBy { it.id }.forEach { lock(it) }
+    return try {
+        run()
+    } finally {
+        entities.forEach { unlock(it) }
+    }
 }

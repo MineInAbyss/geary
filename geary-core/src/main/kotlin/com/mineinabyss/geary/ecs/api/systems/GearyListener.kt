@@ -52,7 +52,6 @@ public abstract class GearyListener : GearySystem, AccessorBuilderProvider {
         target.start()
         event.start()
     }
-    protected open suspend fun onStart() {}
 
     @Suppress("UNCHECKED_CAST")
     public operator fun <T> Accessor<T>.getValue(thisRef: SourceScope, property: KProperty<*>): T =

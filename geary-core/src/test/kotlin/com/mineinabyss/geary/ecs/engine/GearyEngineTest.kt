@@ -87,7 +87,7 @@ internal class GearyEngineTest : GearyTest() {
         val entity = entity {
             setRelation(Int::class, "String to int relation")
         }
-        entity.type.inner.shouldContainExactly(Relation.of<Int, String>().id.toLong())
+        entity.type.inner.shouldContainExactly(Relation.of<Int, String>().id)
         entity.getComponents().shouldContainExactly(RelationComponent(componentId<Int>(), "String to int relation"))
     }
 

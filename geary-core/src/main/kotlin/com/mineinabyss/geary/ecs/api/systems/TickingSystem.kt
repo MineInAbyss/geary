@@ -21,6 +21,8 @@ public abstract class TickingSystem(
     protected var iteration: Int = 0
         private set
 
+    override suspend fun onStart() {}
+
     //TODO better name differentiation between this and tick
     public suspend fun doTick() {
         iteration++

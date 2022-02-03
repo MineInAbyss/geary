@@ -22,7 +22,7 @@ public interface PluginScope {
     public val geary: GearyPlugin
 }
 
-public open class GearyMCKoinComponent : GearyKoinComponent(), GearyScope {
+public open class GearyScopeMC : GearyKoinComponent(), GearyScope {
     override val engine: PaperMCEngine get() = super.engine as PaperMCEngine
     override val prefabManager: PrefabManager by inject()
     override val addonManager: GearyAddonManager by inject()
@@ -34,8 +34,8 @@ public open class GearyMCKoinComponent : GearyKoinComponent(), GearyScope {
     public val uuid2entity: UUID2GearyMap by inject()
 
     public companion object {
-        public inline operator fun <T> invoke(run: GearyMCKoinComponent.() -> T): T {
-            return GearyMCKoinComponent().run(run)
+        public inline operator fun <T> invoke(run: GearyScopeMC.() -> T): T {
+            return GearyScopeMC().run(run)
         }
     }
 }

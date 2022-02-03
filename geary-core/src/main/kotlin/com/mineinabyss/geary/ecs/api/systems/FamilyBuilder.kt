@@ -87,11 +87,11 @@ public abstract class MutableSelector<T : Family> : FamilyBuilder<T>(), EngineSc
             _relationValueIds += element.relationValueId
     }
 
-    public fun not(init: MutableAndNotSelector.() -> Unit) {
+    public inline fun not(init: MutableAndNotSelector.() -> Unit) {
         add(MutableAndNotSelector().apply(init))
     }
 
-    public fun and(init: MutableAndSelector.() -> Unit) {
+    public inline fun and(init: MutableAndSelector.() -> Unit) {
         add(MutableAndSelector().apply(init))
     }
 

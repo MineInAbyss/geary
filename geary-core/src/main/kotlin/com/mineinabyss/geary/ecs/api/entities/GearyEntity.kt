@@ -281,7 +281,7 @@ public value class GearyEntity(public val id: GearyEntityId) : EngineScope {
     ): T = get(kClass) ?: default().also { setPersisting(it, kClass) }
 
     /** Gets all the components on this entity, as well as relations in the form of [RelationComponent]. */
-    public inline fun getComponents(): Set<GearyComponent> = engine.getComponentsFor(this)
+    public inline fun getComponents(): Set<GearyComponent> = engine.getComponentsFor(this).toSet()
 
     /** Gets the data in any relations on this entity with a value of type [T]. */
     public suspend inline fun <reified T : GearyComponent> getRelationsByValue(): Set<GearyComponent> =
@@ -328,7 +328,7 @@ public value class GearyEntity(public val id: GearyEntityId) : EngineScope {
     public suspend inline fun <T> callEvent(
         vararg components: Any,
         source: GearyEntity? = null,
-        crossinline result: (event: GearyEntity) -> T
+        crossinline result: suspend (event: GearyEntity) -> T
     ): T = callEvent({
         setAll(components.toList())
     }, source = source, result = result)
@@ -352,7 +352,7 @@ public value class GearyEntity(public val id: GearyEntityId) : EngineScope {
     public suspend inline fun <T> callEvent(
         crossinline init: suspend GearyEntity.() -> Unit,
         source: GearyEntity? = null,
-        crossinline result: (event: GearyEntity) -> T,
+        crossinline result: suspend (event: GearyEntity) -> T,
     ): T {
         return unsafeRecord().run {
             engine.temporaryEntity(callRemoveEvent = false) { event ->

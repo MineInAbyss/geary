@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.papermc.plugin
 
 import com.mineinabyss.geary.ecs.engine.countChildren
-import com.mineinabyss.geary.papermc.GearyMCKoinComponent
 import com.mineinabyss.geary.papermc.GearyScope
+import com.mineinabyss.geary.papermc.GearyScopeMC
 import com.mineinabyss.geary.papermc.StartupEventListener
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.commands.arguments.stringArg
@@ -17,7 +17,7 @@ import org.bukkit.plugin.java.JavaPlugin
 
 internal class GearyCommands(
     val plugin: JavaPlugin
-) : IdofrontCommandExecutor(), TabCompleter, GearyScope by GearyMCKoinComponent() {
+) : IdofrontCommandExecutor(), TabCompleter, GearyScope by GearyScopeMC() {
     override val commands = commands(plugin) {
         "geary" {
             "reread" {
