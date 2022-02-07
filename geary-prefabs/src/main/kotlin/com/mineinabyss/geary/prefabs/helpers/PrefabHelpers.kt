@@ -19,7 +19,7 @@ public val GearyEntity.prefabs: List<GearyEntity>
     get() = type.filter { it.isInstance() }.map { it.toGeary() }
 
 /** Adds a [prefab] entity to this entity.  */
-public suspend fun GearyEntity.addPrefab(prefab: GearyEntity) {
+public fun GearyEntity.addPrefab(prefab: GearyEntity) {
     add(prefab.id.withRole(INSTANCEOF))
     //TODO this isn't copying over any relations
     val comp = prefab.getComponents()

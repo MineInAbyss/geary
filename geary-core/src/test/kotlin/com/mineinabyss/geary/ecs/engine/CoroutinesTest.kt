@@ -9,16 +9,24 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
-
-suspend fun main() = coroutineScope {
-//    limitedParallelism()
-    println(measureTime {
-        locksWithLimited()
-//        limitedParallelism()
-    })
-//    val result = runConcurrencyTests().joinToString(separator = "\n")
-//    println("Result:\n$result")
+fun main() {
+    val a = Any()
+    synchronized(a) {
+        synchronized(a) {
+            println("Hey world!")
+        }
+    }
 }
+
+//suspend fun main() = coroutineScope {
+////    limitedParallelism()
+//    println(measureTime {
+//        locksWithLimited()
+////        limitedParallelism()
+//    })
+////    val result = runConcurrencyTests().joinToString(separator = "\n")
+////    println("Result:\n$result")
+//}
 
 suspend fun locksBlock() {
     var inc = 0

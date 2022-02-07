@@ -7,7 +7,6 @@ import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
 class GearyTypeFamilyExtensionsKtTest : GearyTest() {
@@ -19,7 +18,7 @@ class GearyTypeFamilyExtensionsKtTest : GearyTest() {
     }
 
     @Test
-    fun contains() = runTest {
+    fun contains() {
         val type = entity { setRelation(10uL, "") }.type
         RelationValueLeaf(RelationValueId(componentId<String>())).contains(type) shouldBe true
     }

@@ -40,7 +40,7 @@ public abstract class Query : Iterable<TargetScope>, AccessorHolder() {
         return items.iterator()
     }
 
-    internal suspend inline fun forEach(crossinline run: suspend (TargetScope) -> Unit) {
+    internal inline fun forEach(crossinline run: (TargetScope) -> Unit) {
         if (!registered) {
             queryManager.trackQuery(this)
             registered = true
@@ -63,4 +63,4 @@ public abstract class Query : Iterable<TargetScope>, AccessorHolder() {
 
 }
 
-public suspend operator fun <T : Query, R> T.invoke(run: suspend T.() -> R): R = run { run() }
+public operator fun <T : Query, R> T.invoke(run: T.() -> R): R = run { run() }

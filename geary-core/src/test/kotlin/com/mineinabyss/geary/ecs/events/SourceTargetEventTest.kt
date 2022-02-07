@@ -9,7 +9,6 @@ import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
 class SourceTargetEventTest : GearyTest() {
@@ -21,18 +20,18 @@ class SourceTargetEventTest : GearyTest() {
         val SourceScope.strength by get<Strength>()
         val TargetScope.health by get<Health>()
 
-        override suspend fun onStart() {
+        override fun onStart() {
             event.has<Attack>()
         }
 
         @Handler
-        suspend fun damage(source: SourceScope, target: TargetScope, event: EventScope) {
+        fun damage(source: SourceScope, target: TargetScope, event: EventScope) {
             target.entity.set(Health(target.health.amount - source.strength.amount))
         }
     }
 
     @Test
-    fun interactions() = runTest {
+    fun interactions() {
         engine.addSystem(Interaction())
         val source = entity {
             set(Strength(10))

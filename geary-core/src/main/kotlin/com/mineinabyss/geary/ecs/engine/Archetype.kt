@@ -17,7 +17,6 @@ import com.mineinabyss.geary.ecs.query.contains
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongArrayList
-import kotlinx.coroutines.Job
 import java.util.*
 
 private typealias IdList = LongArrayList
@@ -37,15 +36,13 @@ public data class Archetype(
     public val type: GearyType,
     public val id: Int
 ) {
-
-    internal var iterationJob: Job? = null
-
     /** A mutex for anything which needs the size of ids to remain unchanged. */
     private val entityAddition = Any()
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     //TODO aim to make private
     internal val ids: IdList = IdList()
+//    private val queuedRemoval = BitVector()
 
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
@@ -110,10 +107,6 @@ public data class Archetype(
     private val runningIterators = Collections.newSetFromMap(WeakHashMap<ArchetypeIterator, Boolean>())
 
     // ==== Helper functions ====
-    public suspend fun awaitIteration() {
-        iterationJob?.join()
-    }
-
     public fun getEntity(row: Int): GearyEntity {
         return ids.getLong(row).toGeary()
     }
@@ -149,7 +142,6 @@ public data class Archetype(
         componentId in type || componentId.withInvertedRole(HOLDS_DATA) in type
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
-    @Synchronized
     public operator fun plus(componentId: GearyComponentId): Archetype =
         if (componentId in componentAddEdges)
             componentAddEdges[componentId]
@@ -164,7 +156,6 @@ public data class Archetype(
             )
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
-    @Synchronized
     public operator fun minus(componentId: GearyComponentId): Archetype =
         if (componentId in componentRemoveEdges)
             componentRemoveEdges[componentId]
@@ -173,6 +164,10 @@ public data class Archetype(
         }
 
     // ==== Entity mutation ====
+
+    internal fun addEntityWithData(
+    ) {
+    }
 
     /**
      * Adds an entity to this archetype with properly ordered [data].
@@ -183,44 +178,48 @@ public data class Archetype(
      */
     //TODO proper async add
     internal fun addEntityWithData(
-        entity: GearyEntity,
-        data: Array<GearyComponent>
-    ): Record = synchronized(entityAddition) {
-//        awaitIteration()
-        ids.add(entity.id.toLong())
-        componentData.forEachIndexed { i, compArray ->
-            compArray.add(data[i])
+        record: Record,
+        data: Array<GearyComponent>,
+        entity: GearyEntity = record.entity,
+    ) = synchronized(entityAddition) {
+        synchronized(record) {
+            ids.add(entity.id.toLong())
+            componentData.forEachIndexed { i, compArray ->
+                compArray.add(data[i])
+            }
+            record.row = -1
+            record.archetype = this
+            record.row = ids.lastIndex
         }
-        Record.of(this, ids.lastIndex)
     }
 
     // For the following few functions, both entity and row are passed to avoid doing several array look-ups
     //  (ex when set calls remove).
 
     /**
-     * Add a [component] to an [entity], moving it to the appropriate archetype.
+     * Add a [component] to an entity represented by [record], moving it to the appropriate archetype.
      *
-     * @return The new [Record] to be associated with this entity from now on.
+     * @return Whether the record has changed.
      *
      * @see Engine.addComponentFor
      */
-    internal suspend fun addComponent(
-        entity: GearyEntity,
-        row: Int,
+    internal fun addComponent(
+        record: Record,
         component: GearyComponentId
-    ): Record? {
+    ): Boolean {
         // if already present in this archetype, stop here since we dont need to update any data
-        if (contains(component)) return null
+        if (contains(component)) return false
 
         val moveTo = this + (component.withoutRole(HOLDS_DATA))
 
-        val componentData = getComponents(row)
-        removeEntity(row)
-        return moveTo.addEntityWithData(entity, componentData)
+        val componentData = getComponents(record.row)
+        scheduleRemoveRow(record.row)
+        moveTo.addEntityWithData(record, componentData)
+        return true
     }
 
     /**
-     * Sets [data] at a [componentId] for an [entity], moving it to the appropriate archetype.
+     * Sets [data] at a [componentId] for an [record], moving it to the appropriate archetype.
      * Will remove [componentId] without the [HOLDS_DATA] role if present so an archetype never has both data/no data
      * components at once.
      *
@@ -229,12 +228,12 @@ public data class Archetype(
      *
      * @see Engine.setComponentFor
      */
-    internal suspend fun setComponent(
-        entity: GearyEntity,
-        row: Int,
+    internal fun setComponent(
+        record: Record,
         componentId: GearyComponentId,
         data: GearyComponent
-    ): Record? {
+    ): Boolean {
+        val row = record.row
         val isRelation = componentId.isRelation()
 
         // Relations should not add the HOLDS_DATA bit since the type roles are of the relation's child
@@ -245,16 +244,15 @@ public data class Archetype(
         val addIndex = indexOf(dataComponent)
         if (addIndex != -1) {
             componentData[addIndex][row] = data
-            return null
+            return false
         }
 
         //if component was added but not set, remove the added component before setting this one
         val addId = dataComponent.withoutRole(HOLDS_DATA)
 
         if (addId in type) {
-            //TODO ensure this is safe while archetype is iterating
-            val removedRecord = removeComponent(entity, row, addId) ?: return null
-            return removedRecord.archetype.setComponent(entity, removedRecord.row, dataComponent, data)
+            removeComponent(record, addId)
+            record.archetype.setComponent(record, dataComponent, data)
         }
 
 
@@ -262,34 +260,35 @@ public data class Archetype(
         val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
         val componentData = getComponents(row, add = data to newCompIndex)
 
-        removeEntity(row)
-        return moveTo.addEntityWithData(entity, componentData)
+        scheduleRemoveRow(row)
+        moveTo.addEntityWithData(record, componentData)
+        return true
     }
 
     /**
-     * Removes a [component] from an [entity], moving it to the appropriate archetype.
+     * Removes a [component] from an [record], moving it to the appropriate archetype.
      *
-     * @return The new [Record] to be associated with this entity from now on, or null if the [component]
-     * was not present in this archetype.
+     * @return Whether the record has changed.
      *
      * @see Engine.removeComponentFor
      */
-    internal suspend fun removeComponent(
-        entity: GearyEntity,
-        row: Int,
+    internal fun removeComponent(
+        record: Record,
         component: GearyComponentId
-    ): Record? {
-        if (component !in type) return null
+    ): Boolean = synchronized(record) {
+        val row = record.row
 
+        if (component !in type) return false
         val moveTo = this - component
-
         val skipData = indexOf(component)
+
         val componentData = Array<Any>((this.componentData.size - 1).coerceAtLeast(0)) {}
 
         for (i in 0 until skipData) componentData[i] = this.componentData[i][row]
         for (i in (skipData + 1)..this.componentData.lastIndex) componentData[i - 1] = this.componentData[i][row]
-        removeEntity(row)
-        return moveTo.addEntityWithData(entity, componentData)
+        scheduleRemoveRow(row)
+        moveTo.addEntityWithData(record, componentData)
+        return true
     }
 
     /** Gets all the components associated with an entity at a [row]. */
@@ -306,41 +305,35 @@ public data class Archetype(
             return Array(componentData.size) { i: Int -> componentData[i][row] }
     }
 
-    /** Removes the entity at a [row] in this archetype, notifying running archetype iterators. */
-    internal suspend fun removeEntity(row: Int) {
-        while (true) {
-//            awaitIteration()
-            val lastIndex = ids.lastIndex
-            val lastEntity = ids.getLong(lastIndex).toGeary()
-            if (lastIndex != row) engine.lock(lastEntity)
+    internal fun scheduleRemoveRow(row: Int) {
+        (engine as GearyEngine).scheduleRemoveRow(this, row)
+    }
 
-            if (synchronized(entityAddition) {
-                    if (ids.lastIndex != lastIndex) {
-                        if (lastIndex != row) engine.unlock(lastEntity)
-                        return@synchronized false
-                    }
-                    val replacement = ids.getLong(lastIndex)
-                    ids[row] = replacement
+    /**
+     * Removes the entity at a [row] in this archetype, notifying running archetype iterators.
+     *
+     * Must be run synchronously.
+     */
+    internal fun removeEntity(row: Int) {
+        val lastIndex = ids.lastIndex
 
-                    // Move entity in last row to deleted row
-                    if (lastIndex != row) {
-                        componentData.forEach { it[row] = it.last() }
-                        runningIterators.forEach {
-                            it.addMovedRow(lastIndex, row)
-                        }
-                        engine.setRecord(replacement.toGeary(), Record.of(this@Archetype, row))
-                    }
-
-                    // Delete last row's data
-                    ids.removeLastOrNull()
-                    componentData.forEach { it.removeLastOrNull() }
-
-                    if (lastIndex != row) engine.unlock(lastEntity)
-                    return@synchronized true
-                }) {
-                return
+        // Move entity in last row to deleted row
+        if (lastIndex != row) {
+            val replacement = ids.getLong(lastIndex)
+            ids[row] = replacement
+            componentData.forEach { it[row] = it.last() }
+            runningIterators.forEach {
+                it.addMovedRow(lastIndex, row)
+            }
+            engine.unsafeRecord(replacement.toGeary()).apply {
+                this.archetype = this@Archetype
+                this.row = row
             }
         }
+
+        // Delete last row's data
+        ids.removeLastOrNull()
+        componentData.forEach { it.removeLastOrNull() }
     }
 
     // ==== Event listeners ====
@@ -359,24 +352,16 @@ public data class Archetype(
     }
 
     /** Calls an event with data in an [event entity][event]. */
-    public suspend fun callEvent(event: GearyEntity, row: Int, source: GearyEntity? = null) {
-        callEvent(event, row, source, true)
-    }
-
-    internal suspend fun callEvent(event: GearyEntity, row: Int, source: GearyEntity? = null, lock: Boolean) {
+    public fun callEvent(
+        event: GearyEntity,
+        row: Int,
+        source: GearyEntity? = null,
+    ) {
         val target = getEntity(row)
         val engine = (engine as GearyEngine) //TODO expose properly for internal api
 
         val types = engine.typeMap
         // Lock access to entities involved
-        val sMutex = source?.let { types.getMutex(it) }
-        val tMutex = types.getMutex(target)
-        val eMutex = types.getMutex(event)
-        if (lock) {
-            sMutex?.lock()
-            tMutex.lock()
-            eMutex.lock()
-        }
 
         val origEventArc = types.unsafeGet(event).archetype
         val origSourceArc = source?.let { types.unsafeGet(it) }?.archetype
@@ -426,19 +411,14 @@ public data class Archetype(
             }.getOrElse { throw IllegalStateException("Failed while reading source scope on $listenerName", it) }
             handler.processAndHandle(sourceScope, targetScope, eventScope)
         }
-        if (lock) {
-            sMutex?.unlock()
-            tMutex.unlock()
-            eMutex.unlock()
-        }
     }
 
     // ==== Iterators ====
 
-    /** Stops tracking a running [iterator]. */
-    internal fun finalizeIterator(iterator: ArchetypeIterator) {
-        runningIterators.remove(iterator)
-    }
+//    /** Stops tracking a running [iterator]. */
+//    internal fun finalizeIterator(iterator: ArchetypeIterator) {
+//        runningIterators.remove(iterator)
+//    }
 
     /** Creates and tracks an [ArchetypeIterator] for a query. */
     internal fun iteratorFor(query: Query): ArchetypeIterator {

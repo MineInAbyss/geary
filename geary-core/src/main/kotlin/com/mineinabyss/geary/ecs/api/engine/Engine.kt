@@ -13,6 +13,7 @@ import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.engine.Record
 import com.mineinabyss.geary.ecs.events.AddedComponent
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import org.koin.core.component.KoinComponent
 import kotlin.reflect.KClass
 
@@ -29,10 +30,10 @@ public abstract class Engine : KoinComponent, EngineScope, CoroutineScope {
 
 
     /** Get the smallest free entity ID. */
-    public abstract fun newEntity(): GearyEntity
+    public abstract fun newEntity(initialComponents: Collection<GearyComponent> = listOf()): GearyEntity
 
     /** Adds a [system] to the engine, which will be ticked appropriately by the engine */
-    public abstract suspend fun addSystem(system: GearySystem)
+    public abstract fun addSystem(system: GearySystem)
 
     /** Gets a [componentId]'s data from an [entity] or null if not present/the component doesn't hold any data. */
     public abstract fun getComponentFor(entity: GearyEntity, componentId: GearyComponentId): GearyComponent?
@@ -54,14 +55,14 @@ public abstract class Engine : KoinComponent, EngineScope, CoroutineScope {
     public abstract fun hasComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean
 
     /** Adds this [componentId] to the [entity]'s type but doesn't store any data. */
-    public abstract suspend fun addComponentFor(entity: GearyEntity, componentId: GearyComponentId, noEvent: Boolean)
+    public abstract fun addComponentFor(entity: GearyEntity, componentId: GearyComponentId, noEvent: Boolean)
 
     /**
      * Sets [data] under a [componentId] for an [entity].
      *
      * @param noEvent Whether to fire an [AddedComponent] event.
      */
-    public abstract suspend fun setComponentFor(
+    public abstract fun setComponentFor(
         entity: GearyEntity,
         componentId: GearyComponentId,
         data: GearyComponent,
@@ -69,19 +70,19 @@ public abstract class Engine : KoinComponent, EngineScope, CoroutineScope {
     )
 
     /** Removes a [componentId] from an [entity] and clears any data previously associated with it. */
-    public abstract suspend fun removeComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean
+    public abstract fun removeComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean
 
     /** Removes an entity from the ECS, freeing up its entity id. */
-    public abstract suspend fun removeEntity(entity: GearyEntity, event: Boolean = true)
+    public abstract fun removeEntity(entity: GearyEntity, event: Boolean = true)
 
     /** Removes all components from an entity. */
-    public abstract suspend fun clearEntity(entity: GearyEntity)
+    public abstract fun clearEntity(entity: GearyEntity)
 
     /**
      * Given a component's [kClass], returns its [GearyComponentId], or registers an entity
      * with a [ComponentInfo] that will represent this [kClass]'s component type.
      */
-    public abstract suspend fun getOrRegisterComponentIdForClass(kClass: KClass<*>): GearyComponentId
+    public abstract fun getOrRegisterComponentIdForClass(kClass: KClass<*>): GearyComponentId
 
     /** Gets an archetype by id or throws an error if it doesn't exist in this engine. */
     public abstract fun getArchetype(id: Int): Archetype
@@ -91,12 +92,14 @@ public abstract class Engine : KoinComponent, EngineScope, CoroutineScope {
 
     internal abstract fun unsafeRecord(entity: GearyEntity): Record
 
-    @PublishedApi
-    internal abstract suspend fun lock(entity: GearyEntity)
+//    @PublishedApi
+//    internal abstract suspend fun lock(entity: GearyEntity)
 
-    @PublishedApi
-    internal abstract fun unlock(entity: GearyEntity)
+//    @PublishedApi
+//    internal abstract fun unlock(entity: GearyEntity)
 
     /** Updates the record of a given entity */
     public abstract fun setRecord(entity: GearyEntity, record: Record)
+
+    public abstract suspend fun runSafely(job: Job)
 }

@@ -18,32 +18,30 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class QueryManagerTest : GearyTest() {
     @Nested
     inner class FamilyMatchingTest {
-        val stringId = engine.async { componentId<String>() or HOLDS_DATA }
-        val intId = engine.async { componentId<Int>() }
+        val stringId = componentId<String>() or HOLDS_DATA
+        val intId = componentId<Int>()
 
         val system = object : TickingSystem() {
             val TargetScope.string by get<String>()
 
-            override suspend fun onStart() {
+            init {
                 has<Int>()
             }
 
-            override suspend fun TargetScope.tick() {
+            override fun TargetScope.tick() {
                 string shouldBe entity.get<String>()
                 entity.has<Int>() shouldBe true
             }
         }
 
-        val correctArchetype = engine.async { engine.rootArchetype + stringId.await() + intId.await() }
+        val correctArchetype = engine.rootArchetype + stringId + intId
 
         init {
             runBlocking {
@@ -52,17 +50,17 @@ internal class QueryManagerTest : GearyTest() {
         }
 
         @Test
-        fun `family type is correct`() = runTest {
-            GearyType(system.family.components).getArchetype() shouldBe engine.rootArchetype + stringId.await()
+        fun `family type is correct`() {
+            GearyType(system.family.components).getArchetype() shouldBe engine.rootArchetype + stringId
         }
 
         @Test
-        fun `archetypes have been matched correctly`() = runTest {
-            system.matchedArchetypes shouldContain correctArchetype.await()
+        fun `archetypes have been matched correctly`() {
+            system.matchedArchetypes shouldContain correctArchetype
         }
 
         @Test
-        fun `get entities matching family`() = runTest {
+        fun `get entities matching family`() {
             val entity = entity {
                 set("Test")
                 add<Int>()
@@ -77,7 +75,7 @@ internal class QueryManagerTest : GearyTest() {
         }
 
         @Test
-        fun `accessors in system correctly read data`() = runTest {
+        fun `accessors in system correctly read data`() {
             system.doTick()
         }
     }
@@ -89,7 +87,7 @@ internal class QueryManagerTest : GearyTest() {
         val removingSystem = object : TickingSystem() {
             val TargetScope.string by get<String>()
 
-            override suspend fun TargetScope.tick() {
+            override fun TargetScope.tick() {
                 entity.remove<String>()
                 ran++
             }
@@ -102,7 +100,7 @@ internal class QueryManagerTest : GearyTest() {
         }
 
         @Test
-        fun `concurrent modification`() = runTest {
+        fun `concurrent modification`() {
             val entities = (0 until 10).map { entity { set("Test") } }
             val total =
                 queryManager.getEntitiesMatching(family {
@@ -117,11 +115,11 @@ internal class QueryManagerTest : GearyTest() {
     private class RelationTestComponent
 
     @Test
-    fun relations() = runTest {
+    fun relations() {
         var ran = 0
         val system = object : TickingSystem() {
             val TargetScope.test by relation<Any?, RelationTestComponent>()
-            override suspend fun TargetScope.tick() {
+            override fun TargetScope.tick() {
                 ran++
                 family.relationValueTypes.map { it.id } shouldContain test.valueId
                 test.value.shouldBeInstanceOf<RelationTestComponent>()
@@ -153,12 +151,12 @@ internal class QueryManagerTest : GearyTest() {
     private class RelationTestComponent2
 
     @Test
-    fun relationPermutations() = runTest {
+    fun relationPermutations() {
         var ran = 0
         val system = object : TickingSystem() {
             val TargetScope.test1 by relation<Any?, RelationTestComponent1>()
             val TargetScope.test2 by relation<Any?, RelationTestComponent2>()
-            override suspend fun TargetScope.tick() {
+            override fun TargetScope.tick() {
                 ran++
                 test1.value.shouldBeInstanceOf<RelationTestComponent1>()
                 test2.value.shouldBeInstanceOf<RelationTestComponent2>()
@@ -182,11 +180,11 @@ internal class QueryManagerTest : GearyTest() {
     class RelationTestWithData
 
     @Test
-    fun relationsWithData() = runTest {
+    fun relationsWithData() {
         val system = object : TickingSystem() {
             val TargetScope.withData by relation<Any, RelationTestWithData>()
 
-            override suspend fun TargetScope.tick() {
+            override fun TargetScope.tick() {
                 withData.value.shouldBeInstanceOf<RelationTestWithData>()
                 withData.key shouldBe "Test"
             }
@@ -222,7 +220,7 @@ internal class QueryManagerTest : GearyTest() {
     }
 
     @Test
-    fun `empty event handler`() = runTest {
+    fun `empty event handler`() {
         engine.addSystem(EventListener)
         (engine.rootArchetype.type in EventListener.event.family) shouldBe true
         engine.rootArchetype.eventHandlers.map { it.parentListener } shouldContain EventListener

@@ -5,5 +5,5 @@ package com.mineinabyss.geary.ecs.api.systems
  * Includes [GearyListener] and [TickingSystem].
  */
 public interface GearySystem {
-    public suspend fun onStart() {}
+    public fun onStart() {}
 }

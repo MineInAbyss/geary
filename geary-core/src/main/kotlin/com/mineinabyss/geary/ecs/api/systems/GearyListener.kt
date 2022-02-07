@@ -45,7 +45,7 @@ public abstract class GearyListener : GearySystem, AccessorBuilderProvider {
         return holder.addAccessor { runBlocking { build(holder, it) } }
     }
 
-    public suspend fun start() {
+    public fun start() {
         onStart()
         // Build these after so subclasses can modify source/target/event in onStart
         source.start()

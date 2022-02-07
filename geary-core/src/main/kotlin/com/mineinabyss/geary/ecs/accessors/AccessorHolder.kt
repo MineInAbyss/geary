@@ -25,12 +25,12 @@ public open class AccessorHolder : MutableAndSelector(), AccessorBuilderProvider
         _family ?: error("Tried to accesss family of accessor ${this::class.simpleName}, which was not registered yet.")
     }
 
-    public suspend fun start() {
+    public fun start() {
         onStart()
         _family = build()
     }
 
-    protected open suspend fun onStart() {}
+    protected open fun onStart() {}
 
     internal open val accessors = mutableListOf<Accessor<*>>()
     private val perArchetypeCache = Int2ObjectOpenHashMap<List<List<Any?>>>()

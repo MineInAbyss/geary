@@ -3,7 +3,6 @@ package com.mineinabyss.geary.ecs.engine
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.engine.withLock
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.components.RelationComponent
@@ -31,18 +30,18 @@ internal class ArchetypeTest : GearyTest() {
     @Nested
     inner class MovingBetweenArchetypes {
         @Test
-        fun `empty type equals empty archetype`() = runTest {
+        fun `empty type equals empty archetype`() {
             GearyType().getArchetype() shouldBe engine.rootArchetype
         }
 
         @Test
-        fun `get type equals archetype adding`() = runTest {
+        fun `get type equals archetype adding`() {
             engine.rootArchetype + 1u + 2u + 3u - 1u + 1u shouldBe
                     GearyType(listOf(1u, 2u, 3u)).getArchetype()
         }
 
         @Test
-        fun `reach same archetype from different starting positions`() = runTest {
+        fun `reach same archetype from different starting positions`() {
             engine.rootArchetype + 1u + 2u + 3u shouldBe engine.rootArchetype + 3u + 2u + 1u
         }
     }
@@ -69,7 +68,7 @@ internal class ArchetypeTest : GearyTest() {
     }
 
     @Test
-    fun `getComponents with relations`() = runTest {
+    fun `getComponents with relations`() {
         entity {
             set("Test")
             setRelation(String::class, 10)
@@ -98,8 +97,8 @@ internal class ArchetypeTest : GearyTest() {
                 repeat(1000) { id ->
                     launch {
 //                        entity.withLock {
-                            entity.setRelation(id.toULong(), "String")
-                            println("Locked for ${entity.id}: $id, size ${engine.archetypeCount}")
+                        entity.setRelation(id.toULong(), "String")
+                        println("Locked for ${entity.id}: $id, size ${engine.archetypeCount}")
 //                        }
                     }
                 }
@@ -108,19 +107,19 @@ internal class ArchetypeTest : GearyTest() {
 //        entity.getComponents().shouldBeEmpty()
     }
 
-//    @Test
-    fun `mutliple locks`() = runTest {
-        val a = entity()
-//        val b = entity()
-        concurrentOperation(10000) {
-            engine.withLock(setOf(a/*, b*/)) {
-                println("Locking")
-                delay(100)
-            }
-        }
-    }
+    //    @Test
+//    fun `mutliple locks`() {
+//        val a = entity()
+////        val b = entity()
+//        concurrentOperation(10000) {
+//            engine.withLock(setOf(a/*, b*/)) {
+//                println("Locking")
+//                delay(100)
+//            }
+//        }
+//    }
 
-//    @Test
+    //    @Test
     fun `concurrent archetype creation`() = runTest {
         clearEngine()
         val iters = 10000

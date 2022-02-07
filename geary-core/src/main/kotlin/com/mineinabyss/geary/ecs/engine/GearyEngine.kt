@@ -3,6 +3,7 @@ package com.mineinabyss.geary.ecs.engine
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.GearyType
+import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.temporaryEntity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
@@ -14,12 +15,15 @@ import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.ComponentInfo
 import com.mineinabyss.geary.ecs.components.RelationComponent
+import com.mineinabyss.geary.ecs.entities.parents
+import com.mineinabyss.geary.ecs.entities.removeParent
 import com.mineinabyss.geary.ecs.events.AddedComponent
 import com.mineinabyss.geary.ecs.events.EntityRemoved
 import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.time.inWholeTicks
 import kotlinx.coroutines.*
 import org.koin.core.component.inject
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KClass
@@ -46,7 +50,7 @@ public open class GearyEngine : TickingEngine() {
 
     public val archetypeCount: Int get() = archetypes.size
 
-    internal suspend fun init() {
+    internal fun init() {
         //Register an entity for the ComponentInfo component, otherwise getComponentIdForClass does a StackOverflow
         val componentInfo = newEntity()
         classToComponentMap[ComponentInfo::class] = componentInfo.id
@@ -71,16 +75,6 @@ public open class GearyEngine : TickingEngine() {
         doTick()
     }
 
-    private fun createRecord(entity: GearyEntity) {
-        if (!typeMap.contains(entity)) {
-            // We don't lock here because an empty entity should never have an archetype accessing it, and nothing
-            // else has had a chance to get the record for this entity yet.
-            typeMap.createMutex(entity)
-            val record = rootArchetype.addEntityWithData(entity, arrayOf())
-            typeMap.unsafeSet(entity, record)
-        }
-    }
-
     private fun createArchetype(prevNode: Archetype, componentEdge: GearyComponentId): Archetype {
         val arc = Archetype(this, prevNode.type.plus(componentEdge), archetypes.size).also {
             archetypes += it
@@ -91,17 +85,29 @@ public open class GearyEngine : TickingEngine() {
         return arc
     }
 
-    override fun newEntity(): GearyEntity {
+    override fun newEntity(initialComponents: Collection<GearyComponent>): GearyEntity {
         val entity = try {
             removedEntities.pop()
         } catch (e: Exception) {
             currId.getAndIncrement().toGeary()
         }
-        createRecord(entity)
+        createRecord(entity, initialComponents)
         return entity
     }
 
-    override suspend fun addSystem(system: GearySystem) {
+    private fun createRecord(entity: GearyEntity, initialComponents: Collection<GearyComponent>) {
+        val ids = initialComponents.map { componentId(it::class) }
+        val addTo = getArchetype(GearyType(ids))
+        val record = Record(rootArchetype, -1)
+        addTo.addEntityWithData(
+            record,
+            initialComponents.toTypedArray().apply { sortBy { addTo.indexOf(componentId(it::class)) } },
+            entity,
+        )
+        typeMap.unsafeSet(entity, record)
+    }
+
+    override fun addSystem(system: GearySystem) {
         // Track systems right at startup since they are likely going to tick very soon anyways and we don't care about
         // any hiccups at that point.
         when (system) {
@@ -161,82 +167,76 @@ public open class GearyEngine : TickingEngine() {
     }
 
 
-    override suspend fun addComponentFor(
+    override fun addComponentFor(
         entity: GearyEntity,
         componentId: GearyComponentId,
         noEvent: Boolean
     ) {
-        val (archetype, row) = unsafeRecord(entity)
-        val newRecord = archetype.addComponent(entity, row, HOLDS_DATA.inv() and componentId)
+        unsafeRecord(entity).apply {
+            archetype.addComponent(this, HOLDS_DATA.inv() and componentId) || return
 
-        setRecord(entity, newRecord ?: return)
-        if (!noEvent) temporaryEntity { componentAddEvent ->
-            componentAddEvent.withLock {
+            if (!noEvent) temporaryEntity { componentAddEvent ->
                 componentAddEvent.setRelation(componentId, AddedComponent(), noEvent = true)
-                // It is the responsibility of the user to lock the target, but since we handle event, lock it manually.
-                // Otherwise, if target is already locked this freezes.
-                newRecord.archetype.callEvent(componentAddEvent, newRecord.row, lock = false)
+                archetype.callEvent(componentAddEvent, row)
             }
         }
     }
 
-    override suspend fun setComponentFor(
+    override fun setComponentFor(
         entity: GearyEntity,
         componentId: GearyComponentId,
         data: GearyComponent,
         noEvent: Boolean
     ) {
-        val (archetype, row) = unsafeRecord(entity)
-        // Only add HOLDS_DATA if this isn't a relation. All relations implicitly hold data currently and that bit
-        // corresponds to the component part of the relation.
-        val role = if (!componentId.hasRole(RELATION)) HOLDS_DATA else NO_ROLE
-        val componentWithRole = componentId.withRole(role)
-        val newRecord = archetype.setComponent(entity, row, componentWithRole, data) ?: return
-        setRecord(entity, newRecord)
+        unsafeRecord(entity).apply {
+            // Only add HOLDS_DATA if this isn't a relation. All relations implicitly hold data currently and that bit
+            // corresponds to the component part of the relation.
+            val role = if (!componentId.hasRole(RELATION)) HOLDS_DATA else NO_ROLE
+            val componentWithRole = componentId.withRole(role)
+            archetype.setComponent(this, componentWithRole, data) || return
 
-        if (!noEvent) temporaryEntity { componentAddEvent ->
-            componentAddEvent.withLock {
+            if (!noEvent) temporaryEntity { componentAddEvent ->
                 componentAddEvent.setRelation(componentWithRole, AddedComponent(), noEvent = true)
-                newRecord.archetype.callEvent(componentAddEvent, newRecord.row, lock = false)
+                archetype.callEvent(componentAddEvent, row)
             }
         }
     }
 
-    override suspend fun removeComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean {
-        val (archetype, row) = unsafeRecord(entity)
-        val newRecord = archetype.removeComponent(entity, row, componentId.withRole(HOLDS_DATA))
-            ?: archetype.removeComponent(entity, row, componentId)
-        setRecord(entity, newRecord ?: return false)
+    override fun removeComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean {
+        unsafeRecord(entity).apply {
+            archetype.removeComponent(this, componentId.withRole(HOLDS_DATA))
+                    || archetype.removeComponent(this, componentId)
+        }
         return true
     }
 
     override fun hasComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean =
         unsafeRecord(entity).archetype.contains(componentId)
 
-    override suspend fun removeEntity(entity: GearyEntity, event: Boolean) {
+    override fun removeEntity(entity: GearyEntity, event: Boolean) {
         if (event) entity.callEvent(EntityRemoved())
 
         // remove all children of this entity from the ECS as well
-//        entity.apply {
-//            children.forEach {
-//                // Remove self from the child's parents or remove the child if it no longer has parents
-//                if (parents == setOf(this)) it.removeEntity(event)
-//                else it.removeParent(this)
-//            }
-//        }
+        entity.apply {
+            children.forEach {
+                // Remove self from the child's parents or remove the child if it no longer has parents
+                if (parents == setOf(this)) it.removeEntity(event)
+                else it.removeParent(this)
+            }
+        }
 
         val (archetype, row) = unsafeRecord(entity)
-        archetype.removeEntity(row)
+        scheduleRemoveRow(archetype, row)
         typeMap.unsafeRemove(entity)
         //add current id into queue for reuse
         removedEntities.push(entity)
     }
 
-    override suspend fun clearEntity(entity: GearyEntity) {
+    override fun clearEntity(entity: GearyEntity) {
         // TODO might make sense as non blocking?
         val (archetype, row) = unsafeRecord(entity)
-        archetype.removeEntity(row)
-        setRecord(entity, rootArchetype.addEntityWithData(entity, arrayOf()))
+        archetype.scheduleRemoveRow(row)
+        rootArchetype.addEntityWithData(unsafeRecord(entity), arrayOf())
     }
 
     override fun getArchetype(id: Int): Archetype = archetypes[id]
@@ -252,39 +252,69 @@ public open class GearyEngine : TickingEngine() {
         return node
     }
 
-    override suspend fun getOrRegisterComponentIdForClass(kClass: KClass<*>): GearyComponentId {
+    override fun getOrRegisterComponentIdForClass(kClass: KClass<*>): GearyComponentId {
         val id = classToComponentMap[kClass]
         if (id == (-1L).toULong()) return registerComponentIdForClass(kClass)
         return id
     }
 
-    private suspend fun registerComponentIdForClass(kClass: KClass<*>): GearyComponentId {
-        val compEntity = newEntity()
-        return compEntity.withLock {
-            classToComponentMap[kClass] = compEntity.id
-            compEntity.set(ComponentInfo(kClass))
-            compEntity.id
-        }
+    private fun registerComponentIdForClass(kClass: KClass<*>): GearyComponentId {
+        val compEntity = newEntity(initialComponents = listOf(ComponentInfo(kClass)))
+        classToComponentMap[kClass] = compEntity.id
+        return compEntity.id
     }
 
-    override suspend fun lock(entity: GearyEntity) {
-        typeMap.getMutex(entity).lock()
+    internal fun scheduleRemoveRow(archetype: Archetype, row: Int) {
+        queuedDeletions.add(Record(archetype, row))
     }
 
-    override fun unlock(entity: GearyEntity) {
-        typeMap.getMutex(entity).unlock()
-    }
+    //TODO what data structure is most efficient here?
+    private val queuedDeletions: ConcurrentLinkedQueue<Record> = ConcurrentLinkedQueue()
+    private val runningAsyncJobs: ConcurrentLinkedQueue<Job> = ConcurrentLinkedQueue()
+    private var iterationJob: Job? = null
 
-    override suspend fun tick(currentTick: Long) {
-        registeredSystems
-            .filter { currentTick % it.interval.inWholeTicks.coerceAtLeast(1) == 0L }
-            .forEach {
-                try {
-                    it.runSystem()
-                } catch (e: Exception) {
-                    logError("Error while running system ${it.javaClass.name}")
-                    e.printStackTrace()
-                }
+    override suspend fun runSafely(job: Job) {
+        runningAsyncJobs.add(launch {
+            iterationJob?.join()
+            job.invokeOnCompletion {
+                runningAsyncJobs.remove(job)
             }
+            job.start()
+        })
+    }
+
+    override suspend fun tick(currentTick: Long): Unit = coroutineScope {
+        // Create a job but don't start it
+        val job = launch(start = CoroutineStart.LAZY) {
+            registeredSystems
+                .filter { currentTick % it.interval.inWholeTicks.coerceAtLeast(1) == 0L }
+                .forEach {
+                    try {
+                        it.runSystem()
+                    } catch (e: Exception) {
+                        logError("Error while running system ${it.javaClass.name}")
+                        e.printStackTrace()
+                    }
+                }
+        }
+        iterationJob = job
+
+        // Await completion of all other jobs
+        while (true) {
+            val running = runningAsyncJobs.poll() ?: break
+            running.join()
+        }
+
+        // Clean up any removed entities
+        // Runs before systems so they can assume all entities are present while iterating
+        while (true) {
+            val entity = queuedDeletions.poll() ?: break
+            entity.archetype.removeEntity(entity.row)
+        }
+
+        // Tick all systems
+        job.start()
+        job.join()
+        iterationJob = null
     }
 }

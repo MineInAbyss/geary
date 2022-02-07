@@ -52,11 +52,11 @@ public value class Relation private constructor(
         public fun of(key: GearyComponentId, value: GearyComponentId): Relation =
             of(key, RelationValueId(value))
 
-        public suspend fun of(key: KClass<*>, value: KClass<*>): Relation = GearyKoinComponent {
+        public fun of(key: KClass<*>, value: KClass<*>): Relation = GearyKoinComponent {
             of(componentId(key), componentId(value))
         }
 
-        public suspend inline fun <reified K : GearyComponent, reified V : GearyComponent> of(): Relation = GearyKoinComponent {
+        public inline fun <reified K : GearyComponent, reified V : GearyComponent> of(): Relation = GearyKoinComponent {
             of(componentId<K>(), componentId<V>())
         }
 

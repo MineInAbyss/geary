@@ -21,10 +21,10 @@ public abstract class TickingSystem(
     protected var iteration: Int = 0
         private set
 
-    override suspend fun onStart() {}
+    override fun onStart() {}
 
     //TODO better name differentiation between this and tick
-    public suspend fun doTick() {
+    public fun doTick() {
         iteration++
         tick()
 
@@ -34,11 +34,11 @@ public abstract class TickingSystem(
 
     }
 
-    protected open suspend fun tick() {
+    protected open fun tick() {
         forEach(run = { it.tick() })
     }
 
-    protected open suspend fun TargetScope.tick() {}
+    protected open fun TargetScope.tick() {}
 
     protected fun every(iterations: Int): Boolean =
         iteration.mod(iterations) == 0

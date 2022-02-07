@@ -22,7 +22,7 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin")
     }
 
-    if(useNMS.toBoolean())
+    if (useNMS.toBoolean())
         implementation("com.mineinabyss:idofront-nms:$idofrontVersion")
     else
         implementation("com.mineinabyss:idofront:$idofrontVersion")

@@ -21,9 +21,9 @@ public abstract class CheckHandler(
         }
     }
 
-    public abstract suspend fun check(source: SourceScope?, target: TargetScope, event: EventScope): Boolean
+    public abstract fun check(source: SourceScope?, target: TargetScope, event: EventScope): Boolean
 
-    override suspend fun handle(source: SourceScope?, target: TargetScope, event: EventScope) {
+    override fun handle(source: SourceScope?, target: TargetScope, event: EventScope) {
         if (!check(source, target, event)) event.entity.apply {
             remove<RequestCheck>()
             set(FailedCheck)

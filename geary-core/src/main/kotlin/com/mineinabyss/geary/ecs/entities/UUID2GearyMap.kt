@@ -50,7 +50,7 @@ public class UUID2GearyMap : GearyListener() {
     public inner class UnTrackUUIDOnRemove : GearyListener() {
         private val TargetScope.uuid by get<UUID>()
 
-        override suspend fun onStart() {
+        override fun onStart() {
             event.has<EntityRemoved>()
         }
 

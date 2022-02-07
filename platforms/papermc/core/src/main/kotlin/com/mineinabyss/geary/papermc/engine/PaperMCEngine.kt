@@ -29,7 +29,7 @@ public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComp
         }.getOrThrow()
     }
 
-    override suspend fun addSystem(system: GearySystem) {
+    override fun addSystem(system: GearySystem) {
         super.addSystem(system)
 
         if (system is Listener)
@@ -38,6 +38,7 @@ public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComp
 
     override fun scheduleSystemTicking() {
         //tick all systems every interval ticks
+        //TODO ensure this blocks tick
         launch(BukkitDispatcher(plugin as JavaPlugin)) {
 //        Bukkit.getScheduler().scheduleSyncRepeatingTask(, {
             while(true) {

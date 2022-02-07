@@ -4,9 +4,6 @@ import com.mineinabyss.geary.ecs.accessors.AccessorHolder
 import com.mineinabyss.geary.ecs.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 
 public data class ArchetypeIterator(
     public val archetype: Archetype,
@@ -24,34 +21,26 @@ public data class ArchetypeIterator(
         movedRows.add(resultingRow)
     }
 
-    internal suspend inline fun forEach(crossinline run: suspend (TargetScope) -> Unit) = coroutineScope {
-        val job = launch(start = CoroutineStart.LAZY) {
-            while (row < archetype.size || movedRows.isNotEmpty()) {
-                val destinationRow = movedRows.firstOrNull().also {
-                    if (it != null) movedRows.remove(it)
-                } ?: row++
-                val dataScope =
-                    RawAccessorDataScope(
-                        archetype = archetype,
-                        row = destinationRow,
-                        perArchetypeData = perArchCache
+    internal inline fun forEach(crossinline run: (TargetScope) -> Unit) {
+        while (row < archetype.size || movedRows.isNotEmpty()) {
+            val destinationRow = movedRows.firstOrNull().also {
+                if (it != null) movedRows.remove(it)
+            } ?: row++
+            val dataScope =
+                RawAccessorDataScope(
+                    archetype = archetype,
+                    row = destinationRow,
+                    perArchetypeData = perArchCache
+                )
+            holder.forEachCombination(dataScope) { data ->
+                run(
+                    TargetScope(
+                        entity = dataScope.entity,
+                        data = data
                     )
-                holder.forEachCombination(dataScope) { data ->
-                    run(
-                        TargetScope(
-                            entity = dataScope.entity,
-                            data = data
-                        )
-                    )
-                }
+                )
             }
         }
-        job.invokeOnCompletion {
-            archetype.iterationJob = null
-        }
-
-        archetype.iterationJob = job
-        job.start()
-        job.join()
+        //FIXME clean up removed components
     }
 }

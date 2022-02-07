@@ -74,7 +74,7 @@ public class BukkitEntity2Geary : Listener, GearyScopeMC() {
     private inner class Unregister : GearyListener() {
         val TargetScope.bukkit by get<BukkitEntity>()
 
-        override suspend fun onStart() {
+        override fun onStart() {
             event.has<EntityRemoved>()
         }
 
@@ -90,8 +90,7 @@ public class BukkitEntity2Geary : Listener, GearyScopeMC() {
     public fun EntityAddToWorldEvent.onBukkitEntityAdd() {
         // Only remove player from ECS on disconnect, not death
         if (entity is Player) return
-        runBlocking {
-
+        runBlocking(engine.coroutineContext) {
             entity.toGeary()
         }
     }

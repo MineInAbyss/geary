@@ -7,13 +7,12 @@ import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.query.contains
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.reflect.typeOf
 
 internal class FamilyTest {
     @Test
-    fun contains() = runTest {
+    fun contains() {
         val family = family {
             has(1uL, 2uL, 3uL)
         }
@@ -23,7 +22,7 @@ internal class FamilyTest {
     }
 
     @Test
-    fun `contains relation`() = runTest {
+    fun `contains relation`() {
         val family = family {
             hasRelation(typeOf<Any?>(), 15uL)
         }
@@ -34,7 +33,7 @@ internal class FamilyTest {
     }
 
     @Test
-    fun `contains relation with data`() = runTest {
+    fun `contains relation with data`() {
         val family = family {
             hasRelation(typeOf<Any>(), 15uL)
         }

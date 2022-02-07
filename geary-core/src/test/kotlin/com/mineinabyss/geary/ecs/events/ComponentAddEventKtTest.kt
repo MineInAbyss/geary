@@ -1,14 +1,12 @@
 package com.mineinabyss.geary.ecs.events
 
 import com.mineinabyss.geary.ecs.accessors.TargetScope
-import com.mineinabyss.geary.ecs.accessors.building.get
 import com.mineinabyss.geary.ecs.api.annotations.Handler
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.engine.getArchetype
 import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
 internal class ComponentAddEventKtTest : GearyTest() {
@@ -28,7 +26,7 @@ internal class ComponentAddEventKtTest : GearyTest() {
     }
 
     @Test
-    fun componentAddEvent() = runTest {
+    fun componentAddEvent() {
         val listener = OnStringAdd()
         engine.addSystem(listener)
 

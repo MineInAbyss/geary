@@ -15,10 +15,10 @@ public abstract class GearyHandler(
     public val sourceNullable: Boolean,
 ) {
     /** Runs when a matching event is fired. */
-    public abstract suspend fun handle(source: SourceScope?, target: TargetScope, event: EventScope)
+    public abstract fun handle(source: SourceScope?, target: TargetScope, event: EventScope)
 
     /** Reads necessary data and iterates over combinations as appropriate, calling the [handle] function on each. */
-    public open suspend fun processAndHandle(
+    public open fun processAndHandle(
         sourceScope: RawAccessorDataScope?,
         targetScope: RawAccessorDataScope,
         eventScope: RawAccessorDataScope,

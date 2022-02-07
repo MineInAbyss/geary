@@ -5,7 +5,6 @@ import com.mineinabyss.geary.ecs.api.engine.EngineScope
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import io.kotest.common.runBlocking
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterAll
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -23,7 +22,7 @@ abstract class GearyTest : KoinTest, EngineScope {
         }
     }
 
-    private suspend fun startKoinWithGeary() {
+    private fun startKoinWithGeary() {
         val engine = GearyEngine()
         val queryManager = QueryManager(engine)
         @Suppress("RemoveExplicitTypeArguments")
@@ -42,7 +41,7 @@ abstract class GearyTest : KoinTest, EngineScope {
     }
 
     /** Recreates the engine. */
-    suspend fun clearEngine() {
+    fun clearEngine() {
         stopKoin()
         startKoinWithGeary()
     }
