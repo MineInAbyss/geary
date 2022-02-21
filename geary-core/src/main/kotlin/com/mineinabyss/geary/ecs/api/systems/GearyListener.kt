@@ -11,7 +11,6 @@ import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.withRole
 import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
-import kotlinx.coroutines.runBlocking
 import org.koin.core.component.inject
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.extensionReceiverParameter
@@ -42,7 +41,7 @@ public abstract class GearyListener : GearySystem, AccessorBuilderProvider {
             typeOf<EventScope>() -> event
             else -> error("Can only define accessors for source, target, or event.")
         }
-        return holder.addAccessor { runBlocking { build(holder, it) } }
+        return holder.addAccessor { build(holder, it) }
     }
 
     public fun start() {

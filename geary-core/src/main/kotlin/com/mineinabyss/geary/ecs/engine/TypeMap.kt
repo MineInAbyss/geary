@@ -14,7 +14,7 @@ public class TypeMap {
 
     @PublishedApi
     internal fun unsafeSet(entity: GearyEntity, record: Record) {
-        if(contains(entity)) error("Tried setting the record of an entity that already exists.")
+        if (contains(entity)) error("Tried setting the record of an entity that already exists.")
         map[entity.id.toLong()] = record
     }
 

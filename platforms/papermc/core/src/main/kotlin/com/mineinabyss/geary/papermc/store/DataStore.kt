@@ -68,7 +68,7 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
  *
  * @see encode
  */
-public suspend fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>, type: GearyType): Unit =
+public fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>, type: GearyType): Unit =
     GearyScopeMC {
         hasComponentsEncoded = true
         //remove all keys present on the PDC so we only end up with the new list of components being encoded

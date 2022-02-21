@@ -7,7 +7,6 @@ import com.mineinabyss.geary.ecs.api.systems.MutableAndSelector
 import com.mineinabyss.geary.ecs.engine.Archetype
 import com.mineinabyss.geary.ecs.query.AndSelector
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
-import kotlinx.coroutines.runBlocking
 import org.koin.core.component.inject
 import kotlin.reflect.KProperty
 
@@ -39,7 +38,7 @@ public open class AccessorHolder : MutableAndSelector(), AccessorBuilderProvider
         thisRef: Any,
         property: KProperty<*>
         //TODO check runblocking
-    ): T = addAccessor { runBlocking { build(this@AccessorHolder, it) } }
+    ): T = addAccessor { build(this@AccessorHolder, it) }
 
     public open fun <T : Accessor<*>> addAccessor(create: (index: Int) -> T): T {
         val accessor = create(accessors.size)

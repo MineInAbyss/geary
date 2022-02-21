@@ -31,12 +31,12 @@ public abstract class AbstractGearyAddon : EngineScope, AbstractAddonManagerScop
     }
 
     /** Registers a [system]. */
-    public suspend fun system(system: GearySystem) {
+    public fun system(system: GearySystem) {
         engine.addSystem(system)
     }
 
     /** Registers a list of [systems]. */
-    public suspend fun systems(vararg systems: GearySystem) {
+    public fun systems(vararg systems: GearySystem) {
         systems.forEach { system(it) }
     }
 
@@ -71,7 +71,7 @@ public abstract class AbstractGearyAddon : EngineScope, AbstractAddonManagerScop
     }
 
     /** Loads prefab entities from all files inside a [directory][from], into a given [namespace] */
-    public suspend fun loadPrefabs(
+    public fun loadPrefabs(
         from: File,
         namespace: String = this.namespace
     ) {

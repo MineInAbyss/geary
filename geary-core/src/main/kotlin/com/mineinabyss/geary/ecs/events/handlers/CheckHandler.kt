@@ -6,7 +6,6 @@ import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.events.FailedCheck
 import com.mineinabyss.geary.ecs.events.RequestCheck
-import kotlinx.coroutines.runBlocking
 
 /**
  * A handler which will run a check on an event that requests one.
@@ -16,9 +15,7 @@ public abstract class CheckHandler(
     sourceNullable: Boolean
 ) : GearyHandler(parentListener, sourceNullable) {
     init {
-        runBlocking {
-            parentListener.event.has<RequestCheck>()
-        }
+        parentListener.event.has<RequestCheck>()
     }
 
     public abstract fun check(source: SourceScope?, target: TargetScope, event: EventScope): Boolean

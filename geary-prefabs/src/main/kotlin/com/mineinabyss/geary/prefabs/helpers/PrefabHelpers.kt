@@ -32,6 +32,6 @@ public fun GearyEntity.addPrefab(prefab: GearyEntity) {
 }
 
 /** Adds a [prefab] entity to this entity.  */
-public suspend fun GearyEntity.removePrefab(prefab: GearyEntity) {
+public fun GearyEntity.removePrefab(prefab: GearyEntity) {
     remove(prefab.id.withRole(INSTANCEOF))
 }

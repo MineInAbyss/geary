@@ -7,7 +7,6 @@ import com.mineinabyss.geary.ecs.serialization.DescriptorWrapper
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.geary.prefabs.PrefabManagerScope
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
@@ -31,11 +30,9 @@ public class PrefabByReferenceSerializer : KSerializer<GearyEntity>, PrefabManag
     }
 
     override fun serialize(encoder: Encoder, value: GearyEntity) {
-        runBlocking { //TODO no runblocking
-            encoder.encodeSerializableValue(
-                PrefabKey.serializer(),
-                value.get<PrefabKey>() ?: error("Could not encode prefab entity without a prefab key component")
-            )
-        }
+        encoder.encodeSerializableValue(
+            PrefabKey.serializer(),
+            value.get<PrefabKey>() ?: error("Could not encode prefab entity without a prefab key component")
+        )
     }
 }

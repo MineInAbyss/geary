@@ -10,7 +10,6 @@ import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.papermc.GearyScope
 import com.mineinabyss.geary.papermc.GearyScopeMC
 import com.mineinabyss.geary.prefabs.PrefabKey
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -75,7 +74,7 @@ public class GearyAddon(
      *
      * @see AutoScanner
      */
-    public suspend fun autoScanSystems() {
+    public fun autoScanSystems() {
         AutoScanner(classLoader).getReflections()
             ?.getTypesAnnotatedWith(AutoScan::class.java)
             ?.asSequence()
@@ -137,11 +136,9 @@ public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KC
 
 /** Entry point to register a new [Plugin] with the Geary ECS. */
 //TODO support plugins being re-registered after a reload
-public inline fun Plugin.gearyAddon(crossinline init: suspend GearyAddon.() -> Unit) {
+public inline fun Plugin.gearyAddon(crossinline init: GearyAddon.() -> Unit) {
     Formats.clearSerializerModule(name)
-    runBlocking {
-        GearyAddon(this@gearyAddon).apply {
-            init()
-        }
+    GearyAddon(this@gearyAddon).apply {
+        init()
     }
 }

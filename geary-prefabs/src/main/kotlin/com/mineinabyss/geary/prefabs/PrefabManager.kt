@@ -32,7 +32,7 @@ public class PrefabManager(
     public operator fun get(name: PrefabKey): GearyEntity? = prefabs[name]
 
     /** Registers a prefab with Geary. */
-    public suspend fun registerPrefab(key: PrefabKey, prefab: GearyEntity) {
+    public fun registerPrefab(key: PrefabKey, prefab: GearyEntity) {
         prefabs[key] = prefab
         prefab.set(key)
     }
@@ -46,7 +46,7 @@ public class PrefabManager(
     }
 
     /** If this entity has a [Prefab] component, clears it and loads components from its file. */
-    public suspend fun reread(entity: GearyEntity) {
+    public fun reread(entity: GearyEntity) {
         entity.with { prefab: Prefab, key: PrefabKey ->
             entity.clear()
             loadFromFile(key.namespace, prefab.file, entity)
@@ -55,7 +55,7 @@ public class PrefabManager(
     }
 
     /** Registers an entity with components defined in a [file], adding a [Prefab] component. */
-    public suspend fun loadFromFile(namespace: String, file: File, writeTo: GearyEntity? = null): GearyEntity? {
+    public fun loadFromFile(namespace: String, file: File, writeTo: GearyEntity? = null): GearyEntity? {
         val name = file.nameWithoutExtension
         return runCatching {
             val serializer = GearyEntitySerializer.componentListSerializer

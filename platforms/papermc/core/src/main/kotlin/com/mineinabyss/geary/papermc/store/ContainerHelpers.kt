@@ -10,7 +10,7 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataHolder
 
 /** Encodes this entity's persisting components into a [PersistentDataContainer] */
-public suspend fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
+public fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
     val persisting = getPersistingComponents()
 
     // Update hashes
@@ -20,11 +20,11 @@ public suspend fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) 
     pdc.encodeComponents(persisting, type)
 }
 
-public suspend fun GearyEntity.encodeComponentsTo(holder: PersistentDataHolder) {
+public fun GearyEntity.encodeComponentsTo(holder: PersistentDataHolder) {
     encodeComponentsTo(holder.persistentDataContainer)
 }
 
-public suspend fun GearyEntity.encodeComponentsTo(item: ItemStack) {
+public fun GearyEntity.encodeComponentsTo(item: ItemStack) {
     item.editItemMeta {
         encodeComponentsTo(persistentDataContainer)
     }
@@ -32,11 +32,11 @@ public suspend fun GearyEntity.encodeComponentsTo(item: ItemStack) {
 
 
 /** Decodes a [PersistentDataContainer]'s components, adding them to this entity and its list of persisting components */
-public suspend fun GearyEntity.decodeComponentsFrom(pdc: PersistentDataContainer) {
+public fun GearyEntity.decodeComponentsFrom(pdc: PersistentDataContainer) {
     decodeComponentsFrom(pdc.decodeComponents())
 }
 
-public suspend fun GearyEntity.decodeComponentsFrom(decodedEntityData: DecodedEntityData) {
+public fun GearyEntity.decodeComponentsFrom(decodedEntityData: DecodedEntityData) {
     val (components, type) = decodedEntityData
 
     // Components written to this entity's PDC will override the ones defined in type

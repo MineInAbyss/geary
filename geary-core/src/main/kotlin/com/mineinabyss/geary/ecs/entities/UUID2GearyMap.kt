@@ -26,7 +26,7 @@ public class UUID2GearyMap : GearyListener() {
     public fun remove(uuid: UUID): GearyEntity? =
         uuid2geary.removeLong(uuid).takeIf { it != -1L }?.toGeary()
 
-    public suspend fun startTracking() {
+    public fun startTracking() {
         engine.addSystem(TrackUUIDOnAdd())
         engine.addSystem(UnTrackUUIDOnRemove())
     }
@@ -35,7 +35,7 @@ public class UUID2GearyMap : GearyListener() {
         private val TargetScope.uuid by added<UUID>()
 
         @Handler
-        private suspend fun TargetScope.track() {
+        private fun TargetScope.track() {
             if (contains(uuid))
                 if (entity.has<RegenerateUUIDOnClash>()) {
                     val newUUID = UUID.randomUUID()

@@ -18,7 +18,6 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -44,9 +43,7 @@ internal class QueryManagerTest : GearyTest() {
         val correctArchetype = engine.rootArchetype + stringId + intId
 
         init {
-            runBlocking {
-                queryManager.trackQuery(system)
-            }
+            queryManager.trackQuery(system)
         }
 
         @Test
@@ -94,9 +91,7 @@ internal class QueryManagerTest : GearyTest() {
         }
 
         init {
-            runBlocking {
-                queryManager.trackQuery(removingSystem)
-            }
+            queryManager.trackQuery(removingSystem)
         }
 
         @Test
@@ -116,6 +111,7 @@ internal class QueryManagerTest : GearyTest() {
 
     @Test
     fun relations() {
+        clearEngine()
         var ran = 0
         val system = object : TickingSystem() {
             val TargetScope.test by relation<Any?, RelationTestComponent>()
@@ -142,6 +138,7 @@ internal class QueryManagerTest : GearyTest() {
         system.matchedArchetypes.shouldContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
         system.matchedArchetypes.shouldNotContain(entity3.type.getArchetype())
 
+        engine.cleanup()
         system.doTick()
         ran shouldBe 2
 
@@ -172,6 +169,7 @@ internal class QueryManagerTest : GearyTest() {
             add<String>()
         }
 
+        engine.cleanup()
         system.doTick()
 
         ran shouldBe 4

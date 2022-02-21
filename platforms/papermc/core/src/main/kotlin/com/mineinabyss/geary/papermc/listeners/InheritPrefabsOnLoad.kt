@@ -14,7 +14,7 @@ public class InheritPrefabsOnLoad : GearyListener() {
     }
 
     @Handler
-    private suspend fun TargetScope.inheritOnLoad() {
+    private fun TargetScope.inheritOnLoad() {
         entity.inheritPrefabs()
     }
 }

@@ -42,7 +42,7 @@ public object GearyEntitySerializer : KSerializer<GearyEntity>, EngineScope {
 }
 
 //TODO this should be handled within a serializer of sorts for GearyEntity
-public suspend fun GearyEntity.parseEntity(expression: String): GearyEntity {
+public fun GearyEntity.parseEntity(expression: String): GearyEntity {
     return when {
         expression.startsWith("parent") -> {
             val parent = (parent ?: error("Failed to read expression, entity had no parent: $expression"))

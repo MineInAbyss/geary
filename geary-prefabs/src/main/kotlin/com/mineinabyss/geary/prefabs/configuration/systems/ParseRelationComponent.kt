@@ -12,7 +12,7 @@ public class ParseRelationComponent : GearyListener() {
     private val TargetScope.relation by added<RelationComponent>()
 
     @Handler
-    private suspend fun TargetScope.convertToRelation() {
+    private fun TargetScope.convertToRelation() {
         entity.setRelation(relation.key, relation.value)
         entity.remove<RelationComponent>()
     }

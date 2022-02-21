@@ -52,6 +52,7 @@ public value class GearyType private constructor(
 //        forEach { if (predicate(it)) type.add(it.toLong()) }
 //        return GearyType(type)
     }
+
     public inline fun <T> map(transform: (ULong) -> T): List<T> {
         return inner.map(transform)
     }
@@ -72,15 +73,12 @@ public value class GearyType private constructor(
         if (removeAt < 0) return this
         val arr = ULongArray(inner.size - 1)
         for (i in 0 until removeAt) arr[i] = inner[i]
-        for (i in (removeAt + 1) .. inner.lastIndex) arr[i - 1] = inner[i]
+        for (i in (removeAt + 1)..inner.lastIndex) arr[i - 1] = inner[i]
         return GearyType(arr)
 
     }
 
-    //TODO No idea if runBlocking works here
-//    override fun toString(): String = runBlocking {
-//        inner
-//            .map { (it.toULong().getComponentInfo()?.kClass as KClass<*>).simpleName ?: it }
+//    override fun toString(): String =
+//        inner.map { (it.getComponentInfo()?.kClass as KClass<*>).simpleName ?: it }
 //            .joinToString(", ")
-//    }
 }

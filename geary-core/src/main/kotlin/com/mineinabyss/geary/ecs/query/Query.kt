@@ -9,7 +9,6 @@ import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.engine.Archetype
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.runBlocking
 import org.koin.core.component.inject
 import kotlin.reflect.KProperty
 
@@ -34,9 +33,7 @@ public abstract class Query : Iterable<TargetScope>, AccessorHolder() {
 
     override fun iterator(): Iterator<TargetScope> {
         val items = mutableListOf<TargetScope>()
-        runBlocking {
-            forEach(run = { items += it })
-        }
+        forEach(run = { items += it })
         return items.iterator()
     }
 
@@ -45,10 +42,14 @@ public abstract class Query : Iterable<TargetScope>, AccessorHolder() {
             queryManager.trackQuery(this)
             registered = true
         }
-        for (archetype in matchedArchetypes) {
-            archetype.iteratorFor(this@Query).forEach { targetScope ->
+        val sizes = matchedArchetypes.map { it.size }
+        matchedArchetypes.forEachIndexed { i, archetype ->
+            archetype.isIterating = true
+            archetype.iteratorFor(this@Query).forEach(upTo = sizes[i] - 1) { targetScope ->
                 run(targetScope)
             }
+            archetype.cleanup()
+            archetype.isIterating = false
         }
     }
 

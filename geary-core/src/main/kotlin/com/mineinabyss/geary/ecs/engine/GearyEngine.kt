@@ -57,12 +57,10 @@ public open class GearyEngine : TickingEngine() {
     }
 
     override fun start(): Boolean {
-        return runBlocking {
-            super.start().also {
-                if (it) {
-                    init()
+        return super.start().also {
+            if (it) {
+                init()
 //              componentInfo.set(ComponentInfo(ComponentInfo::class)) //FIXME causes an error
-                }
             }
         }
     }
@@ -226,7 +224,7 @@ public open class GearyEngine : TickingEngine() {
         }
 
         val (archetype, row) = unsafeRecord(entity)
-        scheduleRemoveRow(archetype, row)
+        archetype.scheduleRemoveRow(row)
         typeMap.unsafeRemove(entity)
         //add current id into queue for reuse
         removedEntities.push(entity)
@@ -264,17 +262,17 @@ public open class GearyEngine : TickingEngine() {
         return compEntity.id
     }
 
-    internal fun scheduleRemoveRow(archetype: Archetype, row: Int) {
-        queuedDeletions.add(Record(archetype, row))
+    internal fun scheduleRemove(archetype: Archetype) {
+        queuedCleanup += archetype
     }
 
     //TODO what data structure is most efficient here?
-    private val queuedDeletions: ConcurrentLinkedQueue<Record> = ConcurrentLinkedQueue()
-    private val runningAsyncJobs: ConcurrentLinkedQueue<Job> = ConcurrentLinkedQueue()
+    private val queuedCleanup = mutableSetOf<Archetype>()
+    private val runningAsyncJobs = ConcurrentLinkedQueue<Job>()
     private var iterationJob: Job? = null
 
-    override suspend fun runSafely(job: Job) {
-        runningAsyncJobs.add(launch {
+    override fun runSafely(scope: CoroutineScope, job: Job) {
+        runningAsyncJobs.add(scope.launch {
             iterationJob?.join()
             job.invokeOnCompletion {
                 runningAsyncJobs.remove(job)
@@ -299,22 +297,24 @@ public open class GearyEngine : TickingEngine() {
         }
         iterationJob = job
 
+        cleanup()
+
         // Await completion of all other jobs
         while (true) {
             val running = runningAsyncJobs.poll() ?: break
             running.join()
         }
 
-        // Clean up any removed entities
-        // Runs before systems so they can assume all entities are present while iterating
-        while (true) {
-            val entity = queuedDeletions.poll() ?: break
-            entity.archetype.removeEntity(entity.row)
-        }
-
         // Tick all systems
         job.start()
         job.join()
         iterationJob = null
+    }
+
+    internal fun cleanup() {
+        queuedCleanup.forEach { archetype ->
+            archetype.cleanup()
+        }
+        queuedCleanup.clear()
     }
 }

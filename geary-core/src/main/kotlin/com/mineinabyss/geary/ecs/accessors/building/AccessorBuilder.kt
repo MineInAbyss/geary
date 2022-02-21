@@ -10,5 +10,5 @@ import com.mineinabyss.geary.ecs.accessors.AccessorHolder
  */
 public fun interface AccessorBuilder<T : Accessor<*>> {
     /** Provides an [Accessor] to a [holder] and [index] this accessor should be placed in for that holder. */
-    public suspend fun build(holder: AccessorHolder, index: Int): T
+    public fun build(holder: AccessorHolder, index: Int): T
 }

@@ -45,7 +45,7 @@ public fun GearyEntity.removeChild(child: GearyEntity) {
 }
 
 /** Removes all of this entity's children, also unlinking this parent from them. */
-public suspend fun GearyEntity.clearChildren() {
+public fun GearyEntity.clearChildren() {
     children.forEach { remove(it.id) }
 }
 

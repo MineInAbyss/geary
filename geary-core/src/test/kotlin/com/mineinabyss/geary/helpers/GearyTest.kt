@@ -4,7 +4,6 @@ import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.EngineScope
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.engine.GearyEngine
-import io.kotest.common.runBlocking
 import org.junit.jupiter.api.AfterAll
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -17,9 +16,7 @@ abstract class GearyTest : KoinTest, EngineScope {
     val queryManager get() = get<QueryManager>()
 
     init {
-        runBlocking {
-            startKoinWithGeary()
-        }
+        startKoinWithGeary()
     }
 
     private fun startKoinWithGeary() {

@@ -27,11 +27,6 @@ public abstract class TickingSystem(
     public fun doTick() {
         iteration++
         tick()
-
-        // If any archetypes get added here while running through the system we dont want those entities to be iterated
-        // right now, since they are most likely the entities involved with the current tick. To avoid this and
-        // concurrent modifications, we make a copy of the list before iterating.
-
     }
 
     protected open fun tick() {

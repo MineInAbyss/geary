@@ -121,6 +121,9 @@ public class QueryManager(private val engine: Engine) {
 
     //TODO convert to Sequence
     public fun getEntitiesMatching(family: Family): List<GearyEntity> {
-        return archetypes.match(family).flatMap { arc -> arc.ids.map { it.toGeary() } }
+        return archetypes.match(family).flatMap { arc ->
+            arc.cleanup() //TODO async safety
+            arc.ids.map { it.toGeary() }
+        }
     }
 }

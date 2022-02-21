@@ -6,10 +6,10 @@ import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
 import com.mineinabyss.geary.ecs.components.ComponentInfo
 import com.mineinabyss.geary.ecs.serialization.Formats
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
@@ -76,8 +76,8 @@ public fun EngineScope.systems(vararg systems: GearySystem): List<Deferred<Unit>
 //    }
 //}
 
-public suspend inline fun <T> Engine.runSafely(crossinline run: suspend () -> T): Deferred<T> = coroutineScope {
+public inline fun <T> Engine.runSafely(scope: CoroutineScope = engine, crossinline run: suspend () -> T): Deferred<T> {
     val deferred = async(start = CoroutineStart.LAZY) { run() }
-    runSafely(deferred)
-    return@coroutineScope deferred
+    runSafely(scope, deferred)
+    return deferred
 }

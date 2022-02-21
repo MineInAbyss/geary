@@ -20,6 +20,7 @@ public class Record internal constructor(
     }
 
     internal val entity: GearyEntity get() = archetype.getEntity(row)
+
     //TODO multiple receivers
     override val engine: Engine get() = get()
 

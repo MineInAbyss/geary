@@ -24,7 +24,6 @@ import com.mineinabyss.idofront.platforms.IdofrontPlatforms
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
 import com.mineinabyss.idofront.serialization.UUIDSerializer
-import kotlinx.coroutines.runBlocking
 import org.bukkit.Bukkit
 import org.koin.dsl.module
 import java.util.*
@@ -60,11 +59,9 @@ public class GearyPluginImpl : GearyPlugin() {
             singleConfig(GearyConfig.serializer(), this@GearyPluginImpl)
         })
 
-        runBlocking {
-            engine.start()
-            uuid2GearyMap.startTracking()
-            bukkitEntity2Geary.startTracking()
-        }
+        engine.start()
+        uuid2GearyMap.startTracking()
+        bukkitEntity2Geary.startTracking()
 
         // Register commands.
         GearyCommands(this)

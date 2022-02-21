@@ -101,5 +101,5 @@ public abstract class Engine : KoinComponent, EngineScope, CoroutineScope {
     /** Updates the record of a given entity */
     public abstract fun setRecord(entity: GearyEntity, record: Record)
 
-    public abstract suspend fun runSafely(job: Job)
+    public abstract fun runSafely(scope: CoroutineScope, job: Job)
 }

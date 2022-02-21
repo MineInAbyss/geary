@@ -17,7 +17,6 @@ import com.mineinabyss.geary.ecs.query.contains
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongArrayList
-import java.util.*
 
 private typealias IdList = LongArrayList
 
@@ -42,7 +41,9 @@ public data class Archetype(
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     //TODO aim to make private
     internal val ids: IdList = IdList()
-//    private val queuedRemoval = BitVector()
+    private val queuedRemoval = mutableListOf<Int>()
+
+    internal var isIterating = false
 
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
@@ -102,10 +103,6 @@ public data class Archetype(
     /** A map of event class type to a set of event handlers which fire on that event. */
     public val eventHandlers: Set<GearyHandler> = _eventHandlers
 
-    // Basically just want a weak set where stuff gets auto removed when it is no longer running
-    // We put our iterator and null and this WeakHashMap handles the rest for us.
-    private val runningIterators = Collections.newSetFromMap(WeakHashMap<ArchetypeIterator, Boolean>())
-
     // ==== Helper functions ====
     public fun getEntity(row: Int): GearyEntity {
         return ids.getLong(row).toGeary()
@@ -164,11 +161,6 @@ public data class Archetype(
         }
 
     // ==== Entity mutation ====
-
-    internal fun addEntityWithData(
-    ) {
-    }
-
     /**
      * Adds an entity to this archetype with properly ordered [data].
      *
@@ -276,18 +268,26 @@ public data class Archetype(
         record: Record,
         component: GearyComponentId
     ): Boolean = synchronized(record) {
-        val row = record.row
+        with(record.archetype) {
+            val row = record.row
 
-        if (component !in type) return false
-        val moveTo = this - component
-        val skipData = indexOf(component)
+            if (component !in type) return false
 
-        val componentData = Array<Any>((this.componentData.size - 1).coerceAtLeast(0)) {}
+            val moveTo = this - component
 
-        for (i in 0 until skipData) componentData[i] = this.componentData[i][row]
-        for (i in (skipData + 1)..this.componentData.lastIndex) componentData[i - 1] = this.componentData[i][row]
-        scheduleRemoveRow(row)
-        moveTo.addEntityWithData(record, componentData)
+            val skipData = indexOf(component)
+            val copiedData =
+                if (component.holdsData())
+                    (Array<Any>((componentData.size - 1).coerceAtLeast(0)) {}).also { data ->
+                        for (i in 0 until skipData) data[i] = componentData[i][row]
+                        for (i in (skipData + 1)..componentData.lastIndex) data[i - 1] = componentData[i][row]
+                    }
+                else (Array<Any>(componentData.size) {}).also { data ->
+                    for (i in 0..componentData.lastIndex) data[i] = componentData[i][row]
+                }
+            moveTo.addEntityWithData(record, copiedData)
+            scheduleRemoveRow(row)
+        }
         return true
     }
 
@@ -306,7 +306,9 @@ public data class Archetype(
     }
 
     internal fun scheduleRemoveRow(row: Int) {
-        (engine as GearyEngine).scheduleRemoveRow(this, row)
+        queuedRemoval.add(row)
+        if (!isIterating)
+            (engine as GearyEngine).scheduleRemove(this)
     }
 
     /**
@@ -314,7 +316,7 @@ public data class Archetype(
      *
      * Must be run synchronously.
      */
-    internal fun removeEntity(row: Int) {
+    private fun removeEntity(row: Int) {
         val lastIndex = ids.lastIndex
 
         // Move entity in last row to deleted row
@@ -322,9 +324,6 @@ public data class Archetype(
             val replacement = ids.getLong(lastIndex)
             ids[row] = replacement
             componentData.forEach { it[row] = it.last() }
-            runningIterators.forEach {
-                it.addMovedRow(lastIndex, row)
-            }
             engine.unsafeRecord(replacement.toGeary()).apply {
                 this.archetype = this@Archetype
                 this.row = row
@@ -423,7 +422,16 @@ public data class Archetype(
     /** Creates and tracks an [ArchetypeIterator] for a query. */
     internal fun iteratorFor(query: Query): ArchetypeIterator {
         val iterator = ArchetypeIterator(this, query)
-        runningIterators.add(iterator)
         return iterator
+    }
+
+    /** Removes any queued up entity deletions. */
+    internal fun cleanup() {
+        if (!isIterating) queuedRemoval.sort()
+        // Since the rows were added in order while iterating, the list is always sorted,
+        // so we don't worry about moving rows
+        while (queuedRemoval.isNotEmpty()) {
+            removeEntity(queuedRemoval.removeLast())
+        }
     }
 }

@@ -16,7 +16,6 @@ import com.mineinabyss.geary.ecs.components.PersistingComponent
 import com.mineinabyss.geary.ecs.components.RelationComponent
 import com.mineinabyss.geary.ecs.engine.*
 import com.mineinabyss.geary.ecs.events.AddedComponent
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 import org.koin.core.component.get as koinGet
@@ -54,18 +53,14 @@ public value class GearyEntity(public val id: GearyEntityId) : EngineScope {
     public val type: GearyType get() = unsafeRecord().archetype.type
 
     public val children: List<GearyEntity>
-        get() = runBlocking {
-            koinGet<QueryManager>().getEntitiesMatching(family {
-                has(id.withRole(CHILDOF))
-            })
-        }
+        get() = koinGet<QueryManager>().getEntitiesMatching(family {
+            has(id.withRole(CHILDOF))
+        })
 
     public val instances: List<GearyEntity>
-        get() = runBlocking {
-            koinGet<QueryManager>().getEntitiesMatching(family {
-                has(id.withRole(INSTANCEOF))
-            })
-        }
+        get() = koinGet<QueryManager>().getEntitiesMatching(family {
+            has(id.withRole(INSTANCEOF))
+        })
 
     /** Remove this entity from the ECS. */
     public fun removeEntity(callRemoveEvent: Boolean = true) {
