@@ -35,12 +35,12 @@ public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComp
 
     override fun scheduleSystemTicking() {
         //tick all systems every interval ticks
-        plugin.schedule {
-            repeating(1)
-            while (true) {
-                tick(Bukkit.getServer().currentTick.toLong())
-                yield()
-            }
-        }
+//        plugin.schedule {
+//            repeating(1)
+//            while (true) {
+//                tick(Bukkit.getServer().currentTick.toLong())
+//                yield()
+//            }
+//        }
     }
 }

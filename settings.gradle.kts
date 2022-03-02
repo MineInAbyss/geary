@@ -12,6 +12,7 @@ pluginManagement {
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         google()
         maven("https://repo.mineinabyss.com/releases")
+        maven("https://papermc.io/repo/repository/maven-public/")
     }
 
     resolutionStrategy {

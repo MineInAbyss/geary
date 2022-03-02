@@ -1,7 +1,7 @@
 import Com_mineinabyss_conventions_platform_gradle.Deps
+import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val useNMS: String? by project
 val idofrontVersion: String by project
 
 plugins {
@@ -22,15 +22,12 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin")
     }
 
-    if(useNMS.toBoolean())
-        implementation("com.mineinabyss:idofront-nms:$idofrontVersion")
-    else
-        implementation("com.mineinabyss:idofront:$idofrontVersion")
+    implementation("com.mineinabyss:idofront:$idofrontVersion")
 }
 
-kotlin {
-    explicitApi()
-}
+//kotlin {
+//    explicitApi()
+//}
 
 tasks {
     withType<KotlinCompile> {
