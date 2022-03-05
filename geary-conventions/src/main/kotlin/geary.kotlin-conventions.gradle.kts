@@ -14,6 +14,7 @@ repositories {
 
 dependencies {
     // MineInAbyss platform
+    compileOnly("com.okkero:skedule:1.2.8")
     compileOnly(Deps.kotlin.stdlib)
     compileOnly(Deps.kotlinx.serialization.json)
     compileOnly(Deps.kotlinx.serialization.cbor)
@@ -25,9 +26,9 @@ dependencies {
     implementation("com.mineinabyss:idofront:$idofrontVersion")
 }
 
-//kotlin {
-//    explicitApi()
-//}
+kotlin {
+    explicitApi()
+}
 
 tasks {
     withType<KotlinCompile> {
