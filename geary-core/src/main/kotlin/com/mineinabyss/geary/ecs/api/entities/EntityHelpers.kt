@@ -2,6 +2,7 @@ package com.mineinabyss.geary.ecs.api.entities
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyEntityId
+import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.engine.ENTITY_MASK
 
 /** Gets the entity associated with this [GearyEntityId], stripping it of any roles, and runs code on it. */
@@ -18,6 +19,7 @@ public fun Long.toGeary(): GearyEntity = GearyEntity(toULong() and ENTITY_MASK)
  *
  * @return Whether at least one component of type [T] was present and swapped places.
  */
+context(EngineContext)
 public inline fun <reified T : GearyComponent> GearyEntity?.swapComponent(with: GearyEntity?): Boolean {
     val component = this?.get<T>()
     val otherComponent = with?.get<T>()

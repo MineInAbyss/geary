@@ -4,7 +4,7 @@ import com.mineinabyss.geary.ecs.accessors.EventScope
 import com.mineinabyss.geary.ecs.accessors.SourceScope
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.api.annotations.Handler
-import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.engine.Archetype
@@ -20,7 +20,7 @@ import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.typeOf
 
-public class QueryManager(private val engine: Engine) {
+public class QueryManager {
     private val queries = mutableListOf<Query>()
     private val sourceListeners = mutableListOf<GearyListener>()
     private val targetListeners = mutableListOf<GearyListener>()
@@ -28,10 +28,12 @@ public class QueryManager(private val engine: Engine) {
 
     private val archetypes = Component2ObjectArrayMap<Archetype>()
 
-    init {
+    context(EngineContext)
+    public fun init() {
         registerArchetype(engine.rootArchetype)
     }
 
+    context(EngineContext)
     public fun trackEventListener(listener: GearyListener) {
         listener::class.functions
             .filter { it.hasAnnotation<Handler>() }
@@ -126,4 +128,8 @@ public class QueryManager(private val engine: Engine) {
             arc.ids.map { it.toGeary() }
         }
     }
+}
+
+public interface QueryContext {
+    public val queryManager: QueryManager
 }

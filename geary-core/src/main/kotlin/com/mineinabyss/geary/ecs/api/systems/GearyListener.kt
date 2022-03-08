@@ -6,12 +6,11 @@ import com.mineinabyss.geary.ecs.accessors.building.AccessorBuilderProvider
 import com.mineinabyss.geary.ecs.accessors.building.get
 import com.mineinabyss.geary.ecs.accessors.types.ComponentAccessor
 import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.engine.Engine
+import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.withRole
 import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
-import org.koin.core.component.inject
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.extensionReceiverParameter
 import kotlin.reflect.typeOf
@@ -24,9 +23,8 @@ import kotlin.reflect.typeOf
  * [GearyHandler]s can be defined inside by annotating a function with [Handler], these
  * are the actual functions that run when a matching event is found.
  */
+context(EngineContext)
 public abstract class GearyListener : GearySystem, AccessorBuilderProvider {
-    override val engine: Engine by inject()
-
     public val source: AccessorHolder = AccessorHolder()
     public val target: AccessorHolder = AccessorHolder()
     public val event: AccessorHolder = AccessorHolder()

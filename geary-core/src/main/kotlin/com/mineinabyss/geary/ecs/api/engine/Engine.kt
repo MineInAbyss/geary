@@ -22,7 +22,7 @@ import kotlin.reflect.KClass
  *
  * Its companion object gets a service via Bukkit as its implementation.
  */
-public abstract class Engine : KoinComponent, EngineScope, CoroutineScope {
+public abstract class Engine : KoinComponent, EngineContext, CoroutineScope {
     override val engine: Engine get() = this
 
     /** The root archetype representing a type of no components */

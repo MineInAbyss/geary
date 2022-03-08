@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.prefabs.configuration.components
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
+import com.mineinabyss.geary.ecs.api.GearyContext
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.serialization.Formats
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -16,6 +16,7 @@ import kotlinx.serialization.Serializable
  * Components may be defined as simply [temporary] or [persisting], where persisting components will be added as such
  * in the Engine.
  */
+context(GearyContext)
 @Serializable
 @SerialName("geary:copy_to_instances")
 public data class CopyToInstances(
@@ -24,10 +25,10 @@ public data class CopyToInstances(
 ) {
     // This is the safest and cleanest way to deep-copy, even if a little performance intense.
     private val serializedComponents by lazy {
-        Formats.cborFormat.encodeToByteArray(serializer(), this)
+        formats.cborFormat.encodeToByteArray(serializer(), this)
     }
 
-    private fun getDeepCopied() = Formats.cborFormat.decodeFromByteArray(serializer(), serializedComponents)
+    private fun getDeepCopied() = formats.cborFormat.decodeFromByteArray(serializer(), serializedComponents)
 
     public fun decodeComponentsTo(entity: GearyEntity, override: Boolean = true) {
         val (instance, persist) = getDeepCopied()

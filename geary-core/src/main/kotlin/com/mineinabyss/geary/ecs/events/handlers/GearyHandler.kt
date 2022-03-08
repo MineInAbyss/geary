@@ -4,12 +4,14 @@ import com.mineinabyss.geary.ecs.accessors.EventScope
 import com.mineinabyss.geary.ecs.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.ecs.accessors.SourceScope
 import com.mineinabyss.geary.ecs.accessors.TargetScope
+import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.idofront.messaging.logError
 
 /**
  * Generated within a [GearyListener]. Will handle events matching specified components on source/target/event entities.
  */
+context(EngineContext)
 public abstract class GearyHandler(
     public val parentListener: GearyListener,
     public val sourceNullable: Boolean,

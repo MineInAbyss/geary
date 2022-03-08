@@ -1,10 +1,9 @@
 package com.mineinabyss.geary.api.addon
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.engine.EngineScope
+import com.mineinabyss.geary.ecs.api.GearyContext
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
-import com.mineinabyss.geary.ecs.serialization.Formats
-import com.mineinabyss.geary.prefabs.PrefabManagerScope
+import com.mineinabyss.geary.prefabs.PrefabManagerContext
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import kotlinx.serialization.modules.SerializersModule
@@ -21,8 +20,9 @@ public annotation class GearyAddonDSL
  * The entry point for other plugins to hook into Geary. Allows registering serializable components, systems, actions,
  * and more.
  */
+context(GearyContext, AbstractAddonManagerContext, PrefabManagerContext)
 @GearyAddonDSL
-public abstract class AbstractGearyAddon : EngineScope, AbstractAddonManagerScope, PrefabManagerScope {
+public abstract class AbstractGearyAddon {
     public abstract val namespace: String
 
     /** Adds a [SerializersModule] for polymorphic serialization of [GearyComponent]s within the ECS. */
@@ -57,8 +57,8 @@ public abstract class AbstractGearyAddon : EngineScope, AbstractAddonManagerScop
         serializer: KSerializer<T>?
     ): Boolean {
         val serialName = serializer?.descriptor?.serialName ?: return false
-        if (!Formats.isRegistered(serialName)) {
-            Formats.registerSerialName(serialName, kClass)
+        if (!formats.isRegistered(serialName)) {
+            formats.registerSerialName(serialName, kClass)
             subclass(kClass, serializer)
             return true
         }
@@ -67,7 +67,7 @@ public abstract class AbstractGearyAddon : EngineScope, AbstractAddonManagerScop
 
     /** Adds a [SerializersModule] to be used for polymorphic serialization within the ECS. */
     public inline fun serializers(init: SerializersModuleBuilder.() -> Unit) {
-        Formats.addSerializerModule(namespace, SerializersModule { init() })
+        formats.addSerializerModule(namespace, SerializersModule { init() })
     }
 
     /** Loads prefab entities from all files inside a [directory][from], into a given [namespace] */

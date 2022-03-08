@@ -3,6 +3,7 @@ package com.mineinabyss.geary.ecs.entities
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.building.get
 import com.mineinabyss.geary.ecs.api.annotations.Handler
+import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
@@ -10,6 +11,7 @@ import com.mineinabyss.geary.ecs.events.EntityRemoved
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap
 import java.util.*
 
+context(EngineContext)
 public class UUID2GearyMap : GearyListener() {
     private val uuid2geary = Object2LongOpenHashMap<UUID>().apply {
         defaultReturnValue(-1)

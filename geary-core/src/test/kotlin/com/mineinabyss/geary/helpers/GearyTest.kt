@@ -1,7 +1,8 @@
 package com.mineinabyss.geary.helpers
 
 import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.EngineScope
+import com.mineinabyss.geary.ecs.api.engine.EngineContext
+import com.mineinabyss.geary.ecs.api.systems.QueryContext
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import org.junit.jupiter.api.AfterAll
@@ -11,7 +12,7 @@ import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.get
 
-abstract class GearyTest : KoinTest, EngineScope {
+abstract class GearyTest : KoinTest, EngineContext {
     override val engine get() = get<Engine>() as GearyEngine
     val queryManager get() = get<QueryManager>()
 
@@ -20,16 +21,20 @@ abstract class GearyTest : KoinTest, EngineScope {
     }
 
     private fun startKoinWithGeary() {
-        val engine = GearyEngine()
-        val queryManager = QueryManager(engine)
-        @Suppress("RemoveExplicitTypeArguments")
-        startKoin {
-            modules(module {
-                factory<QueryManager> { queryManager }
-                factory<Engine> { engine }
-            })
+        with(object : QueryContext {
+            override val queryManager = QueryManager()
+        }) {
+            val engine = GearyEngine()
+            @Suppress("RemoveExplicitTypeArguments")
+            startKoin {
+                modules(module {
+                    factory<QueryManager> { queryManager }
+                    factory<Engine> { engine }
+                })
+            }
+            engine.init()
+            queryManager.init()
         }
-        engine.init()
     }
 
     @AfterAll

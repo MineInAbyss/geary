@@ -39,7 +39,8 @@ tasks {
                 "-Xopt-in=kotlin.RequiresOptIn",
                 "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
                 "-Xopt-in=kotlin.time.ExperimentalTime",
-                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
+                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-Xcontext-receivers",
             )
         }
     }

@@ -6,9 +6,7 @@ import com.mineinabyss.geary.autoscan.AutoScan
 import com.mineinabyss.geary.autoscan.ExcludeAutoScan
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
-import com.mineinabyss.geary.ecs.serialization.Formats
-import com.mineinabyss.geary.papermc.GearyScope
-import com.mineinabyss.geary.papermc.GearyScopeMC
+import com.mineinabyss.geary.papermc.GearyMCContext
 import com.mineinabyss.geary.prefabs.PrefabKey
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -30,10 +28,11 @@ internal annotation class GearyAddonDSL
  * The entry point for other plugins to hook into Geary. Allows registering serializable components, systems, actions,
  * and more.
  */
+context(GearyMCContext)
 @GearyAddonDSL
 public class GearyAddon(
     public val plugin: Plugin,
-) : AbstractGearyAddon(), GearyScope by GearyScopeMC() {
+) : AbstractGearyAddon() {
     override val namespace: String = plugin.name.lowercase()
 
     public val classLoader: ClassLoader = plugin::class.java.classLoader
@@ -136,9 +135,9 @@ public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KC
 
 /** Entry point to register a new [Plugin] with the Geary ECS. */
 //TODO support plugins being re-registered after a reload
-public inline fun Plugin.gearyAddon(crossinline init: GearyAddon.() -> Unit) {
-    Formats.clearSerializerModule(name)
-    GearyAddon(this@gearyAddon).apply {
-        init()
+public inline fun Plugin.gearyAddon(crossinline init: context(GearyMCContext) GearyAddon.() -> Unit) {
+    with(GearyMCContext()) {
+        formats.clearSerializerModule(name)
+        init(this, GearyAddon(this@gearyAddon))
     }
 }

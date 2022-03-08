@@ -1,13 +1,14 @@
 package com.mineinabyss.geary.prefabs.configuration.systems
 
-import com.mineinabyss.geary.ecs.accessors.TargetScope
-import com.mineinabyss.geary.ecs.accessors.building.get
 import com.mineinabyss.geary.autoscan.AutoScan
+import com.mineinabyss.geary.ecs.accessors.TargetScope
+import com.mineinabyss.geary.ecs.api.GearyContext
 import com.mineinabyss.geary.ecs.api.annotations.Handler
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.serialization.parseEntity
 import com.mineinabyss.geary.prefabs.configuration.components.RelationOnPrefab
 
+context(GearyContext)
 @AutoScan
 public class ParseRelationOnPrefab : GearyListener() {
     private val TargetScope.relation by added<RelationOnPrefab>()

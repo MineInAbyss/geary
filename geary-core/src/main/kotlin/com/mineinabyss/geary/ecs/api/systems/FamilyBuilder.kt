@@ -3,7 +3,7 @@ package com.mineinabyss.geary.ecs.api.systems
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.EngineScope
+import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
@@ -52,7 +52,7 @@ public class MutableRelationKeyLeaf(
 }
 
 
-public abstract class MutableSelector<T : Family> : FamilyBuilder<T>(), EngineScope {
+public abstract class MutableSelector<T : Family> : FamilyBuilder<T>(), EngineContext {
     override val engine: Engine by inject()
     protected abstract val elements: MutableList<FamilyBuilder<*>>
 

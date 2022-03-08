@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
  *
  * Will likely be converted into a service eventually.
  */
-public object Formats {
+public class Formats {
     private val componentSerialNames: MutableBiMap<String, KClass<out GearyComponent>> = mutableBiMapOf()
     public var module: SerializersModule = EmptySerializersModule
         private set

@@ -1,5 +1,5 @@
 package com.mineinabyss.geary.api.addon
 
-public interface AbstractAddonManagerScope {
+public interface AbstractAddonManagerContext {
     public val addonManager: AbstractAddonManager
 }

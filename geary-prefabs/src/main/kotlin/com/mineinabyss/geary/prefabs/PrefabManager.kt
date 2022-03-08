@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.prefabs
 
+import com.mineinabyss.geary.ecs.api.FormatsContext
 import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.EngineScope
+import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.with
 import com.mineinabyss.geary.ecs.api.relations.NoInherit
-import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.GearyEntitySerializer
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
@@ -23,7 +23,7 @@ import java.io.File
  */
 public class PrefabManager(
     override val engine: Engine
-) : EngineScope {
+) : EngineContext {
     public val keys: List<PrefabKey> get() = prefabs.keys.toList()
 
     private val prefabs: MutableBiMap<PrefabKey, GearyEntity> = mutableBiMapOf()
@@ -46,6 +46,7 @@ public class PrefabManager(
     }
 
     /** If this entity has a [Prefab] component, clears it and loads components from its file. */
+    context(FormatsContext)
     public fun reread(entity: GearyEntity) {
         entity.with { prefab: Prefab, key: PrefabKey ->
             entity.clear()
@@ -55,13 +56,14 @@ public class PrefabManager(
     }
 
     /** Registers an entity with components defined in a [file], adding a [Prefab] component. */
+    context(FormatsContext)
     public fun loadFromFile(namespace: String, file: File, writeTo: GearyEntity? = null): GearyEntity? {
         val name = file.nameWithoutExtension
         return runCatching {
             val serializer = GearyEntitySerializer.componentListSerializer
             val decoded = when (val ext = file.extension) {
-                "yml" -> Formats.yamlFormat.decodeFromStream(serializer, file.inputStream())
-                "json" -> Formats.jsonFormat.decodeFromStream(serializer, file.inputStream())
+                "yml" -> formats.yamlFormat.decodeFromStream(serializer, file.inputStream())
+                "json" -> formats.jsonFormat.decodeFromStream(serializer, file.inputStream())
                 else -> error("Unknown file format $ext")
             }
             val entity = writeTo ?: entity()

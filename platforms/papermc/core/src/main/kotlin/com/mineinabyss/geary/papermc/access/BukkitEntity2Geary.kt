@@ -11,8 +11,8 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.events.EntityRemoved
-import com.mineinabyss.geary.papermc.GearyScopeMC
-import com.mineinabyss.geary.papermc.hasComponentsEncoded
+import com.mineinabyss.geary.papermc.GearyMCContext
+import com.mineinabyss.geary.papermc.store.hasComponentsEncoded
 import com.mineinabyss.geary.papermc.store.decodeComponentsFrom
 import com.mineinabyss.geary.papermc.store.encodeComponentsTo
 import com.mineinabyss.idofront.plugin.registerEvents
@@ -26,7 +26,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import kotlin.collections.set
 
-public class BukkitEntity2Geary : Listener, GearyScopeMC() {
+public class BukkitEntity2Geary : Listener, GearyMCContext() {
     private val entityMap = Int2LongOpenHashMap().apply { defaultReturnValue(-1) }
 
     public fun startTracking() {

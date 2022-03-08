@@ -11,8 +11,6 @@ import com.mineinabyss.idofront.messaging.broadcast
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Entity
-import org.bukkit.persistence.PersistentDataContainer
-import org.bukkit.persistence.PersistentDataType
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
@@ -20,23 +18,12 @@ internal fun KoinComponent.debug(message: Any?) {
     if (get<GearyConfig>().debug) broadcast(message)
 }
 
-/** Verifies a [PersistentDataContainer] has a tag identifying it as containing Geary components. */
-public var PersistentDataContainer.hasComponentsEncoded: Boolean
-    get() = GearyScopeMC { has(engine.componentsKey, PersistentDataType.BYTE) }
-    set(value) = GearyScopeMC {
-        when {
-            //TODO are there any empty marker keys?
-            value -> if (!hasComponentsEncoded) set(engine.componentsKey, PersistentDataType.BYTE, 1)
-            else -> remove(engine.componentsKey)
-        }
-    }
-
-public fun Location.spawnFromPrefab(prefab: PrefabKey): Entity? = GearyScopeMC {
+context(GearyMCContext) public fun Location.spawnFromPrefab(prefab: PrefabKey): Entity? {
     val entity = prefabManager[prefab] ?: return null
     return spawnFromPrefab(entity)
 }
 
-public fun Location.spawnFromPrefab(prefab: GearyEntity): Entity? {
+context(GearyMCContext) public fun Location.spawnFromPrefab(prefab: GearyEntity): Entity? {
     val attemptSpawn = GearyAttemptMinecraftSpawnEvent(this, prefab)
     attemptSpawn.call()
     val bukkitEntity = attemptSpawn.bukkitEntity ?: return null

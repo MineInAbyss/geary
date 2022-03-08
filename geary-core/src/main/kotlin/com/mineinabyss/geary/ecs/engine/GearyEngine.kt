@@ -9,10 +9,7 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
-import com.mineinabyss.geary.ecs.api.systems.GearyListener
-import com.mineinabyss.geary.ecs.api.systems.GearySystem
-import com.mineinabyss.geary.ecs.api.systems.QueryManager
-import com.mineinabyss.geary.ecs.api.systems.TickingSystem
+import com.mineinabyss.geary.ecs.api.systems.*
 import com.mineinabyss.geary.ecs.components.ComponentInfo
 import com.mineinabyss.geary.ecs.components.RelationComponent
 import com.mineinabyss.geary.ecs.entities.parents
@@ -36,10 +33,11 @@ import kotlin.reflect.KClass
  *
  * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */
-public open class GearyEngine : TickingEngine() {
+context(QueryContext)
+public open class GearyEngine : TickingEngine(), QueryContext {
     @PublishedApi
     internal val typeMap: TypeMap = TypeMap()
-    private val queryManager by inject<QueryManager>()
+    override val queryManager: QueryManager by inject()
     private var currId = AtomicLong(0L)
     final override val rootArchetype: Archetype = Archetype(this, GearyType(), 0)
     private val archetypes = mutableListOf(rootArchetype)

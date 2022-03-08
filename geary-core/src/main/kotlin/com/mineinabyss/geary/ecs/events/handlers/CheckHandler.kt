@@ -3,6 +3,7 @@ package com.mineinabyss.geary.ecs.events.handlers
 import com.mineinabyss.geary.ecs.accessors.EventScope
 import com.mineinabyss.geary.ecs.accessors.SourceScope
 import com.mineinabyss.geary.ecs.accessors.TargetScope
+import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.events.FailedCheck
 import com.mineinabyss.geary.ecs.events.RequestCheck
@@ -10,6 +11,7 @@ import com.mineinabyss.geary.ecs.events.RequestCheck
 /**
  * A handler which will run a check on an event that requests one.
  */
+context(EngineContext)
 public abstract class CheckHandler(
     parentListener: GearyListener,
     sourceNullable: Boolean

@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.papermc.engine
 
 import com.mineinabyss.geary.ecs.api.systems.GearySystem
+import com.mineinabyss.geary.ecs.api.systems.QueryContext
 import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.engine.GearyEngine
 import com.mineinabyss.idofront.plugin.registerEvents
@@ -15,6 +16,7 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import org.koin.core.component.KoinComponent
 
+context(QueryContext)
 public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComponent {
     public val componentsKey: NamespacedKey = NamespacedKey(plugin, "components")
 

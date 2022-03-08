@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.prefabs.serializers
 
 import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.EngineScope
+import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.serialization.DescriptorWrapper
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.PrefabManager
-import com.mineinabyss.geary.prefabs.PrefabManagerScope
+import com.mineinabyss.geary.prefabs.PrefabManagerContext
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
@@ -18,7 +18,7 @@ import org.koin.core.component.inject
  * This is used to load the static entity type when we decode components from an in-game entity.
  */
 @Deprecated("This will not work properly until ktx.serialization fully supports inline classes")
-public class PrefabByReferenceSerializer : KSerializer<GearyEntity>, PrefabManagerScope, EngineScope {
+public class PrefabByReferenceSerializer : KSerializer<GearyEntity>, PrefabManagerContext, EngineContext {
     override val prefabManager: PrefabManager by inject()
     override val engine: Engine by inject()
     override val descriptor: SerialDescriptor = DescriptorWrapper("geary:prefab", PrefabKey.serializer().descriptor)

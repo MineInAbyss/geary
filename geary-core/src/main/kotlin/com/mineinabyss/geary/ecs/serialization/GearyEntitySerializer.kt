@@ -1,48 +1,41 @@
 package com.mineinabyss.geary.ecs.serialization
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.EngineScope
+import com.mineinabyss.geary.ecs.api.GearyContext
 import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.api.engine.entity
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.components.EntityName
 import com.mineinabyss.geary.ecs.entities.parent
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import org.koin.core.component.inject
 
 /**
  * A serializer which loads a new entity from a list of components.
  */
-public object GearyEntitySerializer : KSerializer<GearyEntity>, EngineScope {
-    override val engine: Engine by inject()
-
+//context(EngineContext)
+//TODO serialization of value class broken in 1.6.20
+public object GearyEntitySerializer /*: KSerializer<GearyEntity>*/ {
     public val componentListSerializer: KSerializer<List<GearyComponent>> =
         ListSerializer(PolymorphicSerializer(GearyComponent::class))
-    override val descriptor: SerialDescriptor = componentListSerializer.descriptor
-
-    override fun serialize(encoder: Encoder, value: GearyEntity) {
-        runBlocking {
-            encoder.encodeSerializableValue(componentListSerializer, value.getPersistingComponents().toList())
-        }
-    }
-
-    override fun deserialize(decoder: Decoder): GearyEntity {
-        return runBlocking {
-            entity { setAll(decoder.decodeSerializableValue(componentListSerializer)) }
-        }
-    }
+//    override val descriptor: SerialDescriptor = componentListSerializer.descriptor
+//
+//    override fun serialize(encoder: Encoder, value: GearyEntity) {
+//        runBlocking {
+//            encoder.encodeSerializableValue(componentListSerializer, value.getPersistingComponents().toList())
+//        }
+//    }
+//
+//    override fun deserialize(decoder: Decoder): GearyEntity {
+//        return runBlocking {
+//            entity { setAll(decoder.decodeSerializableValue(componentListSerializer)) }
+//        }
+//    }
 }
 
 //TODO this should be handled within a serializer of sorts for GearyEntity
-public fun GearyEntity.parseEntity(expression: String): GearyEntity {
+context(GearyContext) public fun GearyEntity.parseEntity(expression: String): GearyEntity {
     return when {
         expression.startsWith("parent") -> {
             val parent = (parent ?: error("Failed to read expression, entity had no parent: $expression"))
