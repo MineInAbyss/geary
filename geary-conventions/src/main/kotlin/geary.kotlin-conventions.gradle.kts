@@ -1,5 +1,4 @@
 import Com_mineinabyss_conventions_platform_gradle.Deps
-import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val idofrontVersion: String by project
