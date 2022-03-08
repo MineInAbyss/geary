@@ -1,7 +1,6 @@
 import Com_mineinabyss_conventions_platform_gradle.Deps
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val useNMS: String? by project
 val idofrontVersion: String by project
 
 plugins {
@@ -14,6 +13,7 @@ repositories {
 
 dependencies {
     // MineInAbyss platform
+    compileOnly("com.okkero:skedule:1.2.8")
     compileOnly(Deps.kotlin.stdlib)
     compileOnly(Deps.kotlinx.serialization.json)
     compileOnly(Deps.kotlinx.serialization.cbor)
@@ -22,10 +22,7 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin")
     }
 
-    if (useNMS.toBoolean())
-        implementation("com.mineinabyss:idofront-nms:$idofrontVersion")
-    else
-        implementation("com.mineinabyss:idofront:$idofrontVersion")
+    implementation("com.mineinabyss:idofront:$idofrontVersion")
 }
 
 kotlin {

@@ -1,3 +1,5 @@
+import Com_mineinabyss_conventions_platform_gradle.Deps
+
 plugins {
     id("geary.kotlin-conventions")
     kotlin("plugin.serialization")
@@ -16,8 +18,8 @@ dependencies {
     api(project(":geary-prefabs"))
 
     // MineInAbyss platform
-    compileOnly(libs.kotlinx.coroutines)
-    compileOnly(libs.minecraft.skedule)
-    compileOnly(libs.kotlin.reflect) { isTransitive = false }
+    compileOnly(Deps.kotlinx.coroutines)
+    compileOnly(Deps.kotlin.reflect) { isTransitive = false }
     compileOnly(libs.reflections)
+    compileOnly(Deps.minecraft.skedule)
 }
