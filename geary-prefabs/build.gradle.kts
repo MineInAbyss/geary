@@ -10,5 +10,4 @@ dependencies {
     compileOnly(gearylibs.fastutil)
 
     compileOnly(project(":geary-core"))
-    compileOnly(project(":geary-autoscan"))
 }

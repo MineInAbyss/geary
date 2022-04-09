@@ -11,7 +11,8 @@ context (EngineContext, BukkitEntityAssociationsContext) public fun BukkitEntity
 
 // Separate function because inline `run` cannot be nullable
 //TODO we want to call load entity event after init runs
-context (EngineContext, BukkitEntityAssociationsContext) public inline fun BukkitEntity.toGeary(
+//TODO inline when compiler bug fixed
+context (EngineContext, BukkitEntityAssociationsContext) public fun BukkitEntity.toGeary(
     init: GearyEntity.() -> Unit
 ): GearyEntity = toGeary().apply { init() }
 

@@ -17,7 +17,8 @@ import kotlin.reflect.KType
 context(EngineContext) public fun entity(): GearyEntity = engine.newEntity()
 
 /** @see entity */
-context(EngineContext) public inline fun entity(run: GearyEntity.() -> Unit): GearyEntity = entity().apply(run)
+//TODO inline once compiler bug fixed
+context(EngineContext) public fun entity(run: GearyEntity.() -> Unit): GearyEntity = entity().apply(run)
 
 /** Creates a new empty entity that will get removed once [run] completes or fails. */
 context(EngineContext) public inline fun <T> temporaryEntity(
@@ -64,8 +65,9 @@ context(EngineContext) public fun systems(vararg systems: GearySystem): List<Def
     return systems.map { engine.async { engine.addSystem(it) } }
 }
 
+//TODO inline when compiler fixed
 context(EngineContext)
-public inline fun <T> runSafely(scope: CoroutineScope = engine, crossinline run: suspend () -> T): Deferred<T> {
+public /*inline*/ fun <T> runSafely(scope: CoroutineScope = engine, /*crossinline*/ run: suspend () -> T): Deferred<T> {
     val deferred = engine.async(start = CoroutineStart.LAZY) { run() }
     engine.runSafely(scope, deferred)
     return deferred

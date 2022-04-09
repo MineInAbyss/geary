@@ -1,6 +1,6 @@
 plugins {
     java
-//    kotlin("multiplatform")
+    kotlin("jvm") apply false
 //    id("org.jetbrains.dokka")
 }
 

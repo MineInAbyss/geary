@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.ecs.api.FormatsContext
+import com.mineinabyss.geary.ecs.api.GearyContext
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.api.engine.entity
@@ -46,7 +47,7 @@ public class PrefabManager(
     }
 
     /** If this entity has a [Prefab] component, clears it and loads components from its file. */
-    context(FormatsContext)
+    context(GearyContext)
     public fun reread(entity: GearyEntity) {
         entity.with { prefab: Prefab, key: PrefabKey ->
             entity.clear()

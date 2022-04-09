@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.engine.isInstance
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.papermc.GearyMCContext
+import com.mineinabyss.geary.papermc.PaperEngineContext
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.util.toMCKey
 import kotlinx.serialization.DeserializationStrategy
@@ -26,7 +27,7 @@ context(FormatsContext) public inline fun <reified T : GearyComponent> Persisten
  * Encodes a component into this [PersistentDataContainer], where the serializer and key can automatically be found via
  * [Formats].
  */
-context(GearyMCContext) public fun <T : GearyComponent> PersistentDataContainer.encode(
+context(PaperEngineContext, FormatsContext) public fun <T : GearyComponent> PersistentDataContainer.encode(
     value: T,
     serializer: SerializationStrategy<T> = ((formats.getSerializerFor(value::class)
         ?: error("Serializer not registered for ${value::class.simpleName}")) as SerializationStrategy<T>),
@@ -42,7 +43,9 @@ context(GearyMCContext) public fun <T : GearyComponent> PersistentDataContainer.
  * Decodes a component of type [T] from this [PersistentDataContainer], where serializer and key are automatically
  * found via [Formats].
  */
-context(FormatsContext) public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(): T? {
+//TODO use context when compiler fixed
+/*context(FormatsContext) */
+public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(): T? = GearyMCContext {
     return decode(
         serializer = formats.getSerializerFor() ?: return null,
         key = formats.getSerialNameFor<T>()?.toComponentKey() ?: return null
@@ -53,13 +56,13 @@ context(FormatsContext) public inline fun <reified T : GearyComponent> Persisten
  * Decodes a component of type [T] from this [PersistentDataContainer] where the [serializer] may automatically be found
  * via [Formats] given a [key].
  */
-context(FormatsContext) public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
+public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
     key: NamespacedKey,
     serializer: DeserializationStrategy<T>? =
-        formats.getSerializerFor(key.removeComponentPrefix()) as? DeserializationStrategy<T>,
-): T? {
+        GearyMCContext { formats }.getSerializerFor(key.removeComponentPrefix()) as? DeserializationStrategy<T>,
+): T? = GearyMCContext {
     serializer ?: return null
-    val encoded = this[key, BYTE_ARRAY] ?: return null
+    val encoded = get(key, BYTE_ARRAY) ?: return null
     return runCatching { formats.cborFormat.decodeFromByteArray(serializer, encoded) }.getOrNull()
 }
 
@@ -68,7 +71,7 @@ context(FormatsContext) public inline fun <reified T : GearyComponent> Persisten
  *
  * @see encode
  */
-context(GearyMCContext) public fun PersistentDataContainer.encodeComponents(
+context(PaperEngineContext, FormatsContext) public fun PersistentDataContainer.encodeComponents(
     components: Collection<GearyComponent>,
     type: GearyType
 ) {
@@ -89,7 +92,7 @@ context(GearyMCContext) public fun PersistentDataContainer.encodeComponents(
  * Encodes a list of [PrefabKey]s under the key `geary:prefabs`. When decoding these will be stored in
  * [DecodedEntityData.type].
  */
-context(GearyMCContext) public fun PersistentDataContainer.encodePrefabs(keys: Collection<PrefabKey>) {
+context(PaperEngineContext, FormatsContext) public fun PersistentDataContainer.encodePrefabs(keys: Collection<PrefabKey>) {
     hasComponentsEncoded = true
 
     // I prefer being explicit with the SetSerializer to avoid any confusion, like a class that looks like a persisting
@@ -132,7 +135,7 @@ context(FormatsContext) public fun PersistentDataContainer.decodeComponents(): D
     )
 
 /** Verifies a [PersistentDataContainer] has a tag identifying it as containing Geary components. */
-context(GearyMCContext) public var PersistentDataContainer.hasComponentsEncoded: Boolean
+context(PaperEngineContext) public var PersistentDataContainer.hasComponentsEncoded: Boolean
     get() = has(engine.componentsKey, PersistentDataType.BYTE)
     set(value) {
         when {

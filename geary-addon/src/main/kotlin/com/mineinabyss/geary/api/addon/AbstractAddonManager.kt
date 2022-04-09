@@ -1,10 +1,12 @@
 package com.mineinabyss.geary.api.addon
 
+import com.mineinabyss.geary.ecs.api.FormatsContext
+import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.prefabs.events.PrefabLoaded
 import com.mineinabyss.idofront.messaging.logInfo
 
+context(FormatsContext, EngineContext)
 public abstract class AbstractAddonManager {
     internal val loadingPrefabs = mutableListOf<GearyEntity>()
     private val actions = sortedMapOf<GearyLoadPhase, MutableList<suspend () -> Unit>>()
@@ -23,7 +25,7 @@ public abstract class AbstractAddonManager {
     public suspend fun load() {
         logInfo("Registering Serializers")
         actions[GearyLoadPhase.REGISTER_SERIALIZERS]?.runAll()
-        Formats.createFormats()
+        formats.createFormats()
         logInfo("Loading prefabs")
         actions[GearyLoadPhase.LOAD_PREFABS]?.runAll()
         loadingPrefabs.forEach {

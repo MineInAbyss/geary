@@ -33,7 +33,6 @@ import kotlin.reflect.KClass
  *
  * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */
-context(QueryContext)
 public open class GearyEngine : TickingEngine(), QueryContext {
     @PublishedApi
     internal val typeMap: TypeMap = TypeMap()

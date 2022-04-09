@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.papermc.plugin
 
 import com.mineinabyss.geary.ecs.engine.countChildren
-import com.mineinabyss.geary.ecs.api.GearyContext
 import com.mineinabyss.geary.papermc.GearyMCContext
 import com.mineinabyss.geary.papermc.StartupEventListener
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -13,12 +12,10 @@ import com.rylinaux.plugman.util.PluginUtil
 import kotlinx.coroutines.launch
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
-import org.bukkit.plugin.java.JavaPlugin
 
-internal class GearyCommands(
-    val plugin: JavaPlugin
-) : IdofrontCommandExecutor(), TabCompleter, GearyContext by GearyMCContext() {
-    override val commands = commands(plugin) {
+context(GearyMCContext)
+internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
+    override val commands = commands(geary) {
         "geary" {
             "reread" {
                 val prefab by stringArg()
@@ -34,7 +31,7 @@ internal class GearyCommands(
                 action {
                     val depends = StartupEventListener.getGearyDependants()
                     depends.forEach { PluginUtil.unload(it) }
-                    PluginUtil.reload(plugin)
+                    PluginUtil.reload(geary)
                     depends.forEach { PluginUtil.load(it.name) }
                 }
             }

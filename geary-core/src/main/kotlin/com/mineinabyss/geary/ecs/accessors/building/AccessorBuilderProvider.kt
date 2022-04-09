@@ -10,15 +10,17 @@ import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
 import com.mineinabyss.geary.ecs.engine.withRole
+import org.koin.core.component.KoinComponent
 import kotlin.reflect.typeOf
 
 /**
  * An empty interface that limits [AccessorBuilder] helper functions only to classes that use [Accessor]s.
  */
-public interface AccessorBuilderProvider
+//TODO switch to context receivers once compiler bug gets fixed
+public interface AccessorBuilderProvider : EngineContext, KoinComponent
 
 /** Gets a component, ensuring it is on the entity. */
-context(AccessorBuilderProvider, EngineContext) public inline fun <reified T : GearyComponent> get(): AccessorBuilder<ComponentAccessor<T>> {
+public inline fun <reified T : GearyComponent> AccessorBuilderProvider.get(): AccessorBuilder<ComponentAccessor<T>> {
     return AccessorBuilder { holder, index ->
         val component = componentId<T>().withRole(HOLDS_DATA)
         holder.has(component)
@@ -27,7 +29,7 @@ context(AccessorBuilderProvider, EngineContext) public inline fun <reified T : G
 }
 
 /** Gets a component or provides a [default] if the entity doesn't have it. */
-context(AccessorBuilderProvider, EngineContext) public inline fun <reified T : GearyComponent?> getOrDefault(
+public inline fun <reified T : GearyComponent?> AccessorBuilderProvider.getOrDefault(
     default: T
 ): AccessorBuilder<ComponentOrDefaultAccessor<T>> {
     return AccessorBuilder { _, index ->
@@ -37,10 +39,9 @@ context(AccessorBuilderProvider, EngineContext) public inline fun <reified T : G
 }
 
 /** Gets a component or `null` if the entity doesn't have it. */
-context(AccessorBuilderProvider, EngineContext) public inline fun <reified T : GearyComponent?> getOrNull(): AccessorBuilder<ComponentOrDefaultAccessor<T?>> {
-    return com.mineinabyss.geary.ecs.accessors.building.getOrDefault(null)
+public inline fun <reified T : GearyComponent?> AccessorBuilderProvider.getOrNull(): AccessorBuilder<ComponentOrDefaultAccessor<T?>> {
+    return getOrDefault(null)
 }
-
 
 /**
  * This function allows you to access a specific relation or all relations with a certain key or value.
@@ -62,7 +63,7 @@ context(AccessorBuilderProvider, EngineContext) public inline fun <reified T : G
  *
  * @see flatten
  */
-context(AccessorBuilderProvider, EngineContext) public inline fun <reified K : GearyComponent?, reified V : GearyComponent> relation(): AccessorBuilder<RelationWithDataAccessor<K, V>> {
+public inline fun <reified K : GearyComponent?, reified V : GearyComponent> AccessorBuilderProvider.relation(): AccessorBuilder<RelationWithDataAccessor<K, V>> {
     return AccessorBuilder { holder, index ->
         val key = typeOf<K>()
         val value = typeOf<V>()

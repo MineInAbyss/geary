@@ -17,6 +17,7 @@ import com.mineinabyss.geary.ecs.components.RelationComponent
 import com.mineinabyss.geary.ecs.engine.*
 import com.mineinabyss.geary.ecs.events.AddedComponent
 import kotlinx.serialization.Serializable
+import org.koin.core.component.KoinComponent
 import kotlin.reflect.KClass
 
 /**
@@ -27,7 +28,7 @@ import kotlin.reflect.KClass
 @Serializable
 @JvmInline
 @Suppress("NOTHING_TO_INLINE")
-public value class GearyEntity(public val id: GearyEntityId) {
+public value class GearyEntity(public val id: GearyEntityId): KoinComponent {
     /** Gets the record associated with this entity or throws an error if it is no longer active on the koinGet<Engine>(). */
     context(EngineContext)
     @PublishedApi

@@ -1,5 +1,3 @@
-import Com_mineinabyss_conventions_platform_gradle.Deps
-
 plugins {
     id("geary.kotlin-conventions")
     kotlin("plugin.serialization")
@@ -12,14 +10,14 @@ repositories {
 }
 
 dependencies {
+    implementation(libs.idofront.autoscan)
     api(project(":geary-addon"))
-    api(project(":geary-autoscan"))
     api(project(":geary-core"))
     api(project(":geary-prefabs"))
 
     // MineInAbyss platform
-    compileOnly(Deps.kotlinx.coroutines)
-    compileOnly(Deps.kotlin.reflect) { isTransitive = false }
+    compileOnly(libs.kotlinx.coroutines)
+    compileOnly(libs.kotlin.reflect) { isTransitive = false }
     compileOnly(libs.reflections)
-    compileOnly(Deps.minecraft.skedule)
+    compileOnly(libs.minecraft.skedule)
 }

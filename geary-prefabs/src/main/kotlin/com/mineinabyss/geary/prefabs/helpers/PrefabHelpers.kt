@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.prefabs.helpers
 
-import com.mineinabyss.geary.ecs.api.GearyContext
 import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
@@ -8,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.entities.with
 import com.mineinabyss.geary.ecs.api.relations.NoInherit
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
+import com.mineinabyss.geary.ecs.api.systems.QueryContext
 import com.mineinabyss.geary.ecs.engine.INSTANCEOF
 import com.mineinabyss.geary.ecs.engine.isInstance
 import com.mineinabyss.geary.ecs.engine.withRole
@@ -21,7 +21,7 @@ context(EngineContext) public val GearyEntity.prefabs: List<GearyEntity>
     get() = type.filter { it.isInstance() }.map { it.toGeary() }
 
 /** Adds a [prefab] entity to this entity.  */
-context(GearyContext) public fun GearyEntity.addPrefab(prefab: GearyEntity) {
+context(EngineContext, QueryContext) public fun GearyEntity.addPrefab(prefab: GearyEntity) {
     add(prefab.id.withRole(INSTANCEOF))
     //TODO this isn't copying over any relations
     val comp = prefab.getComponents()

@@ -1,13 +1,11 @@
 plugins {
-    java
-    kotlin("plugin.serialization")
     id("com.mineinabyss.conventions.copyjar")
 }
 
 repositories {
     mavenCentral()
-    maven("https://jitpack.io")
     maven("https://repo.mineinabyss.com/releases")
+    maven("https://jitpack.io")
 }
 
 configurations {

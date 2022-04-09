@@ -1,6 +1,7 @@
-import Com_mineinabyss_conventions_platform_gradle.Deps
+import org.gradle.accessors.dm.LibrariesForLibs
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val libs = the<LibrariesForLibs>()
 val idofrontVersion: String by project
 
 plugins {
@@ -14,11 +15,11 @@ repositories {
 dependencies {
     // MineInAbyss platform
     compileOnly("com.okkero:skedule:1.2.8")
-    compileOnly(Deps.kotlin.stdlib)
-    compileOnly(Deps.kotlinx.serialization.json)
-    compileOnly(Deps.kotlinx.serialization.cbor)
-    compileOnly(Deps.kotlinx.serialization.hocon)
-    compileOnly(Deps.kotlinx.serialization.kaml) {
+    compileOnly(libs.kotlin.stdlib)
+    compileOnly(libs.kotlinx.serialization.json)
+    compileOnly(libs.kotlinx.serialization.cbor)
+    compileOnly(libs.kotlinx.serialization.hocon)
+    compileOnly(libs.kotlinx.serialization.kaml) {
         exclude(group = "org.jetbrains.kotlin")
     }
 
@@ -33,10 +34,10 @@ tasks {
     withType<KotlinCompile> {
         kotlinOptions {
             freeCompilerArgs = listOf(
-                "-Xopt-in=kotlin.RequiresOptIn",
-                "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
-                "-Xopt-in=kotlin.time.ExperimentalTime",
-                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-opt-in=kotlin.RequiresOptIn",
+                "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+                "-opt-in=kotlin.time.ExperimentalTime",
+                "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
                 "-Xcontext-receivers",
             )
         }

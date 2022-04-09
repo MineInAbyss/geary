@@ -20,6 +20,7 @@ import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.typeOf
 
+context(EngineContext)
 public class QueryManager {
     private val queries = mutableListOf<Query>()
     private val sourceListeners = mutableListOf<GearyListener>()
@@ -28,12 +29,10 @@ public class QueryManager {
 
     private val archetypes = Component2ObjectArrayMap<Archetype>()
 
-    context(EngineContext)
     public fun init() {
         registerArchetype(engine.rootArchetype)
     }
 
-    context(EngineContext)
     public fun trackEventListener(listener: GearyListener) {
         listener::class.functions
             .filter { it.hasAnnotation<Handler>() }

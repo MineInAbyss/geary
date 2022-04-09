@@ -5,16 +5,20 @@ import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.building.get
+import com.mineinabyss.geary.ecs.api.FormatsContext
 import com.mineinabyss.geary.ecs.api.annotations.Handler
 import com.mineinabyss.geary.ecs.api.engine.systems
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.systems.GearyListener
+import com.mineinabyss.geary.ecs.api.systems.QueryContext
 import com.mineinabyss.geary.ecs.events.EntityRemoved
-import com.mineinabyss.geary.papermc.GearyMCContext
-import com.mineinabyss.geary.papermc.store.hasComponentsEncoded
+import com.mineinabyss.geary.papermc.BukkitEntityAssociationsContext
+import com.mineinabyss.geary.papermc.PaperEngineContext
+import com.mineinabyss.geary.papermc.PluginContext
 import com.mineinabyss.geary.papermc.store.decodeComponentsFrom
 import com.mineinabyss.geary.papermc.store.encodeComponentsTo
+import com.mineinabyss.geary.papermc.store.hasComponentsEncoded
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.typealiases.BukkitEntity
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap
@@ -26,7 +30,9 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import kotlin.collections.set
 
-public class BukkitEntity2Geary : Listener, GearyMCContext() {
+context(QueryContext, PaperEngineContext, PluginContext, FormatsContext)
+public class BukkitEntity2Geary : Listener, BukkitEntityAssociationsContext {
+    override val bukkit2Geary: BukkitEntity2Geary = this
     private val entityMap = Int2LongOpenHashMap().apply { defaultReturnValue(-1) }
 
     public fun startTracking() {
