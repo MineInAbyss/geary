@@ -28,6 +28,7 @@ public class Formats {
         private set
 
     internal val addonToModuleMap = mutableMapOf<String, SerializersModule>()
+    private val formatMap = mutableMapOf<String, PrefabFormat>()
 
     //TODO allow this to work for all registered classes, not just components
     public fun getClassFor(serialName: String): KClass<out GearyComponent> =
@@ -45,6 +46,11 @@ public class Formats {
         serialName2Component[name] = kClass
         component2serialName[kClass] = name
     }
+
+    public fun addFormat(ext: String, create: (SerializersModule) -> PrefabFormat) {
+        formatMap[ext] = create(module)
+    }
+    public fun getFormat(ext: String): PrefabFormat? = formatMap[ext]
 
     public lateinit var cborFormat: Cbor
 //

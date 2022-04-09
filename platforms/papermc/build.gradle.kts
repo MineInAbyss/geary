@@ -19,6 +19,8 @@ configurations {
         excludeDep(libs.fastutil)
         excludeDep(libs.kotlin.reflect)
         excludeDep(libs.kotlinx.coroutines)
+        exclude("org.jetbrains.kotlinx")
+        exclude("org.jetbrains.kotlin")
         excludeDep(libs.reflections)
     }
 }

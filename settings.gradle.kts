@@ -40,8 +40,6 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs").from("com.mineinabyss:catalog:$idofrontVersion")
         create("gearylibs") {
-            version("bimap-test", "1.2")
-            library("bimap", "com.uchuhimo", "kotlinx-bimap").versionRef("bimap-test")
             library("bitvector.jvm", "net.onedaybeard.bitvector:bitvector-jvm:0.1.4")
             library("bitvector.js", "net.onedaybeard.bitvector:bitvector-js:0.1.4")
             library("fastutil", "it.unimi.dsi:fastutil:8.2.2") //Version present on minecraft server

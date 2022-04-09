@@ -36,10 +36,10 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 val okioVersion = "3.0.0"
-                implementation("com.squareup.okio:okio:$okioVersion")
+                api("com.squareup.okio:okio:$okioVersion")
                 implementation("org.jetbrains.kotlinx:atomicfu:0.17.1")
                 implementation("com.benasher44:uuid:0.4.0")
-                implementation(libs.kotlin.reflect)// { isTransitive = false }
+                implementation(libs.kotlin.reflect)
 //                implementation(gearylibs.bitvector)
                 api(libs.koin.core)// { isTransitive = false }
 //                api(libs.kotlinx.coroutines)

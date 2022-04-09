@@ -13,9 +13,8 @@ import org.bukkit.NamespacedKey
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
-import org.koin.core.component.KoinComponent
 
-public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(tickDuration = 1.ticks), KoinComponent {
+public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(tickDuration = 1.ticks) {
     public val componentsKey: NamespacedKey = NamespacedKey(plugin, "components")
 
     override suspend fun TickingSystem.runSystem() {

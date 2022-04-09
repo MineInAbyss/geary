@@ -11,8 +11,7 @@ import com.mineinabyss.geary.ecs.serialization.GearyEntitySerializer
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
 import com.mineinabyss.idofront.messaging.logError
-import com.uchuhimo.collections.MutableBiMap
-import com.uchuhimo.collections.mutableBiMapOf
+import okio.Path.Companion.toOkioPath
 import java.io.File
 
 /**
@@ -23,25 +22,25 @@ import java.io.File
 public class PrefabManager(
     override val engine: Engine
 ) : GearyContext by GearyContextKoin() {
-    public val keys: List<PrefabKey> get() = prefabs.keys.toList()
+    public val keys: List<PrefabKey> get() = keyToPrefab.keys.toList()
 
-    private val prefabs: MutableBiMap<PrefabKey, GearyEntity> = mutableBiMapOf()
+    private val keyToPrefab: MutableMap<PrefabKey, GearyEntity> = mutableMapOf()
 
     /** Gets a prefab by [name]. */
-    public operator fun get(name: PrefabKey): GearyEntity? = prefabs[name]
+    public operator fun get(name: PrefabKey): GearyEntity? = keyToPrefab[name]
 
     /** Registers a prefab with Geary. */
     public fun registerPrefab(key: PrefabKey, prefab: GearyEntity) {
-        prefabs[key] = prefab
+        keyToPrefab[key] = prefab
         prefab.set(key)
     }
 
     public fun getPrefabsFor(namespace: String): List<PrefabKey> =
         keys.filter { it.namespace == namespace }
 
-    /** Clears all stored [prefabs] */
+    /** Clears all stored [keyToPrefab] */
     internal fun clear() {
-        prefabs.clear()
+        keyToPrefab.clear()
     }
 
     /** If this entity has a [Prefab] component, clears it and loads components from its file. */
@@ -58,11 +57,9 @@ public class PrefabManager(
         val name = file.nameWithoutExtension
         return runCatching {
             val serializer = GearyEntitySerializer.componentListSerializer
-            val decoded = when (val ext = file.extension) {
-//                "yml" -> formats.yamlFormat.decodeFromStream(serializer, file.inputStream())
-//                "json" -> formats.jsonFormat.decodeFromStream(serializer, file.inputStream())
-                else -> error("Unknown file format $ext")
-            }
+            val ext = file.extension
+            val decoded = formats.getFormat(ext)?.decodeFromFile(serializer, file.toOkioPath())
+                ?: error("Unknown file format $ext")
             val entity = writeTo ?: entity()
             entity.setAll(decoded)
 

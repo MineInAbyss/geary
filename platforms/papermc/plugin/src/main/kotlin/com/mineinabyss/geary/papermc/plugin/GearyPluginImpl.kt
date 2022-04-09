@@ -1,14 +1,16 @@
 package com.mineinabyss.geary.papermc.plugin
 
 import com.mineinabyss.geary.api.addon.GearyLoadPhase.ENABLE
-import com.mineinabyss.geary.ecs.api.FormatsContext
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.systems.QueryContext
 import com.mineinabyss.geary.ecs.api.systems.QueryManager
 import com.mineinabyss.geary.ecs.entities.UUID2GearyMap
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.ecs.serialization.withSerialName
-import com.mineinabyss.geary.papermc.*
+import com.mineinabyss.geary.formats.YamlFormat
+import com.mineinabyss.geary.papermc.GearyConfig
+import com.mineinabyss.geary.papermc.GearyPlugin
+import com.mineinabyss.geary.papermc.StartupEventListener
 import com.mineinabyss.geary.papermc.access.BukkitEntity2Geary
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.dsl.GearyAddonManager
@@ -41,21 +43,13 @@ public class GearyPluginImpl : GearyPlugin() {
         reloadConfig()
 
         val engine = PaperMCEngine(this@GearyPluginImpl)
-        val engineContext = object: PaperEngineContext {
-            override val engine = engine
-        }
-        val pluginContext = object : PluginContext {
-            override val geary = this@GearyPluginImpl
-        }
         val formats = Formats()
-        val formatsContext = object : FormatsContext {
-            override val formats = formats
-        }
+        formats.addFormat("yml") { YamlFormat(it) }
         //TODO hopefully we can combine with statements in the future
         val queryManager = QueryManager()
         val uuid2GearyMap = UUID2GearyMap(engine)
         val prefabManager = PrefabManager(engine)
-        val queryContext = object: QueryContext {
+        val queryContext = object : QueryContext {
             override val queryManager = queryManager
         }
         val addonManager = GearyAddonManager()
@@ -69,6 +63,7 @@ public class GearyPluginImpl : GearyPlugin() {
             single<UUID2GearyMap> { uuid2GearyMap }
             single<GearyAddonManager> { addonManager }
             single<PrefabManager> { prefabManager }
+            single<Formats> { formats }
             singleConfig(GearyConfig.serializer(), this@GearyPluginImpl)
         })
 

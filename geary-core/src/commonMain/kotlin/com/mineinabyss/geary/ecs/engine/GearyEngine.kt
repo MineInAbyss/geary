@@ -35,7 +35,7 @@ import kotlin.time.Duration
  * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */
 public open class GearyEngine(override val tickDuration: Duration) : TickingEngine(), QueryContext {
-    private val logger: Logger by inject()
+    protected val logger: Logger by inject()
 
     @PublishedApi
     internal val typeMap: TypeMap = TypeMap()

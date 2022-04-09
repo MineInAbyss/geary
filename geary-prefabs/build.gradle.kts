@@ -6,7 +6,6 @@ plugins {
 }
 
 dependencies {
-    compileOnly(gearylibs.bimap) { isTransitive = false }
     compileOnly(gearylibs.fastutil)
 
     compileOnly(project(":geary-core"))
