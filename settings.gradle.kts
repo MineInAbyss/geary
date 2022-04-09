@@ -42,7 +42,8 @@ dependencyResolutionManagement {
         create("gearylibs") {
             version("bimap-test", "1.2")
             library("bimap", "com.uchuhimo", "kotlinx-bimap").versionRef("bimap-test")
-            library("bitvector", "net.onedaybeard.bitvector:bitvector-jvm:0.1.4")
+            library("bitvector.jvm", "net.onedaybeard.bitvector:bitvector-jvm:0.1.4")
+            library("bitvector.js", "net.onedaybeard.bitvector:bitvector-js:0.1.4")
             library("fastutil", "it.unimi.dsi:fastutil:8.2.2") //Version present on minecraft server
             library("plugman", "com.rylinaux:PlugMan:2.2.5")
         }

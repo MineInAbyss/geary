@@ -4,7 +4,7 @@ import com.mineinabyss.geary.api.addon.AbstractAddonManagerContext
 import com.mineinabyss.geary.ecs.api.GearyContext
 import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.entities.UUID2GearyMap
-import com.mineinabyss.geary.ecs.helpers.GearyKoinComponent
+import com.mineinabyss.geary.ecs.helpers.GearyContextKoin
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.papermc.access.BukkitEntity2Geary
 import com.mineinabyss.geary.papermc.dsl.GearyAddonManager
@@ -47,7 +47,7 @@ public interface GearyMCContext :
 }
 
 public open class GearyMCContextKoin :
-    GearyKoinComponent(),
+    GearyContextKoin(),
     GearyMCContext {
     override val engine: PaperMCEngine get() = super.engine as PaperMCEngine
     override val prefabManager: PrefabManager by inject()
