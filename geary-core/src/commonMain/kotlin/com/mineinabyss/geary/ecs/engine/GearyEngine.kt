@@ -16,14 +16,15 @@ import com.mineinabyss.geary.ecs.entities.parents
 import com.mineinabyss.geary.ecs.entities.removeParent
 import com.mineinabyss.geary.ecs.events.AddedComponent
 import com.mineinabyss.geary.ecs.events.EntityRemoved
-import com.mineinabyss.idofront.messaging.logError
-import com.mineinabyss.idofront.time.inWholeTicks
+import com.soywiz.kds.Queue
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import org.koin.core.component.inject
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicLong
+import org.koin.core.logger.Logger
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.Synchronized
 import kotlin.reflect.KClass
+import kotlin.time.Duration
 
 /**
  * The default implementation of Geary's Engine.
@@ -33,11 +34,13 @@ import kotlin.reflect.KClass
  *
  * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */
-public open class GearyEngine : TickingEngine(), QueryContext {
+public open class GearyEngine(override val tickDuration: Duration) : TickingEngine(), QueryContext {
+    private val logger: Logger by inject()
+
     @PublishedApi
     internal val typeMap: TypeMap = TypeMap()
     override val queryManager: QueryManager by inject()
-    private var currId = AtomicLong(0L)
+    private val currId = atomic(0L)
     final override val rootArchetype: Archetype = Archetype(this, GearyType(), 0)
     private val archetypes = mutableListOf(rootArchetype)
     private val removedEntities = EntityStack()
@@ -236,7 +239,7 @@ public open class GearyEngine : TickingEngine(), QueryContext {
 
     override fun getArchetype(id: Int): Archetype = archetypes[id]
 
-    @Synchronized
+    @Synchronized //TODO multiplatform support
     override fun getArchetype(type: GearyType): Archetype {
         var node = rootArchetype
         type.forEach { compId ->
@@ -265,11 +268,11 @@ public open class GearyEngine : TickingEngine(), QueryContext {
 
     //TODO what data structure is most efficient here?
     private val queuedCleanup = mutableSetOf<Archetype>()
-    private val runningAsyncJobs = ConcurrentLinkedQueue<Job>()
+    private val runningAsyncJobs = Queue<Job>()
     private var iterationJob: Job? = null
 
     override fun runSafely(scope: CoroutineScope, job: Job) {
-        runningAsyncJobs.add(scope.launch {
+        runningAsyncJobs.enqueue(scope.launch {
             iterationJob?.join()
             job.invokeOnCompletion {
                 runningAsyncJobs.remove(job)
@@ -282,12 +285,12 @@ public open class GearyEngine : TickingEngine(), QueryContext {
         // Create a job but don't start it
         val job = launch(start = CoroutineStart.LAZY) {
             registeredSystems
-                .filter { currentTick % it.interval.inWholeTicks.coerceAtLeast(1) == 0L }
+                .filter { currentTick % (it.interval / tickDuration).toInt().coerceAtLeast(1) == 0L }
                 .forEach {
                     try {
                         it.runSystem()
                     } catch (e: Exception) {
-                        logError("Error while running system ${it.javaClass.name}")
+                        logger.error("Error while running system ${it::class.simpleName}")
                         e.printStackTrace()
                     }
                 }
@@ -297,10 +300,9 @@ public open class GearyEngine : TickingEngine(), QueryContext {
         cleanup()
 
         // Await completion of all other jobs
-        while (true) {
-            val running = runningAsyncJobs.poll() ?: break
-            running.join()
-        }
+        //TODO block any new jobs from starting
+        runningAsyncJobs.joinAll()
+        runningAsyncJobs.clear()
 
         // Tick all systems
         job.start()

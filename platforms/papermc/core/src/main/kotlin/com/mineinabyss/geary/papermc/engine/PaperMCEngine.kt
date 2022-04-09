@@ -15,7 +15,7 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import org.koin.core.component.KoinComponent
 
-public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComponent {
+public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(tickDuration = 1.ticks), KoinComponent {
     public val componentsKey: NamespacedKey = NamespacedKey(plugin, "components")
 
     override suspend fun TickingSystem.runSystem() {
@@ -43,7 +43,7 @@ public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComp
 //        Bukkit.getScheduler().scheduleSyncRepeatingTask(, {
             while(true) {
                 tick(Bukkit.getServer().currentTick.toLong())
-                delay(1.ticks)
+                delay(tickDuration)
             }
         }
     }

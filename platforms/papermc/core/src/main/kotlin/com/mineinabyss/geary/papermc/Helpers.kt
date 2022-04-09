@@ -18,12 +18,12 @@ internal fun KoinComponent.debug(message: Any?) {
     if (get<GearyConfig>().debug) broadcast(message)
 }
 
-context(GearyMCContext) public fun Location.spawnFromPrefab(prefab: PrefabKey): Entity? {
-    val entity = prefabManager[prefab] ?: return null
+public fun Location.spawnFromPrefab(prefab: PrefabKey): Entity? {
+    val entity = globalContextMC.prefabManager[prefab] ?: return null
     return spawnFromPrefab(entity)
 }
 
-context(GearyMCContext) public fun Location.spawnFromPrefab(prefab: GearyEntity): Entity? {
+public fun Location.spawnFromPrefab(prefab: GearyEntity): Entity? {
     val attemptSpawn = GearyAttemptMinecraftSpawnEvent(this, prefab)
     attemptSpawn.call()
     val bukkitEntity = attemptSpawn.bukkitEntity ?: return null

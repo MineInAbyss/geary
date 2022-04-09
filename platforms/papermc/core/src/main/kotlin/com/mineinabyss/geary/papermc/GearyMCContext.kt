@@ -60,3 +60,5 @@ public open class GearyMCContextKoin :
 
     public override val uuid2entity: UUID2GearyMap by inject()
 }
+
+public var globalContextMC: GearyMCContext = GearyMCContextKoin()

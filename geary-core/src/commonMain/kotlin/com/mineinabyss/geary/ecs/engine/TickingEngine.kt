@@ -1,8 +1,11 @@
 package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.api.engine.Engine
+import kotlin.time.Duration
 
 public abstract class TickingEngine : Engine() {
+    public abstract val tickDuration: Duration
+
     private var started: Boolean = false
 
     /** Ticks the entire engine. Implementations may call at different speeds. */

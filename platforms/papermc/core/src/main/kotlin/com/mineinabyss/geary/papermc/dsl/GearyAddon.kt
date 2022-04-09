@@ -30,11 +30,10 @@ internal annotation class GearyAddonDSL
  * The entry point for other plugins to hook into Geary. Allows registering serializable components, systems, actions,
  * and more.
  */
-context(GearyMCContext)
 @GearyAddonDSL
 public class GearyAddon(
     public val plugin: Plugin,
-) : AbstractGearyAddon() {
+) : AbstractGearyAddon(), GearyMCContext by GearyMCContextKoin() {
     override val namespace: String = plugin.name.lowercase()
 
     public val classLoader: ClassLoader = plugin::class.java.classLoader
@@ -137,9 +136,9 @@ public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KC
 
 /** Entry point to register a new [Plugin] with the Geary ECS. */
 //TODO support plugins being re-registered after a reload
-public inline fun Plugin.gearyAddon(crossinline init: context(GearyMCContext) GearyAddon.() -> Unit) {
+public inline fun Plugin.gearyAddon(crossinline init: GearyAddon.() -> Unit) {
     with(GearyMCContextKoin()) {
         formats.clearSerializerModule(name)
-        init(this, GearyAddon(this@gearyAddon))
+        init(GearyAddon(this@gearyAddon))
     }
 }

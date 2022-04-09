@@ -6,15 +6,15 @@ plugins {
 //    id("com.mineinabyss.conventions.testing")
 }
 
-//buildscript {
-//    val atomicfuVersion = "0.17.0"
-//
-//    dependencies {
-//        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicfuVersion")
-//    }
-//}
-//
-//apply(plugin = "kotlinx-atomicfu")
+buildscript {
+    val atomicfuVersion = "0.17.1"
+
+    dependencies {
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicfuVersion")
+    }
+}
+
+apply(plugin = "kotlinx-atomicfu")
 
 repositories {
     mavenCentral()
@@ -23,32 +23,30 @@ repositories {
 kotlin {
     jvm()
     js()
-//    targets.all {
-//        compilations.all {
-//            kotlinOptions {
-//                freeCompilerArgs = freeCompilerArgs + listOf(
-//                    "-opt-in=kotlin.RequiresOptIn",
-//                    "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
-//                    "-opt-in=kotlin.time.ExperimentalTime",
-//                    "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-//                    "-Xcontext-receivers",
-//                )
-//            }
-//        }
-//    }
     sourceSets {
         all {
             explicitApi()
+            languageSettings {
+                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+                optIn("kotlin.time.ExperimentalTime")
+                optIn("kotlinx.serialization.ExperimentalSerializationApi")
+                optIn("kotlin.RequiresOptIn")
+            }
         }
         val commonMain by getting {
             dependencies {
+                val okioVersion = "3.0.0"
+                implementation("com.squareup.okio:okio:$okioVersion")
+                implementation("org.jetbrains.kotlinx:atomicfu:0.17.1")
+                implementation("com.benasher44:uuid:0.4.0")
                 implementation(libs.kotlin.reflect)// { isTransitive = false }
 //                implementation(gearylibs.bitvector)
                 api(libs.koin.core)// { isTransitive = false }
 //                api(libs.kotlinx.coroutines)
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
                 api(libs.kotlinx.serialization.json)
-                implementation("com.soywiz.korlibs.kds:kds:2.2.1")
+                implementation(libs.kotlinx.serialization.cbor)
+                api("com.soywiz.korlibs.kds:kds:2.2.1")
             }
 
         }
@@ -62,6 +60,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
+                implementation(libs.kotlinx.serialization.kaml)
                 implementation("org.roaringbitmap:RoaringBitmap:0.9.25")
             }
         }

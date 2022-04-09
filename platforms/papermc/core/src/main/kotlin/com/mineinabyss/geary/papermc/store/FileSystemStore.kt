@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.papermc.store
 
-import com.mineinabyss.geary.ecs.api.GearyContext
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import kotlinx.serialization.BinaryFormat
 import java.io.IOException
@@ -8,7 +7,6 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.*
 
-context(GearyContext)
 public class FileSystemStore(
     private val root: Path,
     private val format: BinaryFormat,

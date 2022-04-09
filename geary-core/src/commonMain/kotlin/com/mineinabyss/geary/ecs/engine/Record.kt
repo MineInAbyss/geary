@@ -3,12 +3,13 @@ package com.mineinabyss.geary.ecs.engine
 import com.mineinabyss.geary.ecs.api.engine.Engine
 import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import kotlinx.atomicfu.locks.SynchronizedObject
 import org.koin.core.component.get
 
 public class Record internal constructor(
     archetype: Archetype,
     row: Int
-) : EngineContext {
+) : SynchronizedObject(), EngineContext {
     public var archetype: Archetype
         internal set
     public var row: Int

@@ -15,8 +15,6 @@ import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
 import com.mineinabyss.geary.ecs.serialization.Formats
 import org.koin.core.component.inject
 import kotlin.reflect.KProperty
-import kotlin.reflect.full.extensionReceiverParameter
-import kotlin.reflect.typeOf
 
 /**
  * #### [Guide: Listeners](https://wiki.mineinabyss.com/geary/guide/listeners)
@@ -35,19 +33,6 @@ public abstract class GearyListener : GearySystem, AccessorBuilderProvider, Gear
     public val target: AccessorHolder = AccessorHolder()
     public val event: AccessorHolder = AccessorHolder()
 
-    public operator fun <T : Accessor<*>> AccessorBuilder<T>.provideDelegate(
-        thisRef: Any,
-        property: KProperty<*>
-    ): T {
-        val holder = when (property.extensionReceiverParameter?.type) {
-            typeOf<SourceScope>() -> source
-            typeOf<TargetScope>() -> target
-            typeOf<EventScope>() -> event
-            else -> error("Can only define accessors for source, target, or event.")
-        }
-        return holder.addAccessor { build(holder, it) }
-    }
-
     public fun start() {
         onStart()
         // Build these after so subclasses can modify source/target/event in onStart
@@ -55,6 +40,7 @@ public abstract class GearyListener : GearySystem, AccessorBuilderProvider, Gear
         target.start()
         event.start()
     }
+
 
     @Suppress("UNCHECKED_CAST")
     public operator fun <T> Accessor<T>.getValue(thisRef: SourceScope, property: KProperty<*>): T =
@@ -75,6 +61,16 @@ public abstract class GearyListener : GearySystem, AccessorBuilderProvider, Gear
             get<T>().build(holder, index)
         }
     }
+
+    public fun <T> AccessorBuilder<ComponentAccessor<T>>.onSource(): ComponentAccessor<T> =
+        source.addAccessor { build(source, it) }
+
+    public fun <T> AccessorBuilder<ComponentAccessor<T>>.onTarget(): ComponentAccessor<T> =
+        target.addAccessor { build(target, it) }
+
+    public fun <T> AccessorBuilder<ComponentAccessor<T>>.onEvent(): ComponentAccessor<T> =
+        event.addAccessor { build(event, it) }
+
 
     //TODO allow checking that all components were added on source
     //TODO an Accessor which returns the specific component added.

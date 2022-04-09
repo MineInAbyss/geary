@@ -1,13 +1,11 @@
 package com.mineinabyss.geary.api.addon
 
 import com.mineinabyss.geary.ecs.api.FormatsContext
-import com.mineinabyss.geary.ecs.api.engine.EngineContext
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.prefabs.events.PrefabLoaded
 import com.mineinabyss.idofront.messaging.logInfo
 
-context(FormatsContext, EngineContext)
-public abstract class AbstractAddonManager {
+public abstract class AbstractAddonManager: FormatsContext {
     internal val loadingPrefabs = mutableListOf<GearyEntity>()
     private val actions = sortedMapOf<GearyLoadPhase, MutableList<suspend () -> Unit>>()
 

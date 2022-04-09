@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.ecs.serialization
 
 import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.GearyContext
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
@@ -35,7 +34,7 @@ public object GearyEntitySerializer /*: KSerializer<GearyEntity>*/ {
 }
 
 //TODO this should be handled within a serializer of sorts for GearyEntity
-context(GearyContext) public fun GearyEntity.parseEntity(expression: String): GearyEntity {
+public fun GearyEntity.parseEntity(expression: String): GearyEntity {
     return when {
         expression.startsWith("parent") -> {
             val parent = (parent ?: error("Failed to read expression, entity had no parent: $expression"))

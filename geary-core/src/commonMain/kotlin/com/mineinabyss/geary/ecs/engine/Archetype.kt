@@ -14,7 +14,8 @@ import com.mineinabyss.geary.ecs.api.systems.GearyListener
 import com.mineinabyss.geary.ecs.events.handlers.GearyHandler
 import com.mineinabyss.geary.ecs.query.Query
 import com.mineinabyss.geary.ecs.query.contains
-import org.koin.mp.KoinPlatformTools.synchronized
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 
 // TODO more efficient type, no boxing
 private typealias IdList = ArrayList<Long>
@@ -36,7 +37,7 @@ public data class Archetype(
     public val id: Int
 ) {
     /** A mutex for anything which needs the size of ids to remain unchanged. */
-    private val entityAddition = Any()
+    private val entityAddition = SynchronizedObject()
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     //TODO aim to make private

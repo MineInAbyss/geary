@@ -20,9 +20,8 @@ public annotation class GearyAddonDSL
  * The entry point for other plugins to hook into Geary. Allows registering serializable components, systems, actions,
  * and more.
  */
-context(GearyContext, AbstractAddonManagerContext, PrefabManagerContext)
 @GearyAddonDSL
-public abstract class AbstractGearyAddon {
+public abstract class AbstractGearyAddon: GearyContext, AbstractAddonManagerContext, PrefabManagerContext {
     public abstract val namespace: String
 
     /** Adds a [SerializersModule] for polymorphic serialization of [GearyComponent]s within the ECS. */

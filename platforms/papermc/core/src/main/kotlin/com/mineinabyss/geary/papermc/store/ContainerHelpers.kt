@@ -1,12 +1,8 @@
 package com.mineinabyss.geary.papermc.store
 
-import com.mineinabyss.geary.ecs.api.FormatsContext
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
-import com.mineinabyss.geary.ecs.api.systems.QueryContext
 import com.mineinabyss.geary.ecs.components.PersistingComponent
-import com.mineinabyss.geary.papermc.GearyMCContext
-import com.mineinabyss.geary.papermc.PaperEngineContext
 import com.mineinabyss.geary.prefabs.helpers.addPrefab
 import com.mineinabyss.idofront.items.editItemMeta
 import org.bukkit.inventory.ItemStack
@@ -14,7 +10,7 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataHolder
 
 /** Encodes this entity's persisting components into a [PersistentDataContainer] */
-context(PaperEngineContext, FormatsContext) public fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
+public fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
     val persisting = getPersistingComponents()
 
     // Update hashes
@@ -24,11 +20,11 @@ context(PaperEngineContext, FormatsContext) public fun GearyEntity.encodeCompone
     pdc.encodeComponents(persisting, type)
 }
 
-context(PaperEngineContext, FormatsContext) public fun GearyEntity.encodeComponentsTo(holder: PersistentDataHolder) {
+public fun GearyEntity.encodeComponentsTo(holder: PersistentDataHolder) {
     encodeComponentsTo(holder.persistentDataContainer)
 }
 
-context(PaperEngineContext, FormatsContext) public fun GearyEntity.encodeComponentsTo(item: ItemStack) {
+public fun GearyEntity.encodeComponentsTo(item: ItemStack) {
     item.editItemMeta {
         encodeComponentsTo(persistentDataContainer)
     }
@@ -36,11 +32,11 @@ context(PaperEngineContext, FormatsContext) public fun GearyEntity.encodeCompone
 
 
 /** Decodes a [PersistentDataContainer]'s components, adding them to this entity and its list of persisting components */
-context(PaperEngineContext, FormatsContext, QueryContext)public fun GearyEntity.decodeComponentsFrom(pdc: PersistentDataContainer) {
+public fun GearyEntity.decodeComponentsFrom(pdc: PersistentDataContainer) {
     decodeComponentsFrom(pdc.decodeComponents())
 }
 
-context(PaperEngineContext, QueryContext) public fun GearyEntity.decodeComponentsFrom(decodedEntityData: DecodedEntityData) {
+public fun GearyEntity.decodeComponentsFrom(decodedEntityData: DecodedEntityData) {
     val (components, type) = decodedEntityData
 
     // Components written to this entity's PDC will override the ones defined in type
@@ -50,8 +46,8 @@ context(PaperEngineContext, QueryContext) public fun GearyEntity.decodeComponent
     }
 }
 
-context(GearyMCContext) public fun PersistentDataHolder.decodeComponents(): DecodedEntityData =
+public fun PersistentDataHolder.decodeComponents(): DecodedEntityData =
     persistentDataContainer.decodeComponents()
 
-context(GearyMCContext) public fun ItemStack.decodeComponents(): DecodedEntityData =
+public fun ItemStack.decodeComponents(): DecodedEntityData =
     itemMeta.decodeComponents()

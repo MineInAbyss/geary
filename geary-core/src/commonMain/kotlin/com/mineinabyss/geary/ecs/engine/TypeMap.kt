@@ -1,10 +1,9 @@
 package com.mineinabyss.geary.ecs.engine
 
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import java.util.concurrent.ConcurrentHashMap
 
 public class TypeMap {
-    private val map: MutableMap<Long, Record> = ConcurrentHashMap<Long, Record>()
+    private val map: MutableMap<Long, Record> = mutableMapOf()
 
     // We don't return nullable record to avoid boxing.
     // Accessing an entity that doesn't exist is indicative of a problem elsewhere and should be made obvious.

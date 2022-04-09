@@ -52,38 +52,30 @@ public class GearyPluginImpl : GearyPlugin() {
             override val formats = formats
         }
         //TODO hopefully we can combine with statements in the future
-        with(engineContext) {
-            with(pluginContext) {
-                with(formatsContext) {
-                    val queryManager = QueryManager()
-                    val uuid2GearyMap = UUID2GearyMap()
-                    val prefabManager = PrefabManager(engine)
-                    val queryContext = object: QueryContext {
-                        override val queryManager = queryManager
-                    }
-                    with(queryContext) {
-                        val addonManager = GearyAddonManager()
-                        val bukkitEntity2Geary = BukkitEntity2Geary()
-
-                        startOrAppendKoin(module {
-                            single<GearyPlugin> { this@GearyPluginImpl }
-                            single<QueryManager> { queryManager }
-                            single<Engine> { engine }
-                            single<BukkitEntity2Geary> { bukkitEntity2Geary }
-                            single<UUID2GearyMap> { uuid2GearyMap }
-                            single<GearyAddonManager> { addonManager }
-                            single<PrefabManager> { prefabManager }
-                            singleConfig(GearyConfig.serializer(), this@GearyPluginImpl)
-                        })
-
-                        engine.start()
-                        queryManager.init()
-                        uuid2GearyMap.startTracking()
-                        bukkitEntity2Geary.startTracking()
-                    }
-                }
-            }
+        val queryManager = QueryManager()
+        val uuid2GearyMap = UUID2GearyMap(engine)
+        val prefabManager = PrefabManager(engine)
+        val queryContext = object: QueryContext {
+            override val queryManager = queryManager
         }
+        val addonManager = GearyAddonManager()
+        val bukkitEntity2Geary = BukkitEntity2Geary()
+
+        startOrAppendKoin(module {
+            single<GearyPlugin> { this@GearyPluginImpl }
+            single<QueryManager> { queryManager }
+            single<Engine> { engine }
+            single<BukkitEntity2Geary> { bukkitEntity2Geary }
+            single<UUID2GearyMap> { uuid2GearyMap }
+            single<GearyAddonManager> { addonManager }
+            single<PrefabManager> { prefabManager }
+            singleConfig(GearyConfig.serializer(), this@GearyPluginImpl)
+        })
+
+        engine.start()
+        queryManager.init()
+        uuid2GearyMap.startTracking()
+        bukkitEntity2Geary.startTracking()
 
         gearyAddon {
             autoScanAll()
