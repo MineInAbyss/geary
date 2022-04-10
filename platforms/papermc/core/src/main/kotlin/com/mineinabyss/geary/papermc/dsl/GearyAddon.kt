@@ -10,6 +10,7 @@ import com.mineinabyss.geary.papermc.GearyMCContext
 import com.mineinabyss.geary.papermc.GearyMCContextKoin
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.autoscan.AutoScanner
+import com.mineinabyss.idofront.messaging.logError
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -122,7 +123,12 @@ public class GearyAddon(
                 asSequence().map { it.kotlin }
                     .filter { !it.hasAnnotation<ExcludeAutoScan>() }
                     .filterIsInstance<KClass<T>>()
-                    .filter { this@polymorphic.addSubclass(it, it.serializerOrNull()) }
+                    .filter { kClass ->
+                        runCatching {
+                            this@polymorphic.addSubclass(kClass, kClass.serializerOrNull())
+                        }.onFailure { logError("Failed to load serializer for class ${kClass.simpleName}") }
+                            .getOrThrow()
+                    }
                     .map { it.simpleName }
                     .joinToString()
                     .also { this@GearyAddon.plugin.logger.info("Autoscan loaded serializers for class ${kClass.simpleName}: $it") }

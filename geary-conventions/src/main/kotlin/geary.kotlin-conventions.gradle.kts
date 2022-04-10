@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
     // MineInAbyss platform
-    compileOnly("com.okkero:skedule:1.2.8")
+    compileOnly(libs.minecraft.skedule)
     compileOnly(libs.kotlin.stdlib)
     compileOnly(libs.kotlinx.serialization.json)
     compileOnly(libs.kotlinx.serialization.cbor)

@@ -22,7 +22,7 @@ internal actual fun trackEventListener(
     eventHandlers: MutableList<GearyHandler>
 ) {
     listener::class.functions
-        .filter { it.hasAnnotation<Handler>() }
+        .filter { runCatching { it.hasAnnotation<Handler>() }.getOrDefault(false) }
         .map { func ->
             class FunctionCaller(val kFunction: KFunction<*>, params: List<KClass<*>>) {
                 val types = kFunction.parameters.map { it.type.classifier }

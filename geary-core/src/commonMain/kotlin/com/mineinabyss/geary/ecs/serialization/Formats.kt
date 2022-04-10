@@ -29,6 +29,7 @@ public class Formats {
 
     internal val addonToModuleMap = mutableMapOf<String, SerializersModule>()
     private val formatMap = mutableMapOf<String, PrefabFormat>()
+    private val formatConstuctors = mutableMapOf<String, (SerializersModule) -> PrefabFormat>()
 
     //TODO allow this to work for all registered classes, not just components
     public fun getClassFor(serialName: String): KClass<out GearyComponent> =
@@ -48,7 +49,7 @@ public class Formats {
     }
 
     public fun addFormat(ext: String, create: (SerializersModule) -> PrefabFormat) {
-        formatMap[ext] = create(module)
+        formatConstuctors[ext] = create
     }
     public fun getFormat(ext: String): PrefabFormat? = formatMap[ext]
 
@@ -68,6 +69,9 @@ public class Formats {
         cborFormat = Cbor {
             serializersModule = module
             encodeDefaults = false
+        }
+        formatConstuctors.forEach { (ext, create) ->
+            formatMap[ext] = create(module)
         }
 //        hoconFormat = Hocon {
 //            serializersModule = module
