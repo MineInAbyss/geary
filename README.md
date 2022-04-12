@@ -20,9 +20,9 @@ We have two PaperMC plugins using this ECS to add Minecraft-specific functionali
 
 ### kotlinx.serialization backend
 
-All components are serialized through kotlinx.serialization, a reflectionless serialization library which allows us to store them in many formats, including JSON, Yaml, CBOR, and [many more](https://github.com/Kotlin/kotlinx.serialization/blob/master/formats/README.md). Use whatever you prefer!
+All components are serialized through kotlinx.serialization, a reflectionless serialization library which allows us to store them in many formats. Use whatever you prefer!
 
-Both Mobzy and Looty use this to allow for config-based entity creation, and store components directly in Bukkit's Persistent Data Containers using CBOR. Notably, tile entities and chunks also contain Persistent Data Containers, which we plan to make use of in the future.
+Both Mobzy and Looty use this to allow for config-based entity creation, and store components directly in Bukkit's Persistent Data Containers using a binary format. Notably, tile entities and chunks also contain Persistent Data Containers, which we plan to make use of in the future.
 
 ### Nice Kotlin syntax
 
@@ -64,11 +64,11 @@ And a system that sets a walking animation when entities are moving:
 ```kotlin
 object WalkingAnimationSystem : TickingSystem() {
     // Specify all components we want (Geary also supports branched AND/OR/NOT statements for selection)
-    val QueryResult.textures by get<Textures>()
-    val QueryResult.render by get<Render>()
-    val QueryResult.velocity by get<Velocity>()
+    val TargetScope.textures by get<Textures>()
+    val TargetScope.render by get<Render>()
+    val TargetScope.velocity by get<Velocity>()
     
-    override fun QueryResult.tick() {
+    override fun TargetScope.tick() {
       // We can access our components like regular variables!
       render.activeTexture = when(velocity.isNotZero()) {
            true -> textures.walking
@@ -87,32 +87,6 @@ WalkingAnimationSystem.apply {
 } // Returns a list of textures for any moving entity
 ```
 
-## Planned
-
-### Decoupling from Minecraft
-
-As this project matures, we plan to replace more and more of the Minecraft server with our own code. We hope to do this while maintaining useful features for Bukkit. Our goal is to slowly provide alternatives to some of the more annoying/slow parts of the vanilla server. Currently our plan looks something like this:
-- (Ongoing) Ensure core parts of the ECS can operate without Spigot.
-- (Ongoing) Avoid interacting with NMS and especially its class heirarchy. Components should work without having to create any custom NMS entity types.
-- Support stationary ECS entities that are saved to the chunk and can send the correct packets to players.
-- Full-on custom entities with their own AI and pathfinding system.
-- ECS chunk backend with some basic block behaviours copied from Minecraft. We would like to achieve:
-   - Cubic chunks
-   - Better async support
-   - Custom ECS blocks
-
-### Data migration
-
-We are looking at libraries that provide a DSL for component data migrations. We plan to allow end users to register a list of migrations with Geary and let Geary ensure these migrations get applied when entities get loaded.
-
-### Queries
-
-A DSL for making in-depth queries to efficiently get exactly the entities you want.
-
-## Limitations
-- There is no proper Java support. We are using many Kotlin-specific libraries and want to make this nice to use in Kotlin first. However, we understand parts of this may be useful for Java plugins as well, and plan to expand some support for them in the future (ex you may have to write components in Kotlin but could still write the rest of your plugin as you prefer).
-- API changes are still rather common, and the codebase itself needs to be ironed out a lot (there is some unexpected behaviour in many places.)
-
 ## Usage
 
 ### Gradle
@@ -130,3 +104,18 @@ dependencies {
 
 ### Wiki
 A rudimentary wiki can be found at [wiki.mineinabyss.com](https://wiki.mineinabyss.com/geary/)
+
+## Roadmap
+
+As the project matures, our primary goal is to make it useful to more people. Here are a handful of features we hope to achieve:
+- (Ongoing) Multiplatform support, with js, jvm, and native targets
+- (Ongoing) Monitoring tools, such as a web GUI
+- Optimize key bottlenecks and benchmark the engine
+- Support multiple Minecraft platforms (ex Sponge, Fabric)
+- Component data migrations
+- Complex queries
+- Minecraft entities done entirely through packets, with better AI support and faster iteration
+
+## Limitations
+- API changes are still rather common, and the codebase itself needs to be ironed out a lot (there is unexpected behaviour in many places.)
+- The current archetype architecture leaves many empty archetypes over time which hurts memory usage and performance.
