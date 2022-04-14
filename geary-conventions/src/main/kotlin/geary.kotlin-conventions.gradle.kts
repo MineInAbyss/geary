@@ -38,7 +38,6 @@ tasks {
                 "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
                 "-opt-in=kotlin.time.ExperimentalTime",
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                "-Xcontext-receivers",
             )
         }
     }

@@ -18,6 +18,10 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.serializerOrNull
 import org.bukkit.plugin.Plugin
+import org.reflections.Reflections
+import org.reflections.scanners.SubTypesScanner
+import org.reflections.util.ClasspathHelper
+import org.reflections.util.ConfigurationBuilder
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.hasAnnotation
@@ -38,6 +42,18 @@ public class GearyAddon(
     override val namespace: String = plugin.name.lowercase()
 
     public val classLoader: ClassLoader = plugin::class.java.classLoader
+    @PublishedApi
+    internal val reflections: Reflections = Reflections(
+        ConfigurationBuilder()
+            .addClassLoader(classLoader)
+            .addUrls(ClasspathHelper.forPackage("com.mineinabyss", classLoader))
+            .addScanners(SubTypesScanner())
+//            .filterInputsBy(FilterBuilder().apply {
+//                if (path != null) includePackage(path)
+//                excluded.forEach { excludePackage(it) }
+//            })
+    )
+//    internal val autoScanner: AutoScanner = AutoScanner(classLoader)
 
     /**
      * Automatically scans for all annotated components
@@ -60,7 +76,7 @@ public class GearyAddon(
      * @see AutoScanner
      */
     public fun autoScanComponents() {
-        AutoScanner(classLoader).getReflections()?.getTypesAnnotatedWith(Serializable::class.java)
+        reflections.getTypesAnnotatedWith(Serializable::class.java)
             ?.registerSerializers(GearyComponent::class) { kClass, serializer ->
                 val serialName = serializer?.descriptor?.serialName ?: return@registerSerializers false
                 PrefabKey.ofOrNull(serialName) ?: return@registerSerializers false
@@ -76,7 +92,7 @@ public class GearyAddon(
      * @see AutoScanner
      */
     public fun autoScanSystems() {
-        AutoScanner(classLoader).getReflections()
+        reflections
             ?.getTypesAnnotatedWith(AutoScan::class.java)
             ?.asSequence()
             ?.map { it.kotlin }
@@ -104,7 +120,8 @@ public class GearyAddon(
         }
     ) {
         mutableListOf("") += listOf("")
-        AutoScanner(classLoader).apply(init).getReflections()
+//        autoScanner.apply(init).getReflections()
+        reflections
             ?.getSubTypesOf(T::class.java)?.registerSerializers(T::class, addSubclass)
     }
 

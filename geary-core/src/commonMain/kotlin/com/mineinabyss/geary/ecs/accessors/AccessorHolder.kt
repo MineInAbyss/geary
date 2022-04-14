@@ -38,7 +38,6 @@ public open class AccessorHolder : MutableAndSelector(), AccessorBuilderProvider
     public operator fun <T : Accessor<*>> AccessorBuilder<T>.provideDelegate(
         thisRef: Any,
         property: KProperty<*>
-        //TODO check runblocking
     ): T = addAccessor { build(this@AccessorHolder, it) }
 
     public open fun <T : Accessor<*>> addAccessor(create: (index: Int) -> T): T {

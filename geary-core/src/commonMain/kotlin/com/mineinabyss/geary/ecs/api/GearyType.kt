@@ -24,17 +24,17 @@ public value class GearyType private constructor(
     public operator fun contains(id: GearyComponentId): Boolean = inner.contains(id)
 
     public fun indexOf(id: GearyComponentId): Int {
-        return binarySearch(id)
+        return binarySearch(id).coerceAtLeast(-1)
     }
 
     public tailrec fun binarySearch(id: GearyComponentId, fromIndex: Int = 0, toIndex: Int = inner.lastIndex): Int {
-        if(fromIndex > toIndex) return -1
+        if(fromIndex > toIndex) return -fromIndex - 1
         val mid = (fromIndex + toIndex) / 2
         val found = inner[mid]
         return when {
             found == id -> mid
-            found < id -> binarySearch(id, fromIndex, mid - 1)
-            else -> binarySearch(id, mid + 1, toIndex)
+            found < id -> binarySearch(id, mid + 1, toIndex)
+            else -> binarySearch(id, fromIndex, mid - 1)
         }
     }
 
@@ -73,8 +73,7 @@ public value class GearyType private constructor(
     }
 
     public operator fun plus(id: GearyComponentId): GearyType {
-        LongArray(1).indexOf(6)
-        val search = indexOf(id)
+        val search = binarySearch(id)
         if (search >= 0) return this
         val insertAt = -(search + 1)
         val arr = ULongArray(inner.size + 1)
@@ -85,7 +84,7 @@ public value class GearyType private constructor(
     }
 
     public operator fun minus(id: GearyComponentId): GearyType {
-        val removeAt = indexOf(id)
+        val removeAt = binarySearch(id)
         if (removeAt < 0) return this
         val arr = ULongArray(inner.size - 1)
         for (i in 0 until removeAt) arr[i] = inner[i]

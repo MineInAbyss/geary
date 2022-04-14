@@ -17,8 +17,7 @@ import kotlin.reflect.KType
 public fun entity(): GearyEntity = globalContext.engine.newEntity()
 
 /** @see entity */
-//TODO inline once compiler bug fixed
-public fun entity(run: GearyEntity.() -> Unit): GearyEntity = entity().apply(run)
+public inline fun entity(run: GearyEntity.() -> Unit): GearyEntity = entity().apply(run)
 
 /** Creates a new empty entity that will get removed once [run] completes or fails. */
 public inline fun <T> temporaryEntity(

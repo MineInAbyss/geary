@@ -203,6 +203,7 @@ internal class QueryManagerTest : GearyTest() {
         system.matchedArchetypes.shouldNotContain(entity.type.getArchetype())
         system.matchedArchetypes.shouldContain(entityWithData.type.getArchetype())
 
+        engine.cleanup()
         system.doTick()
     }
 

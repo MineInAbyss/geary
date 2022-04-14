@@ -12,7 +12,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.Test
 
 internal class AccessorHolderTest : GearyTest() {
-
     object FancyQuery : Query() {
         val TargetScope.default by getOrDefault<String>("empty!")
         val TargetScope.mapped by get<Int>().map { it.toString() }

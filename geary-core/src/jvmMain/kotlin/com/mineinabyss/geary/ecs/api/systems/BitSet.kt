@@ -47,7 +47,9 @@ public actual class BitSet {
     }
 
     public actual inline fun forEachBit(crossinline loop: (Int) -> Unit) {
-        inner.forEach(IntConsumer { loop(it) })
+        // Roaring bitsets run into concurrent modification issues where clearing a bit might skip iterating another
+        // so we have to clone the set.
+        inner.clone().forEach(IntConsumer { loop(it) })
     }
 
     public actual fun copy(): BitSet = BitSet(inner.clone())

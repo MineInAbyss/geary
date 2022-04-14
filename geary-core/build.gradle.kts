@@ -18,11 +18,19 @@ apply(plugin = "kotlinx-atomicfu")
 
 repositories {
     mavenCentral()
+    google()
 }
 
 kotlin {
-    jvm()
-    js()
+    jvm {
+        testRuns["test"].executionTask.configure {
+            useJUnitPlatform()
+        }
+    }
+    js {
+        browser()
+        nodejs()
+    }
     sourceSets {
         all {
             explicitApi()
@@ -35,26 +43,33 @@ kotlin {
         }
         val commonMain by getting {
             dependencies {
-                val okioVersion = "3.0.0"
-                api("com.squareup.okio:okio:$okioVersion")
+                implementation(kotlin("stdlib-common"))
                 implementation("org.jetbrains.kotlinx:atomicfu:0.17.1")
                 implementation("com.benasher44:uuid:0.4.0")
                 implementation(libs.kotlin.reflect)
+                implementation(libs.kotlinx.serialization.cbor)
 //                implementation(gearylibs.bitvector)
-                api(libs.koin.core)// { isTransitive = false }
 //                api(libs.kotlinx.coroutines)
+                api("com.squareup.okio:okio:3.0.0")
+                api(libs.koin.core)// { isTransitive = false }
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
                 api(libs.kotlinx.serialization.json)
-                implementation(libs.kotlinx.serialization.cbor)
                 api("com.soywiz.korlibs.kds:kds:2.2.1")
+//                implementation(libs.koin.test.junit5)
+                implementation("io.kotest:kotest-assertions-core:5.2.3")
+                implementation("io.kotest:kotest-property:5.2.3")
+//                implementation("io.kotest:kotest-runner-junit5:5.2.3")
             }
 
         }
-        val commonTest by getting {
+        commonTest {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
-                implementation(libs.koin.test)
-//                implementation(libs.koin.test.junit5)
+                implementation(kotlin("test"))
+                implementation(libs.koin.core)
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.1")
+
+//                implementation("io.insert-koin:koin-test:3.1.5")
+//                implementation(libs.koin.test)
             }
         }
 
@@ -64,6 +79,10 @@ kotlin {
                 implementation("org.roaringbitmap:RoaringBitmap:0.9.25")
             }
         }
+//        val jvmTest by getting {
+//            dependencies {
+//            }
+//        }
 
         val jsMain by getting {
             dependencies {
@@ -72,7 +91,6 @@ kotlin {
         }
     }
 }
-
 //dependencies {
 //    implementation(gearylibs.fastutil)
 //

@@ -94,7 +94,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
     }
 
     private fun createRecord(entity: GearyEntity, initialComponents: Collection<GearyComponent>) {
-        val ids = initialComponents.map { componentId(it::class) }
+        val ids = initialComponents.map { componentId(it::class) or HOLDS_DATA }
         val addTo = getArchetype(GearyType(ids))
         val record = Record(rootArchetype, -1)
         addTo.addEntityWithData(

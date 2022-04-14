@@ -22,11 +22,15 @@ import com.mineinabyss.geary.papermc.store.GearyStore
 import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.idofront.config.singleConfig
 import com.mineinabyss.idofront.config.startOrAppendKoin
+import com.mineinabyss.idofront.messaging.logInfo
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
 import com.mineinabyss.idofront.serialization.UUIDSerializer
 import org.bukkit.Bukkit
+import org.koin.core.logger.Level
+import org.koin.core.logger.Logger
+import org.koin.core.logger.MESSAGE
 import org.koin.dsl.module
 import java.util.*
 import kotlin.io.path.div
@@ -56,6 +60,19 @@ public class GearyPluginImpl : GearyPlugin() {
         val bukkitEntity2Geary = BukkitEntity2Geary()
 
         startOrAppendKoin(module {
+            single<Logger> {
+                object : Logger() {
+                    override fun log(level: Level, msg: MESSAGE) {
+                        getLogger().log(when(level) {
+                            Level.DEBUG -> java.util.logging.Level.FINE
+                            Level.INFO -> java.util.logging.Level.INFO
+                            Level.ERROR -> java.util.logging.Level.SEVERE
+                            Level.NONE -> java.util.logging.Level.OFF
+                        }, msg)
+                    }
+
+                }
+            }
             single<GearyPlugin> { this@GearyPluginImpl }
             single<QueryManager> { queryManager }
             single<Engine> { engine }
