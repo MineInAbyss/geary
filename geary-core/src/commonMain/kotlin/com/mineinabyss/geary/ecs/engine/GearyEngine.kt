@@ -16,8 +16,9 @@ import com.mineinabyss.geary.ecs.entities.parents
 import com.mineinabyss.geary.ecs.entities.removeParent
 import com.mineinabyss.geary.ecs.events.AddedComponent
 import com.mineinabyss.geary.ecs.events.EntityRemoved
-import com.soywiz.kds.Queue
 import kotlinx.atomicfu.atomic
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.*
 import org.koin.core.component.inject
 import org.koin.core.logger.Logger
@@ -54,13 +55,13 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
         //Register an entity for the ComponentInfo component, otherwise getComponentIdForClass does a StackOverflow
         val componentInfo = newEntity()
         classToComponentMap[ComponentInfo::class] = componentInfo.id
+        componentInfo.set(ComponentInfo(ComponentInfo::class), noEvent = true)
     }
 
     override fun start(): Boolean {
         return super.start().also {
             if (it) {
                 init()
-//              componentInfo.set(ComponentInfo(ComponentInfo::class)) //FIXME causes an error
             }
         }
     }
@@ -102,7 +103,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
             initialComponents.toTypedArray().apply { sortBy { addTo.indexOf(componentId(it::class)) } },
             entity,
         )
-        typeMap.unsafeSet(entity, record)
+        typeMap.set(entity, record)
     }
 
     override fun addSystem(system: GearySystem) {
@@ -126,10 +127,10 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
 
     /** Gets the record of a given entity, or throws an error if the entity id is not active in the engine. */
     override fun unsafeRecord(entity: GearyEntity): Record =
-        typeMap.unsafeGet(entity)
+        typeMap.get(entity)
 
     override fun setRecord(entity: GearyEntity, record: Record) {
-        typeMap.unsafeSet(entity, record)
+        typeMap.set(entity, record)
     }
 
     override fun getComponentFor(entity: GearyEntity, componentId: GearyComponentId): GearyComponent? {
@@ -225,7 +226,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
 
         val (archetype, row) = unsafeRecord(entity)
         archetype.scheduleRemoveRow(row)
-        typeMap.unsafeRemove(entity)
+        typeMap.remove(entity)
         //add current id into queue for reuse
         removedEntities.push(entity)
     }
@@ -250,10 +251,13 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
         return node
     }
 
+    private val classToComponentMapLock = SynchronizedObject()
     override fun getOrRegisterComponentIdForClass(kClass: KClass<*>): GearyComponentId {
-        val id = classToComponentMap[kClass]
-        if (id == (-1L).toULong()) return registerComponentIdForClass(kClass)
-        return id
+        synchronized(classToComponentMapLock) {
+            val id = classToComponentMap[kClass]
+            if (id == (-1L).toULong()) return registerComponentIdForClass(kClass)
+            return id
+        }
     }
 
     private fun registerComponentIdForClass(kClass: KClass<*>): GearyComponentId {
@@ -268,22 +272,28 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
 
     //TODO what data structure is most efficient here?
     private val queuedCleanup = mutableSetOf<Archetype>()
-    private val runningAsyncJobs = Queue<Job>()
+    private val runningAsyncJobs = mutableSetOf<Job>()
     private var iterationJob: Job? = null
+    private val safeDispatcher = Dispatchers.Default.limitedParallelism(1)
 
     override fun runSafely(scope: CoroutineScope, job: Job) {
-        runningAsyncJobs.enqueue(scope.launch {
+        launch(safeDispatcher) {
             iterationJob?.join()
+            runningAsyncJobs += job
             job.invokeOnCompletion {
-                runningAsyncJobs.remove(job)
+//                launch(safeDispatcher) {
+                runningAsyncJobs -= job
+                if (it != null) throw it
+//                }
             }
             job.start()
-        })
+        }
     }
 
     override suspend fun tick(currentTick: Long): Unit = coroutineScope {
         // Create a job but don't start it
         val job = launch(start = CoroutineStart.LAZY) {
+            cleanup()
             registeredSystems
                 .filter { currentTick % (it.interval / tickDuration).toInt().coerceAtLeast(1) == 0L }
                 .forEach {
@@ -295,19 +305,18 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
                     }
                 }
         }
-        iterationJob = job
-
-        cleanup()
-
         // Await completion of all other jobs
-        //TODO block any new jobs from starting
-        runningAsyncJobs.joinAll()
-        runningAsyncJobs.clear()
+        iterationJob = job
+        withContext(safeDispatcher) {
+            runningAsyncJobs.joinAll()
+        }
 
         // Tick all systems
+        logger.debug("Started engine tick")
         job.start()
         job.join()
         iterationJob = null
+        logger.debug("Finished engine tick")
     }
 
     internal fun cleanup() {

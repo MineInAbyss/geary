@@ -38,20 +38,18 @@ internal annotation class GearyAddonDSL
 @GearyAddonDSL
 public class GearyAddon(
     public val plugin: Plugin,
+    autoscanPackage: String = ""
 ) : AbstractGearyAddon(), GearyMCContext by GearyMCContextKoin() {
     override val namespace: String = plugin.name.lowercase()
 
     public val classLoader: ClassLoader = plugin::class.java.classLoader
+
     @PublishedApi
     internal val reflections: Reflections = Reflections(
         ConfigurationBuilder()
             .addClassLoader(classLoader)
-            .addUrls(ClasspathHelper.forPackage("com.mineinabyss", classLoader))
+            .addUrls(ClasspathHelper.forPackage(autoscanPackage, classLoader))
             .addScanners(SubTypesScanner())
-//            .filterInputsBy(FilterBuilder().apply {
-//                if (path != null) includePackage(path)
-//                excluded.forEach { excludePackage(it) }
-//            })
     )
 //    internal val autoScanner: AutoScanner = AutoScanner(classLoader)
 
@@ -93,7 +91,7 @@ public class GearyAddon(
      */
     public fun autoScanSystems() {
         reflections
-            ?.getTypesAnnotatedWith(AutoScan::class.java)
+            .getTypesAnnotatedWith(AutoScan::class.java)
             ?.asSequence()
             ?.map { it.kotlin }
             ?.filter { it.isSubclassOf(GearySystem::class) }
@@ -119,10 +117,7 @@ public class GearyAddon(
             serializer != null
         }
     ) {
-        mutableListOf("") += listOf("")
-//        autoScanner.apply(init).getReflections()
-        reflections
-            ?.getSubTypesOf(T::class.java)?.registerSerializers(T::class, addSubclass)
+        reflections.getSubTypesOf(T::class.java)?.registerSerializers(T::class, addSubclass)
     }
 
     /** Helper function to register serializers via scanning for geary classes. */
@@ -159,7 +154,7 @@ public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KC
 
 /** Entry point to register a new [Plugin] with the Geary ECS. */
 //TODO support plugins being re-registered after a reload
-public inline fun Plugin.gearyAddon(crossinline init: GearyAddon.() -> Unit) {
+public inline fun Plugin.gearyAddon(autoscanPackage: String = "", crossinline init: GearyAddon.() -> Unit) {
     with(GearyMCContextKoin()) {
         formats.clearSerializerModule(name)
         init(GearyAddon(this@gearyAddon))

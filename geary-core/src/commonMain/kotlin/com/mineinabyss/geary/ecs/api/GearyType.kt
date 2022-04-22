@@ -1,6 +1,10 @@
 package com.mineinabyss.geary.ecs.api
 
+import com.mineinabyss.geary.ecs.api.engine.getComponentInfo
+import com.mineinabyss.geary.ecs.api.relations.toRelation
+import com.mineinabyss.geary.ecs.engine.*
 import kotlin.jvm.JvmInline
+import kotlin.reflect.KClass
 
 /**
  * An inlined class used for tracking the components an entity/archetype has.
@@ -93,7 +97,22 @@ public value class GearyType private constructor(
 
     }
 
-//    override fun toString(): String =
-//        inner.map { (it.getComponentInfo()?.kClass as KClass<*>).simpleName ?: it }
-//            .joinToString(", ")
+    override fun toString(): String =
+        inner.joinToString(", ", prefix = "[", postfix = "]") { it.readableString() }
+}
+
+public fun GearyEntityId.readableString(): String = buildString {
+    val id = this@readableString
+    if(id.hasRole(RELATION)) {
+        append(id.toRelation().toString())
+        return@buildString
+    }
+    if(id.hasRole(INSTANCEOF)) append("I") else append('-')
+    if(id.hasRole(CHILDOF)) append("C") else append('-')
+    if(id.hasRole(RELATION)) append("R") else append('-')
+    if(id.hasRole(HOLDS_DATA)) append("D") else append('-')
+    append(" ")
+    val componentName = (id.getComponentInfo()?.kClass as KClass<*>).simpleName
+    if(componentName == null) append(id and ENTITY_MASK)
+    else append(componentName)
 }

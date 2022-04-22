@@ -1,14 +1,21 @@
 package com.mineinabyss.geary.ecs.engine
 
+import com.mineinabyss.geary.ecs.accessors.TargetScope
+import com.mineinabyss.geary.ecs.accessors.building.get
 import com.mineinabyss.geary.ecs.api.engine.componentId
 import com.mineinabyss.geary.ecs.api.engine.entity
+import com.mineinabyss.geary.ecs.api.engine.runSafely
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.api.relations.Relation
+import com.mineinabyss.geary.ecs.api.systems.TickingSystem
 import com.mineinabyss.geary.ecs.components.RelationComponent
 import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -113,5 +120,31 @@ internal class GearyEngineTest : GearyTest() {
 //                (offset..(offset + 100uL)).toSet().shouldContain(entity().id)
 //            }
         }
+    }
+
+    class CheckAsyncSystem : TickingSystem() {
+        val TargetScope.string by get<String>()
+        override fun TargetScope.tick() {
+            error("Found entity with string when it should have been removed before iteration")
+        }
+    }
+
+    //TODO figure out what's up here
+//    @Test
+    fun runSafely() = runTest {
+        clearEngine()
+        engine.addSystem(CheckAsyncSystem())
+        launch {
+            repeat(5000) {
+                engine.tick(it.toLong())
+            }
+        }
+        concurrentOperation(50000) {
+            runSafely {
+                entity {
+                    set("Hello world")
+                }.removeEntity()
+            }.await()
+        }.awaitAll()
     }
 }

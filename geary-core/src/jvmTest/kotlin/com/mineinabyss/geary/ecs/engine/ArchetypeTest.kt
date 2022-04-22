@@ -7,6 +7,7 @@ import com.mineinabyss.geary.ecs.api.relations.Relation
 import com.mineinabyss.geary.ecs.api.relations.RelationValueId
 import com.mineinabyss.geary.ecs.components.RelationComponent
 import com.mineinabyss.geary.helpers.GearyTest
+import io.kotest.matchers.collections.shouldBeUnique
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
@@ -77,16 +78,20 @@ internal class ArchetypeTest : GearyTest() {
                 setOf("Test", RelationComponent(componentId<String>(), 10), RelationComponent(componentId<Int>(), 15))
     }
 
-    private suspend inline fun concurrentOperation(
-        times: Int = 10000,
-        crossinline run: suspend (id: Int) -> Unit
-    ): List<Deferred<*>> {
-        return withContext(Dispatchers.Default) {
-            (0 until times).map { id ->
-                async { run(id) }
-            }
+    @Nested
+    inner class Async {
+        @Test
+        fun `add entities concurrently`() = runTest {
+            clearEngine()
+            val arc = engine.getArchetype(GearyType(ulongArrayOf(componentId<String>() or HOLDS_DATA)))
+            concurrentOperation(10000) {
+                arc.addEntityWithData(engine.newEntity().unsafeRecord(), arrayOf("Test"))
+            }.awaitAll()
+            arc.ids.size shouldBe 10000
+            arc.ids.shouldBeUnique()
         }
     }
+
 
     // The two tests below are pretty beefy and more like benchmarks so they're disabled by default
 //    @Test

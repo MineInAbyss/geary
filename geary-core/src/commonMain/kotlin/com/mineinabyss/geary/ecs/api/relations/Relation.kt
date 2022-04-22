@@ -3,6 +3,7 @@ package com.mineinabyss.geary.ecs.api.relations
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyComponentId
 import com.mineinabyss.geary.ecs.api.engine.componentId
+import com.mineinabyss.geary.ecs.api.readableString
 import com.mineinabyss.geary.ecs.engine.RELATION
 import com.mineinabyss.geary.ecs.engine.RELATION_KEY_MASK
 import com.mineinabyss.geary.ecs.engine.RELATION_VALUE_MASK
@@ -38,7 +39,7 @@ public value class Relation private constructor(
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
 
-    override fun toString(): String = "$key to $value"
+    override fun toString(): String = "${key.readableString()} to ${value.id.readableString()}"
 
     public companion object {
         public fun of(

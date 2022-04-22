@@ -43,6 +43,7 @@ public data class Archetype(
     //TODO aim to make private
     internal val ids: IdList = IdList()
     private val queuedRemoval = mutableListOf<Int>()
+    private val queueRemoval = SynchronizedObject()
 
     internal var isIterating = false
 
@@ -167,7 +168,6 @@ public data class Archetype(
      *
      * @return The new [Record] to be associated with this entity from now on.
      */
-    //TODO proper async add
     internal fun addEntityWithData(
         record: Record,
         data: Array<GearyComponent>,
@@ -305,9 +305,11 @@ public data class Archetype(
     }
 
     internal fun scheduleRemoveRow(row: Int) {
-        queuedRemoval.add(row)
-        if (!isIterating)
-            (engine as GearyEngine).scheduleRemove(this)
+        synchronized(queueRemoval) {
+            queuedRemoval.add(row)
+        }
+        //TODO another variable, is scheduled so we dont do a hashmap lookup each time
+        if (!isIterating) (engine as GearyEngine).scheduleRemove(this)
     }
 
     /**
@@ -361,15 +363,15 @@ public data class Archetype(
         val types = engine.typeMap
         // Lock access to entities involved
 
-        val origEventArc = types.unsafeGet(event).archetype
-        val origSourceArc = source?.let { types.unsafeGet(it) }?.archetype
+        val origEventArc = types.get(event).archetype
+        val origSourceArc = source?.let { types.get(it) }?.archetype
 
         //TODO performance upgrade will come when we figure out a solution in QueryManager as well.
         for (handler in origEventArc.eventHandlers) {
             // If an event handler has moved the entity to a new archetype, make sure we follow it.
-            val (targetArc, targetRow) = types.unsafeGet(target)
-            val (eventArc, eventRow) = types.unsafeGet(event)
-            val sourceRecord = source?.let { types.unsafeGet(it) }
+            val (targetArc, targetRow) = types.get(target)
+            val (eventArc, eventRow) = types.get(event)
+            val sourceRecord = source?.let { types.get(it) }
             val sourceArc = sourceRecord?.archetype
             val sourceRow = sourceRecord?.row
 
@@ -426,11 +428,17 @@ public data class Archetype(
 
     /** Removes any queued up entity deletions. */
     internal fun cleanup() {
-        if (!isIterating) queuedRemoval.sort()
-        // Since the rows were added in order while iterating, the list is always sorted,
-        // so we don't worry about moving rows
-        while (queuedRemoval.isNotEmpty()) {
-            removeEntity(queuedRemoval.removeLast())
+        synchronized(queueRemoval) {
+            if (!isIterating)
+                queuedRemoval.sort()
+            // Since the rows were added in order while iterating, the list is always sorted,
+            // so we don't worry about moving rows
+            println("Starting cleanup")
+            while (queuedRemoval.isNotEmpty()) {
+                val last = queuedRemoval.removeLast()
+                println("Removing $last in $this")
+                removeEntity(last)
+            }
         }
     }
 }

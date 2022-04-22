@@ -3,6 +3,7 @@ package com.mineinabyss.geary.papermc.store
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.ecs.api.entities.toGeary
 import com.mineinabyss.geary.ecs.components.PersistingComponent
+import com.mineinabyss.geary.ecs.engine.isInstance
 import com.mineinabyss.geary.prefabs.helpers.addPrefab
 import com.mineinabyss.idofront.items.editItemMeta
 import org.bukkit.inventory.ItemStack
@@ -12,7 +13,10 @@ import org.bukkit.persistence.PersistentDataHolder
 /** Encodes this entity's persisting components into a [PersistentDataContainer] */
 public fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
     val persisting = getPersistingComponents()
-
+    if (persisting.isEmpty() && !type.any { it.isInstance() }) {
+        pdc.hasComponentsEncoded = false
+        return
+    }
     // Update hashes
     persisting.forEach {
         getRelation(it::class, PersistingComponent::class)?.hash = it.hashCode()

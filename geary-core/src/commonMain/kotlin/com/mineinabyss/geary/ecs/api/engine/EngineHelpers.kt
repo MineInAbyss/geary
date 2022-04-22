@@ -63,10 +63,9 @@ public fun systems(vararg systems: GearySystem): List<Deferred<Unit>> {
     return systems.map { globalContext.engine.async { globalContext.engine.addSystem(it) } }
 }
 
-//TODO inline when compiler fixed
-public /*inline*/ fun <T> runSafely(
+public inline fun <T> runSafely(
     scope: CoroutineScope = globalContext.engine, /*crossinline*/
-    run: suspend () -> T
+    crossinline run: suspend () -> T
 ): Deferred<T> {
     val deferred = globalContext.engine.async(start = CoroutineStart.LAZY) { run() }
     globalContext.engine.runSafely(scope, deferred)

@@ -24,6 +24,7 @@ import kotlin.reflect.KClass
  */
 public abstract class Engine : KoinComponent, EngineContext, CoroutineScope {
     override val engine: Engine get() = this
+    public val name: String = "Unnamed Engine"
 
     /** The root archetype representing a type of no components */
     public abstract val rootArchetype: Archetype
@@ -102,4 +103,6 @@ public abstract class Engine : KoinComponent, EngineContext, CoroutineScope {
     public abstract fun setRecord(entity: GearyEntity, record: Record)
 
     public abstract fun runSafely(scope: CoroutineScope, job: Job)
+
+    override fun toString(): String = name
 }
