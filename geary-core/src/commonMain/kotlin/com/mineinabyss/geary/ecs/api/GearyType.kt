@@ -112,7 +112,7 @@ public fun GearyEntityId.readableString(): String = buildString {
     if(id.hasRole(RELATION)) append("R") else append('-')
     if(id.hasRole(HOLDS_DATA)) append("D") else append('-')
     append(" ")
-    val componentName = (id.getComponentInfo()?.kClass as KClass<*>).simpleName
+    val componentName = (id.getComponentInfo()?.kClass as? KClass<*>)?.simpleName
     if(componentName == null) append(id and ENTITY_MASK)
     else append(componentName)
 }

@@ -433,10 +433,8 @@ public data class Archetype(
                 queuedRemoval.sort()
             // Since the rows were added in order while iterating, the list is always sorted,
             // so we don't worry about moving rows
-            println("Starting cleanup")
             while (queuedRemoval.isNotEmpty()) {
                 val last = queuedRemoval.removeLast()
-                println("Removing $last in $this")
                 removeEntity(last)
             }
         }

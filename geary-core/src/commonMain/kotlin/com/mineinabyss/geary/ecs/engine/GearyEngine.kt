@@ -281,10 +281,9 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
             iterationJob?.join()
             runningAsyncJobs += job
             job.invokeOnCompletion {
-//                launch(safeDispatcher) {
-                runningAsyncJobs -= job
-                if (it != null) throw it
-//                }
+                launch(safeDispatcher) {
+                    runningAsyncJobs -= job
+                }
             }
             job.start()
         }

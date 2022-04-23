@@ -22,7 +22,6 @@ import com.mineinabyss.geary.papermc.store.GearyStore
 import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.idofront.config.singleConfig
 import com.mineinabyss.idofront.config.startOrAppendKoin
-import com.mineinabyss.idofront.messaging.logInfo
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.plugin.registerService
@@ -89,7 +88,7 @@ public class GearyPluginImpl : GearyPlugin() {
         uuid2GearyMap.startTracking()
         bukkitEntity2Geary.startTracking()
 
-        gearyAddon {
+        gearyAddon(autoscanPackage = "com.mineinabyss") {
             autoScanAll()
 
             components {

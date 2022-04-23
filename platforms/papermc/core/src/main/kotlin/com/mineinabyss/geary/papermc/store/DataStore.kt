@@ -3,7 +3,9 @@ package com.mineinabyss.geary.papermc.store
 import com.mineinabyss.geary.ecs.api.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyType
 import com.mineinabyss.geary.ecs.api.entities.toGeary
+import com.mineinabyss.geary.ecs.engine.INSTANCEOF
 import com.mineinabyss.geary.ecs.engine.isInstance
+import com.mineinabyss.geary.ecs.engine.withRole
 import com.mineinabyss.geary.ecs.serialization.Formats
 import com.mineinabyss.geary.papermc.GearyMCContext
 import com.mineinabyss.geary.papermc.globalContextMC
@@ -130,7 +132,7 @@ public fun PersistentDataContainer.decodeComponents(): DecodedEntityData =
             .filter { it.key.startsWith(COMPONENT_PREFIX) }
             .mapNotNull { decode(it) }
             .toSet(),
-        type = GearyType(decodePrefabs().mapNotNull { it.toEntity()?.id })
+        type = GearyType(decodePrefabs().mapNotNull { it.toEntity()?.id?.withRole(INSTANCEOF) })
     )
 
 /** Verifies a [PersistentDataContainer] has a tag identifying it as containing Geary components. */

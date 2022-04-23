@@ -157,6 +157,6 @@ public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KC
 public inline fun Plugin.gearyAddon(autoscanPackage: String = "", crossinline init: GearyAddon.() -> Unit) {
     with(GearyMCContextKoin()) {
         formats.clearSerializerModule(name)
-        init(GearyAddon(this@gearyAddon))
+        init(GearyAddon(this@gearyAddon, autoscanPackage))
     }
 }
