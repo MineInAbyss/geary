@@ -101,7 +101,6 @@ public class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin
     /** Remove entities from ECS when they are removed from Bukkit for any reason (Uses PaperMC event) */
     @EventHandler(priority = EventPriority.HIGHEST)
     public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
-        println("Removed entity")
         // Only remove player from ECS on disconnect, not death
         if (entity is Player) return
         entity.toGearyOrNull()?.removeEntity()
