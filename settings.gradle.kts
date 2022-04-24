@@ -52,7 +52,7 @@ include(
     "geary-addon",
     "geary-core",
     "geary-prefabs",
-//    "geary-web-console",
+    "geary-web-console",
     "geary-papermc",
 )
 

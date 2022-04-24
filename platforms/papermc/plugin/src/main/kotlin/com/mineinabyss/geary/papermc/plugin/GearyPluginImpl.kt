@@ -20,6 +20,7 @@ import com.mineinabyss.geary.papermc.listeners.GearyAttemptSpawnListener
 import com.mineinabyss.geary.papermc.store.FileSystemStore
 import com.mineinabyss.geary.papermc.store.GearyStore
 import com.mineinabyss.geary.prefabs.PrefabManager
+import com.mineinabyss.geary.webconsole.GearyWebConsole
 import com.mineinabyss.idofront.config.singleConfig
 import com.mineinabyss.idofront.config.startOrAppendKoin
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
@@ -58,6 +59,7 @@ public class GearyPluginImpl : GearyPlugin() {
         val addonManager = GearyAddonManager()
         val bukkitEntity2Geary = BukkitEntity2Geary()
 
+        GearyWebConsole().start()
         startOrAppendKoin(module {
             single<Logger> {
                 object : Logger() {

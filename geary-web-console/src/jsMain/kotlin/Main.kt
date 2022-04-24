@@ -1,49 +1,51 @@
 import QueryOptions.*
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.*
+import androidx.compose.ui.window.Window
 import com.mineinabyss.geary.webconsole.data.EntityInfo
-import components.Container
-import components.Row
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.web.dom.*
-import org.jetbrains.compose.web.renderComposable
+import org.jetbrains.skiko.wasm.onWasmReady
 
-enum class QueryOptions() {
+enum class QueryOptions {
     PLAYER, ID
 }
 
 fun main() {
-    renderComposable(rootElementId = "root") {
-        var input by remember { mutableStateOf("") }
-        var entityInfo: EntityInfo? by remember { mutableStateOf(null) }
-        val coroutineScope = rememberCoroutineScope()
-        var queryOption by remember { mutableStateOf(ID) }
+    onWasmReady {
+        Window("Geary web console") {
+            var input by remember { mutableStateOf("") }
+            var entityInfo: EntityInfo? by remember { mutableStateOf(null) }
+            val coroutineScope = rememberCoroutineScope()
+            var queryOption by remember { mutableStateOf(ID) }
 
-        Container {
             Row {
-                TextArea(input) { onInput { input = it.value } }
-                Button({
-                    onClick {
-                        coroutineScope.launch {
-                            entityInfo = when (queryOption) {
-                                PLAYER -> getEntityInfo(input)
-                                ID -> getEntityInfo(input.toInt())
-                            }
+                TextField(input, onValueChange = { input = it })
+                Button(onClick = {
+                    coroutineScope.launch {
+                        entityInfo = when (queryOption) {
+                            PLAYER -> getEntityInfo(input)
+                            ID -> getEntityInfo(input.toInt())
                         }
                     }
                 }) {
                     Text("Search")
                 }
-
-                Select({
-                    onChange { queryOption = valueOf(it.value!!) }
-                }) {
-                    for (option in values())
-                        Option(option.name) {
+                LazyColumn {
+                    items(values()) { option ->
+                        Button(onClick = { queryOption = option }) {
                             Text(option.name)
                         }
+                    }
                 }
+
                 entityInfo?.apply {
-                    H1 { Text("Entity Info") }
+                    Text("Entity Info", style = MaterialTheme.typography.h1)
                     Text(info)
                 }
             }

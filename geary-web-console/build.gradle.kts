@@ -1,3 +1,4 @@
+import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.compose.compose
 
 val serverVersion: String by project
@@ -8,7 +9,7 @@ plugins {
     kotlin("plugin.serialization")
 //    id("com.mineinabyss.conventions.publication")
 //    id("com.mineinabyss.conventions.testing")
-    id("org.jetbrains.compose") version "1.0.1"
+    id("org.jetbrains.compose") version "1.2.0-alpha01-dev620"
 }
 
 repositories {
@@ -64,8 +65,11 @@ kotlin {
                 implementation(libs.ktor.client.js)
                 implementation(libs.ktor.client.json)
                 implementation(libs.ktor.client.serialization)
-                implementation(compose.web.core)
                 implementation(compose.runtime)
+                implementation(compose.ui)
+                implementation(compose.foundation)
+                @OptIn(ExperimentalComposeLibrary::class)
+                implementation(compose.material)
             }
         }
     }
