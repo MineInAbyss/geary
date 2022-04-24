@@ -1,6 +1,11 @@
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinMultiplatformPlugin
+
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
+    id("org.jetbrains.dokka")
 //    id("geary.kotlin-conventions")
 //    id("com.mineinabyss.conventions.publication")
 //    id("com.mineinabyss.conventions.testing")
@@ -21,13 +26,27 @@ repositories {
     google()
 }
 
+//TODO dev options to only build for one target at a time
+fun KotlinTarget.disableCompilations() {
+    compilations.configureEach {
+        compileKotlinTask.enabled = false
+    }
+}
+
 kotlin {
+    targets.configureEach {
+        println("Name: $name, type: $platformType")
+        if(name == KotlinMultiplatformPlugin.METADATA_TARGET_NAME) return@configureEach
+        if(platformType != KotlinPlatformType.jvm)
+            disableCompilations()
+    }
+
     jvm {
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()
         }
     }
-    js {
+    js(IR) {
         browser()
         nodejs()
     }
