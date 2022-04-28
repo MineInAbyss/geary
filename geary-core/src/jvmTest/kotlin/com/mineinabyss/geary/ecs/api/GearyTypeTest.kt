@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.ecs.api
 
+import com.mineinabyss.geary.datatypes.GearyType
 import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test

@@ -1,11 +1,10 @@
 package com.mineinabyss.geary.papermc
 
 import com.mineinabyss.geary.api.addon.AbstractAddonManagerContext
-import com.mineinabyss.geary.ecs.api.GearyContext
-import com.mineinabyss.geary.ecs.api.engine.EngineContext
-import com.mineinabyss.geary.ecs.entities.UUID2GearyMap
-import com.mineinabyss.geary.ecs.helpers.GearyContextKoin
-import com.mineinabyss.geary.ecs.serialization.Formats
+import com.mineinabyss.geary.context.EngineContext
+import com.mineinabyss.geary.context.GearyContext
+import com.mineinabyss.geary.context.GearyContextKoin
+import com.mineinabyss.geary.datatypes.maps.UUID2GearyMap
 import com.mineinabyss.geary.papermc.access.BukkitEntity2Geary
 import com.mineinabyss.geary.papermc.dsl.GearyAddonManager
 import com.mineinabyss.geary.papermc.engine.PaperMCEngine
@@ -53,8 +52,6 @@ public open class GearyMCContextKoin :
     override val prefabManager: PrefabManager by inject()
     override val addonManager: GearyAddonManager by inject()
     override val bukkit2Geary: BukkitEntity2Geary by inject()
-    override val formats: Formats by inject()
-
 
     public override val geary: GearyPlugin by inject()
 

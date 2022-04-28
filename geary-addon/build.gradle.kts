@@ -8,6 +8,7 @@ plugins {
 dependencies {
     implementation(libs.reflections)
     implementation(libs.kotlin.reflect)
+    compileOnly(libs.idofront.autoscan)
     compileOnly(project(":geary-core"))
     compileOnly(project(":geary-prefabs"))
 }

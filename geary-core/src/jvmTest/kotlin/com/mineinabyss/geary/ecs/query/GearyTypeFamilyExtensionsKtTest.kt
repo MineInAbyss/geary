@@ -1,11 +1,10 @@
 package com.mineinabyss.geary.ecs.query
 
-import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationValueId
-import com.mineinabyss.geary.helpers.GearyTest
+import com.mineinabyss.geary.datatypes.GearyType
+import com.mineinabyss.geary.datatypes.Relation
+import com.mineinabyss.geary.datatypes.RelationValueId
+import com.mineinabyss.geary.datatypes.family.MutableFamily
+import com.mineinabyss.geary.helpers.*
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
@@ -20,6 +19,6 @@ class GearyTypeFamilyExtensionsKtTest : GearyTest() {
     @Test
     fun contains() {
         val type = entity { setRelation(10uL, "") }.type
-        RelationValueLeaf(RelationValueId(componentId<String>())).contains(type) shouldBe true
+        MutableFamily.Leaf.RelationValue(RelationValueId(componentId<String>())).contains(type) shouldBe true
     }
 }

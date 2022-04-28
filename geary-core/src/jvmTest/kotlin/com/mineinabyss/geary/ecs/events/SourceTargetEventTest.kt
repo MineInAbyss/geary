@@ -1,29 +1,27 @@
 package com.mineinabyss.geary.ecs.events
 
-import com.mineinabyss.geary.ecs.accessors.EventScope
-import com.mineinabyss.geary.ecs.accessors.SourceScope
-import com.mineinabyss.geary.ecs.accessors.TargetScope
-import com.mineinabyss.geary.ecs.accessors.building.get
-import com.mineinabyss.geary.ecs.api.annotations.Handler
-import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.systems.GearyListener
-import com.mineinabyss.geary.ecs.api.systems.provideDelegate
+import com.mineinabyss.geary.annotations.Handler
+import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.has
+import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.GearyTest
+import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.accessors.EventScope
+import com.mineinabyss.geary.systems.accessors.SourceScope
+import com.mineinabyss.geary.systems.accessors.TargetScope
+import com.mineinabyss.geary.systems.accessors.get
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class SourceTargetEventTest : GearyTest() {
     class Strength(val amount: Int)
-    class Attack()
+    class Attack
     data class Health(val amount: Int)
 
     inner class Interaction : GearyListener() {
         val SourceScope.strength by get<Strength>()
         val TargetScope.health by get<Health>()
-
-        override fun onStart() {
-            event.has<Attack>()
-        }
+        val EventScope.attacked by family { has<Attack>() }
 
         @Handler
         fun damage(source: SourceScope, target: TargetScope, event: EventScope) {

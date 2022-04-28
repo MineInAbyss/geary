@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.papermc.events
 
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.datatypes.GearyEntity
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 

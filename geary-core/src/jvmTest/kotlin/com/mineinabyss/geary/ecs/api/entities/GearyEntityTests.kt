@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.ecs.api.entities
 
-import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.components.PersistingComponent
-import com.mineinabyss.geary.ecs.engine.getArchetype
+import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.components.PersistingComponent
+import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe

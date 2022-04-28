@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.helpers
 
-import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.EngineContext
-import com.mineinabyss.geary.ecs.api.systems.QueryContext
-import com.mineinabyss.geary.ecs.api.systems.QueryManager
-import com.mineinabyss.geary.ecs.context.globalContext
-import com.mineinabyss.geary.ecs.engine.GearyEngine
-import com.mineinabyss.geary.ecs.helpers.GearyContextKoin
+import com.mineinabyss.geary.context.EngineContext
+import com.mineinabyss.geary.context.GearyContextKoin
+import com.mineinabyss.geary.context.globalContext
+import com.mineinabyss.geary.engine.Engine
+import com.mineinabyss.geary.engine.GearyEngine
+import com.mineinabyss.geary.systems.QueryContext
+import com.mineinabyss.geary.systems.QueryManager
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async

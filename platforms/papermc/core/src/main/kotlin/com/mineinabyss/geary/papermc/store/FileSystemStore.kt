@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.papermc.store
 
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.datatypes.GearyEntity
 import kotlinx.serialization.BinaryFormat
 import java.io.IOException
 import java.nio.file.Path

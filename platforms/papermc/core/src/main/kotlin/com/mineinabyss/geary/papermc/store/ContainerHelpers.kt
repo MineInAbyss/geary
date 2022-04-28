@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.papermc.store
 
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.toGeary
-import com.mineinabyss.geary.ecs.components.PersistingComponent
-import com.mineinabyss.geary.ecs.engine.isInstance
+import com.mineinabyss.geary.components.PersistingComponent
+import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.isInstance
+import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.prefabs.helpers.addPrefab
 import com.mineinabyss.idofront.items.editItemMeta
 import org.bukkit.inventory.ItemStack

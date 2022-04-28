@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.papermc.access
 
-import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.globalContextMC
 import com.mineinabyss.idofront.typealiases.BukkitEntity
 

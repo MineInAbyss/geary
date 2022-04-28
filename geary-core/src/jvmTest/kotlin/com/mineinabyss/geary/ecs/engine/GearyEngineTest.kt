@@ -1,15 +1,12 @@
 package com.mineinabyss.geary.ecs.engine
 
-import com.mineinabyss.geary.ecs.accessors.TargetScope
-import com.mineinabyss.geary.ecs.accessors.building.get
-import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.engine.runSafely
-import com.mineinabyss.geary.ecs.api.entities.toGeary
-import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.systems.TickingSystem
-import com.mineinabyss.geary.ecs.components.RelationComponent
-import com.mineinabyss.geary.helpers.GearyTest
+import com.mineinabyss.geary.components.RelationComponent
+import com.mineinabyss.geary.datatypes.HOLDS_DATA
+import com.mineinabyss.geary.datatypes.Relation
+import com.mineinabyss.geary.helpers.*
+import com.mineinabyss.geary.systems.TickingSystem
+import com.mineinabyss.geary.systems.accessors.TargetScope
+import com.mineinabyss.geary.systems.accessors.get
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe

@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.api.addon
 
-import com.mineinabyss.geary.ecs.api.FormatsContext
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.context.FormatsContext
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.prefabs.events.PrefabLoaded
 import com.mineinabyss.idofront.messaging.logInfo
 
@@ -23,7 +23,10 @@ public abstract class AbstractAddonManager: FormatsContext {
     public suspend fun load() {
         logInfo("Registering Serializers")
         actions[GearyLoadPhase.REGISTER_SERIALIZERS]?.runAll()
-        formats.createFormats()
+
+        logInfo("Registering Formats")
+        actions[GearyLoadPhase.REGISTER_FORMATS]?.runAll()
+
         logInfo("Loading prefabs")
         actions[GearyLoadPhase.LOAD_PREFABS]?.runAll()
         loadingPrefabs.forEach {

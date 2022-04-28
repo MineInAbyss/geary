@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.papermc.plugin
 
-import com.mineinabyss.geary.ecs.engine.countChildren
+import com.mineinabyss.geary.helpers.countChildren
 import com.mineinabyss.geary.papermc.GearyMCContext
 import com.mineinabyss.geary.papermc.GearyMCContextKoin
 import com.mineinabyss.geary.papermc.StartupEventListener

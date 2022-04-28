@@ -2,14 +2,14 @@ package com.mineinabyss.geary.formats
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
-import com.mineinabyss.geary.ecs.serialization.PrefabFormat
+import com.mineinabyss.geary.serialization.PrefabFormat
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.SerializersModule
 import okio.Path
 
 public class YamlFormat(
-    private val module: SerializersModule
+    module: SerializersModule
 ): PrefabFormat {
     private val yaml = Yaml(
             serializersModule = module,

@@ -35,7 +35,6 @@ fun KotlinTarget.disableCompilations() {
 
 kotlin {
     targets.configureEach {
-        println("Name: $name, type: $platformType")
         if(name == KotlinMultiplatformPlugin.METADATA_TARGET_NAME) return@configureEach
         if(platformType != KotlinPlatformType.jvm)
             disableCompilations()
@@ -75,17 +74,17 @@ kotlin {
                 api(libs.kotlinx.serialization.json)
                 api("com.soywiz.korlibs.kds:kds:2.2.1")
 //                implementation(libs.koin.test.junit5)
-                implementation("io.kotest:kotest-assertions-core:5.2.3")
-                implementation("io.kotest:kotest-property:5.2.3")
 //                implementation("io.kotest:kotest-runner-junit5:5.2.3")
             }
 
         }
-        commonTest {
+        val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.koin.core)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.1")
+                implementation("io.kotest:kotest-assertions-core:5.2.3")
+                implementation("io.kotest:kotest-property:5.2.3")
 
 //                implementation("io.insert-koin:koin-test:3.1.5")
 //                implementation(libs.koin.test)
@@ -98,10 +97,7 @@ kotlin {
                 implementation("org.roaringbitmap:RoaringBitmap:0.9.25")
             }
         }
-//        val jvmTest by getting {
-//            dependencies {
-//            }
-//        }
+        val jvmTest by getting
 
         val jsMain by getting {
             dependencies {

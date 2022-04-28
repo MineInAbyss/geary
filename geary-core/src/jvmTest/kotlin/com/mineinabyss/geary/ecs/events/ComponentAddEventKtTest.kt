@@ -1,12 +1,11 @@
 package com.mineinabyss.geary.ecs.events
 
-import com.mineinabyss.geary.ecs.accessors.TargetScope
-import com.mineinabyss.geary.ecs.api.annotations.Handler
-import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.systems.GearyListener
-import com.mineinabyss.geary.ecs.api.systems.provideDelegate
-import com.mineinabyss.geary.ecs.engine.getArchetype
+import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.helpers.GearyTest
+import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.helpers.getArchetype
+import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.accessors.TargetScope
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 

@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.prefabs.serializers
 
-import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.EngineContext
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.serialization.DescriptorWrapper
+import com.mineinabyss.geary.context.EngineContext
+import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.geary.prefabs.PrefabManagerContext
+import com.mineinabyss.geary.helpers.DescriptorWrapper
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder

@@ -1,7 +1,8 @@
 package com.mineinabyss.geary.ecs.api.entities
 
-import com.mineinabyss.geary.ecs.api.engine.entity
+import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.GearyTest
+import com.mineinabyss.geary.helpers.with
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 

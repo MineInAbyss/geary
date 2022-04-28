@@ -1,17 +1,18 @@
 package com.mineinabyss.geary.ecs.api.systems
 
-import com.mineinabyss.geary.ecs.accessors.TargetScope
-import com.mineinabyss.geary.ecs.accessors.building.get
-import com.mineinabyss.geary.ecs.accessors.building.relation
-import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.api.annotations.Handler
-import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.relations.RelationValueId
-import com.mineinabyss.geary.ecs.engine.HOLDS_DATA
-import com.mineinabyss.geary.ecs.engine.getArchetype
-import com.mineinabyss.geary.ecs.query.contains
-import com.mineinabyss.geary.helpers.GearyTest
+import com.mineinabyss.geary.annotations.Handler
+import com.mineinabyss.geary.datatypes.GearyType
+import com.mineinabyss.geary.datatypes.HOLDS_DATA
+import com.mineinabyss.geary.datatypes.RelationValueId
+import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.has
+import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.hasSet
+import com.mineinabyss.geary.datatypes.family.family
+import com.mineinabyss.geary.helpers.*
+import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.TickingSystem
+import com.mineinabyss.geary.systems.accessors.TargetScope
+import com.mineinabyss.geary.systems.accessors.get
+import com.mineinabyss.geary.systems.accessors.relation
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
@@ -29,10 +30,7 @@ internal class QueryManagerTest : GearyTest() {
 
         val system = object : TickingSystem() {
             val TargetScope.string by get<String>()
-
-            init {
-                has<Int>()
-            }
+            val TargetScope.int by family { has<Int>() }
 
             override fun TargetScope.tick() {
                 string shouldBe entity.get<String>()
@@ -117,12 +115,12 @@ internal class QueryManagerTest : GearyTest() {
             val TargetScope.test by relation<Any?, RelationTestComponent>()
             override fun TargetScope.tick() {
                 ran++
-                family.relationValueTypes.map { it.id } shouldContain test.valueId
+                family.relationValueIds.map { it.id } shouldContain test.valueId
                 test.value.shouldBeInstanceOf<RelationTestComponent>()
             }
         }
         queryManager.trackQuery(system)
-        system.family.relationValueTypes.shouldContainExactly(RelationValueId(componentId<RelationTestComponent>()))
+        system.family.relationValueIds.shouldContainExactly(RelationValueId(componentId<RelationTestComponent>()))
         val entity = entity {
             setRelation(String::class, RelationTestComponent())
             add<String>()

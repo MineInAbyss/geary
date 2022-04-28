@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.papermc.store
 
-import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.datatypes.GearyComponent
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.idofront.plugin.getService
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer

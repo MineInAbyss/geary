@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.prefabs
 
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.prefabs.serializers.PrefabKeySerializer
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent

@@ -1,14 +1,11 @@
 package com.mineinabyss.geary.papermc.store
 
-import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.api.entities.toGeary
-import com.mineinabyss.geary.ecs.engine.INSTANCEOF
-import com.mineinabyss.geary.ecs.engine.isInstance
-import com.mineinabyss.geary.ecs.engine.withRole
-import com.mineinabyss.geary.ecs.serialization.Formats
-import com.mineinabyss.geary.papermc.GearyMCContext
+import com.mineinabyss.geary.context.globalContext
+import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.papermc.globalContextMC
+import com.mineinabyss.geary.papermc.helpers.getNamespacedKeyFor
+import com.mineinabyss.geary.papermc.helpers.getSerializerFor
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.util.toMCKey
 import kotlinx.serialization.DeserializationStrategy
@@ -21,7 +18,7 @@ import org.bukkit.persistence.PersistentDataType.BYTE_ARRAY
 
 /** Returns whether or not this [PersistentDataContainer] has a component [T] encoded in it. */
 public inline fun <reified T : GearyComponent> PersistentDataContainer.has(): Boolean {
-    return has(globalContextMC.formats.getNamespacedKeyFor<T>() ?: return false, BYTE_ARRAY)
+    return has(globalContextMC.serializers.getNamespacedKeyFor<T>() ?: return false, BYTE_ARRAY)
 }
 
 /**
@@ -30,13 +27,13 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.has(): Bo
  */
 public fun <T : GearyComponent> PersistentDataContainer.encode(
     value: T,
-    serializer: SerializationStrategy<T> = ((globalContextMC.formats.getSerializerFor(value::class)
+    serializer: SerializationStrategy<T> = ((globalContextMC.serializers.getSerializerFor(value::class)
         ?: error("Serializer not registered for ${value::class.simpleName}")) as SerializationStrategy<T>),
-    key: NamespacedKey = globalContextMC.formats.getSerialNameFor(value::class)?.toComponentKey()
+    key: NamespacedKey = globalContextMC.serializers.getSerialNameFor(value::class)?.toComponentKey()
         ?: error("SerialName  not registered for ${value::class.simpleName}"),
 ) {
     hasComponentsEncoded = true
-    val encoded = globalContextMC.formats.cborFormat.encodeToByteArray(serializer, value)
+    val encoded = globalContextMC.formats.binaryFormat.encodeToByteArray(serializer, value)
     this[key, BYTE_ARRAY] = encoded
 }
 
@@ -46,10 +43,10 @@ public fun <T : GearyComponent> PersistentDataContainer.encode(
  */
 //TODO use context when compiler fixed
 /**/
-public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(): T? = GearyMCContext {
+public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(): T? {
     return decode(
-        serializer = formats.getSerializerFor() ?: return null,
-        key = formats.getSerialNameFor<T>()?.toComponentKey() ?: return null
+        serializer = globalContext.serializers.getSerializerFor(T::class) ?: return null,
+        key = globalContext.serializers.getSerialNameFor(T::class)?.toComponentKey() ?: return null
     )
 }
 
@@ -59,12 +56,13 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode():
  */
 public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
     key: NamespacedKey,
-    serializer: DeserializationStrategy<T>? =
-        GearyMCContext { formats }.getSerializerFor(key.removeComponentPrefix()) as? DeserializationStrategy<T>,
-): T? = GearyMCContext {
+    serializer: DeserializationStrategy<out T>? =
+        globalContext.serializers.getSerializerFor(key.removeComponentPrefix(), T::class)
+): T? {
+
     serializer ?: return null
     val encoded = get(key, BYTE_ARRAY) ?: return null
-    return runCatching { formats.cborFormat.decodeFromByteArray(serializer, encoded) }.getOrNull()
+    return runCatching { globalContext.formats.binaryFormat.decodeFromByteArray(serializer, encoded) }.getOrNull()
 }
 
 /**

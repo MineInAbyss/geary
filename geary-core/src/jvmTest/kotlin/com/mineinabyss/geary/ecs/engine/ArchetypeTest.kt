@@ -1,18 +1,22 @@
 package com.mineinabyss.geary.ecs.engine
 
-import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.relations.Relation
-import com.mineinabyss.geary.ecs.api.relations.RelationValueId
-import com.mineinabyss.geary.ecs.components.RelationComponent
+import com.mineinabyss.geary.components.RelationComponent
+import com.mineinabyss.geary.datatypes.GearyType
+import com.mineinabyss.geary.datatypes.HOLDS_DATA
+import com.mineinabyss.geary.datatypes.Relation
+import com.mineinabyss.geary.datatypes.RelationValueId
+import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.GearyTest
+import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.helpers.getArchetype
 import io.kotest.matchers.collections.shouldBeUnique
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.*
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -85,7 +89,7 @@ internal class ArchetypeTest : GearyTest() {
             clearEngine()
             val arc = engine.getArchetype(GearyType(ulongArrayOf(componentId<String>() or HOLDS_DATA)))
             concurrentOperation(10000) {
-                arc.addEntityWithData(engine.newEntity().unsafeRecord(), arrayOf("Test"))
+                arc.addEntityWithData(engine.newEntity().getRecord(), arrayOf("Test"))
             }.awaitAll()
             arc.ids.size shouldBe 10000
             arc.ids.shouldBeUnique()

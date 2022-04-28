@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.papermc
 
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.events.GearyAttemptMinecraftSpawnEvent
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call

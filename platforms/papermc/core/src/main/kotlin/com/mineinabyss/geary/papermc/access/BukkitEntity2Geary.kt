@@ -3,20 +3,22 @@ package com.mineinabyss.geary.papermc.access
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
-import com.mineinabyss.geary.ecs.accessors.TargetScope
-import com.mineinabyss.geary.ecs.accessors.building.get
-import com.mineinabyss.geary.ecs.api.annotations.Handler
-import com.mineinabyss.geary.ecs.api.engine.systems
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.toGeary
-import com.mineinabyss.geary.ecs.api.systems.GearyListener
-import com.mineinabyss.geary.ecs.api.systems.provideDelegate
-import com.mineinabyss.geary.ecs.events.EntityRemoved
+import com.mineinabyss.geary.annotations.Handler
+import com.mineinabyss.geary.datatypes.family.family
+import com.mineinabyss.geary.components.events.EntityRemoved
+import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.has
+import com.mineinabyss.geary.helpers.systems
+import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.papermc.GearyMCContext
 import com.mineinabyss.geary.papermc.GearyMCContextKoin
 import com.mineinabyss.geary.papermc.store.decodeComponentsFrom
 import com.mineinabyss.geary.papermc.store.encodeComponentsTo
 import com.mineinabyss.geary.papermc.store.hasComponentsEncoded
+import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.accessors.EventScope
+import com.mineinabyss.geary.systems.accessors.TargetScope
+import com.mineinabyss.geary.systems.accessors.get
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.typealiases.BukkitEntity
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap
@@ -73,10 +75,7 @@ public class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin
 
     private inner class Unregister : GearyListener() {
         val TargetScope.bukkit by get<BukkitEntity>()
-
-        override fun onStart() {
-            event.has<EntityRemoved>()
-        }
+        val EventScope.removed by family { has<EntityRemoved>() }
 
         @Handler
         fun TargetScope.persistComponents() {

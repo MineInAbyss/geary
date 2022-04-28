@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.papermc.engine
 
-import com.mineinabyss.geary.ecs.api.systems.GearySystem
-import com.mineinabyss.geary.ecs.api.systems.TickingSystem
-import com.mineinabyss.geary.ecs.engine.GearyEngine
+import com.mineinabyss.geary.systems.GearySystem
+import com.mineinabyss.geary.systems.TickingSystem
+import com.mineinabyss.geary.engine.GearyEngine
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.time.ticks
 import com.okkero.skedule.BukkitDispatcher

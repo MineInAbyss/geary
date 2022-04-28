@@ -1,18 +1,19 @@
 package com.mineinabyss.geary.ecs.accessors
 
-import com.mineinabyss.geary.ecs.accessors.building.get
-import com.mineinabyss.geary.ecs.accessors.building.getOrDefault
-import com.mineinabyss.geary.ecs.accessors.building.map
-import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.query.Query
-import com.mineinabyss.geary.ecs.query.invoke
 import com.mineinabyss.geary.helpers.GearyTest
+import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.systems.accessors.TargetScope
+import com.mineinabyss.geary.systems.accessors.building.map
+import com.mineinabyss.geary.systems.accessors.get
+import com.mineinabyss.geary.systems.accessors.getOrDefault
+import com.mineinabyss.geary.systems.query.GearyQuery
+import com.mineinabyss.geary.systems.query.invoke
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.Test
 
 internal class AccessorHolderTest : GearyTest() {
-    object FancyQuery : Query() {
+    object FancyQuery : GearyQuery() {
         val TargetScope.default by getOrDefault<String>("empty!")
         val TargetScope.mapped by get<Int>().map { it.toString() }
     }

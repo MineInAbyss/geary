@@ -1,15 +1,15 @@
 package com.mineinabyss.geary.prefabs
 
-import com.mineinabyss.geary.ecs.api.GearyContext
-import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.with
-import com.mineinabyss.geary.ecs.api.relations.NoInherit
-import com.mineinabyss.geary.ecs.helpers.GearyContextKoin
-import com.mineinabyss.geary.ecs.serialization.GearyEntitySerializer
+import com.mineinabyss.geary.components.NoInherit
+import com.mineinabyss.geary.context.GearyContext
+import com.mineinabyss.geary.context.GearyContextKoin
+import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.engine.Engine
+import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.helpers.with
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
+import com.mineinabyss.geary.serialization.GearyEntitySerializer
 import com.mineinabyss.idofront.messaging.logError
 import okio.Path.Companion.toOkioPath
 import java.io.File
@@ -58,7 +58,7 @@ public class PrefabManager(
         return runCatching {
             val serializer = GearyEntitySerializer.componentListSerializer
             val ext = file.extension
-            val decoded = formats.getFormat(ext)?.decodeFromFile(serializer, file.toOkioPath())
+            val decoded = formats.get(ext)?.decodeFromFile(serializer, file.toOkioPath())
                 ?: error("Unknown file format $ext")
             val entity = writeTo ?: entity()
             entity.setAll(decoded)

@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.prefabs.configuration.components
 
-import com.mineinabyss.geary.ecs.api.GearyComponent
+import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.ecs.api.GearyContext
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.ecs.helpers.GearyContextKoin
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
