@@ -11,8 +11,11 @@ public class GearySerializers {
     private val addonToModuleMap = mutableMapOf<String, SerializersModule>()
     private val serialName2Component: MutableMap<String, KClass<out GearyComponent>> = mutableMapOf()
     private val component2serialName: MutableMap<KClass<out GearyComponent>, String> = mutableMapOf()
-    public var module: SerializersModule = EmptySerializersModule
-        private set
+    public val module: SerializersModule by lazy {
+        addonToModuleMap.values.fold(EmptySerializersModule) { acc, module ->
+            acc.overwriteWith(module)
+        }
+    }
 
     //TODO allow this to work for all registered classes, not just components
     public fun getClassFor(serialName: String): KClass<out GearyComponent> =

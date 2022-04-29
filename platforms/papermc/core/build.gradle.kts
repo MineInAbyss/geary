@@ -19,5 +19,4 @@ dependencies {
     compileOnly(libs.kotlinx.coroutines)
     compileOnly(libs.kotlin.reflect) { isTransitive = false }
     compileOnly(libs.reflections)
-    compileOnly(libs.minecraft.skedule)
 }

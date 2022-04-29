@@ -20,9 +20,10 @@ public annotation class GearyAddonDSL
  */
 @GearyAddonDSL
 public class GearyAddon(
-    public val namespace: String
-) : GearyContext by GearyContextKoin(), AbstractAddonManagerContext, PrefabManagerContext {
-    override val addonManager: AbstractAddonManager by inject()
+    public val namespace: String,
+    public val classLoader: ClassLoader
+) : GearyContext by GearyContextKoin(), GearyAddonManagerContext, PrefabManagerContext {
+    override val addonManager: GearyAddonManager by inject()
     override val prefabManager: PrefabManager by inject()
 
     /** Registers a [system]. */
@@ -36,7 +37,7 @@ public class GearyAddon(
     }
 
     public inner class PhaseCreator {
-        public operator fun GearyLoadPhase.invoke(run: suspend () -> Unit) {
+        public operator fun GearyLoadPhase.invoke(run: () -> Unit) {
             addonManager.add(this, run)
         }
     }

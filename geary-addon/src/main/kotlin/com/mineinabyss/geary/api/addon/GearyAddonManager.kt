@@ -1,26 +1,28 @@
 package com.mineinabyss.geary.api.addon
 
-import com.mineinabyss.geary.context.FormatsContext
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.prefabs.events.PrefabLoaded
 import com.mineinabyss.idofront.messaging.logInfo
 
-public abstract class AbstractAddonManager: FormatsContext {
+public open class GearyAddonManager {
     internal val loadingPrefabs = mutableListOf<GearyEntity>()
-    private val actions = sortedMapOf<GearyLoadPhase, MutableList<suspend () -> Unit>>()
+    private val actions = sortedMapOf<GearyLoadPhase, MutableList<() -> Unit>>()
 
-    public fun add(phase: GearyLoadPhase, action: suspend () -> Unit) {
+    public fun add(phase: GearyLoadPhase, action: () -> Unit) {
         if (actions.isEmpty()) scheduleLoadTasks()
 
         actions.getOrPut(phase) { mutableListOf() }.add(action)
     }
 
-    protected abstract fun scheduleLoadTasks()
+    protected open fun scheduleLoadTasks() {
+        load()
+        enableAddons()
+    }
 
-    private suspend fun MutableList<suspend () -> Unit>.runAll() = forEach { it() }
+    private fun MutableList<() -> Unit>.runAll() = forEach { it() }
 
     /** Tasks to run before all other addon startup tasks execute. */
-    public suspend fun load() {
+    public fun load() {
         logInfo("Registering Serializers")
         actions[GearyLoadPhase.REGISTER_SERIALIZERS]?.runAll()
 
@@ -36,7 +38,7 @@ public abstract class AbstractAddonManager: FormatsContext {
     }
 
     /** Run addons startup tasks. */
-    public suspend fun enableAddons() {
+    public fun enableAddons() {
         logInfo("Running final startup tasks")
         actions[GearyLoadPhase.ENABLE]?.runAll()
         actions.clear()

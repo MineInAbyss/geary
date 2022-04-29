@@ -1,10 +1,7 @@
 package com.mineinabyss.geary.papermc.plugin
 
+import com.mineinabyss.geary.api.addon.*
 import com.mineinabyss.geary.api.addon.GearyLoadPhase.ENABLE
-import com.mineinabyss.geary.api.addon.autoscan
-import com.mineinabyss.geary.api.addon.formats
-import com.mineinabyss.geary.api.addon.prefabs
-import com.mineinabyss.geary.api.addon.serialization
 import com.mineinabyss.geary.datatypes.maps.UUID2GearyMap
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.formats.YamlFormat
@@ -14,7 +11,7 @@ import com.mineinabyss.geary.papermc.GearyPlugin
 import com.mineinabyss.geary.papermc.StartupEventListener
 import com.mineinabyss.geary.papermc.access.BukkitEntity2Geary
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.geary.papermc.dsl.GearyAddonManager
+import com.mineinabyss.geary.papermc.dsl.GearyMCAddonManager
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.geary.papermc.engine.PaperMCEngine
 import com.mineinabyss.geary.papermc.listeners.GearyAttemptSpawnListener
@@ -55,7 +52,7 @@ public class GearyPluginImpl : GearyPlugin() {
         val queryManager = QueryManager()
         val uuid2GearyMap = UUID2GearyMap(engine)
         val prefabManager = PrefabManager(engine)
-        val addonManager = GearyAddonManager()
+        val addonManager = GearyMCAddonManager()
         val bukkitEntity2Geary = BukkitEntity2Geary()
 
         startOrAppendKoin(module {
@@ -67,6 +64,7 @@ public class GearyPluginImpl : GearyPlugin() {
             single<UUID2GearyMap> { uuid2GearyMap }
             single<GearyAddonManager> { addonManager }
             single<PrefabManager> { prefabManager }
+            single<GearySerializers> { serializers }
             single<GearyFormats> { formats }
             singleConfig(GearyConfig.serializer(), this@GearyPluginImpl)
         })

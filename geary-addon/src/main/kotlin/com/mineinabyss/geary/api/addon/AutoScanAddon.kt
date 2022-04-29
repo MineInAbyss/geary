@@ -15,7 +15,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.logger.Logger
 import org.reflections.Reflections
-import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.ClasspathHelper
 import org.reflections.util.ConfigurationBuilder
 import kotlin.reflect.KClass
@@ -25,7 +24,6 @@ import kotlin.reflect.full.isSubclassOf
 
 public class AutoScanAddon(
     pkg: String,
-    classLoader: ClassLoader,
     private val serializationAddon: SerializationAddon,
     private val gearyAddon: GearyAddon,
 ) : KoinComponent {
@@ -35,9 +33,8 @@ public class AutoScanAddon(
     internal val reflections: Reflections by lazy {
         Reflections(
             ConfigurationBuilder()
-                .addClassLoader(classLoader)
-                .addUrls(ClasspathHelper.forPackage(pkg, classLoader))
-                .addScanners(SubTypesScanner())
+                .addClassLoader(gearyAddon.classLoader)
+                .addUrls(ClasspathHelper.forPackage(pkg, gearyAddon.classLoader))
         )
     }
 
@@ -137,7 +134,6 @@ public inline fun GearyAddon.autoscan(pkg: String, crossinline init: AutoScanAdd
         GearyLoadPhase.REGISTER_SERIALIZERS {
             AutoScanAddon(
                 pkg = pkg,
-                classLoader = this::class.java.classLoader,
                 serializationAddon = SerializationAddon(this@autoscan),
                 gearyAddon = this@autoscan
             ).init()

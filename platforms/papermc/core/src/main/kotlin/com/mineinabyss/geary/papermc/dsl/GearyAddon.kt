@@ -10,7 +10,8 @@ public inline fun Plugin.gearyAddon(crossinline init: GearyAddon.() -> Unit) {
     with(GearyMCContextKoin()) {
         serializers.clearSerializerModule(name)
         GearyAddon(
-            namespace = this@gearyAddon.name.lowercase()
+            namespace = this@gearyAddon.name.lowercase(),
+            classLoader = this@gearyAddon::class.java.classLoader
         ).init()
     }
 }

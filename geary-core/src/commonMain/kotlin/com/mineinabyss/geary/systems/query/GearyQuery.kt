@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.systems.query
 
-import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.context.GearyContext
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.datatypes.GearyComponent
+import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.AccessorHolder
@@ -63,7 +63,7 @@ public abstract class GearyQuery : Iterable<TargetScope>, AccessorHolder(), Gear
         access(thisRef)
 
     @Suppress("UNCHECKED_CAST")
-    public operator fun Family.getValue(thisRef: TargetScope, property: KProperty<*>): DirectAccessor<Family> =
+    public operator fun Family.provideDelegate(thisRef: GearyQuery, property: KProperty<*>): DirectAccessor<Family> =
         _family.add(this).run { DirectAccessor(family) }
 }
 
