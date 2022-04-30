@@ -4,7 +4,6 @@ import com.mineinabyss.geary.components.NoInherit
 import com.mineinabyss.geary.context.GearyContext
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.datatypes.GearyEntity
-import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.with
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
@@ -16,12 +15,9 @@ import java.io.File
 
 /**
  * Manages registered prefabs and accessing them via name.
- *
- * @property keys A list of registered [PrefabKey]s.
  */
-public class PrefabManager(
-    override val engine: Engine
-) : GearyContext by GearyContextKoin() {
+public class PrefabManager : GearyContext by GearyContextKoin() {
+    /** A list of registered [PrefabKey]s. */
     public val keys: List<PrefabKey> get() = keyToPrefab.keys.toList()
 
     private val keyToPrefab: MutableMap<PrefabKey, GearyEntity> = mutableMapOf()
@@ -35,6 +31,7 @@ public class PrefabManager(
         prefab.set(key)
     }
 
+    /** Gets all prefabs registered under a certain [namespace]. */
     public fun getPrefabsFor(namespace: String): List<PrefabKey> =
         keys.filter { it.namespace == namespace }
 
@@ -58,7 +55,7 @@ public class PrefabManager(
         return runCatching {
             val serializer = GearyEntitySerializer.componentListSerializer
             val ext = file.extension
-            val decoded = formats.get(ext)?.decodeFromFile(serializer, file.toOkioPath())
+            val decoded = formats[ext]?.decodeFromFile(serializer, file.toOkioPath())
                 ?: error("Unknown file format $ext")
             val entity = writeTo ?: entity()
             entity.setAll(decoded)

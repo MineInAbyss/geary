@@ -4,10 +4,10 @@ import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import com.mineinabyss.geary.annotations.Handler
-import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.components.events.EntityRemoved
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.has
+import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.systems
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.papermc.GearyMCContext
@@ -98,10 +98,12 @@ public class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin
     }
 
     /** Remove entities from ECS when they are removed from Bukkit for any reason (Uses PaperMC event) */
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
         // Only remove player from ECS on disconnect, not death
         if (entity is Player) return
+        // We remove the geary entity one tick after the Bukkit one has been removed to ensure nothing
+        // else that tries to access the geary entity from Bukkit will create a new entity.
         entity.toGearyOrNull()?.removeEntity()
     }
 

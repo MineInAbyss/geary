@@ -69,7 +69,7 @@ internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter, GearyMCC
                 when (args[0]) {
                     "reread" -> prefabManager.keys.filter {
                         val arg = args[1].lowercase()
-                        it.name.startsWith(arg) || it.key.startsWith(arg)
+                        it.key.startsWith(arg) || it.full.startsWith(arg)
                     }.map { it.toString() }
                     else -> listOf()
                 }

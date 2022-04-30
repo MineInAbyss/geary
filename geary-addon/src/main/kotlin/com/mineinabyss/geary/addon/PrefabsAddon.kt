@@ -1,5 +1,6 @@
-package com.mineinabyss.geary.api.addon
+package com.mineinabyss.geary.addon
 
+import com.mineinabyss.geary.addon.GearyLoadPhase.LOAD_PREFABS
 import java.nio.file.Path
 import kotlin.io.path.name
 
@@ -23,7 +24,7 @@ public class PrefabsAddon(
 
 public fun GearyAddon.prefabs(init: PrefabsAddon.() -> Unit) {
     startup {
-        GearyLoadPhase.LOAD_PREFABS {
+        LOAD_PREFABS {
             PrefabsAddon(this@prefabs).init()
         }
     }

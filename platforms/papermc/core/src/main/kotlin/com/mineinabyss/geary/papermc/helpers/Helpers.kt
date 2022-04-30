@@ -1,7 +1,9 @@
-package com.mineinabyss.geary.papermc
+package com.mineinabyss.geary.papermc.helpers
 
 import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.papermc.GearyConfig
 import com.mineinabyss.geary.papermc.events.GearyAttemptMinecraftSpawnEvent
+import com.mineinabyss.geary.papermc.globalContextMC
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.messaging.broadcast
@@ -29,4 +31,4 @@ public fun Location.spawnFromPrefab(prefab: GearyEntity): Entity? {
 }
 
 public fun NamespacedKey.toPrefabKey(): PrefabKey = PrefabKey.of(namespace, key)
-public fun PrefabKey.toNamespacedKey(): NamespacedKey = NamespacedKey(namespace, name)
+public fun PrefabKey.toNamespacedKey(): NamespacedKey = NamespacedKey(namespace, key)

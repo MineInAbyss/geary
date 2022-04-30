@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.api.addon
+package com.mineinabyss.geary.addon
 
 /**
  * Different phases of Geary's startup process.

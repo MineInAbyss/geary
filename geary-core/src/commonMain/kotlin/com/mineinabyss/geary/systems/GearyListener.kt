@@ -1,10 +1,10 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.context.GearyContext
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
+import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.events.GearyHandler
 import com.mineinabyss.geary.helpers.componentId
@@ -52,6 +52,7 @@ public abstract class GearyListener : GearySystem, AccessorOperations, AccessorS
     public fun Family.onEvent(): DirectAccessor<Family> =
         event._family.add(this).let { DirectAccessor(this) }
 
+    //TODO make it work with non-set components
     /** Gets a component, ensuring it is on the entity. */
     public inline fun <reified T : GearyComponent> added(): AccessorBuilder<ComponentAccessor<T>> {
         return AccessorBuilder { holder, index ->

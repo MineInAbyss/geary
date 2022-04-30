@@ -1,5 +1,6 @@
-package com.mineinabyss.geary.api.addon
+package com.mineinabyss.geary.addon
 
+import com.mineinabyss.geary.addon.GearyLoadPhase.REGISTER_SERIALIZERS
 import com.mineinabyss.geary.annotations.AutoScan
 import com.mineinabyss.geary.annotations.ExcludeAutoScan
 import com.mineinabyss.geary.datatypes.GearyComponent
@@ -131,7 +132,7 @@ public class AutoScanAddon(
 
 public inline fun GearyAddon.autoscan(pkg: String, crossinline init: AutoScanAddon.() -> Unit) {
     startup {
-        GearyLoadPhase.REGISTER_SERIALIZERS {
+        REGISTER_SERIALIZERS {
             AutoScanAddon(
                 pkg = pkg,
                 serializationAddon = SerializationAddon(this@autoscan),

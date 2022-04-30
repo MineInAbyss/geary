@@ -1,5 +1,6 @@
-package com.mineinabyss.geary.api.addon
+package com.mineinabyss.geary.addon
 
+import com.mineinabyss.geary.addon.GearyLoadPhase.REGISTER_SERIALIZERS
 import com.mineinabyss.geary.context.GearyContext
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.datatypes.GearyComponent
@@ -53,7 +54,7 @@ public class SerializationAddon(
 
 public fun GearyAddon.serialization(init: SerializationAddon.() -> Unit) {
     startup {
-        GearyLoadPhase.REGISTER_SERIALIZERS {
+        REGISTER_SERIALIZERS {
             SerializationAddon(this@serialization).init()
         }
     }

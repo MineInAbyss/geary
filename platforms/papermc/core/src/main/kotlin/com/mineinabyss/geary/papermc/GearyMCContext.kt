@@ -1,13 +1,12 @@
 package com.mineinabyss.geary.papermc
 
-import com.mineinabyss.geary.api.addon.GearyAddonManager
-import com.mineinabyss.geary.api.addon.GearyAddonManagerContext
+import com.mineinabyss.geary.addon.GearyAddonManager
+import com.mineinabyss.geary.addon.GearyAddonManagerContext
 import com.mineinabyss.geary.context.EngineContext
 import com.mineinabyss.geary.context.GearyContext
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.datatypes.maps.UUID2GearyMap
 import com.mineinabyss.geary.papermc.access.BukkitEntity2Geary
-import com.mineinabyss.geary.papermc.dsl.GearyMCAddonManager
 import com.mineinabyss.geary.papermc.engine.PaperMCEngine
 import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.geary.prefabs.PrefabManagerContext

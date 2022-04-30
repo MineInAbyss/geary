@@ -113,7 +113,7 @@ public fun PersistentDataContainer.decodePrefabs(): Set<PrefabKey> =
             val key = PrefabKey.of(it.toString())
             // Migrate namespace if needed
             val migrated = PrefabNamespaceMigrations.migrations.getOrDefault(key.namespace, key.namespace)
-            PrefabKey.of(migrated, key.name)
+            PrefabKey.of(migrated, key.key)
         }
         ?.toSet()
         ?: emptySet()

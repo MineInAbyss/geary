@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.api.addon
+package com.mineinabyss.geary.addon
 
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.prefabs.events.PrefabLoaded

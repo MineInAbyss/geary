@@ -3,6 +3,9 @@ package com.mineinabyss.geary.systems.accessors
 import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.datatypes.RelationValueId
+import com.mineinabyss.geary.datatypes.family.Family
+import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.has
+import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.systems.accessors.types.ComponentAccessor
@@ -72,3 +75,6 @@ public inline fun <reified K : GearyComponent?, reified V : GearyComponent> Acce
     }
 }
 
+/** Ensures the target has a component of type T. */
+public inline fun <reified T : GearyComponent> AccessorOperations.has(): Family =
+    family { has<T>() }

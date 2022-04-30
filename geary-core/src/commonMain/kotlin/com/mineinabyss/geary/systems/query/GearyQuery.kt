@@ -44,6 +44,7 @@ public abstract class GearyQuery : Iterable<TargetScope>, AccessorHolder(), Gear
         }
         val sizes = matchedArchetypes.map { it.size }
         matchedArchetypes.forEachIndexed { i, archetype ->
+            archetype.cleanup()
             archetype.isIterating = true
             archetype.iteratorFor(this@GearyQuery).forEach(upTo = sizes[i] - 1) { targetScope ->
                 run(targetScope)

@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.api.addon
+package com.mineinabyss.geary.addon
 
 import com.mineinabyss.geary.context.GearyContext
 import com.mineinabyss.geary.context.GearyContextKoin

@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.papermc.dsl
 
-import com.mineinabyss.geary.api.addon.GearyAddonManager
+import com.mineinabyss.geary.addon.GearyAddonManager
 import com.mineinabyss.geary.papermc.GearyMCContext
 import com.mineinabyss.geary.papermc.GearyMCContextKoin
 import com.mineinabyss.idofront.time.ticks

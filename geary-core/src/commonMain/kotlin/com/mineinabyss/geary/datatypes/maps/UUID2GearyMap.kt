@@ -3,14 +3,15 @@ package com.mineinabyss.geary.datatypes.maps
 import com.benasher44.uuid.Uuid
 import com.benasher44.uuid.uuid4
 import com.mineinabyss.geary.annotations.Handler
-import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.components.RegenerateUUIDOnClash
 import com.mineinabyss.geary.components.events.EntityRemoved
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.has
+import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.TargetScope
 import com.mineinabyss.geary.systems.accessors.get
 
@@ -53,7 +54,7 @@ public class UUID2GearyMap(
 
     public inner class UnTrackUuidOnRemove : GearyListener() {
         private val TargetScope.uuid by get<Uuid>().onTarget()
-        private val TargetScope.removed by family { has<EntityRemoved>() }.onTarget()
+        private val EventScope.removed by family { has<EntityRemoved>() }.onEvent()
 
         @Handler
         private fun TargetScope.untrack() {

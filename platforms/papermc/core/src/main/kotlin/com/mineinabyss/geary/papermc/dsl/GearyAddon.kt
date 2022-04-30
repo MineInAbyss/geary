@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.papermc.dsl
 
-import com.mineinabyss.geary.api.addon.GearyAddon
+import com.mineinabyss.geary.addon.GearyAddon
 import com.mineinabyss.geary.papermc.GearyMCContextKoin
 import org.bukkit.plugin.Plugin
 
