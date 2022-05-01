@@ -1,21 +1,20 @@
 package com.mineinabyss.geary.papermc.engine
 
+import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
+import com.mineinabyss.geary.engine.GearyEngine
 import com.mineinabyss.geary.systems.GearySystem
 import com.mineinabyss.geary.systems.TickingSystem
-import com.mineinabyss.geary.engine.GearyEngine
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.time.ticks
-import com.okkero.skedule.BukkitDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
-import org.bukkit.plugin.java.JavaPlugin
 
-public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(tickDuration = 1.ticks) {
-    public val componentsKey: NamespacedKey = NamespacedKey(plugin, "components")
+class PaperMCEngine(private val plugin: Plugin) : GearyEngine(tickDuration = 1.ticks) {
+    val componentsKey: NamespacedKey = NamespacedKey(plugin, "components")
 
     override suspend fun TickingSystem.runSystem() {
         // Adds a line in timings report showing which systems take up more time.
@@ -37,10 +36,9 @@ public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(tickDuratio
 
     override fun scheduleSystemTicking() {
         //tick all systems every interval ticks
-        //TODO ensure this blocks tick
-        launch(BukkitDispatcher(plugin as JavaPlugin)) {
+        launch(plugin.minecraftDispatcher) {
 //        Bukkit.getScheduler().scheduleSyncRepeatingTask(, {
-            while(true) {
+            while (true) {
                 tick(Bukkit.getServer().currentTick.toLong())
                 delay(tickDuration)
             }

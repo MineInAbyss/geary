@@ -1,5 +1,4 @@
 import org.gradle.accessors.dm.LibrariesForLibs
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val libs = the<LibrariesForLibs>()
 val idofrontVersion: String by project
@@ -14,7 +13,7 @@ repositories {
 
 dependencies {
     // MineInAbyss platform
-    compileOnly(libs.minecraft.skedule)
+    compileOnly(libs.minecraft.mccoroutine)
     compileOnly(libs.kotlin.stdlib)
     compileOnly(libs.kotlinx.serialization.json)
     compileOnly(libs.kotlinx.serialization.cbor)
@@ -23,22 +22,5 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin")
     }
 
-    implementation("com.mineinabyss:idofront:$idofrontVersion")
-}
-
-kotlin {
-    explicitApi()
-}
-
-tasks {
-    withType<KotlinCompile> {
-        kotlinOptions {
-            freeCompilerArgs = listOf(
-                "-opt-in=kotlin.RequiresOptIn",
-                "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
-                "-opt-in=kotlin.time.ExperimentalTime",
-                "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            )
-        }
-    }
+    implementation(libs.idofront.core)
 }
