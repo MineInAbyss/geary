@@ -6,10 +6,11 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("org.jetbrains.dokka")
-//    id("geary.kotlin-conventions")
-//    id("com.mineinabyss.conventions.publication")
-//    id("com.mineinabyss.conventions.testing")
+    `maven-publish`
 }
+
+val runNumber: String? = System.getenv("GITHUB_RUN_NUMBER")
+if (runNumber != null) version = "$version.$runNumber"
 
 buildscript {
     val atomicfuVersion = "0.17.1"
@@ -35,8 +36,8 @@ fun KotlinTarget.disableCompilations() {
 
 kotlin {
     targets.configureEach {
-        if(name == KotlinMultiplatformPlugin.METADATA_TARGET_NAME) return@configureEach
-        if(platformType != KotlinPlatformType.jvm)
+        if (name == KotlinMultiplatformPlugin.METADATA_TARGET_NAME) return@configureEach
+        if (platformType != KotlinPlatformType.jvm)
             disableCompilations()
     }
 
@@ -106,11 +107,14 @@ kotlin {
         }
     }
 }
-//dependencies {
-//    implementation(gearylibs.fastutil)
-//
-//    //ecs-related libs
-//    implementation(gearylibs.bimap) { isTransitive = false }
-//
-//    testImplementation(gearylibs.fastutil)
-//}
+
+publishing {
+    repositories {
+        maven("https://repo.mineinabyss.com/releases") {
+            credentials {
+                username = project.findProperty("mineinabyssMavenUsername") as String?
+                password = project.findProperty("mineinabyssMavenPassword") as String?
+            }
+        }
+    }
+}
