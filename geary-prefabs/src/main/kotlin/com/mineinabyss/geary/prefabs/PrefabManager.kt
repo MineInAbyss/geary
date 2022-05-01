@@ -1,47 +1,43 @@
 package com.mineinabyss.geary.prefabs
 
-import com.mineinabyss.geary.ecs.api.engine.Engine
-import com.mineinabyss.geary.ecs.api.engine.EngineScope
-import com.mineinabyss.geary.ecs.api.engine.entity
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.with
-import com.mineinabyss.geary.ecs.api.relations.NoInherit
-import com.mineinabyss.geary.ecs.serialization.Formats
-import com.mineinabyss.geary.ecs.serialization.GearyEntitySerializer
+import com.mineinabyss.geary.components.NoInherit
+import com.mineinabyss.geary.context.GearyContext
+import com.mineinabyss.geary.context.GearyContextKoin
+import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.helpers.with
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
+import com.mineinabyss.geary.serialization.GearyEntitySerializer
 import com.mineinabyss.idofront.messaging.logError
-import com.uchuhimo.collections.MutableBiMap
-import com.uchuhimo.collections.mutableBiMapOf
+import okio.Path.Companion.toOkioPath
 import java.io.File
 
 /**
  * Manages registered prefabs and accessing them via name.
- *
- * @property keys A list of registered [PrefabKey]s.
  */
-public class PrefabManager(
-    override val engine: Engine
-) : EngineScope {
-    public val keys: List<PrefabKey> get() = prefabs.keys.toList()
+public class PrefabManager : GearyContext by GearyContextKoin() {
+    /** A list of registered [PrefabKey]s. */
+    public val keys: List<PrefabKey> get() = keyToPrefab.keys.toList()
 
-    private val prefabs: MutableBiMap<PrefabKey, GearyEntity> = mutableBiMapOf()
+    private val keyToPrefab: MutableMap<PrefabKey, GearyEntity> = mutableMapOf()
 
     /** Gets a prefab by [name]. */
-    public operator fun get(name: PrefabKey): GearyEntity? = prefabs[name]
+    public operator fun get(name: PrefabKey): GearyEntity? = keyToPrefab[name]
 
     /** Registers a prefab with Geary. */
     public fun registerPrefab(key: PrefabKey, prefab: GearyEntity) {
-        prefabs[key] = prefab
+        keyToPrefab[key] = prefab
         prefab.set(key)
     }
 
+    /** Gets all prefabs registered under a certain [namespace]. */
     public fun getPrefabsFor(namespace: String): List<PrefabKey> =
         keys.filter { it.namespace == namespace }
 
-    /** Clears all stored [prefabs] */
+    /** Clears all stored [keyToPrefab] */
     internal fun clear() {
-        prefabs.clear()
+        keyToPrefab.clear()
     }
 
     /** If this entity has a [Prefab] component, clears it and loads components from its file. */
@@ -57,13 +53,12 @@ public class PrefabManager(
     public fun loadFromFile(namespace: String, file: File, writeTo: GearyEntity? = null): GearyEntity? {
         val name = file.nameWithoutExtension
         return runCatching {
-            val format = when (val ext = file.extension) {
-                "yml" -> Formats.yamlFormat
-                "json" -> Formats.jsonFormat
-                else -> error("Unknown file format $ext")
-            }
+            val serializer = GearyEntitySerializer.componentListSerializer
+            val ext = file.extension
+            val decoded = formats[ext]?.decodeFromFile(serializer, file.toOkioPath())
+                ?: error("Unknown file format $ext")
             val entity = writeTo ?: entity()
-            entity.setAll(format.decodeFromString(GearyEntitySerializer.componentListSerializer, file.readText()))
+            entity.setAll(decoded)
 
             val key = PrefabKey.of(namespace, name)
             entity.set(Prefab(file))

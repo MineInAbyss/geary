@@ -3,18 +3,22 @@ package com.mineinabyss.geary.papermc.access
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
-import com.mineinabyss.geary.ecs.accessors.TargetScope
-import com.mineinabyss.geary.ecs.accessors.building.get
-import com.mineinabyss.geary.ecs.api.annotations.Handler
-import com.mineinabyss.geary.ecs.api.engine.systems
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.toGeary
-import com.mineinabyss.geary.ecs.api.systems.GearyListener
-import com.mineinabyss.geary.ecs.events.EntityRemoved
-import com.mineinabyss.geary.papermc.GearyMCKoinComponent
-import com.mineinabyss.geary.papermc.hasComponentsEncoded
+import com.mineinabyss.geary.annotations.Handler
+import com.mineinabyss.geary.components.events.EntityRemoved
+import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.has
+import com.mineinabyss.geary.datatypes.family.family
+import com.mineinabyss.geary.helpers.systems
+import com.mineinabyss.geary.helpers.toGeary
+import com.mineinabyss.geary.papermc.GearyMCContext
+import com.mineinabyss.geary.papermc.GearyMCContextKoin
 import com.mineinabyss.geary.papermc.store.decodeComponentsFrom
 import com.mineinabyss.geary.papermc.store.encodeComponentsTo
+import com.mineinabyss.geary.papermc.store.hasComponentsEncoded
+import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.accessors.EventScope
+import com.mineinabyss.geary.systems.accessors.TargetScope
+import com.mineinabyss.geary.systems.accessors.get
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.typealiases.BukkitEntity
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap
@@ -26,7 +30,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import kotlin.collections.set
 
-public class BukkitEntity2Geary : Listener, GearyMCKoinComponent() {
+public class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin() {
     private val entityMap = Int2LongOpenHashMap().apply { defaultReturnValue(-1) }
 
     public fun startTracking() {
@@ -71,10 +75,7 @@ public class BukkitEntity2Geary : Listener, GearyMCKoinComponent() {
 
     private inner class Unregister : GearyListener() {
         val TargetScope.bukkit by get<BukkitEntity>()
-
-        init {
-            event.has<EntityRemoved>()
-        }
+        val EventScope.removed by family { has<EntityRemoved>() }
 
         @Handler
         fun TargetScope.persistComponents() {
@@ -97,10 +98,12 @@ public class BukkitEntity2Geary : Listener, GearyMCKoinComponent() {
     }
 
     /** Remove entities from ECS when they are removed from Bukkit for any reason (Uses PaperMC event) */
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
         // Only remove player from ECS on disconnect, not death
         if (entity is Player) return
+        // We remove the geary entity one tick after the Bukkit one has been removed to ensure nothing
+        // else that tries to access the geary entity from Bukkit will create a new entity.
         entity.toGearyOrNull()?.removeEntity()
     }
 

@@ -1,7 +1,11 @@
 plugins {
     java
-//    kotlin("multiplatform")
-//    id("org.jetbrains.dokka")
+    kotlin("multiplatform") apply false
+    id("org.jetbrains.dokka")
+}
+
+repositories {
+    mavenCentral()
 }
 
 tasks {

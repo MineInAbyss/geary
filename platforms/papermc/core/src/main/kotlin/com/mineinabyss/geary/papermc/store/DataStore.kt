@@ -1,13 +1,11 @@
 package com.mineinabyss.geary.papermc.store
 
-import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.api.entities.toGeary
-import com.mineinabyss.geary.ecs.engine.isInstance
-import com.mineinabyss.geary.ecs.serialization.Formats
-import com.mineinabyss.geary.ecs.serialization.Formats.cborFormat
-import com.mineinabyss.geary.papermc.GearyMCKoinComponent
-import com.mineinabyss.geary.papermc.hasComponentsEncoded
+import com.mineinabyss.geary.context.globalContext
+import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.helpers.toGeary
+import com.mineinabyss.geary.papermc.globalContextMC
+import com.mineinabyss.geary.papermc.helpers.getNamespacedKeyFor
+import com.mineinabyss.geary.papermc.helpers.getSerializerFor
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.util.toMCKey
 import kotlinx.serialization.DeserializationStrategy
@@ -15,11 +13,12 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.builtins.SetSerializer
 import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataContainer
+import org.bukkit.persistence.PersistentDataType
 import org.bukkit.persistence.PersistentDataType.BYTE_ARRAY
 
 /** Returns whether or not this [PersistentDataContainer] has a component [T] encoded in it. */
 public inline fun <reified T : GearyComponent> PersistentDataContainer.has(): Boolean {
-    return has(Formats.getNamespacedKeyFor<T>() ?: return false, BYTE_ARRAY)
+    return has(globalContextMC.serializers.getNamespacedKeyFor<T>() ?: return false, BYTE_ARRAY)
 }
 
 /**
@@ -28,13 +27,13 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.has(): Bo
  */
 public fun <T : GearyComponent> PersistentDataContainer.encode(
     value: T,
-    serializer: SerializationStrategy<T> = ((Formats.getSerializerFor(value::class)
+    serializer: SerializationStrategy<T> = ((globalContextMC.serializers.getSerializerFor(value::class)
         ?: error("Serializer not registered for ${value::class.simpleName}")) as SerializationStrategy<T>),
-    key: NamespacedKey = Formats.getSerialNameFor(value::class)?.toComponentKey()
+    key: NamespacedKey = globalContextMC.serializers.getSerialNameFor(value::class)?.toComponentKey()
         ?: error("SerialName  not registered for ${value::class.simpleName}"),
 ) {
     hasComponentsEncoded = true
-    val encoded = cborFormat.encodeToByteArray(serializer, value)
+    val encoded = globalContextMC.formats.binaryFormat.encodeToByteArray(serializer, value)
     this[key, BYTE_ARRAY] = encoded
 }
 
@@ -42,10 +41,12 @@ public fun <T : GearyComponent> PersistentDataContainer.encode(
  * Decodes a component of type [T] from this [PersistentDataContainer], where serializer and key are automatically
  * found via [Formats].
  */
+//TODO use context when compiler fixed
+/**/
 public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(): T? {
     return decode(
-        serializer = Formats.getSerializerFor() ?: return null,
-        key = Formats.getSerialNameFor<T>()?.toComponentKey() ?: return null
+        serializer = globalContext.serializers.getSerializerFor(T::class) ?: return null,
+        key = globalContext.serializers.getSerialNameFor(T::class)?.toComponentKey() ?: return null
     )
 }
 
@@ -55,12 +56,13 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode():
  */
 public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
     key: NamespacedKey,
-    serializer: DeserializationStrategy<T>? =
-        Formats.getSerializerFor(key.removeComponentPrefix()) as? DeserializationStrategy<T>,
+    serializer: DeserializationStrategy<out T>? =
+        globalContext.serializers.getSerializerFor(key.removeComponentPrefix(), T::class)
 ): T? {
+
     serializer ?: return null
-    val encoded = this[key, BYTE_ARRAY] ?: return null
-    return runCatching { cborFormat.decodeFromByteArray(serializer, encoded) }.getOrNull()
+    val encoded = get(key, BYTE_ARRAY) ?: return null
+    return runCatching { globalContext.formats.binaryFormat.decodeFromByteArray(serializer, encoded) }.getOrNull()
 }
 
 /**
@@ -68,20 +70,22 @@ public inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
  *
  * @see encode
  */
-public fun PersistentDataContainer.encodeComponents(components: Collection<GearyComponent>, type: GearyType): Unit =
-    GearyMCKoinComponent {
-        hasComponentsEncoded = true
-        //remove all keys present on the PDC so we only end up with the new list of components being encoded
-        keys.filter { it.namespace == "geary" && it != engine.componentsKey }
-            .forEach { remove(it) }
+public fun PersistentDataContainer.encodeComponents(
+    components: Collection<GearyComponent>,
+    type: GearyType
+) {
+    hasComponentsEncoded = true
+    //remove all keys present on the PDC so we only end up with the new list of components being encoded
+    keys.filter { it.namespace == "geary" && it != globalContextMC.engine.componentsKey }
+        .forEach { remove(it) }
 
-        for (value in components)
-            encode(value)
+    for (value in components)
+        encode(value)
 
-        val prefabs = type.filter { it.isInstance() }
-        if (!prefabs.inner.isEmpty())
-            encodePrefabs(prefabs.inner.mapNotNull { it.toGeary().get<PrefabKey>() })
-    }
+    val prefabs = type.filter { it.isInstance() }
+    if (prefabs.size != 0)
+        encodePrefabs(prefabs.map { it.toGeary().get<PrefabKey>() }.filterNotNull())
+}
 
 /**
  * Encodes a list of [PrefabKey]s under the key `geary:prefabs`. When decoding these will be stored in
@@ -109,7 +113,7 @@ public fun PersistentDataContainer.decodePrefabs(): Set<PrefabKey> =
             val key = PrefabKey.of(it.toString())
             // Migrate namespace if needed
             val migrated = PrefabNamespaceMigrations.migrations.getOrDefault(key.namespace, key.namespace)
-            PrefabKey.of(migrated, key.name)
+            PrefabKey.of(migrated, key.key)
         }
         ?.toSet()
         ?: emptySet()
@@ -124,9 +128,18 @@ public fun PersistentDataContainer.decodeComponents(): DecodedEntityData =
         // only include keys that start with the component prefix and remove it to get the serial name
         persistingComponents = keys
             .filter { it.key.startsWith(COMPONENT_PREFIX) }
-            .mapNotNull {
-                decode(it)
-            }
+            .mapNotNull { decode(it) }
             .toSet(),
-        type = GearyType(decodePrefabs().mapNotNull { it.toEntity()?.id })
+        type = GearyType(decodePrefabs().mapNotNull { it.toEntity()?.id?.withRole(INSTANCEOF) })
     )
+
+/** Verifies a [PersistentDataContainer] has a tag identifying it as containing Geary components. */
+public var PersistentDataContainer.hasComponentsEncoded: Boolean
+    get() = has(globalContextMC.engine.componentsKey, PersistentDataType.BYTE)
+    set(value) {
+        when {
+            //TODO are there any empty marker keys?
+            value -> if (!hasComponentsEncoded) set(globalContextMC.engine.componentsKey, PersistentDataType.BYTE, 1)
+            else -> remove(globalContextMC.engine.componentsKey)
+        }
+    }

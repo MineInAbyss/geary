@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.papermc.access
 
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.datatypes.GearyEntity
 import org.bukkit.entity.Entity
 
 //Split into separate files with BukkitEntityComponent for Java interoperability reasons.

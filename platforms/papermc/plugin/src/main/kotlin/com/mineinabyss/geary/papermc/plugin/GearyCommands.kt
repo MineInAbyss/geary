@@ -1,50 +1,43 @@
 package com.mineinabyss.geary.papermc.plugin
 
-import com.mineinabyss.geary.ecs.api.GearyType
-import com.mineinabyss.geary.ecs.engine.countChildren
-import com.mineinabyss.geary.ecs.engine.getArchetype
+import com.mineinabyss.geary.helpers.countChildren
+import com.mineinabyss.geary.papermc.GearyMCContext
+import com.mineinabyss.geary.papermc.GearyMCContextKoin
 import com.mineinabyss.geary.papermc.StartupEventListener
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.execution.stopCommand
 import com.mineinabyss.idofront.messaging.info
-import com.mineinabyss.idofront.spawning.spawn
 import com.rylinaux.plugman.util.PluginUtil
-import org.bukkit.Location
-import org.bukkit.block.BlockFace
+import kotlinx.coroutines.launch
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
-import org.bukkit.entity.ArmorStand
-import org.bukkit.plugin.java.JavaPlugin
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-internal class GearyCommands(val plugin: JavaPlugin) : IdofrontCommandExecutor(), TabCompleter, KoinComponent {
-    val prefabManager: PrefabManager by inject()
-
-    override val commands = commands(plugin) {
+internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter, GearyMCContext by GearyMCContextKoin() {
+    override val commands = commands(geary) {
         "geary" {
             "reread" {
                 val prefab by stringArg()
                 action {
-                    prefabManager.reread(
-                        PrefabKey.ofOrNull(prefab)?.toEntity() ?: command.stopCommand("Prefab key not found")
-                    )
+                    engine.launch {
+                        prefabManager.reread(
+                            PrefabKey.ofOrNull(prefab)?.toEntity() ?: command.stopCommand("Prefab key not found")
+                        )
+                    }
                 }
             }
             "fullreload" {
                 action {
                     val depends = StartupEventListener.getGearyDependants()
                     depends.forEach { PluginUtil.unload(it) }
-                    PluginUtil.reload(plugin)
+                    PluginUtil.reload(geary)
                     depends.forEach { PluginUtil.load(it.name) }
                 }
             }
             "countArchetypes" {
                 action {
-                    sender.info("${GearyType().getArchetype().countChildren()} archetypes registered.")
+                    sender.info("${engine.rootArchetype.countChildren()} archetypes registered.")
                 }
 
             }
@@ -76,7 +69,7 @@ internal class GearyCommands(val plugin: JavaPlugin) : IdofrontCommandExecutor()
                 when (args[0]) {
                     "reread" -> prefabManager.keys.filter {
                         val arg = args[1].lowercase()
-                        it.name.startsWith(arg) || it.key.startsWith(arg)
+                        it.key.startsWith(arg) || it.full.startsWith(arg)
                     }.map { it.toString() }
                     else -> listOf()
                 }

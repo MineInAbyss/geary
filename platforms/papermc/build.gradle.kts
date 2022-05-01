@@ -1,13 +1,11 @@
 plugins {
-    java
-    kotlin("plugin.serialization")
     id("com.mineinabyss.conventions.copyjar")
 }
 
 repositories {
     mavenCentral()
-    maven("https://jitpack.io")
     maven("https://repo.mineinabyss.com/releases")
+    maven("https://jitpack.io")
 }
 
 configurations {
@@ -20,6 +18,9 @@ configurations {
         excludeDep(libs.koin.core)
         excludeDep(libs.fastutil)
         excludeDep(libs.kotlin.reflect)
+        excludeDep(libs.kotlinx.coroutines)
+        exclude("org.jetbrains.kotlinx")
+        exclude("org.jetbrains.kotlin")
         excludeDep(libs.reflections)
     }
 }

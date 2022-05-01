@@ -14,11 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up JDK 16
+      - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
           distribution: adopt
-          java-version: 16
+          java-version: 17
           cache: gradle
 
       - name: Grant execute permission for gradlew
@@ -28,9 +28,8 @@ jobs:
         run: gradle build publish -PmineinabyssMavenUsername=${{ secrets.MAVEN_PUBLISH_USERNAME }} -PmineinabyssMavenPassword=${{ secrets.MAVEN_PUBLISH_PASSWORD }}
 
       - name: Generate Dokka
-        # TODO figure out dokka for kotlin multiplatform
-#        run: gradle dokkaHtmlMultiModule
-        run: gradle geary-core:dokkaHtml
+        run: gradle dokkaHtmlMultiModule
+#        run: gradle geary-core:dokkaHtml
 
       - name: Publish documentation to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

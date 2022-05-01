@@ -1,23 +1,22 @@
 package com.mineinabyss.geary.prefabs.helpers
 
-import com.mineinabyss.geary.ecs.api.engine.componentId
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.geary.ecs.api.entities.toGeary
-import com.mineinabyss.geary.ecs.api.entities.with
-import com.mineinabyss.geary.ecs.api.relations.NoInherit
-import com.mineinabyss.geary.ecs.api.relations.RelationValueId
-import com.mineinabyss.geary.ecs.engine.INSTANCEOF
-import com.mineinabyss.geary.ecs.engine.isInstance
-import com.mineinabyss.geary.ecs.engine.withRole
-import com.mineinabyss.geary.ecs.entities.addParent
-import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.helpers.toGeary
+import com.mineinabyss.geary.helpers.with
+import com.mineinabyss.geary.components.NoInherit
+import com.mineinabyss.geary.datatypes.RelationValueId
+import com.mineinabyss.geary.datatypes.INSTANCEOF
+import com.mineinabyss.geary.datatypes.isInstance
+import com.mineinabyss.geary.datatypes.withRole
+import com.mineinabyss.geary.helpers.addParent
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 
-public val GearyEntity.prefabKeys: List<PrefabKey>
-    get() = prefabs.mapNotNull { it.get<PrefabKey>() }
+//public val GearyEntity.prefabKeys: List<PrefabKey>
+//    get() = prefabs.mapNotNull { it.get<PrefabKey>() }
 
 public val GearyEntity.prefabs: List<GearyEntity>
-    get() = type.filter { it.isInstance() }.inner.map { it.toGeary() }
+    get() = type.filter { it.isInstance() }.map { it.toGeary() }
 
 /** Adds a [prefab] entity to this entity.  */
 public fun GearyEntity.addPrefab(prefab: GearyEntity) {

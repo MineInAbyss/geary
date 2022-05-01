@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.papermc.store
 
-import com.mineinabyss.geary.ecs.api.GearyComponent
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.datatypes.GearyComponent
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.idofront.plugin.getService
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
@@ -14,15 +14,15 @@ public interface GearyStore {
             SetSerializer(PolymorphicSerializer(GearyComponent::class))
     }
 
-    public fun encode(entity: GearyEntity): ByteArray
+    public suspend fun encode(entity: GearyEntity): ByteArray
 
-    public fun write(entity: GearyEntity, bytes: ByteArray = encode(entity))
+    public suspend fun write(entity: GearyEntity, bytes: ByteArray)
 
-    public fun decode(entity: GearyEntity, uuid: UUID)
+    public suspend fun decode(entity: GearyEntity, uuid: UUID)
 
     public fun read(uuid: UUID): ByteArray?
 
-    public fun read(entity: GearyEntity): ByteArray? {
+    public suspend fun read(entity: GearyEntity): ByteArray? {
         return read(entity.get<UUID>() ?: return null)
     }
 }

@@ -1,28 +1,29 @@
 package com.mineinabyss.geary.papermc.engine
 
-import co.aikar.timings.Timings
-import com.mineinabyss.geary.ecs.api.systems.GearySystem
-import com.mineinabyss.geary.ecs.api.systems.TickingSystem
-import com.mineinabyss.geary.ecs.engine.GearyEngine
+import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
+import com.mineinabyss.geary.engine.GearyEngine
+import com.mineinabyss.geary.systems.GearySystem
+import com.mineinabyss.geary.systems.TickingSystem
 import com.mineinabyss.idofront.plugin.registerEvents
-import com.okkero.skedule.schedule
+import com.mineinabyss.idofront.time.ticks
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
-import org.koin.core.component.KoinComponent
 
-public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComponent {
-    public val componentsKey: NamespacedKey = NamespacedKey(plugin, "components")
+class PaperMCEngine(private val plugin: Plugin) : GearyEngine(tickDuration = 1.ticks) {
+    val componentsKey: NamespacedKey = NamespacedKey(plugin, "components")
 
-    override fun TickingSystem.runSystem() {
+    override suspend fun TickingSystem.runSystem() {
         // Adds a line in timings report showing which systems take up more time.
-        val timing = Timings.ofStart(plugin, javaClass.name)
+//        val timing = Timings.ofStart(plugin, javaClass.name)
         runCatching {
             doTick()
         }.apply {
             // We want to stop the timing no matter what, but still propagate error up
-            timing.stopTiming()
+//            timing.stopTiming() //TODO doTick can suspend and then timings don't work
         }.getOrThrow()
     }
 
@@ -35,11 +36,11 @@ public class PaperMCEngine(private val plugin: Plugin) : GearyEngine(), KoinComp
 
     override fun scheduleSystemTicking() {
         //tick all systems every interval ticks
-        plugin.schedule {
-            repeating(1)
+        launch(plugin.minecraftDispatcher) {
+//        Bukkit.getScheduler().scheduleSyncRepeatingTask(, {
             while (true) {
                 tick(Bukkit.getServer().currentTick.toLong())
-                yield()
+                delay(tickDuration)
             }
         }
     }
