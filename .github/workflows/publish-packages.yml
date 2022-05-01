@@ -35,8 +35,8 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-#          publish_dir: ./build/dokka/htmlMultiModule
-          publish_dir: ./geary-core/build/dokka/html
+          publish_dir: ./build/dokka/htmlMultiModule
+#          publish_dir: ./geary-core/build/dokka/html
           force_orphan: true
 
       - name: Get version from gradle
