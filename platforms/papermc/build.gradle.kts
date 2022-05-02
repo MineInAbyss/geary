@@ -2,6 +2,9 @@ plugins {
     id("com.mineinabyss.conventions.copyjar")
 }
 
+val runNumber: String? = System.getenv("GITHUB_RUN_NUMBER")
+if (runNumber != null) version = "$version.$runNumber"
+
 repositories {
     mavenCentral()
     maven("https://repo.mineinabyss.com/releases")
@@ -19,13 +22,17 @@ configurations {
         excludeDep(libs.fastutil)
         excludeDep(libs.kotlin.reflect)
         excludeDep(libs.kotlinx.coroutines)
+        excludeDep(libs.reflections)
         exclude("org.jetbrains.kotlinx")
         exclude("org.jetbrains.kotlin")
-        excludeDep(libs.reflections)
     }
 }
 
 dependencies {
     // Shaded
     implementation(project(":geary-papermc-plugin"))
+}
+
+tasks {
+    build.dependsOn(shadowJar)
 }
