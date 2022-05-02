@@ -50,4 +50,4 @@ jobs:
           prerelease: false
           automatic_release_tag: v${{ steps.extract_version.outputs.version }}
           files: |
-            platforms/papermc/build/libs/*-all.jar
+            ./platforms/papermc/build/libs/*-all.jar
