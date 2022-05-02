@@ -22,6 +22,10 @@ public actual class BitSet {
         inner.add(index)
     }
 
+    public actual fun set(from: Int, to: Int) {
+        inner.add(from, to)
+    }
+
     public actual fun clear(index: Int) {
         inner.remove(index)
     }

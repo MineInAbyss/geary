@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.context.EngineContext
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.maps.Component2ObjectArrayMap
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.events.GearyHandler
@@ -37,7 +37,7 @@ public class QueryManager : EngineContext by GearyContextKoin() {
         val matched = archetypes.match(query.family)
         query.matchedArchetypes += matched
         queries.add(query)
-    }
+    } //TODO track query on registering doesnt mark query as registered (it runs twice)
 
     internal fun registerArchetype(archetype: Archetype) {
         archetypes.add(archetype, archetype.type)

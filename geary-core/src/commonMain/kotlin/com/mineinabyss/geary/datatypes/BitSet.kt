@@ -4,9 +4,10 @@ package com.mineinabyss.geary.datatypes
  * Cross-platform interface for a bitset.
  */
 public expect class BitSet() {
-//    public val length: Int
+    //    public val length: Int
     public operator fun get(index: Int): Boolean
     public fun set(index: Int)
+    public fun set(from: Int, to: Int)
     public fun clear(index: Int)
     public fun flip(index: Int)
     public fun and(other: BitSet)

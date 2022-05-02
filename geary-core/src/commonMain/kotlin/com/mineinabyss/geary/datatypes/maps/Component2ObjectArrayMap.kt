@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.datatypes.maps
 
-import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.helpers.containsRelationValue
 
 /**
@@ -31,10 +31,13 @@ internal class Component2ObjectArrayMap<T> {
 
     // Null indicates no bits should be excluded
     private fun getMatchingBits(family: Family, bits: BitSet?): BitSet? {
+        // If family empty, consider it as matching everything
+//        if (family is Family.Selector && family.elements.isEmpty()) return null
+
         fun List<Family>.reduceToBits(operation: BitSet.(BitSet) -> Unit): BitSet? =
-            ifEmpty { return null }
-                .map { getMatchingBits(it, bits?.copy()) }
-                .reduce { acc, andBits ->
+            ifEmpty { return null }.
+            map { getMatchingBits(it, bits?.copy()) }
+                .reduce { acc: BitSet?, andBits: BitSet? ->
                     acc.also {
                         if (andBits != null) it?.operation(andBits)
                     }
@@ -42,7 +45,13 @@ internal class Component2ObjectArrayMap<T> {
 
         return when (family) {
             is Family.Selector.And -> family.and.reduceToBits(BitSet::and)
-            is Family.Selector.AndNot -> family.andNot.reduceToBits(BitSet::andNot)
+            is Family.Selector.AndNot -> {
+                // We take current bits and removed any matched inside, if null is returned, all bits are removed
+                val inside = family.andNot.reduceToBits(BitSet::or) ?: return bitsOf()
+                (bits ?: bitsOf().apply { set(0, elements.lastIndex) }).apply {
+                    andNot(inside)
+                }
+            }
             is Family.Selector.Or -> family.or.reduceToBits(BitSet::or)
             is Family.Leaf.Component -> componentMap[family.component.toLong()]?.copy() ?: bitsOf()
             is Family.Leaf.RelationValue -> {
