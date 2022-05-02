@@ -25,7 +25,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run gradle build and publish
-        run: >-
+        run: >
           ./gradlew build publish dokkaHtmlMultiModule
           -PmineinabyssMavenUsername=${{ secrets.MAVEN_PUBLISH_USERNAME }} -PmineinabyssMavenPassword=${{ secrets.MAVEN_PUBLISH_PASSWORD }}`
 
