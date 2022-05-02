@@ -9,9 +9,6 @@ plugins {
     `maven-publish`
 }
 
-val runNumber: String? = System.getenv("GITHUB_RUN_NUMBER")
-if (runNumber != null) version = "$version.$runNumber"
-
 buildscript {
     val atomicfuVersion = "0.17.1"
 
