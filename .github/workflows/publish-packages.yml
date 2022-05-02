@@ -27,7 +27,7 @@ jobs:
       - name: Run gradle build and publish
         run: >
           ./gradlew build publish dokkaHtmlMultiModule
-          -PmineinabyssMavenUsername=${{ secrets.MAVEN_PUBLISH_USERNAME }} -PmineinabyssMavenPassword=${{ secrets.MAVEN_PUBLISH_PASSWORD }}`
+          -PmineinabyssMavenUsername=${{ secrets.MAVEN_PUBLISH_USERNAME }} -PmineinabyssMavenPassword=${{ secrets.MAVEN_PUBLISH_PASSWORD }}
 
       - name: Publish documentation to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
