@@ -15,18 +15,15 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
           cache: gradle
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
       - name: Run gradle build and publish
         run: >
-          ./gradlew build publish dokkaHtmlMultiModule
+          gradle build publish dokkaHtmlMultiModule
           -PmineinabyssMavenUsername=${{ secrets.MAVEN_PUBLISH_USERNAME }} -PmineinabyssMavenPassword=${{ secrets.MAVEN_PUBLISH_PASSWORD }}
 
       - name: Publish documentation to GitHub Pages
@@ -40,7 +37,7 @@ jobs:
         shell: bash
         id: extract_version
         run: |
-          version=`./gradlew :geary-papermc-core:properties --console=plain -q | grep "^version:" | awk '{printf $2}'`
+          version=`gradle :geary-papermc-core:properties --console=plain -q | grep "^version:" | awk '{printf $2}'`
           echo "::set-output name=version::$version"
 
       - name: Create GitHub Release
