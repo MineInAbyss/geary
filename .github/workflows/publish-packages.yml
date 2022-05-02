@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          distribution: adopt
+          distribution: temurin
           java-version: 17
           cache: gradle
 
@@ -25,25 +25,22 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run gradle build and publish
-        run: gradle build publish -PmineinabyssMavenUsername=${{ secrets.MAVEN_PUBLISH_USERNAME }} -PmineinabyssMavenPassword=${{ secrets.MAVEN_PUBLISH_PASSWORD }}
-
-      - name: Generate Dokka
-        run: gradle dokkaHtmlMultiModule
-#        run: gradle geary-core:dokkaHtml
+        run: >-
+          ./gradlew build publish dokkaHtmlMultiModule
+          -PmineinabyssMavenUsername=${{ secrets.MAVEN_PUBLISH_USERNAME }} -PmineinabyssMavenPassword=${{ secrets.MAVEN_PUBLISH_PASSWORD }}`
 
       - name: Publish documentation to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/dokka/htmlMultiModule
-#          publish_dir: ./geary-core/build/dokka/html
           force_orphan: true
 
       - name: Get version from gradle
         shell: bash
         id: extract_version
         run: |
-          version=`./gradlew :geary-papermc-core:properties --no-daemon --console=plain -q | grep "^version:" | awk '{printf $2}'`
+          version=`./gradlew :geary-papermc-core:properties --console=plain -q | grep "^version:" | awk '{printf $2}'`
           echo "::set-output name=version::$version"
 
       - name: Create GitHub Release

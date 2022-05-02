@@ -12,12 +12,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          distribution: adopt
+          distribution: temurin
           java-version: 17
           cache: gradle
 
@@ -27,8 +27,8 @@ jobs:
       - name: Build
         run: gradle build
 
-      - name: Upload build
-        uses: actions/upload-artifact@v1
-        with:
-          name: build
-          path: build/libs
+#      - name: Upload build
+#        uses: actions/upload-artifact@v1
+#        with:
+#          name: build
+#          path: build/libs
