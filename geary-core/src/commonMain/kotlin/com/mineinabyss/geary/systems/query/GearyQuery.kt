@@ -10,6 +10,7 @@ import com.mineinabyss.geary.systems.accessors.AccessorHolder
 import com.mineinabyss.geary.systems.accessors.TargetScope
 import com.mineinabyss.geary.systems.accessors.types.ComponentAccessor
 import com.mineinabyss.geary.systems.accessors.types.DirectAccessor
+import com.soywiz.kds.iterators.fastForEachWithIndex
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlin.reflect.KProperty
@@ -42,11 +43,12 @@ public abstract class GearyQuery : Iterable<TargetScope>, AccessorHolder(), Gear
             queryManager.trackQuery(this)
             registered = true
         }
-        val sizes = matchedArchetypes.map { it.size }
-        matchedArchetypes.forEachIndexed { i, archetype ->
+        val matched = matchedArchetypes.toList()
+        val sizes = matched.map { it.size - 1 }
+        matched.fastForEachWithIndex { i, archetype ->
             archetype.cleanup()
             archetype.isIterating = true
-            archetype.iteratorFor(this@GearyQuery).forEach(upTo = sizes[i] - 1) { targetScope ->
+            archetype.iteratorFor(this@GearyQuery).forEach(upTo = sizes[i]) { targetScope ->
                 run(targetScope)
             }
             archetype.cleanup()
