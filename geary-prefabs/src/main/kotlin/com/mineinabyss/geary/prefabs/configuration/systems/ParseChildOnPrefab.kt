@@ -34,9 +34,9 @@ class ParseChildrenOnPrefab : GearyListener() {
     private fun TargetScope.convertToRelation() {
         children.nameToComponents.forEach { (name, components) ->
             entity {
-                addParent(entity)
                 set(EntityName(name))
                 set(Prefab())
+                addParent(entity)
                 setRelation(Prefab::class, NoInherit)
                 setAll(components)
             }

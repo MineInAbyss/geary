@@ -58,11 +58,11 @@ class PrefabManager : GearyContext by GearyContextKoin() {
             val decoded = formats[ext]?.decodeFromFile(serializer, file.toOkioPath())
                 ?: error("Unknown file format $ext")
             val entity = writeTo ?: entity()
+            entity.set(Prefab(file))
+            entity.setRelation(Prefab::class, NoInherit)
             entity.setAll(decoded)
 
             val key = PrefabKey.of(namespace, name)
-            entity.set(Prefab(file))
-            entity.setRelation(Prefab::class, NoInherit)
             registerPrefab(key, entity)
             entity
         }.onFailure {
