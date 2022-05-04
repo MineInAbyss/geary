@@ -4,7 +4,9 @@ import java.io.File
 
 /**
  * A component applied to prefabs loaded from a file that allows them to be reread.
+ *
+ * @param file The file this prefab was loaded from or null if it is a child in a prefab, or created some other way.
  */
-public class Prefab(
-    public val file: File
+class Prefab(
+    val file: File? = null
 )

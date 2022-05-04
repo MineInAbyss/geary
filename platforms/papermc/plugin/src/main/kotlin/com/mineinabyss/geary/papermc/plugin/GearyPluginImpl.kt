@@ -14,7 +14,6 @@ import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.dsl.GearyMCAddonManager
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.geary.papermc.engine.PaperMCEngine
-import com.mineinabyss.geary.papermc.listeners.GearyAttemptSpawnListener
 import com.mineinabyss.geary.papermc.store.FileSystemStore
 import com.mineinabyss.geary.papermc.store.GearyStore
 import com.mineinabyss.geary.prefabs.PrefabManager
@@ -34,7 +33,7 @@ import java.util.*
 import kotlin.io.path.div
 import kotlin.io.path.listDirectoryEntries
 
-public class GearyPluginImpl : GearyPlugin() {
+class GearyPluginImpl : GearyPlugin() {
     override fun onLoad() {
         IdofrontPlatforms.load(this, "mineinabyss")
     }
@@ -95,7 +94,6 @@ public class GearyPluginImpl : GearyPlugin() {
 
             registerEvents(
                 StartupEventListener(),
-                GearyAttemptSpawnListener(),
             )
 
             startup {

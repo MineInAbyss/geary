@@ -1,11 +1,11 @@
 package com.mineinabyss.geary.serialization
 
-import com.mineinabyss.geary.datatypes.GearyComponent
-import com.mineinabyss.geary.helpers.componentId
-import com.mineinabyss.geary.datatypes.GearyEntity
-import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.components.EntityName
+import com.mineinabyss.geary.datatypes.GearyComponent
+import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.parent
+import com.mineinabyss.geary.helpers.toGeary
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.ListSerializer
@@ -21,15 +21,11 @@ public object GearyEntitySerializer /*: KSerializer<GearyEntity>*/ {
 //    override val descriptor: SerialDescriptor = componentListSerializer.descriptor
 //
 //    override fun serialize(encoder: Encoder, value: GearyEntity) {
-//        runBlocking {
 //            encoder.encodeSerializableValue(componentListSerializer, value.getPersistingComponents().toList())
-//        }
 //    }
 //
 //    override fun deserialize(decoder: Decoder): GearyEntity {
-//        return runBlocking {
 //            entity { setAll(decoder.decodeSerializableValue(componentListSerializer)) }
-//        }
 //    }
 }
 
