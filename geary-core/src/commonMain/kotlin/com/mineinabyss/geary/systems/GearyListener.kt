@@ -21,7 +21,8 @@ import kotlin.reflect.KProperty
  * [GearyHandler]s can be defined inside by annotating a function with [Handler], these
  * are the actual functions that run when a matching event is found.
  */
-public abstract class GearyListener : GearySystem, AccessorOperations, AccessorScopeSelector, GearyContext by GearyContextKoin() {
+public abstract class GearyListener : AccessorOperations(), GearySystem, AccessorScopeSelector,
+    GearyContext by GearyContextKoin() {
     public val source: AccessorHolder = AccessorHolder()
     public val target: AccessorHolder = AccessorHolder()
     public val event: AccessorHolder = AccessorHolder()

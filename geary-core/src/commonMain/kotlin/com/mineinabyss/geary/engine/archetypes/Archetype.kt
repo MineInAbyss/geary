@@ -35,7 +35,8 @@ public data class Archetype(
     private val queuedRemoval = mutableListOf<Int>()
     private val queueRemoval = SynchronizedObject()
 
-    internal var isIterating = false
+    @PublishedApi
+    internal var isIterating: Boolean = false
 
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
@@ -411,12 +412,13 @@ public data class Archetype(
 //    }
 
     /** Creates and tracks an [ArchetypeIterator] for a query. */
+    @PublishedApi
     internal fun iteratorFor(query: GearyQuery): ArchetypeIterator {
-        val iterator = ArchetypeIterator(this, query)
-        return iterator
+        return ArchetypeIterator(this, query)
     }
 
     /** Removes any queued up entity deletions. */
+    @PublishedApi
     internal fun cleanup() {
         synchronized(queueRemoval) {
             if (!isIterating)

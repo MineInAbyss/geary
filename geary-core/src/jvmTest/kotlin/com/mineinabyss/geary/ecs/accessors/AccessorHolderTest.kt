@@ -4,8 +4,6 @@ import com.mineinabyss.geary.helpers.GearyTest
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.systems.accessors.TargetScope
 import com.mineinabyss.geary.systems.accessors.building.map
-import com.mineinabyss.geary.systems.accessors.get
-import com.mineinabyss.geary.systems.accessors.getOrDefault
 import com.mineinabyss.geary.systems.query.GearyQuery
 import com.mineinabyss.geary.systems.query.invoke
 import io.kotest.matchers.shouldBe

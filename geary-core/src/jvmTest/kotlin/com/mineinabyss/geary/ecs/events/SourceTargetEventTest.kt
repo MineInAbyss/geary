@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.ecs.events
 
 import com.mineinabyss.geary.annotations.Handler
-import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.has
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.GearyTest
 import com.mineinabyss.geary.helpers.entity
@@ -9,7 +8,6 @@ import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.SourceScope
 import com.mineinabyss.geary.systems.accessors.TargetScope
-import com.mineinabyss.geary.systems.accessors.get
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 

@@ -24,6 +24,7 @@ public abstract class IndexedAccessor<out T>(
      *
      * If more than one item is returned, systems will individually handle each combination.
      */
+    @PublishedApi
     internal abstract fun RawAccessorDataScope.readData(): List<T>
 
     /**

@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.helpers
 
+import com.mineinabyss.geary.annotations.optin.ExperimentalAsyncGearyAPI
 import com.mineinabyss.geary.components.ComponentInfo
 import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.datatypes.GearyComponentId
@@ -61,12 +62,6 @@ public fun GearyComponentId.getComponentInfo(): ComponentInfo? =
 public fun systems(vararg systems: GearySystem): List<Deferred<Unit>> {
     return systems.map { globalContext.engine.async { globalContext.engine.addSystem(it) } }
 }
-
-/**
- * Currently no safety guaranteed due to internal scheduling issues.
- */
-@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
-public annotation class ExperimentalAsyncGearyAPI
 
 @ExperimentalAsyncGearyAPI
 public inline fun <T> runSafely(

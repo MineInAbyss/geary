@@ -1,17 +1,18 @@
 package com.mineinabyss.geary.engine.archetypes
 
-import com.mineinabyss.geary.systems.accessors.TargetScope
 import com.mineinabyss.geary.systems.accessors.AccessorHolder
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
+import com.mineinabyss.geary.systems.accessors.TargetScope
 
-public data class ArchetypeIterator(
-    public val archetype: Archetype,
-    public val holder: AccessorHolder,
+@PublishedApi
+internal data class ArchetypeIterator(
+    val archetype: Archetype,
+    val holder: AccessorHolder,
 ) {
-    private val perArchCache = holder.cacheForArchetype(archetype)
-    private var row: Int = 0
+    val perArchCache = holder.cacheForArchetype(archetype)
+    var row: Int = 0
 
-    internal inline fun forEach(upTo: Int, crossinline run: (TargetScope) -> Unit) {
+    inline fun forEach(upTo: Int, crossinline run: (TargetScope) -> Unit) {
         while (row < archetype.size && row <= upTo) {
             val dataScope =
                 RawAccessorDataScope(

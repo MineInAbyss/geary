@@ -4,15 +4,11 @@ import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.datatypes.GearyType
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.datatypes.RelationValueId
-import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.has
-import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.hasSet
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.TickingSystem
 import com.mineinabyss.geary.systems.accessors.TargetScope
-import com.mineinabyss.geary.systems.accessors.get
-import com.mineinabyss.geary.systems.accessors.relation
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly

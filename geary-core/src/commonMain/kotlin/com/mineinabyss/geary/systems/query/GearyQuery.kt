@@ -18,11 +18,12 @@ import kotlin.reflect.KProperty
 /**com.mineinabyss.geary.ecs.engine.iteration.accessors
  * @property matchedArchetypes A set of archetypes which have been matched to this query.
  */
-public abstract class GearyQuery : Iterable<TargetScope>, AccessorHolder(), GearyContext by GearyContextKoin() {
+public abstract class GearyQuery : AccessorHolder(), Iterable<TargetScope>, GearyContext by GearyContextKoin() {
     @PublishedApi
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
 
-    private var registered = false
+    @PublishedApi
+    internal var registered: Boolean = false
 
     public fun flow(): Flow<TargetScope> {
         return channelFlow {
@@ -34,11 +35,11 @@ public abstract class GearyQuery : Iterable<TargetScope>, AccessorHolder(), Gear
 
     override fun iterator(): Iterator<TargetScope> {
         val items = mutableListOf<TargetScope>()
-        forEach(run = { items += it })
+        fastForEach { items += it }
         return items.iterator()
     }
 
-    internal inline fun forEach(crossinline run: (TargetScope) -> Unit) {
+    public inline fun fastForEach(crossinline run: (TargetScope) -> Unit) {
         if (!registered) {
             queryManager.trackQuery(this)
             registered = true
@@ -69,5 +70,3 @@ public abstract class GearyQuery : Iterable<TargetScope>, AccessorHolder(), Gear
     public operator fun Family.provideDelegate(thisRef: GearyQuery, property: KProperty<*>): DirectAccessor<Family> =
         _family.add(this).run { DirectAccessor(family) }
 }
-
-public operator fun <T : GearyQuery, R> T.invoke(run: T.() -> R): R = run { run() }

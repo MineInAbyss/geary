@@ -1,16 +1,18 @@
 package com.mineinabyss.geary.datatypes
 
-import com.mineinabyss.geary.datatypes.family.family
+import com.mineinabyss.geary.annotations.optin.DangerousComponentOperation
 import com.mineinabyss.geary.components.PersistingComponent
 import com.mineinabyss.geary.components.RelationComponent
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.context.globalContext
+import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.temporaryEntity
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
+import kotlin.reflect.typeOf
 
 /**
  * A wrapper around [GearyEntityId] that gets inlined to just a long (no performance degradation since no boxing occurs).
@@ -60,14 +62,6 @@ public value class GearyEntity(public val id: GearyEntityId) {
         return component
     }
 
-    @Deprecated(
-        "Likely unintentionally using list as a single component, use set<T: GearyComponent>() if this is intentional.",
-        ReplaceWith("setAll()")
-    )
-    @Suppress("UNUSED_PARAMETER")
-    public fun set(components: Collection<GearyComponent>): Unit =
-        error("Trying to set a collection with set method instead of setAll")
-
     /** Sets components that hold data for this entity */
     public fun setAll(components: Collection<GearyComponent>, override: Boolean = true) {
         components.forEach {
@@ -76,8 +70,10 @@ public value class GearyEntity(public val id: GearyEntityId) {
     }
 
     /** Gets the value of a relation with key of type [K] and value of type [V]. */
-    public inline fun <reified K : GearyComponent, reified V : GearyComponent> getRelation(): V? =
+    public inline fun <reified K : GearyComponent, reified V : GearyComponent> getRelation(): V? {
+        TODO()
         getRelation(K::class, V::class)
+    }
 
     /** Gets the value of a relation with key whose class is [key] and value of type [V]. */
     public inline fun <V : GearyComponent> getRelation(key: KClass<*>, value: KClass<V>): V? {
@@ -88,6 +84,14 @@ public value class GearyEntity(public val id: GearyEntityId) {
     /** Gets the value of a relation with key whose class is [key] and value whose class is [value]. */
     public inline fun <reified V : Any> getRelation(key: GearyEntityId, value: KClass<V>): V? {
         return get(Relation.of(key, componentId(value)).id) as? V
+    }
+
+    public inline fun <reified K : Any, reified V : Any> setRelation(value: V, noEvent: Boolean = false) {
+        setRelation(K::class, value, V::class, noEvent)
+    }
+
+    public inline fun <reified K : Any, reified V : Any> addRelation(noEvent: Boolean = false) {
+        TODO()
     }
 
     /**
@@ -114,8 +118,13 @@ public value class GearyEntity(public val id: GearyEntityId) {
     }
 
     /** Removes a relation key key of type [K] and value of type [V]. */
-    public inline fun <reified K : GearyComponent, reified V : GearyComponent> removeRelation(): Boolean =
-        removeRelation(Relation.of<K, V>())
+    public inline fun <reified K : GearyComponent, reified V : GearyComponent> removeRelation(): Boolean {
+        val type = typeOf<V>()
+        if (type.classifier == Set::class) {
+            type.arguments.first()
+        }
+        return removeRelation(Relation.of<K, V>())
+    }
 
     /** Removes a specific [relation] from the entity. */
     public fun removeRelation(relation: Relation): Boolean =
@@ -182,10 +191,6 @@ public value class GearyEntity(public val id: GearyEntityId) {
     ) {
         removeRelation(Relation.of(kClass, PersistingComponent::class))
     }
-
-    @Deprecated("Likely unintentionally using list as a single component", ReplaceWith("setAllPersisting()"))
-    public fun setPersisting(components: Collection<GearyComponent>): Collection<GearyComponent> =
-        setPersisting(component = components)
 
     /**
      * Sets a list of persisting [components] on this entity.
@@ -283,6 +288,11 @@ public value class GearyEntity(public val id: GearyEntityId) {
     public inline fun <reified T : GearyComponent> has(kClass: KClass<out T> = T::class): Boolean =
         has(componentId(kClass))
 
+    public inline fun <reified K : GearyComponent, reified V : GearyComponent> hasRelation() {
+        TODO()
+
+    }
+
     /** Checks whether this entity has a [component], regardless of it holding data. */
     public inline fun has(component: GearyComponentId): Boolean =
         globalContext.engine.hasComponentFor(this, component)
@@ -343,4 +353,28 @@ public value class GearyEntity(public val id: GearyEntityId) {
     }
 
     public operator fun component1(): GearyEntityId = id
+
+
+    @DangerousComponentOperation
+    public fun set(components: Collection<GearyComponent>): Unit =
+        TODO()
+
+    @DangerousComponentOperation
+    public fun setPersisting(components: Collection<GearyComponent>): Collection<GearyComponent> =
+        setPersisting(component = components)
+
+    @DangerousComponentOperation
+    public fun <K : Any, V : Collection<Any?>> addRelation() {
+        TODO()
+    }
+
+    @DangerousComponentOperation
+    public fun <K : Any, V : Collection<Any?>> setRelation() {
+        TODO()
+    }
+
+    @DangerousComponentOperation
+    public fun <K : Any, V : Collection<Any?>> setRelation(value: Any?) {
+        TODO()
+    }
 }

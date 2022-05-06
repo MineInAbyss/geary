@@ -15,7 +15,7 @@ import kotlin.reflect.KProperty
  *
  * @property family A lazily built immutable family that represents all data this holder needs to function.
  */
-public open class AccessorHolder : AccessorOperations {
+public open class AccessorHolder: AccessorOperations() {
     public val family: Family.Selector.And get() = _family
 
     @PublishedApi
@@ -56,6 +56,7 @@ public open class AccessorHolder : AccessorOperations {
         }
 
     /** Iterates over data in [dataScope] with all possible combinations calculated by accessors in this holder. */
+    @PublishedApi
     internal inline fun forEachCombination(dataScope: RawAccessorDataScope, run: (List<*>) -> Unit) {
         // All sets of data each accessor wants. Will iterate over all combinations of items from each list.
         val data: List<List<*>> = accessors.map { with(it) { dataScope.readData() } }
