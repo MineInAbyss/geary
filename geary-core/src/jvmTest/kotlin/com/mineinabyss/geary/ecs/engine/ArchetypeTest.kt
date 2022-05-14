@@ -65,7 +65,7 @@ internal class ArchetypeTest : GearyTest() {
         val relation = RelationValueId(10uL)
         val matched = arc.matchedRelationsFor(listOf(relation))
         matched shouldContainKey relation
-        matched[relation]?.map { it.key }.shouldContainExactly(1uL or HOLDS_DATA, 2uL or HOLDS_DATA)
+        matched[relation]?.map { it.type }.shouldContainExactly(1uL or HOLDS_DATA, 2uL or HOLDS_DATA)
 
         val wrongRelation = RelationValueId(11uL)
         val matched2 = arc.matchedRelationsFor(listOf(wrongRelation))
@@ -106,7 +106,7 @@ internal class ArchetypeTest : GearyTest() {
                 repeat(1000) { id ->
                     launch {
 //                        entity.withLock {
-                        entity.setRelation(id.toULong(), "String")
+                        entity.setRelation("String", id.toULong())
                         println("Locked for ${entity.id}: $id, size ${engine.archetypeCount}")
 //                        }
                     }

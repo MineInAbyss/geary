@@ -17,7 +17,7 @@ public sealed class MutableFamily : Family {
         ) : Leaf(), Family.Leaf.Component
 
         public class RelationValue(
-            public override var relationValueId: RelationValueId,
+            public override var relationTargetId: GearyEntityId,
             public override val componentMustHoldData: Boolean = false
         ) : Leaf(), Family.Leaf.RelationValue
 
@@ -65,11 +65,11 @@ public sealed class MutableFamily : Family {
 
         public override val components: List<GearyComponentId> get() = _components
         public override val componentsWithData: List<GearyComponentId> get() = _componentsWithData
-        public override val relationValueIds: List<RelationValueId> get() = _relationValueIds
+        public override val relationTargetIds: List<GearyEntityId> get() = _relationValueIds
 
         private val _components = mutableListOf<GearyComponentId>()
         private val _componentsWithData = mutableListOf<GearyComponentId>()
-        private val _relationValueIds = mutableListOf<RelationValueId>()
+        private val _relationValueIds = mutableListOf<GearyEntityId>()
 
         public fun add(element: Family) {
             elements += element
@@ -79,7 +79,7 @@ public sealed class MutableFamily : Family {
                     _components += comp
                     if (comp.holdsData()) _componentsWithData += comp
                 }
-                is Leaf.RelationValue -> _relationValueIds += element.relationValueId
+                is Leaf.RelationValue -> _relationValueIds += element.relationTargetId
                 else -> {}
             }
         }
@@ -115,7 +115,7 @@ public sealed class MutableFamily : Family {
         public fun hasRelation(key: KType, value: GearyComponentId) {
             // If key is Any, we treat this as matching any key
             if (key.classifier == Any::class)
-                add(Leaf.RelationValue(RelationValueId(value), !key.isMarkedNullable))
+                add(Leaf.RelationValue(value, !key.isMarkedNullable))
             else hasRelation(Relation.of(componentId(key), value))
         }
 

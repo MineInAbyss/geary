@@ -7,12 +7,12 @@ import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.TargetScope
 
 @AutoScan
-public class ParseRelationComponent : GearyListener() {
+class ParseRelationComponent : GearyListener() {
     private val TargetScope.relation by added<RelationComponent>()
 
     @Handler
     private fun TargetScope.convertToRelation() {
-        entity.setRelation(relation.key, relation.value)
+        entity.setRelation(relation.value, relation.key)
         entity.remove<RelationComponent>()
     }
 }

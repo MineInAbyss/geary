@@ -1,10 +1,10 @@
 package com.mineinabyss.geary.ecs.api.entities
 
+import com.mineinabyss.geary.components.Persists
+import com.mineinabyss.geary.helpers.GearyTest
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.components.PersistingComponent
 import com.mineinabyss.geary.helpers.getArchetype
-import com.mineinabyss.geary.helpers.GearyTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
@@ -17,9 +17,9 @@ internal class GearyEntityTests : GearyTest() {
             setPersisting("Test")
         }
         val relations =
-            entity.type.getArchetype().relationsByValue[componentId<PersistingComponent>().toLong()]!!
+            entity.type.getArchetype().relationsByTarget[componentId<Persists>().toLong()]!!
         relations.size shouldBe 1
-        relations.first().key shouldBe componentId<String>()
+        relations.first().type shouldBe componentId<String>()
         entity.getPersistingComponents().shouldContainExactly("Test")
     }
 
@@ -41,9 +41,9 @@ internal class GearyEntityTests : GearyTest() {
             setPersisting("Test")
         }
         val relations =
-            entity.type.getArchetype().relationsByValue[componentId<PersistingComponent>().toLong()]!!
+            entity.type.getArchetype().relationsByTarget[componentId<Persists>().toLong()]!!
         relations.size shouldBe 1
-        relations.first().key shouldBe (componentId<String>())
+        relations.first().type shouldBe (componentId<String>())
         entity.getPersistingComponents().shouldContainExactly("Test")
     }
 

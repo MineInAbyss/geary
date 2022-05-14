@@ -67,7 +67,7 @@ public open class AccessorOperations {
             val relationValue = if (value.classifier == Any::class) null else RelationValueId(componentId(value))
             //TODO could we reuse code between hasRelation and here?
             holder._family.hasRelation(key, value)
-            RelationWithDataAccessor(index, keyIsNullable, relationValue, relationKey)
+            RelationWithDataAccessor(index, keyIsNullable, relationKey, relationValue)
         }
     }
 }

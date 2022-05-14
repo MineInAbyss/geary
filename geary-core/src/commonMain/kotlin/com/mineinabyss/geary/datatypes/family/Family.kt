@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.datatypes.family
 
 import com.mineinabyss.geary.datatypes.GearyComponentId
-import com.mineinabyss.geary.datatypes.RelationValueId
+import com.mineinabyss.geary.datatypes.GearyEntityId
 
 public sealed interface Family {
     public sealed class Leaf : Family {
@@ -15,7 +15,7 @@ public sealed interface Family {
         }
 
         public sealed interface RelationValue : Family {
-            public val relationValueId: RelationValueId
+            public val relationTargetId: GearyEntityId
             public val componentMustHoldData: Boolean
         }
     }
@@ -23,7 +23,7 @@ public sealed interface Family {
     public sealed interface Selector : Family {
         public val components: List<GearyComponentId>
         public val componentsWithData: List<GearyComponentId>
-        public val relationValueIds: List<RelationValueId>
+        public val relationTargetIds: List<GearyEntityId>
 
         public sealed interface And : Selector {
             public val and: List<Family>

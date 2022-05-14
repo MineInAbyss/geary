@@ -111,12 +111,12 @@ internal class QueryManagerTest : GearyTest() {
             val TargetScope.test by relation<Any?, RelationTestComponent>()
             override fun TargetScope.tick() {
                 ran++
-                family.relationValueIds.map { it.id } shouldContain test.valueId
-                test.value.shouldBeInstanceOf<RelationTestComponent>()
+                family.relationTargetIds.map { it.id } shouldContain test.targetEntity
+                test.target.shouldBeInstanceOf<RelationTestComponent>()
             }
         }
         queryManager.trackQuery(system)
-        system.family.relationValueIds.shouldContainExactly(RelationValueId(componentId<RelationTestComponent>()))
+        system.family.relationTargetIds.shouldContainExactly(RelationValueId(componentId<RelationTestComponent>()))
         val entity = entity {
             setRelation(String::class, RelationTestComponent())
             add<String>()
@@ -149,8 +149,8 @@ internal class QueryManagerTest : GearyTest() {
             val TargetScope.test2 by relation<Any?, RelationTestComponent2>()
             override fun TargetScope.tick() {
                 ran++
-                test1.value.shouldBeInstanceOf<RelationTestComponent1>()
-                test2.value.shouldBeInstanceOf<RelationTestComponent2>()
+                test1.target.shouldBeInstanceOf<RelationTestComponent1>()
+                test2.target.shouldBeInstanceOf<RelationTestComponent2>()
             }
         }
         queryManager.trackQuery(system)
@@ -177,8 +177,8 @@ internal class QueryManagerTest : GearyTest() {
             val TargetScope.withData by relation<Any, RelationTestWithData>()
 
             override fun TargetScope.tick() {
-                withData.value.shouldBeInstanceOf<RelationTestWithData>()
-                withData.key shouldBe "Test"
+                withData.target.shouldBeInstanceOf<RelationTestWithData>()
+                withData.type shouldBe "Test"
             }
         }
 

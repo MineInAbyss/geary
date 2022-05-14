@@ -8,13 +8,13 @@ import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.TargetScope
 
 @AutoScan
-public class ParseRelationOnPrefab : GearyListener() {
+class ParseRelationOnPrefab : GearyListener() {
     private val TargetScope.relation by added<RelationOnPrefab>()
 
     @Handler
     private fun TargetScope.convertToRelation() {
         try {
-            entity.setRelation(entity.parseEntity(relation.key).id, relation.value)
+            entity.setRelation(relation.value, entity.parseEntity(relation.key).id)
         } finally {
             entity.remove<RelationOnPrefab>()
         }

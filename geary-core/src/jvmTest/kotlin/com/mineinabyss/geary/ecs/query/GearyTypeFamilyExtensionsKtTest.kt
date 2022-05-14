@@ -18,7 +18,7 @@ class GearyTypeFamilyExtensionsKtTest : GearyTest() {
 
     @Test
     fun contains() {
-        val type = entity { setRelation(10uL, "") }.type
+        val type = entity { setRelation("", 10uL) }.type
         MutableFamily.Leaf.RelationValue(RelationValueId(componentId<String>())).contains(type) shouldBe true
     }
 }

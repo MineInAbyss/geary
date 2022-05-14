@@ -5,6 +5,6 @@ package com.mineinabyss.geary.components
  *
  * @property hash Used to avoid unnecessary writes when data has not changed.
  */
-public class PersistingComponent(
+public class Persists(
     public var hash: Int = 0
 )

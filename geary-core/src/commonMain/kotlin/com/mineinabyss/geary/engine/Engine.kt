@@ -1,12 +1,13 @@
 package com.mineinabyss.geary.engine
 
-import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.ComponentInfo
 import com.mineinabyss.geary.components.RelationComponent
+import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.context.EngineContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.GearySystem
+import com.mineinabyss.geary.systems.accessors.RelationWithData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import org.koin.core.component.KoinComponent
@@ -36,14 +37,19 @@ public abstract class Engine : KoinComponent, EngineContext, CoroutineScope {
     /** Gets a list of all the components [entity] has, as well as relations in the form of [RelationComponent]. */
     public abstract fun getComponentsFor(entity: GearyEntity): Array<GearyComponent>
 
-    //TODO clean up so it's consistent with Accessor's relation format
-    /**
-     * Gets a list of relations on [entity] with to value [relationValueId].
-     */
-    public abstract fun getRelationsFor(
+    public abstract fun getRelationsByTypeFor(
         entity: GearyEntity,
-        relationValueId: RelationValueId
-    ): Set<Pair<GearyComponent, Relation>>
+        type: GearyComponentId,
+        typeMustHoldData: Boolean,
+        targetMustHoldData: Boolean
+    ): Set<RelationWithData<*, *>>
+
+    public abstract fun getRelationsByTargetFor(
+        entity: GearyEntity,
+        target: GearyEntityId,
+        typeMustHoldData: Boolean,
+        targetMustHoldData: Boolean
+    ): Set<RelationWithData<*, *>>
 
 
     /** Checks whether an [entity] has a [componentId] */

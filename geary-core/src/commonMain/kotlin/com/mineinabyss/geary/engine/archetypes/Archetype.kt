@@ -54,19 +54,19 @@ public data class Archetype(
 
     internal val relations = type.inner.mapNotNull { it.toRelation() }
 
-    /** Map of relation [Relation.value] id to a list of relations with that [Relation.value]. */
-    internal val relationsByValue: Long2ObjectMap<List<Relation>> = relations
-        .groupBy { it.value.id.toLong() }
+    /** Map of relation [Relation.target] id to a list of relations with that [Relation.target]. */
+    internal val relationsByTarget: Long2ObjectMap<List<Relation>> = relations
+        .groupBy { it.target.toLong() }
 
-    /** Map of relation [Relation.key] id to a list of relations with that [Relation.key]. */
-    internal val relationsByKey: Long2ObjectMap<List<Relation>> = relations
-        .groupBy { it.key.toLong() }
+    /** Map of relation [Relation.type] id to a list of relations with that [Relation.type]. */
+    internal val relationsByType: Long2ObjectMap<List<Relation>> = relations
+        .groupBy { it.type.toLong() }
 
     /** A map of a relation's data type id to full relations that store data of that type. */
     internal val dataHoldingRelations: Long2ObjectMap<List<Relation>> by lazy {
         val map = mutableMapOf<Long, List<Relation>>()
-        relationsByValue.forEach { (key, values) ->
-            val dataHolding = values.filter { it.key.holdsData() }
+        relationsByTarget.forEach { (key, values) ->
+            val dataHolding = values.filter { it.type.holdsData() }
             if (dataHolding.isNotEmpty()) map[key] = dataHolding
         }
         map
@@ -74,9 +74,8 @@ public data class Archetype(
 
 
     /** A map of component ids to index used internally in this archetype (ex. in [componentData])*/
-    private val comp2indices = mutableMapOf<Long, Int>().apply {
+    private val comp2indices: Map<Long, Int> = buildMap {
         dataHoldingType.forEachIndexed { i, compId -> put(compId.toLong(), i) }
-//        defaultReturnValue(-1)
     }
 
     /** The amount of entities stored in this archetype. */
@@ -98,12 +97,6 @@ public data class Archetype(
     public fun getEntity(row: Int): GearyEntity {
         return ids[row].toGeary()
     }
-
-    /** @return This Archetype's [relationsByValue] that are also a part of [matchRelations]. */
-    public fun matchedRelationsFor(matchRelations: Collection<RelationValueId>): Map<RelationValueId, List<Relation>> =
-        matchRelations
-            .filter { it.id.toLong() in relationsByValue }
-            .associateWith { relationsByValue[it.id.toLong()]!! } //TODO handle null error
 
     /**
      * Used to pack data closer together and avoid having hashmaps throughout the archetype.

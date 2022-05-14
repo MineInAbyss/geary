@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.annotations.optin.DangerousComponentOperation
-import com.mineinabyss.geary.components.PersistingComponent
+import com.mineinabyss.geary.components.Persists
 import com.mineinabyss.geary.components.RelationComponent
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.context.globalContext
@@ -9,6 +9,7 @@ import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.temporaryEntity
+import com.mineinabyss.geary.systems.accessors.RelationWithData
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
@@ -69,80 +70,6 @@ public value class GearyEntity(public val id: GearyEntityId) {
         }
     }
 
-    /** Gets the value of a relation with key of type [K] and value of type [V]. */
-    public inline fun <reified K : GearyComponent, reified V : GearyComponent> getRelation(): V? {
-        TODO()
-        getRelation(K::class, V::class)
-    }
-
-    /** Gets the value of a relation with key whose class is [key] and value of type [V]. */
-    public inline fun <V : GearyComponent> getRelation(key: KClass<*>, value: KClass<V>): V? {
-        @Suppress("UNCHECKED_CAST") // internally ensured to always be true
-        return get(Relation.of(key, value).id) as? V
-    }
-
-    /** Gets the value of a relation with key whose class is [key] and value whose class is [value]. */
-    public inline fun <reified V : Any> getRelation(key: GearyEntityId, value: KClass<V>): V? {
-        return get(Relation.of(key, componentId(value)).id) as? V
-    }
-
-    public inline fun <reified K : Any, reified V : Any> setRelation(value: V, noEvent: Boolean = false) {
-        setRelation(K::class, value, V::class, noEvent)
-    }
-
-    public inline fun <reified K : Any, reified V : Any> addRelation(noEvent: Boolean = false) {
-        TODO()
-    }
-
-    /**
-     * Sets a relation with key whose class is [keyClass] and a value [value],
-     * optionally specifying the [valueClass].
-     *
-     * @param noEvent If true, will not fire an [AddedComponent] event.
-     */
-    public fun setRelation(
-        keyClass: KClass<*>,
-        value: Any,
-        valueClass: KClass<*> = value::class,
-        noEvent: Boolean = false
-    ) {
-        globalContext.engine.setComponentFor(this, Relation.of(keyClass, valueClass).id, value, noEvent)
-    }
-
-    /**
-     * Sets a relation with a [key] id and [value].
-     * @param noEvent If true, will not fire an [AddedComponent] event.
-     */
-    public fun setRelation(key: GearyComponentId, value: Any, noEvent: Boolean = false) {
-        globalContext.engine.setComponentFor(this, Relation.of(key, componentId(value::class)).id, value, noEvent)
-    }
-
-    /** Removes a relation key key of type [K] and value of type [V]. */
-    public inline fun <reified K : GearyComponent, reified V : GearyComponent> removeRelation(): Boolean {
-        val type = typeOf<V>()
-        if (type.classifier == Set::class) {
-            type.arguments.first()
-        }
-        return removeRelation(Relation.of<K, V>())
-    }
-
-    /** Removes a specific [relation] from the entity. */
-    public fun removeRelation(relation: Relation): Boolean =
-        remove(Relation.of(relation.key, relation.value).id)
-
-    /** Removes all relations with a value of type [V] on the entity. */
-    public inline fun <reified V : GearyComponent> removeRelationsByValue(): Set<GearyComponent> =
-        removeRelationsByValue(componentId<V>())
-
-    /** Removes all relations with a value with id [componentId] on the entity. */
-    public fun removeRelationsByValue(componentId: GearyComponentId): Set<GearyComponent> {
-        val comps = globalContext.engine.getRelationsFor(this, RelationValueId(componentId))
-        comps.forEach { (_, relation) ->
-            removeRelation(relation)
-        }
-        return comps.mapTo(mutableSetOf()) { it.first }
-    }
-
     /**
      * Adds a [component] to this entity's type, setting no data.
      *
@@ -181,15 +108,8 @@ public value class GearyEntity(public val id: GearyEntityId) {
         noEvent: Boolean = false
     ): T {
         set(component, kClass, noEvent)
-        setRelation(kClass, PersistingComponent(), noEvent = noEvent)
+        setRelation(Persists(), componentId(kClass), noEvent)
         return component
-    }
-
-    /** Stops a given component on this entity from being persisted if it is already marked persistent. */
-    public inline fun <reified T : GearyComponent> noPersist(
-        kClass: KClass<out T> = T::class,
-    ) {
-        removeRelation(Relation.of(kClass, PersistingComponent::class))
     }
 
     /**
@@ -261,17 +181,9 @@ public value class GearyEntity(public val id: GearyEntityId) {
     /** Gets all the components on this entity, as well as relations in the form of [RelationComponent]. */
     public fun getComponents(): Set<GearyComponent> = globalContext.engine.getComponentsFor(this).toSet()
 
-    /** Gets the data in any relations on this entity with a value of type [T]. */
-    public inline fun <reified T : GearyComponent> getRelationsByValue(): Set<GearyComponent> =
-        getRelationsByValue(RelationValueId(componentId<T>()))
-
-    /** Gets the data in any relations on this entity with the value [relationValueId]. */
-    public inline fun getRelationsByValue(relationValueId: RelationValueId): Set<GearyComponent> =
-        globalContext.engine.getRelationsFor(this, relationValueId).mapTo(mutableSetOf()) { it.first }
-
     /** Gets all persisting components on this entity. */
     public inline fun getPersistingComponents(): Set<GearyComponent> =
-        getRelationsByValue(RelationValueId(componentId<PersistingComponent>()))
+        getRelations<Persists, Any>().mapTo(mutableSetOf()) { it.target }
 
     /** Gets all non-persisting components on this entity. */
     public inline fun getInstanceComponents(): Set<GearyComponent> =
@@ -288,10 +200,6 @@ public value class GearyEntity(public val id: GearyEntityId) {
     public inline fun <reified T : GearyComponent> has(kClass: KClass<out T> = T::class): Boolean =
         has(componentId(kClass))
 
-    public inline fun <reified K : GearyComponent, reified V : GearyComponent> hasRelation() {
-        TODO()
-
-    }
 
     /** Checks whether this entity has a [component], regardless of it holding data. */
     public inline fun has(component: GearyComponentId): Boolean =
@@ -303,6 +211,63 @@ public value class GearyEntity(public val id: GearyEntityId) {
      * @see has
      */
     public inline fun hasAll(components: Collection<KClass<*>>): Boolean = components.all { has(it) }
+
+    // Relations
+
+    /** Gets the value of a relation with key of type [Y] and value of type [T]. */
+    public inline fun <reified Y : GearyComponent, reified T : GearyComponent> getRelation(): Y? {
+        return getRelation<Y>(componentId<T>())
+    }
+
+    public inline fun <reified Y : GearyComponent> getRelation(target: GearyEntityId): Y? {
+        return get(Relation.of<Y>(target).id) as? Y
+    }
+
+    public inline fun <reified Y : GearyComponent, reified T : GearyComponent?> getRelations(): Set<RelationWithData<Y, T>> {
+        val type = typeOf<Y>()
+        return when {
+            type.classifier == Any::class -> globalContext.engine.getRelationsByTypeFor(this, componentId<Y>(),)
+            typeOf<T>() == typeOf<Any>() -> globalContext.engine.getRelationsByTargetFor(this, componentId<T>(),)
+            else -> error("One of ${Y::class.simpleName} or ${T::class.simpleName} must be Any when getting relations.")
+        } as Set<RelationWithData<Y, T>>
+    }
+
+
+    public inline fun <reified Y : GearyComponent, reified T : GearyComponent> hasRelation(): Boolean =
+        hasRelation<Y>(componentId<T>())
+
+    public inline fun <reified Y : GearyComponent> hasRelation(target: GearyEntityId): Boolean =
+        has(Relation.of<Y>(target).id)
+
+    public inline fun <reified Y : Any, reified T : Any> setRelation(data: Y, noEvent: Boolean = false) {
+        setRelation<Y>(data, componentId<T>(), noEvent)
+    }
+
+    public inline fun <reified Y : Any> setRelation(data: Y, target: GearyEntityId, noEvent: Boolean = false) {
+        globalContext.engine.setComponentFor(this, Relation.of<Y>(target).id, data, noEvent)
+    }
+
+    public inline fun <reified Y : Any, reified T : Any> addRelation(noEvent: Boolean = false) {
+        addRelation<Y>(componentId<T>(), noEvent)
+    }
+
+    public inline fun <reified Y : Any> addRelation(target: GearyEntityId, noEvent: Boolean = false) {
+        globalContext.engine.addComponentFor(this, Relation.of<Y>(target).id, noEvent)
+    }
+
+    /** Removes a relation key key of type [K] and value of type [V]. */
+    public inline fun <reified Y : GearyComponent, reified T : GearyComponent> removeRelation(): Boolean {
+        return removeRelation<Y>(componentId<T>())
+    }
+
+    public inline fun <reified Y : GearyComponent> removeRelation(target: GearyEntityId): Boolean {
+        return globalContext.engine.removeComponentFor(this, Relation.of<Y>(target).id)
+    }
+
+    /** Removes a specific [relation] from the entity. */
+    public fun removeRelation(relation: Relation): Boolean = remove(relation.id)
+
+    // Events
 
     /**
      * Calls an event with [components] attached to it and this entity as the target,
@@ -354,6 +319,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
 
     public operator fun component1(): GearyEntityId = id
 
+    // Dangerous operations
 
     @DangerousComponentOperation
     public fun set(components: Collection<GearyComponent>): Unit =
