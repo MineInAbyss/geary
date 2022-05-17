@@ -63,7 +63,7 @@ internal class GearyEngineTest : GearyTest() {
             set("Test")
             set(1)
             add<Long>()
-        }.getComponents().shouldContainExactly("Test", 1)
+        }.getAll().shouldContainExactly("Test", 1)
     }
 
     @Test
@@ -73,7 +73,7 @@ internal class GearyEngineTest : GearyTest() {
             add<Int>()
         }
         entity.clear()
-        entity.getComponents().isEmpty() shouldBe true
+        entity.getAll().isEmpty() shouldBe true
     }
 
     @Test
@@ -81,7 +81,7 @@ internal class GearyEngineTest : GearyTest() {
         entity {
             setAll(listOf("Test", 1))
             add<Long>()
-        }.getComponents().shouldContainExactlyInAnyOrder("Test", 1)
+        }.getAll().shouldContainExactlyInAnyOrder("Test", 1)
     }
 
     @Test
@@ -90,7 +90,7 @@ internal class GearyEngineTest : GearyTest() {
             setRelation(Int::class, "String to int relation")
         }
         entity.type.inner.shouldContainExactly(Relation.of<Int, String>().id)
-        entity.getComponents().shouldContainExactly(RelationComponent(componentId<Int>(), "String to int relation"))
+        entity.getAll().shouldContainExactly(RelationComponent(componentId<Int>(), "String to int relation"))
     }
 
     @Nested

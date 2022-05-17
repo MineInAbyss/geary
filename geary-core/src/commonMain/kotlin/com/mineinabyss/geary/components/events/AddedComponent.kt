@@ -9,4 +9,4 @@ package com.mineinabyss.geary.components.events
  * For example, if listening to `A`, `B`, `C`, the event handler runs when one of the components is added,
  * as long as all three are present after the addition.
  */
-public class AddedComponent
+public sealed class AddedComponent

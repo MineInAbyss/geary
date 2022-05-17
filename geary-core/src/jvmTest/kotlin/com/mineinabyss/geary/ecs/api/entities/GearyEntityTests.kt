@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.ecs.api.entities
 
-import com.mineinabyss.geary.components.Persists
+import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.helpers.GearyTest
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
@@ -19,8 +19,8 @@ internal class GearyEntityTests : GearyTest() {
         val relations =
             entity.type.getArchetype().relationsByTarget[componentId<Persists>().toLong()]!!
         relations.size shouldBe 1
-        relations.first().type shouldBe componentId<String>()
-        entity.getPersistingComponents().shouldContainExactly("Test")
+        relations.first().kind shouldBe componentId<String>()
+        entity.getAllPersisting().shouldContainExactly("Test")
     }
 
     @Test
@@ -43,8 +43,8 @@ internal class GearyEntityTests : GearyTest() {
         val relations =
             entity.type.getArchetype().relationsByTarget[componentId<Persists>().toLong()]!!
         relations.size shouldBe 1
-        relations.first().type shouldBe (componentId<String>())
-        entity.getPersistingComponents().shouldContainExactly("Test")
+        relations.first().kind shouldBe (componentId<String>())
+        entity.getAllPersisting().shouldContainExactly("Test")
     }
 
     @Nested
@@ -55,10 +55,11 @@ internal class GearyEntityTests : GearyTest() {
         fun `getRelation reified`() {
             val testData = TestRelation()
             val entity = entity {
-                setRelation(String::class, testData)
+                setRelation<TestRelation, String>(testData)
                 add<String>()
             }
 
+            //FIXME test is wrong
             entity.getRelation<String, TestRelation>() shouldBe testData
         }
     }

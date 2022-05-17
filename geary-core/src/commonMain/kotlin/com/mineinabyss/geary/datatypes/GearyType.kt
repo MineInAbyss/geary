@@ -105,8 +105,6 @@ public fun GearyEntityId.readableString(): String = buildString {
         append(id.toRelation().toString())
         return@buildString
     }
-    if(id.hasRole(INSTANCEOF)) append("I") else append('-')
-    if(id.hasRole(CHILDOF)) append("C") else append('-')
     if(id.hasRole(RELATION)) append("R") else append('-')
     if(id.hasRole(HOLDS_DATA)) append("D") else append('-')
     append(" ")

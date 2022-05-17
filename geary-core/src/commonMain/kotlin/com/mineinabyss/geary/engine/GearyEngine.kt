@@ -141,9 +141,10 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
     override fun getComponentsFor(entity: GearyEntity): Array<GearyComponent> {
         val (archetype, row) = getRecord(entity)
         return archetype.getComponents(row).also { array ->
+            //FIXME this looks like it overrides data instead of adding onto it?
             for (relation in archetype.relations) {
                 val i = archetype.indexOf(relation.id)
-                array[i] = RelationComponent(relation.type, array[i])
+                array[i] = RelationComponent(relation.kind, array[i])
             }
         }
     }
@@ -159,9 +160,9 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
             val targetDataId = relation.target.withRole(HOLDS_DATA)
             if (targetMustHoldData && targetDataId !in archetype) return@mapNotNullTo null
             RelationWithData(
-                type = archetype[row, relation.id],
+                kind = archetype[row, relation.id],
                 target = archetype[row, targetDataId],
-                typeEntity = relation.type.toGeary(),
+                kindEntity = relation.kind.toGeary(),
                 targetEntity = relation.target.toGeary(),
                 relation = relation
             )
@@ -171,24 +172,24 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
     override fun getRelationsByTargetFor(
         entity: GearyEntity,
         target: GearyEntityId,
-        typeMustHoldData: Boolean,
+        kindMustHoldData: Boolean,
         targetMustHoldData: Boolean
     ): Set<RelationWithData<*, *>> {
         val record = getRecord(entity)
         return record.archetype.relationsByTarget[target.toLong()]?.readData(
-            record, typeMustHoldData, targetMustHoldData
+            record, kindMustHoldData, targetMustHoldData
         ) ?: setOf()
     }
 
-    override fun getRelationsByTypeFor(
+    override fun getRelationsByKindFor(
         entity: GearyEntity,
         type: GearyComponentId,
-        typeMustHoldData: Boolean,
+        kindMustHoldData: Boolean,
         targetMustHoldData: Boolean
     ): Set<RelationWithData<*, *>> {
         val record = getRecord(entity)
         return record.archetype.relationsByType[type.toLong()]?.readData(
-            record, typeMustHoldData, targetMustHoldData
+            record, kindMustHoldData, targetMustHoldData
         ) ?: setOf()
     }
 
@@ -201,7 +202,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
             archetype.addComponent(this, HOLDS_DATA.inv() and componentId) || return
 
             if (!noEvent) temporaryEntity { componentAddEvent ->
-                componentAddEvent.setRelation(AddedComponent(), componentId, noEvent = true)
+                componentAddEvent.addRelation<AddedComponent>(componentId.toGeary(), noEvent = true)
                 archetype.callEvent(componentAddEvent, row)
             }
         }
@@ -221,7 +222,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
             archetype.setComponent(this, componentWithRole, data) || return
 
             if (!noEvent) temporaryEntity { componentAddEvent ->
-                componentAddEvent.setRelation(AddedComponent(), componentWithRole, noEvent = true)
+                componentAddEvent.addRelation<AddedComponent>(componentWithRole.toGeary(), noEvent = true)
                 archetype.callEvent(componentAddEvent, row)
             }
         }

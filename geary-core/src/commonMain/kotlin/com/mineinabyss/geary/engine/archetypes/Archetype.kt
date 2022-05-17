@@ -58,15 +58,15 @@ public data class Archetype(
     internal val relationsByTarget: Long2ObjectMap<List<Relation>> = relations
         .groupBy { it.target.toLong() }
 
-    /** Map of relation [Relation.type] id to a list of relations with that [Relation.type]. */
+    /** Map of relation [Relation.kind] id to a list of relations with that [Relation.kind]. */
     internal val relationsByType: Long2ObjectMap<List<Relation>> = relations
-        .groupBy { it.type.toLong() }
+        .groupBy { it.kind.toLong() }
 
     /** A map of a relation's data type id to full relations that store data of that type. */
     internal val dataHoldingRelations: Long2ObjectMap<List<Relation>> by lazy {
         val map = mutableMapOf<Long, List<Relation>>()
         relationsByTarget.forEach { (key, values) ->
-            val dataHolding = values.filter { it.type.holdsData() }
+            val dataHolding = values.filter { it.kind.holdsData() }
             if (dataHolding.isNotEmpty()) map[key] = dataHolding
         }
         map

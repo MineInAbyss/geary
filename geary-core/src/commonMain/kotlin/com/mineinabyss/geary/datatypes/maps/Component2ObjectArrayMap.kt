@@ -2,7 +2,7 @@ package com.mineinabyss.geary.datatypes.maps
 
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.helpers.containsRelationValue
+import com.mineinabyss.geary.helpers.hasRelationTarget
 
 /**
  * A map of [GearyComponentId]s to Arrays of objects with the ability to make fast queries based on component IDs.
@@ -22,8 +22,8 @@ internal class Component2ObjectArrayMap<T> {
             if (id.isRelation()) {
                 val relation = id.toRelation()!!
                 // If this is a relation, we additionally set a bit for key/value, so we can make queries with them
-                set(relation.id.and(RELATION_VALUE_MASK).withRole(RELATION))
-                set(relation.id.and(RELATION_KEY_MASK).withRole(RELATION))
+                set(relation.id.and(RELATION_TARGET_MASK).withRole(RELATION))
+                set(relation.id.and(RELATION_KIND_MASK).withRole(RELATION))
             }
             set(id)
         }
@@ -60,7 +60,7 @@ internal class Component2ObjectArrayMap<T> {
                     if (family.componentMustHoldData) {
                         forEachBit { index ->
                             val type = elementTypes[index]
-                            if (!type.containsRelationValue(family.relationTargetId, componentMustHoldData = true))
+                            if (!type.hasRelationTarget(family.relationTargetId, componentMustHoldData = true))
                                 clear(index)
                         }
                     }

@@ -78,7 +78,7 @@ internal class ArchetypeTest : GearyTest() {
             set("Test")
             setRelation(String::class, 10)
             setRelation(Int::class, 15)
-        }.getComponents() shouldContainExactly
+        }.getAll() shouldContainExactly
                 setOf("Test", RelationComponent(componentId<String>(), 10), RelationComponent(componentId<Int>(), 15))
     }
 

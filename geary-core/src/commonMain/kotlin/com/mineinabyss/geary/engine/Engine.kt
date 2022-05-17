@@ -37,17 +37,17 @@ public abstract class Engine : KoinComponent, EngineContext, CoroutineScope {
     /** Gets a list of all the components [entity] has, as well as relations in the form of [RelationComponent]. */
     public abstract fun getComponentsFor(entity: GearyEntity): Array<GearyComponent>
 
-    public abstract fun getRelationsByTypeFor(
+    public abstract fun getRelationsByKindFor(
         entity: GearyEntity,
         type: GearyComponentId,
-        typeMustHoldData: Boolean,
+        kindMustHoldData: Boolean,
         targetMustHoldData: Boolean
     ): Set<RelationWithData<*, *>>
 
     public abstract fun getRelationsByTargetFor(
         entity: GearyEntity,
         target: GearyEntityId,
-        typeMustHoldData: Boolean,
+        kindMustHoldData: Boolean,
         targetMustHoldData: Boolean
     ): Set<RelationWithData<*, *>>
 

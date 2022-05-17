@@ -9,6 +9,6 @@ public fun GearyEntity.listComponents(): String {
         ${getInstanceComponents().joinToString("\n") { "${it::class.simpleName}: $it" }}
         
         Persisting:
-        ${getPersistingComponents().joinToString("\n") { "${globalContext.serializers.getSerialNameFor(it::class)}: $it" }}
+        ${getAllPersisting().joinToString("\n") { "${globalContext.serializers.getSerialNameFor(it::class)}: $it" }}
         """.trimIndent()
 }

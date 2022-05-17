@@ -32,6 +32,10 @@ public inline fun <T> temporaryEntity(
     }
 }
 
+public inline fun <reified T> component(): GearyEntity = component(T::class)
+
+public fun component(kClass: KClass<*>): GearyEntity = componentId(kClass).toGeary()
+
 /** Gets or registers the id of a component of type [T] */
 public inline fun <reified T> componentId(): GearyComponentId = componentId(T::class)
 
@@ -49,6 +53,7 @@ public fun componentId(kType: KType): GearyComponentId =
 /** Gets or registers the id of a component by its [kClass]. */
 public fun componentId(kClass: KClass<*>): GearyComponentId =
     globalContext.engine.getOrRegisterComponentIdForClass(kClass)
+
 
 @Deprecated("Should not be getting an id for an id!", ReplaceWith("componentId(component)"))
 @Suppress("UNUSED_PARAMETER")

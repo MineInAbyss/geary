@@ -3,6 +3,7 @@ package com.mineinabyss.geary.prefabs.configuration.systems
 import com.mineinabyss.geary.annotations.AutoScan
 import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.components.RelationComponent
+import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.TargetScope
 
@@ -12,7 +13,7 @@ class ParseRelationComponent : GearyListener() {
 
     @Handler
     private fun TargetScope.convertToRelation() {
-        entity.setRelation(relation.value, relation.key)
+        entity.addRelation(Relation.of(relation.data, relation.key).id)
         entity.remove<RelationComponent>()
     }
 }

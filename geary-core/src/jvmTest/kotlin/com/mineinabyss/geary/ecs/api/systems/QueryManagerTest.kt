@@ -97,7 +97,7 @@ internal class QueryManagerTest : GearyTest() {
                 }).count()
             removingSystem.doTick()
             ran shouldBe total
-            entities.map { it.getComponents() } shouldContainExactly entities.map { setOf() }
+            entities.map { it.getAll() } shouldContainExactly entities.map { setOf() }
         }
     }
 
@@ -178,7 +178,7 @@ internal class QueryManagerTest : GearyTest() {
 
             override fun TargetScope.tick() {
                 withData.target.shouldBeInstanceOf<RelationTestWithData>()
-                withData.type shouldBe "Test"
+                withData.kind shouldBe "Test"
             }
         }
 

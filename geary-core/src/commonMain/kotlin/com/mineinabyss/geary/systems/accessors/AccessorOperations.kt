@@ -2,7 +2,6 @@ package com.mineinabyss.geary.systems.accessors
 
 import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
-import com.mineinabyss.geary.datatypes.RelationValueId
 import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.systems.accessors.types.ComponentAccessor
@@ -60,14 +59,14 @@ public open class AccessorOperations {
      */
     public inline fun <reified K : GearyComponent?, reified V : GearyComponent> relation(): AccessorBuilder<RelationWithDataAccessor<K, V>> {
         return AccessorBuilder { holder, index ->
-            val key = typeOf<K>()
-            val value = typeOf<V>()
-            val keyIsNullable = key.isMarkedNullable
-            val relationKey = if (key.classifier == Any::class) null else componentId(key)
-            val relationValue = if (value.classifier == Any::class) null else RelationValueId(componentId(value))
+            val kind = typeOf<K>()
+            val target = typeOf<V>()
+            val kindIsNullable = kind.isMarkedNullable
+            val relationKind = if (kind.classifier == Any::class) null else componentId(kind)
+            val relationTarget = if (target.classifier == Any::class) null else componentId(target)
             //TODO could we reuse code between hasRelation and here?
-            holder._family.hasRelation(key, value)
-            RelationWithDataAccessor(index, keyIsNullable, relationKey, relationValue)
+            holder._family.hasRelation(kind, target)
+            RelationWithDataAccessor(index, kindIsNullable, relationKind, relationTarget)
         }
     }
 }

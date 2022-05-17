@@ -125,6 +125,10 @@ public sealed class MutableFamily : Family {
             else hasRelation(Relation.of(key, componentId(value)))
         }
 
+        public inline fun <reified K> hasRelation(target: GearyEntity) {
+            TODO()
+        }
+
         public fun hasRelation(relation: Relation) {
             has(relation.id)
         }

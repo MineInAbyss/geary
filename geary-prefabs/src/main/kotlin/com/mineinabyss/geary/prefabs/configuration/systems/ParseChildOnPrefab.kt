@@ -3,7 +3,7 @@ package com.mineinabyss.geary.prefabs.configuration.systems
 import com.mineinabyss.geary.annotations.AutoScan
 import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.components.EntityName
-import com.mineinabyss.geary.components.NoInherit
+import com.mineinabyss.geary.components.relations.DontInherit
 import com.mineinabyss.geary.helpers.addParent
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.prefabs.configuration.components.ChildOnPrefab
@@ -37,7 +37,7 @@ class ParseChildrenOnPrefab : GearyListener() {
                 set(EntityName(name))
                 set(Prefab())
                 addParent(entity)
-                setRelation(Prefab::class, NoInherit)
+                addRelation<DontInherit, Prefab>()
                 setAll(components)
             }
         }
