@@ -4,7 +4,7 @@ import com.mineinabyss.geary.helpers.tests.GearyTest
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-internal class GearyEntityWithExtensionsKtTest : GearyTest() {
+internal class GearyEntityWithOperatorTest : GearyTest() {
     @Test
     fun nullable_with_extensions() {
         val entity = entity {

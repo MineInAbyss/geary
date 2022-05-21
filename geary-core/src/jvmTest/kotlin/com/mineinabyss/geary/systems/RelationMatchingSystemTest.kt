@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.systems
 
+import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
@@ -7,100 +8,104 @@ import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.systems.accessors.TargetScope
 import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotContain
+import io.kotest.matchers.collections.shouldNotContainAll
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
 class RelationMatchingSystemTest : GearyTest() {
+    var ran = 0
     val systemPersists = object : TickingSystem() {
-        val TargetScope.persists by relation<Persists, Any>()
+        val TargetScope.persists by relation<Persists, Any?>()
+
         override fun TargetScope.tick() {
             ran++
-            family.relationTargetIds.map { it.id } shouldContain test.targetEntity
-            test.target.shouldBeInstanceOf<RelationTestComponent>()
+            family.relationTargetIds shouldContain persists.targetEntity
+            persists.kind.shouldBeInstanceOf<Persists>()
         }
     }
 
     @Test
-    fun relations() {
-        var ran = 0
+    fun relations() = runTest {
         queryManager.trackQuery(systemPersists)
-        systemPersists.family.relationTargetIds.shouldContainExactly(RelationValueId(componentId<RelationTestComponent>()))
+        systemPersists.family.relationTargetIds.shouldContainExactly(componentId<Persists>())
         val entity = entity {
-            setRelation(String::class, RelationTestComponent())
+            addRelation<Persists, String>()
             add<String>()
         }
         val entity2 = entity {
-            setRelation(Int::class, RelationTestComponent())
+            addRelation<Persists, Int>()
             add<Int>()
         }
         val entity3 = entity {
-            setRelation(RelationTestComponent::class, "")
-            add<RelationTestComponent>()
+            setRelation<Persists, Int>(Persists())
+            add<String>()
         }
-        systemPersists.matchedArchetypes.shouldContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
-        systemPersists.matchedArchetypes.shouldNotContain(entity3.type.getArchetype())
+        systemPersists.matchedArchetypes.shouldNotContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
+        systemPersists.matchedArchetypes.shouldContainExactly(entity3.type.getArchetype())
 
-        engine.cleanup()
-        systemPersists.doTick()
+        engine.tick(1)
         ran shouldBe 2
-
     }
 
-    private class RelationTestComponent1
-    private class RelationTestComponent2
-
     @Test
-    fun relationPermutations() {
+    fun relationPermutations() = runTest {
+        clearEngine()
         var ran = 0
         val system = object : TickingSystem() {
-            val TargetScope.test1 by relation<Any?, RelationTestComponent1>()
-            val TargetScope.test2 by relation<Any?, RelationTestComponent2>()
+            val TargetScope.persists by relation<Persists, Any>()
+            val TargetScope.instanceOf by relation<InstanceOf?, Any?>()
             override fun TargetScope.tick() {
                 ran++
-                test1.target.shouldBeInstanceOf<RelationTestComponent1>()
-                test2.target.shouldBeInstanceOf<RelationTestComponent2>()
+                persists.kind.shouldBeInstanceOf<Persists>()
+                persists.target shouldNotBe null
+                instanceOf.kind shouldBe null
             }
         }
         queryManager.trackQuery(system)
 
         entity {
-            setRelation(String::class, RelationTestComponent1())
-            setRelation(Int::class, RelationTestComponent1())
-            setRelation(String::class, RelationTestComponent2())
-            setRelation(Int::class, RelationTestComponent2())
-            add<String>()
+            addRelation<Persists, String>()
+            setRelation<Persists, Int>(Persists())
+            setRelation<Persists, Short>(Persists())
+            setRelation<Persists, Double>(Persists())
+            addRelation<InstanceOf, String>()
+            addRelation<InstanceOf, Int>()
+            set(1)
+            set(1.toShort())
+            set("")
+            add<Double>()
         }
 
-        engine.cleanup()
-        system.doTick()
+        engine.tick(1)
 
-        ran shouldBe 4
+        // Only two of the Persists relations are valid, times both InstanceOf are valid
+        ran shouldBe 2 * 2
     }
 
-    class RelationTestWithData
-
     @Test
-    fun relationsWithData() {
+    fun relationsWithData() = runTest {
+        clearEngine()
         val system = object : TickingSystem() {
-            val TargetScope.withData by relation<Any, RelationTestWithData>()
+            val TargetScope.withData by relation<Persists, Any>()
 
             override fun TargetScope.tick() {
-                withData.target.shouldBeInstanceOf<RelationTestWithData>()
-                withData.kind shouldBe "Test"
+                withData.kind shouldBe Persists()
+                withData.target shouldBe "Test"
             }
         }
 
         val entity = entity {
-            setRelation(String::class, RelationTestWithData())
+            setRelation<Persists, String>(Persists())
             add<String>()
         }
 
         val entityWithData = entity {
-            setRelation(String::class, RelationTestWithData())
+            setRelation<Persists, String>(Persists())
             set("Test")
         }
 
@@ -109,8 +114,6 @@ class RelationMatchingSystemTest : GearyTest() {
         system.matchedArchetypes.shouldNotContain(entity.type.getArchetype())
         system.matchedArchetypes.shouldContain(entityWithData.type.getArchetype())
 
-        engine.cleanup()
-        system.doTick()
+        engine.tick(1)
     }
-
 }

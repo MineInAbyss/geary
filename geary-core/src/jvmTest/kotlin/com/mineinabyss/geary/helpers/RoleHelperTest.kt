@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.engine
+package com.mineinabyss.geary.helpers
 
 import com.mineinabyss.geary.datatypes.*
 import io.kotest.matchers.shouldBe

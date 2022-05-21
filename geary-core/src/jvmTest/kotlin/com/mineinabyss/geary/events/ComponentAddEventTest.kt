@@ -9,7 +9,7 @@ import com.mineinabyss.geary.systems.accessors.TargetScope
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-internal class ComponentAddEventKtTest : GearyTest() {
+internal class ComponentAddEventTest : GearyTest() {
     var inc = 0
 
     //TODO write test for all methods of checking for added

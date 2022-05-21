@@ -2,10 +2,10 @@ package com.mineinabyss.geary.helpers.tests
 
 import com.mineinabyss.geary.context.EngineContext
 import com.mineinabyss.geary.context.GearyContextKoin
+import com.mineinabyss.geary.context.QueryContext
 import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.engine.GearyEngine
-import com.mineinabyss.geary.systems.QueryContext
 import com.mineinabyss.geary.systems.QueryManager
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers

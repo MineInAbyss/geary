@@ -62,6 +62,3 @@ public class QueryManager : EngineContext by GearyContextKoin() {
     }
 }
 
-public interface QueryContext {
-    public val queryManager: QueryManager
-}

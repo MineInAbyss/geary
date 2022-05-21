@@ -3,12 +3,16 @@ package com.mineinabyss.geary.engine
 import com.mineinabyss.geary.components.ComponentInfo
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.EntityRemoved
+import com.mineinabyss.geary.context.QueryContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.ClassToComponentMap
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.*
-import com.mineinabyss.geary.systems.*
+import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.GearySystem
+import com.mineinabyss.geary.systems.QueryManager
+import com.mineinabyss.geary.systems.TickingSystem
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.locks.SynchronizedObject

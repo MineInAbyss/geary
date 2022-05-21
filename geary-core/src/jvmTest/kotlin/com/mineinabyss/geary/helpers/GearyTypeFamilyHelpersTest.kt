@@ -7,7 +7,7 @@ import com.mineinabyss.geary.helpers.tests.GearyTest
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-class GearyTypeFamilyExtensionsKtTest : GearyTest() {
+class GearyTypeFamilyHelpersTest : GearyTest() {
     @Test
     fun containsRelation() {
         val type = GearyType(listOf(Relation.of(2uL, 1uL).id, 2uL))
