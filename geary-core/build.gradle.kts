@@ -53,6 +53,7 @@ kotlin {
             languageSettings {
                 optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
                 optIn("kotlin.time.ExperimentalTime")
+                optIn("kotlin.ExperimentalUnsignedTypes")
                 optIn("kotlinx.serialization.ExperimentalSerializationApi")
                 optIn("kotlin.RequiresOptIn")
             }

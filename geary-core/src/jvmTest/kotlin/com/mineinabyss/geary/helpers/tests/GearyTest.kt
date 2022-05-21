@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.helpers
+package com.mineinabyss.geary.helpers.tests
 
 import com.mineinabyss.geary.context.EngineContext
 import com.mineinabyss.geary.context.GearyContextKoin
@@ -26,7 +26,7 @@ abstract class GearyTest : KoinComponent, EngineContext {
     val queryManager get() = get<QueryManager>()
 
     init {
-        startKoinWithGeary()
+        clearEngine()
     }
 
     private fun startKoinWithGeary() {

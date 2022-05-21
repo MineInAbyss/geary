@@ -2,7 +2,6 @@ package com.mineinabyss.geary.systems.accessors.types
 
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.accessors.ArchetypeCacheScope
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.systems.accessors.RelationWithData
@@ -22,7 +21,7 @@ public open class RelationWithDataAccessor<K : GearyComponent?, V : GearyCompone
             // If we match a specific value, we can have any key
             relationTarget != null -> archetype.relationsByTarget[relationTarget.toLong()]
             // If we match a specific key, we can have any value
-            relationKind != null -> archetype.relationsByType[relationKind.toLong()]
+            relationKind != null -> archetype.relationsByKind[relationKind.toLong()]
             else -> archetype.relations
         } ?: error("Relation accessor could not find the right relations on a matched archetype.")
         relations
@@ -43,8 +42,6 @@ public open class RelationWithDataAccessor<K : GearyComponent?, V : GearyCompone
                 // Key can be nullable but value cannot
                 kind = archetype.componentData.getOrNull(keyDataIndices[i])?.get(row) as K,
                 target = archetype.componentData[valueDataIndices[i]][row] as V,
-                kindEntity = relation.kind.toGeary(),
-                targetEntity = relation.target.toGeary(),
                 relation = relation
             ))
         }

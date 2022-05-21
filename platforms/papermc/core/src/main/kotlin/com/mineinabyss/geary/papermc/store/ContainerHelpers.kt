@@ -1,8 +1,9 @@
 package com.mineinabyss.geary.papermc.store
 
+import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.datatypes.GearyEntity
-import com.mineinabyss.geary.datatypes.isInstance
+import com.mineinabyss.geary.helpers.component
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.prefabs.helpers.addPrefab
 import com.mineinabyss.idofront.items.editItemMeta
@@ -13,13 +14,13 @@ import org.bukkit.persistence.PersistentDataHolder
 /** Encodes this entity's persisting components into a [PersistentDataContainer] */
 fun GearyEntity.encodeComponentsTo(pdc: PersistentDataContainer) {
     val persisting = getAllPersisting()
-    if (persisting.isEmpty() && !type.any { it.isInstance() }) {
+    if (persisting.isEmpty() && getRelations<InstanceOf?, Any?>().isEmpty()) {
         pdc.hasComponentsEncoded = false
         return
     }
     // Update hashes
     persisting.forEach {
-        getRelation(it::class, Persists::class)?.hash = it.hashCode()
+        getRelation<Persists>(component(it::class))?.hash = it.hashCode()
     }
     pdc.encodeComponents(persisting, type)
 }

@@ -16,15 +16,15 @@ public sealed class MutableFamily : Family {
             override var component: GearyComponentId
         ) : Leaf(), Family.Leaf.Component
 
-        public class RelationValue(
+        public class RelationTarget(
             public override var relationTargetId: GearyEntityId,
             public override val componentMustHoldData: Boolean = false
-        ) : Leaf(), Family.Leaf.RelationValue
+        ) : Leaf(), Family.Leaf.RelationTarget
 
-        public class RelationKey(
-            public override var relationKeyId: GearyComponentId,
+        public class RelationKind(
+            public override var relationKindId: GearyComponentId,
             public override val componentMustHoldData: Boolean = false
-        ) : Leaf(), Family.Leaf.RelationKey
+        ) : Leaf(), Family.Leaf.RelationKind
     }
 
 
@@ -79,7 +79,7 @@ public sealed class MutableFamily : Family {
                     _components += comp
                     if (comp.holdsData()) _componentsWithData += comp
                 }
-                is Leaf.RelationValue -> _relationValueIds += element.relationTargetId
+                is Leaf.RelationTarget -> _relationValueIds += element.relationTargetId
                 else -> {}
             }
         }
@@ -115,13 +115,13 @@ public sealed class MutableFamily : Family {
         public fun hasRelation(key: KType, value: GearyComponentId) {
             // If key is Any, we treat this as matching any key
             if (key.classifier == Any::class)
-                add(Leaf.RelationValue(value, !key.isMarkedNullable))
+                add(Leaf.RelationTarget(value, !key.isMarkedNullable))
             else hasRelation(Relation.of(componentId(key), value))
         }
 
         public fun hasRelation(key: GearyComponentId, value: KType) {
             if (value.classifier == Any::class)
-                add(Leaf.RelationKey(key))
+                add(Leaf.RelationKind(key))
             else hasRelation(Relation.of(key, componentId(value)))
         }
 

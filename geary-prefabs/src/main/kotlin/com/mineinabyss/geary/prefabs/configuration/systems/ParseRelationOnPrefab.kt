@@ -3,9 +3,9 @@ package com.mineinabyss.geary.prefabs.configuration.systems
 import com.mineinabyss.geary.annotations.AutoScan
 import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.prefabs.configuration.components.RelationOnPrefab
-import com.mineinabyss.geary.serialization.parseEntity
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.TargetScope
+
 
 @AutoScan
 class ParseRelationOnPrefab : GearyListener() {
@@ -14,7 +14,8 @@ class ParseRelationOnPrefab : GearyListener() {
     @Handler
     private fun TargetScope.convertToRelation() {
         try {
-            entity.setRelation(relation.value, entity.parseEntity(relation.key).id)
+            val rel: RelationOnPrefab = relation
+//            entity.setRelation(relation.value, entity.parseEntity(relation.key).id)
         } finally {
             entity.remove<RelationOnPrefab>()
         }

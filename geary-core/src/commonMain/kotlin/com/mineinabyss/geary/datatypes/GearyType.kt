@@ -1,8 +1,7 @@
 package com.mineinabyss.geary.datatypes
 
-import com.mineinabyss.geary.helpers.getComponentInfo
+import com.mineinabyss.geary.helpers.readableString
 import kotlin.jvm.JvmInline
-import kotlin.reflect.KClass
 
 /**
  * An inlined class used for tracking the components an entity/archetype has.
@@ -10,7 +9,6 @@ import kotlin.reflect.KClass
  * It provides fast (no boxing) functions backed by FastUtil sorted sets to do operations with [GearyComponentId]s.
  */
 @JvmInline
-@OptIn(ExperimentalUnsignedTypes::class)
 public value class GearyType private constructor(
     @PublishedApi
     internal val inner: ULongArray
@@ -30,7 +28,7 @@ public value class GearyType private constructor(
     }
 
     public tailrec fun binarySearch(id: GearyComponentId, fromIndex: Int = 0, toIndex: Int = inner.lastIndex): Int {
-        if(fromIndex > toIndex) return -fromIndex - 1
+        if (fromIndex > toIndex) return -fromIndex - 1
         val mid = (fromIndex + toIndex) / 2
         val found = inner[mid]
         return when {
@@ -97,18 +95,4 @@ public value class GearyType private constructor(
 
     override fun toString(): String =
         inner.joinToString(", ", prefix = "[", postfix = "]") { it.readableString() }
-}
-
-public fun GearyEntityId.readableString(): String = buildString {
-    val id = this@readableString
-    if(id.hasRole(RELATION)) {
-        append(id.toRelation().toString())
-        return@buildString
-    }
-    if(id.hasRole(RELATION)) append("R") else append('-')
-    if(id.hasRole(HOLDS_DATA)) append("D") else append('-')
-    append(" ")
-    val componentName = (id.getComponentInfo()?.kClass as? KClass<*>)?.simpleName
-    if(componentName == null) append(id and ENTITY_MASK)
-    else append(componentName)
 }

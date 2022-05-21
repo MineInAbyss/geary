@@ -1,10 +1,14 @@
-package com.mineinabyss.geary.ecs.engine
+package com.mineinabyss.geary.engine
 
-import com.mineinabyss.geary.components.RelationComponent
+import com.mineinabyss.geary.components.relations.InstanceOf
+import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.datatypes.Relation
+import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.helpers.*
+import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.systems.TickingSystem
+import com.mineinabyss.geary.systems.accessors.RelationWithData
 import com.mineinabyss.geary.systems.accessors.TargetScope
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -87,10 +91,23 @@ internal class GearyEngineTest : GearyTest() {
     @Test
     fun setRelation() {
         val entity = entity {
-            setRelation(Int::class, "String to int relation")
+            setRelation<String, Int>("String to int relation")
         }
         entity.type.inner.shouldContainExactly(Relation.of<Int, String>().id)
-        entity.getAll().shouldContainExactly(RelationComponent(componentId<Int>(), "String to int relation"))
+    }
+
+    @Test
+    fun `getAll with relations`() {
+        val prefab = entity()
+        entity {
+            set("Test")
+            setRelation<Persists, String>(Persists())
+            addRelation<InstanceOf>(prefab)
+        }.getAll().shouldContainExactly(
+            "Test",
+            RelationWithData(Persists(), null, relation = Relation.of<Persists, String>().withRole(HOLDS_DATA)),
+            Relation.of<InstanceOf>(prefab)
+        )
     }
 
     @Nested

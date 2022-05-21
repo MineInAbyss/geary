@@ -1,7 +1,9 @@
 package com.mineinabyss.geary.papermc.store
 
+import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.papermc.globalContextMC
 import com.mineinabyss.geary.papermc.helpers.getNamespacedKeyFor
@@ -82,9 +84,9 @@ fun PersistentDataContainer.encodeComponents(
     for (value in components)
         encode(value)
 
-    val prefabs = type.filter { it.isInstance() }
+    val prefabs = type.filter { it.toRelation()?.kind == componentId<InstanceOf>() }
     if (prefabs.size != 0)
-        encodePrefabs(prefabs.map { it.toGeary().get<PrefabKey>() }.filterNotNull())
+        encodePrefabs(prefabs.map { it.toRelation()!!.target.toGeary().get<PrefabKey>() }.filterNotNull())
 }
 
 /**
@@ -129,7 +131,9 @@ fun PersistentDataContainer.decodeComponents(): DecodedEntityData =
             .filter { it.key.startsWith(COMPONENT_PREFIX) }
             .mapNotNull { decode(it) }
             .toSet(),
-        type = GearyType(decodePrefabs().mapNotNull { it.toEntity()?.id?.withRole(INSTANCEOF) })
+        type = GearyType(decodePrefabs().mapNotNull {
+            Relation.of<InstanceOf>(it.toEntity() ?: return@mapNotNull null).id
+        })
     )
 
 /** Verifies a [PersistentDataContainer] has a tag identifying it as containing Geary components. */

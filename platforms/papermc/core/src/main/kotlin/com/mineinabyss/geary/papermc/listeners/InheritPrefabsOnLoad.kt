@@ -3,7 +3,6 @@ package com.mineinabyss.geary.papermc.listeners
 import com.mineinabyss.geary.annotations.AutoScan
 import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.datatypes.family.family
-import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.has
 import com.mineinabyss.geary.prefabs.events.PrefabLoaded
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
 import com.mineinabyss.geary.systems.GearyListener
@@ -11,7 +10,7 @@ import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.TargetScope
 
 @AutoScan
-public class InheritPrefabsOnLoad : GearyListener() {
+class InheritPrefabsOnLoad : GearyListener() {
     private val EventScope.loaded by family { has<PrefabLoaded>() }
 
     @Handler

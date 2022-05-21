@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.engine
 
 import com.mineinabyss.geary.components.ComponentInfo
-import com.mineinabyss.geary.components.RelationComponent
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.EntityRemoved
 import com.mineinabyss.geary.datatypes.*
@@ -141,10 +140,9 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
     override fun getComponentsFor(entity: GearyEntity): Array<GearyComponent> {
         val (archetype, row) = getRecord(entity)
         return archetype.getComponents(row).also { array ->
-            //FIXME this looks like it overrides data instead of adding onto it?
             for (relation in archetype.relations) {
                 val i = archetype.indexOf(relation.id)
-                array[i] = RelationComponent(relation.kind, array[i])
+                array[i] = RelationWithData(array[i], null, relation)
             }
         }
     }
@@ -162,8 +160,6 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
             RelationWithData(
                 kind = archetype[row, relation.id],
                 target = archetype[row, targetDataId],
-                kindEntity = relation.kind.toGeary(),
-                targetEntity = relation.target.toGeary(),
                 relation = relation
             )
         }
@@ -188,7 +184,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
         targetMustHoldData: Boolean
     ): Set<RelationWithData<*, *>> {
         val record = getRecord(entity)
-        return record.archetype.relationsByType[type.toLong()]?.readData(
+        return record.archetype.relationsByKind[type.toLong()]?.readData(
             record, kindMustHoldData, targetMustHoldData
         ) ?: setOf()
     }
@@ -217,8 +213,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
         getRecord(entity).apply {
             // Only add HOLDS_DATA if this isn't a relation. All relations implicitly hold data currently and that bit
             // corresponds to the component part of the relation.
-            val role = if (!componentId.hasRole(RELATION)) HOLDS_DATA else NO_ROLE
-            val componentWithRole = componentId.withRole(role)
+            val componentWithRole = componentId.withRole(HOLDS_DATA)
             archetype.setComponent(this, componentWithRole, data) || return
 
             if (!noEvent) temporaryEntity { componentAddEvent ->

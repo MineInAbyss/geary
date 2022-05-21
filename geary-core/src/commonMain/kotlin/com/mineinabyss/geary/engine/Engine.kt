@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.engine
 
 import com.mineinabyss.geary.components.ComponentInfo
-import com.mineinabyss.geary.components.RelationComponent
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.context.EngineContext
 import com.mineinabyss.geary.datatypes.*

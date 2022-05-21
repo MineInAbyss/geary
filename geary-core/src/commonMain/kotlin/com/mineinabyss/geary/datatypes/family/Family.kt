@@ -9,13 +9,13 @@ public sealed interface Family {
             public val component: GearyComponentId
         }
 
-        public sealed interface RelationKey : Family {
-            public val relationKeyId: GearyComponentId
+        public sealed interface RelationTarget : Family {
+            public val relationTargetId: GearyEntityId
             public val componentMustHoldData: Boolean
         }
 
-        public sealed interface RelationValue : Family {
-            public val relationTargetId: GearyEntityId
+        public sealed interface RelationKind : Family {
+            public val relationKindId: GearyComponentId
             public val componentMustHoldData: Boolean
         }
     }

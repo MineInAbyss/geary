@@ -1,10 +1,10 @@
-package com.mineinabyss.geary.ecs.api.entities
+package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.components.relations.Persists
-import com.mineinabyss.geary.helpers.GearyTest
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.getArchetype
+import com.mineinabyss.geary.helpers.tests.GearyTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
@@ -24,7 +24,7 @@ internal class GearyEntityTests : GearyTest() {
     }
 
     @Test
-    fun setAllPersisting() {
+    fun setAll() {
         val entity = entity {
             set("Test")
             set(1)

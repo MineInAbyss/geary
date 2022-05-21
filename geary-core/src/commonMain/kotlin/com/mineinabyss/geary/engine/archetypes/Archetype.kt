@@ -40,11 +40,11 @@ public data class Archetype(
 
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
-    private val dataHoldingType = type.filter { it.holdsData() || it.isRelation() }
+    private val dataHoldingType: GearyType = type.filter { it.holdsData() || it.isRelation() }
 
     /** An outer list with indices for component ids, and sub-lists with data indexed by entity [ids]. */
-    internal val componentData: List<MutableList<GearyComponent>> =
-        dataHoldingType.map { mutableListOf() }
+    internal val componentData: Array<MutableList<GearyComponent>> =
+        Array(dataHoldingType.size) { mutableListOf() }
 
     /** Edges to other archetypes where a single component has been added. */
     internal val componentAddEdges = CompId2ArchetypeMap(engine)
@@ -59,10 +59,10 @@ public data class Archetype(
         .groupBy { it.target.toLong() }
 
     /** Map of relation [Relation.kind] id to a list of relations with that [Relation.kind]. */
-    internal val relationsByType: Long2ObjectMap<List<Relation>> = relations
+    internal val relationsByKind: Long2ObjectMap<List<Relation>> = relations
         .groupBy { it.kind.toLong() }
 
-    /** A map of a relation's data type id to full relations that store data of that type. */
+    /** A map of a relation's kind to full relations that store data of that kind. */
     internal val dataHoldingRelations: Long2ObjectMap<List<Relation>> by lazy {
         val map = mutableMapOf<Long, List<Relation>>()
         relationsByTarget.forEach { (key, values) ->

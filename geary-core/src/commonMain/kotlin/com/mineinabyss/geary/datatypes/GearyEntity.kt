@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.annotations.optin.DangerousComponentOperation
-import com.mineinabyss.geary.components.RelationComponent
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.relations.ChildOf
 import com.mineinabyss.geary.components.relations.InstanceOf
@@ -61,10 +60,13 @@ public value class GearyEntity(public val id: GearyEntityId) {
         component: T,
         kClass: KClass<out T> = T::class,
         noEvent: Boolean = false
-    ): T {
-        globalContext.engine.setComponentFor(this, componentId(kClass), component, noEvent)
-        return component
-    }
+    ): Unit = set(component, componentId(kClass), noEvent)
+
+    public inline fun set(
+        component: GearyComponent,
+        componentId: GearyComponentId,
+        noEvent: Boolean = false
+    ): Unit = globalContext.engine.setComponentFor(this, componentId, component, noEvent)
 
     /** Sets components that hold data for this entity */
     public fun setAll(components: Collection<GearyComponent>, override: Boolean = true) {
@@ -217,13 +219,13 @@ public value class GearyEntity(public val id: GearyEntityId) {
 
     // Relations
 
-    /** Gets the value of a relation with key of type [Y] and value of type [T]. */
-    public inline fun <reified Y : GearyComponent, reified T : GearyComponent> getRelation(): Y? {
+    /** Gets the value of a relation with key of type [K] and value of type [T]. */
+    public inline fun <reified K : GearyComponent, reified T : GearyComponent> getRelation(): K? {
         return getRelation(component<T>())
     }
 
-    public inline fun <reified Y : GearyComponent> getRelation(target: GearyEntity): Y? {
-        return get(Relation.of<Y>(target).id) as? Y
+    public inline fun <reified K : GearyComponent> getRelation(target: GearyEntity): K? {
+        return get(Relation.of<K>(target).id) as? K
     }
 
     public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> getRelations(): Set<RelationWithData<K, T>> {
@@ -239,7 +241,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
                 kindMustHoldData = kind.isMarkedNullable,
                 targetMustHoldData = target.isMarkedNullable,
             )
-            target.classifier == Any::class  -> globalContext.engine.getRelationsByTargetFor(
+            target.classifier == Any::class -> globalContext.engine.getRelationsByTargetFor(
                 entity = this,
                 target = componentId<T>(),
                 kindMustHoldData = kind.isMarkedNullable,

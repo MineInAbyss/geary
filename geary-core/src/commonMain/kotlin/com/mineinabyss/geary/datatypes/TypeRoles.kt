@@ -1,4 +1,3 @@
-@file:OptIn(ExperimentalUnsignedTypes::class)
 // Some of these run often enough and are stable enough to justify inlining.
 @file:Suppress("NOTHING_TO_INLINE")
 
@@ -18,16 +17,20 @@ public val HOLDS_DATA: ULong = 1uL shl 62
 
 public const val TYPE_ROLES_MASK: ULong = 0xFF00000000000000uL
 public const val ENTITY_MASK: ULong = 0x00FFFFFFFFFFFFFFuL
-public const val RELATION_KIND_MASK: ULong = 0xFFFFFFFF00000000uL
+public const val RELATION_KIND_MASK: ULong = 0x00FFFFFF00000000uL
 public const val RELATION_TARGET_MASK: ULong = 0x00000000FFFFFFFFuL
 
 public inline fun GearyComponentId.isRelation(): Boolean = this.hasRole(RELATION)
 public inline fun GearyComponentId.holdsData(): Boolean = this.hasRole(HOLDS_DATA)
 
 public inline fun GearyComponentId.hasRole(role: ULong): Boolean = this and role != 0uL
+public inline fun Relation.hasRole(role: ULong): Boolean = id.hasRole(role)
 
 public inline fun GearyComponentId.withRole(role: ULong): ULong = this or role
+public inline fun Relation.withRole(role: ULong): Relation = Relation.of(id.withRole(role))
 
 public inline fun GearyComponentId.withoutRole(role: ULong): ULong = this and role.inv()
+public inline fun Relation.withoutRole(role: ULong): Relation = Relation.of(id.withoutRole(role))
 
 public inline fun GearyComponentId.withInvertedRole(role: ULong): ULong = this xor role
+public inline fun Relation.withInvertedRole(role: ULong): Relation = Relation.of(id.withInvertedRole(role))

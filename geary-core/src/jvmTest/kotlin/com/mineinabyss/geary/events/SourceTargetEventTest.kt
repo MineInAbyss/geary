@@ -1,9 +1,9 @@
-package com.mineinabyss.geary.ecs.events
+package com.mineinabyss.geary.events
 
 import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.datatypes.family.family
-import com.mineinabyss.geary.helpers.GearyTest
 import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.SourceScope

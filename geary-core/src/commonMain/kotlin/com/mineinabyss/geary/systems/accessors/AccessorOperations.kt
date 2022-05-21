@@ -57,10 +57,10 @@ public open class AccessorOperations {
      *
      * @see flatten
      */
-    public inline fun <reified K : GearyComponent?, reified V : GearyComponent> relation(): AccessorBuilder<RelationWithDataAccessor<K, V>> {
+    public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> relation(): AccessorBuilder<RelationWithDataAccessor<K, T>> {
         return AccessorBuilder { holder, index ->
             val kind = typeOf<K>()
-            val target = typeOf<V>()
+            val target = typeOf<T>()
             val kindIsNullable = kind.isMarkedNullable
             val relationKind = if (kind.classifier == Any::class) null else componentId(kind)
             val relationTarget = if (target.classifier == Any::class) null else componentId(target)

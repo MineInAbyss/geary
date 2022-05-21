@@ -54,7 +54,7 @@ internal class Component2ObjectArrayMap<T> {
             }
             is Family.Selector.Or -> family.or.reduceToBits(BitSet::or)
             is Family.Leaf.Component -> componentMap[family.component.toLong()]?.copy() ?: bitsOf()
-            is Family.Leaf.RelationValue -> {
+            is Family.Leaf.RelationTarget -> {
                 val relationId = family.relationTargetId.withRole(RELATION)
                 componentMap[relationId.toLong()]?.copy()?.apply {
                     if (family.componentMustHoldData) {
@@ -66,11 +66,12 @@ internal class Component2ObjectArrayMap<T> {
                     }
                 } ?: bitsOf()
             }
-            is Family.Leaf.RelationKey -> {
+            is Family.Leaf.RelationKind -> {
                 // Shift left to match the mask we used above
-                val relationId = family.relationKeyId.shl(32).withRole(RELATION)
+                val relationId = family.relationKindId.shl(32).withRole(RELATION)
                 componentMap[relationId.toLong()]?.copy() ?: bitsOf()
             }
+            else -> TODO("Kotlin compiler is shitting itself")
         }
     }
 

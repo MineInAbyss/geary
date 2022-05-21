@@ -4,14 +4,14 @@ import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.family.Family
 
 public fun GearyType.hasRelationTarget(
-    relationValueId: GearyEntityId,
+    relationTargetId: GearyEntityId,
     componentMustHoldData: Boolean = false
 ): Boolean {
     val components = filter { !it.isRelation() }
-    return any {
-        if (!it.isRelation()) return@any false
-        val relationInType = Relation.of(it)
-        relationInType.target == relationValueId &&
+    return any { comp ->
+        if (!comp.isRelation()) return@any false
+        val relationInType = Relation.of(comp)
+        relationInType.target == relationTargetId &&
                 (!componentMustHoldData || components.any {
                     it == relationInType.kind.withRole(HOLDS_DATA)
                 })
@@ -32,6 +32,7 @@ public fun Family.has(type: GearyType): Boolean = when (this) {
     is Family.Selector.AndNot -> andNot.none { type in it }
     is Family.Selector.Or -> or.any { type in it }
     is Family.Leaf.Component -> component in type
-    is Family.Leaf.RelationKey -> type.hasRelationKind(relationKeyId)
-    is Family.Leaf.RelationValue -> type.hasRelationTarget(relationTargetId, componentMustHoldData)
+    is Family.Leaf.RelationKind -> type.hasRelationKind(relationKindId)
+    is Family.Leaf.RelationTarget -> type.hasRelationTarget(relationTargetId, componentMustHoldData)
+    else -> TODO("Kotlin compiler is shitting itself")
 }

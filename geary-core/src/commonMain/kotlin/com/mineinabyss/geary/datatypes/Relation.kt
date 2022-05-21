@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.readableString
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
@@ -24,7 +25,7 @@ public value class Relation private constructor(
 ) : Comparable<Relation> {
     /*
     * Internal representation of bits:
-    * [kind]   0xFFFFFFFF00000000
+    * [kind]   0x00FFFFFF00000000
     * [target] 0x00000000FFFFFFFF
     */
     public val kind: GearyComponentId get() = id and RELATION_KIND_MASK shr 32
