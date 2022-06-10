@@ -13,9 +13,10 @@ plugins {
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
-    maven("https://papermc.io/repo/repository/maven-public/")
+    maven("https://repo.papermc.io/repository/maven-public/")
 }
 
 kotlin {

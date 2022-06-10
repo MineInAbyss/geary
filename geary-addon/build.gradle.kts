@@ -5,6 +5,10 @@ plugins {
     id("com.mineinabyss.conventions.testing")
 }
 
+repositories {
+    mavenLocal()
+}
+
 dependencies {
     implementation(libs.reflections)
     implementation(libs.kotlin.reflect)
