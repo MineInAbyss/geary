@@ -10,3 +10,5 @@ package com.mineinabyss.geary.components.events
  * as long as all three are present after the addition.
  */
 public sealed class AddedComponent
+
+public sealed class SetComponent

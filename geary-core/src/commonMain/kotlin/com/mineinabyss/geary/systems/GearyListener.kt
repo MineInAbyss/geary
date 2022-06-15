@@ -55,9 +55,9 @@ public abstract class GearyListener : AccessorOperations(), GearySystem, Accesso
 
     //TODO make it work with non-set components
     /** Gets a component, ensuring it is on the entity. */
-    public inline fun <reified T : GearyComponent> added(): AccessorBuilder<ComponentAccessor<T>> {
+    public inline fun <reified T : GearyComponent> onSet(): AccessorBuilder<ComponentAccessor<T>> {
         return AccessorBuilder { holder, index ->
-            event._family.onAdded(componentId<T>().withRole(HOLDS_DATA))
+            event._family.onAdd(componentId<T>().withRole(HOLDS_DATA))
             get<T>().build(holder, index)
         }
     }

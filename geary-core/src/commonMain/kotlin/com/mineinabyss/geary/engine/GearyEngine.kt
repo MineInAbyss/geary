@@ -1,14 +1,16 @@
 package com.mineinabyss.geary.engine
 
 import com.mineinabyss.geary.components.ComponentInfo
-import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.EntityRemoved
 import com.mineinabyss.geary.context.QueryContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.ClassToComponentMap
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.helpers.*
+import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.parents
+import com.mineinabyss.geary.helpers.removeParent
+import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.GearySystem
 import com.mineinabyss.geary.systems.QueryManager
@@ -199,12 +201,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
         noEvent: Boolean
     ) {
         getRecord(entity).apply {
-            archetype.addComponent(this, HOLDS_DATA.inv() and componentId) || return
-
-            if (!noEvent) temporaryEntity { componentAddEvent ->
-                componentAddEvent.addRelation<AddedComponent>(componentId.toGeary(), noEvent = true)
-                archetype.callEvent(componentAddEvent, row)
-            }
+            archetype.addComponent(this, HOLDS_DATA.inv() and componentId, !noEvent)
         }
     }
 
@@ -218,22 +215,16 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
             // Only add HOLDS_DATA if this isn't a relation. All relations implicitly hold data currently and that bit
             // corresponds to the component part of the relation.
             val componentWithRole = componentId.withRole(HOLDS_DATA)
-            archetype.setComponent(this, componentWithRole, data) || return
-
-            if (!noEvent) temporaryEntity { componentAddEvent ->
-                componentAddEvent.addRelation<AddedComponent>(componentWithRole.toGeary(), noEvent = true)
-                archetype.callEvent(componentAddEvent, row)
-            }
+            archetype.setComponent(this, componentWithRole, data, !noEvent)
         }
     }
 
-    override fun removeComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean {
-        getRecord(entity).apply {
-            archetype.removeComponent(this, componentId.withRole(HOLDS_DATA))
-                    || archetype.removeComponent(this, componentId)
+    override fun removeComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean =
+        getRecord(entity).run {
+            val a = archetype.removeComponent(this, componentId.withRole(HOLDS_DATA))
+            val b = archetype.removeComponent(this, componentId.withoutRole(HOLDS_DATA))
+            a || b // return whether anything was changed
         }
-        return true
-    }
 
     override fun hasComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean =
         getRecord(entity).archetype.contains(componentId)

@@ -17,11 +17,9 @@ public value class GearyType private constructor(
 
     public constructor() : this(ULongArray(0))
 
-    public constructor(ids: Collection<GearyComponentId>) :
-            this(inner = ids.toULongArray().apply { sort() })
-//            this(LongRBTreeSet().apply { for(id in ids) { add(id.toLong()) } })
+    public constructor(ids: Collection<GearyComponentId>) : this(inner = ids.toULongArray().apply { sort() })
 
-    public operator fun contains(id: GearyComponentId): Boolean = inner.contains(id)
+    public operator fun contains(id: GearyComponentId): Boolean = indexOf(id) != -1
 
     public fun indexOf(id: GearyComponentId): Int {
         return binarySearch(id).coerceAtLeast(-1)

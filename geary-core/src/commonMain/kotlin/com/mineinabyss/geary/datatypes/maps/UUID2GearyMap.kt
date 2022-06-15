@@ -35,7 +35,7 @@ public class UUID2GearyMap(
     }
 
     public inner class TrackUuidOnAdd : GearyListener() {
-        private val TargetScope.uuid by added<Uuid>().onTarget()
+        private val TargetScope.uuid by onSet<Uuid>().onTarget()
 
         @Handler
         private fun TargetScope.track() {

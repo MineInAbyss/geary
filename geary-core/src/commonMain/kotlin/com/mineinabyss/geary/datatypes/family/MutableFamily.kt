@@ -3,8 +3,7 @@ package com.mineinabyss.geary.datatypes.family
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.helpers.componentId
-import kotlin.reflect.KType
-import kotlin.reflect.typeOf
+import com.mineinabyss.geary.helpers.componentIdWithNullable
 
 public inline fun family(init: MutableFamily.Selector.And.() -> Unit): Family {
     return MutableFamily.Selector.And().apply(init)
@@ -16,15 +15,15 @@ public sealed class MutableFamily : Family {
             override var component: GearyComponentId
         ) : Leaf(), Family.Leaf.Component
 
-        public class RelationTarget(
-            public override var relationTargetId: GearyEntityId,
-            public override val componentMustHoldData: Boolean = false
-        ) : Leaf(), Family.Leaf.RelationTarget
+        public class AnyToTarget(
+            public override var target: GearyEntityId,
+            public override val kindMustHoldData: Boolean
+        ) : Leaf(), Family.Leaf.AnyToTarget
 
-        public class RelationKind(
-            public override var relationKindId: GearyComponentId,
-            public override val componentMustHoldData: Boolean = false
-        ) : Leaf(), Family.Leaf.RelationKind
+        public class KindToAny(
+            public override var kind: GearyComponentId,
+            public override val targetMustHoldData: Boolean
+        ) : Leaf(), Family.Leaf.KindToAny
     }
 
 
@@ -79,7 +78,7 @@ public sealed class MutableFamily : Family {
                     _components += comp
                     if (comp.holdsData()) _componentsWithData += comp
                 }
-                is Leaf.RelationTarget -> _relationValueIds += element.relationTargetId
+                is Leaf.AnyToTarget -> _relationValueIds += element.target
                 else -> {}
             }
         }
@@ -92,54 +91,52 @@ public sealed class MutableFamily : Family {
             has(id.withRole(HOLDS_DATA))
         }
 
-        public fun hasRelation(key: KType, value: KType) {
-            val anyKey = (key.classifier == Any::class)
-            val anyValue = (value.classifier == Any::class)
-            val relationKey = if (anyKey) null else componentId(key)
-            val relationValue = if (anyValue) null else componentId(value)
+//        public fun hasRelation(key: KType, value: KType) {
+//            val anyKey = (key.classifier == Any::class)
+//            val anyValue = (value.classifier == Any::class)
+//            val relationKey = if (anyKey) null else componentId(key)
+//            val relationValue = if (anyValue) null else componentId(value)
+//
+//        }
 
-            when {
-                relationKey != null && relationValue != null -> {
-                    if (key.isMarkedNullable) or {
-                        hasRelation(Relation.of(relationKey.withRole(HOLDS_DATA), relationValue))
-                        hasRelation(Relation.of(relationKey.withoutRole(HOLDS_DATA), relationValue))
-                    } else
-                        hasRelation(Relation.of(relationKey, relationValue))
-                }
-                relationValue != null -> hasRelation(key, relationValue)
-                relationKey != null -> hasRelation(relationKey, value)
+        private val anyComponentId = componentId<Any>()
+
+        /**
+         * When [kind] or [target] are the [Any] component, matches against any relation.
+         * Both [kind] and [target] cannot be [Any].
+         *
+         * The if a parameter is the [Any] component, the [HOLDS_DATA] role indicates whether other components
+         * matched must also hold data themselves.
+         * All other roles are ignored for the [target].
+         */
+        public fun hasRelation(
+            kind: GearyComponentId,
+            target: GearyEntityId,
+        ) {
+            val specificKind = kind and ENTITY_MASK != anyComponentId
+            val specificTarget = target and ENTITY_MASK != anyComponentId
+            return when {
+                specificKind && specificTarget -> has(Relation.of(kind, target).id)
+                specificTarget -> add(Leaf.AnyToTarget(target, kind.holdsData()))
+                specificKind -> add(Leaf.KindToAny(kind, target.holdsData()))
                 else -> error("Has relation check cannot be Any to Any yet.")
             }
         }
 
-        public fun hasRelation(key: KType, value: GearyComponentId) {
-            // If key is Any, we treat this as matching any key
-            if (key.classifier == Any::class)
-                add(Leaf.RelationTarget(value, !key.isMarkedNullable))
-            else hasRelation(Relation.of(componentId(key), value))
+        public inline fun <reified K, reified T> hasRelation(): Unit = hasRelation<K>(componentIdWithNullable<T>())
+
+        public inline fun <reified K> hasRelation(target: GearyEntityId) {
+            val kind = componentIdWithNullable<K>()
+            hasRelation(kind, target)
         }
 
-        public fun hasRelation(key: GearyComponentId, value: KType) {
-            if (value.classifier == Any::class)
-                add(Leaf.RelationKind(key))
-            else hasRelation(Relation.of(key, componentId(value)))
-        }
+        public inline fun <reified K> hasRelation(target: GearyEntity): Unit = hasRelation<K>(target.id)
 
-        public inline fun <reified K> hasRelation(target: GearyEntity) {
-            TODO()
-        }
-
-        public fun hasRelation(relation: Relation) {
-            has(relation.id)
-        }
-
-        public fun onAdded(id: GearyComponentId) {
+        public fun onAdd(id: GearyComponentId) {
             (onAdd ?: Or().also {
                 onAdd = it
                 add(it)
-            }).apply {
-                hasRelation(id, typeOf<AddedComponent>())
-            }
+            }).apply { hasRelation<AddedComponent>(id) }
         }
 
         public inline fun or(init: Or.() -> Unit) {
@@ -155,13 +152,6 @@ public sealed class MutableFamily : Family {
         }
 
         public inline fun <reified T : GearyComponent> has(): Unit =
-            or {
-                val id = componentId<T>()
-                has(id)
-                has(id.withInvertedRole(HOLDS_DATA))
-            }
-
-        public inline fun <reified T : GearyComponent> hasAdded(): Unit =
             has(componentId<T>())
 
         public inline fun <reified T : GearyComponent> hasSet(): Unit =

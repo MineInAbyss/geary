@@ -9,7 +9,7 @@ import com.mineinabyss.geary.systems.accessors.TargetScope
 
 @AutoScan
 class ParseRelationOnPrefab : GearyListener() {
-    private val TargetScope.relation by added<RelationOnPrefab>()
+    private val TargetScope.relation by onSet<RelationOnPrefab>()
 
     @Handler
     private fun TargetScope.convertToRelation() {

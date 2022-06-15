@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import com.mineinabyss.geary.components.events.AddedComponent
+import com.mineinabyss.geary.components.events.SetComponent
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
@@ -7,6 +9,7 @@ import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.engine.GearyEngine
 import com.mineinabyss.geary.events.GearyHandler
 import com.mineinabyss.geary.helpers.contains
+import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
@@ -172,7 +175,7 @@ public data class Archetype(
     //  (ex when set calls remove).
 
     /**
-     * Add a [component] to an entity represented by [record], moving it to the appropriate archetype.
+     * Add a [componentId] to an entity represented by [record], moving it to the appropriate archetype.
      *
      * @return Whether the record has changed.
      *
@@ -180,40 +183,41 @@ public data class Archetype(
      */
     internal fun addComponent(
         record: Record,
-        component: GearyComponentId
+        componentId: GearyComponentId,
+        callEvent: Boolean,
     ): Boolean {
         // if already present in this archetype, stop here since we dont need to update any data
-        if (contains(component)) return false
+        if (contains(componentId)) return false
 
-        val moveTo = this + (component.withoutRole(HOLDS_DATA))
+        val moveTo = this + (componentId.withoutRole(HOLDS_DATA))
 
         val componentData = getComponents(record.row)
         scheduleRemoveRow(record.row)
         moveTo.addEntityWithData(record, componentData)
+
+        if (callEvent) temporaryEntity { componentAddEvent ->
+            componentAddEvent.addRelation<AddedComponent>(componentId.toGeary(), noEvent = true)
+            record.archetype.callEvent(componentAddEvent, record.row)
+        }
         return true
     }
 
     /**
      * Sets [data] at a [componentId] for an [record], moving it to the appropriate archetype.
-     * Will remove [componentId] without the [HOLDS_DATA] role if present so an archetype never has both data/no data
-     * components at once.
+     * Will ensure this component without [HOLDS_DATA] is always present.
      *
-     * @return The new [Record] to be associated with this entity from now on, or null if the [componentId] was already
-     * present in this archetype.
+     * @return Whether the record has changed.
      *
      * @see Engine.setComponentFor
      */
     internal fun setComponent(
         record: Record,
         componentId: GearyComponentId,
-        data: GearyComponent
+        data: GearyComponent,
+        callEvent: Boolean,
     ): Boolean {
         val row = record.row
-        val isRelation = componentId.isRelation()
-
-        // Relations should not add the HOLDS_DATA bit since the type roles are of the relation's child
-        val dataComponent = if (isRelation) componentId else componentId.withRole(HOLDS_DATA)
-
+        val dataComponent = componentId.withRole(HOLDS_DATA)
 
         //If component already in this type, just update the data
         val addIndex = indexOf(dataComponent)
@@ -222,14 +226,9 @@ public data class Archetype(
             return false
         }
 
-        //if component was added but not set, remove the added component before setting this one
-        val addId = dataComponent.withoutRole(HOLDS_DATA)
-
-        if (addId in type) {
-            removeComponent(record, addId)
-            record.archetype.setComponent(record, dataComponent, data)
-        }
-
+        //if component is not already added, add it, then set
+        if (addComponent(record, dataComponent.withoutRole(HOLDS_DATA), callEvent))
+            return record.archetype.setComponent(record, dataComponent, data, callEvent)
 
         val moveTo = this + dataComponent
         val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
@@ -237,6 +236,11 @@ public data class Archetype(
 
         scheduleRemoveRow(row)
         moveTo.addEntityWithData(record, componentData)
+
+        if (callEvent) temporaryEntity { componentAddEvent ->
+            componentAddEvent.addRelation<SetComponent>(componentId.toGeary(), noEvent = true)
+            record.archetype.callEvent(componentAddEvent, record.row)
+        }
         return true
     }
 

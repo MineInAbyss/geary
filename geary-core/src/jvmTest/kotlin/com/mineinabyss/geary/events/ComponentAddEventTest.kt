@@ -15,9 +15,9 @@ internal class ComponentAddEventTest : GearyTest() {
     //TODO write test for all methods of checking for added
     inner class OnStringAdd : GearyListener() {
         // All three get added
-        val TargetScope.string by added<String>()
-        val TargetScope.int by added<Int>()
-        val TargetScope.double by added<Double>()
+        val TargetScope.string by onSet<String>()
+        val TargetScope.int by onSet<Int>()
+        val TargetScope.double by onSet<Double>()
 
         @Handler
         fun increment() {

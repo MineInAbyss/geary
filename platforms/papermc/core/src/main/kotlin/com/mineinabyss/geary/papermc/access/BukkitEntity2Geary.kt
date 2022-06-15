@@ -53,7 +53,7 @@ class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin() {
     }
 
     private inner class Register : GearyListener() {
-        val TargetScope.bukkit by added<BukkitEntity>()
+        val TargetScope.bukkit by onSet<BukkitEntity>()
 
         @Handler
         fun TargetScope.loadPersisted() {

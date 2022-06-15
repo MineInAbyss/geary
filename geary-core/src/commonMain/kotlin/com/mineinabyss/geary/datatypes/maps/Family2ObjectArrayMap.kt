@@ -2,14 +2,24 @@ package com.mineinabyss.geary.datatypes.maps
 
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.family.Family
+import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.hasRelationTarget
 
 /**
  * A map of [GearyComponentId]s to Arrays of objects with the ability to make fast queries based on component IDs.
  */
-internal class Component2ObjectArrayMap<T> {
+internal class Family2ObjectArrayMap<T> {
     private val elements = mutableListOf<T>()
     private val elementTypes = mutableListOf<GearyType>()
+
+    /**
+     * A map of component ids to a [BitSet] where each set bit means that the element at its index in [elements]
+     * contains this component in its type.
+     *
+     * ### Extra rules are applied for relations:
+     * For relations with a kind or type equal to the [Any] component, the [BitSet] represents elements whose type
+     * contains at least one relation of that kind/type to any other type/kind.
+     */
     private val componentMap = mutableMapOf<Long, BitSet>()
 
     fun add(element: T, type: GearyType) {
@@ -19,24 +29,22 @@ internal class Component2ObjectArrayMap<T> {
         type.forEach { id ->
             fun set(i: GearyComponentId) = componentMap.getOrPut(i.toLong()) { bitsOf() }.set(index)
 
+            // See componentMap definition for relations
             if (id.isRelation()) {
                 val relation = id.toRelation()!!
-                // If this is a relation, we additionally set a bit for key/value, so we can make queries with them
-                set(relation.id.and(RELATION_TARGET_MASK).withRole(RELATION))
-                set(relation.id.and(RELATION_KIND_MASK).withRole(RELATION))
+                set(Relation.of(relation.kind, componentId<Any>()).id)
+                set(Relation.of(componentId<Any>(), relation.target).id)
             }
             set(id)
         }
     }
 
-    // Null indicates no bits should be excluded
+    /**
+     * @param bits When null, indicates no bits should be excluded (i.e. a bitset of all 1s)
+     */
     private fun getMatchingBits(family: Family, bits: BitSet?): BitSet? {
-        // If family empty, consider it as matching everything
-//        if (family is Family.Selector && family.elements.isEmpty()) return null
-
         fun List<Family>.reduceToBits(operation: BitSet.(BitSet) -> Unit): BitSet? =
-            ifEmpty { return null }.
-            map { getMatchingBits(it, bits?.copy()) }
+            ifEmpty { return null }.map { getMatchingBits(it, bits?.copy()) }
                 .reduce { acc: BitSet?, andBits: BitSet? ->
                     acc.also {
                         if (andBits != null) it?.operation(andBits)
@@ -54,22 +62,23 @@ internal class Component2ObjectArrayMap<T> {
             }
             is Family.Selector.Or -> family.or.reduceToBits(BitSet::or)
             is Family.Leaf.Component -> componentMap[family.component.toLong()]?.copy() ?: bitsOf()
-            is Family.Leaf.RelationTarget -> {
-                val relationId = family.relationTargetId.withRole(RELATION)
+            is Family.Leaf.AnyToTarget -> {
+                // The bits for relationId in componentMap represent archetypes with any relations containing target
+                val relationId = Relation.of(componentId<Any>(), family.target).id
+                componentMap[relationId.toLong()]?.copy() ?: bitsOf()
+            }
+            is Family.Leaf.KindToAny -> {
+                // The bits for relationId in componentMap represent archetypes with any relations containing kind
+                val relationId = Relation.of(family.kind, componentId<Any>()).id
                 componentMap[relationId.toLong()]?.copy()?.apply {
-                    if (family.componentMustHoldData) {
-                        forEachBit { index ->
-                            val type = elementTypes[index]
-                            if (!type.hasRelationTarget(family.relationTargetId, componentMustHoldData = true))
-                                clear(index)
-                        }
+                    if (family.targetMustHoldData) forEachBit { index ->
+                        val type = elementTypes[index]
+                        // TODO store list of matching relations somewhere so we dont have to filter through the
+                        //  whole type every time.
+                        if (!type.hasRelationTarget(family.kind, kindMustHoldData = true))
+                            clear(index)
                     }
                 } ?: bitsOf()
-            }
-            is Family.Leaf.RelationKind -> {
-                // Shift left to match the mask we used above
-                val relationId = family.relationKindId.shl(32).withRole(RELATION)
-                componentMap[relationId.toLong()]?.copy() ?: bitsOf()
             }
             else -> TODO("Kotlin compiler is shitting itself")
         }

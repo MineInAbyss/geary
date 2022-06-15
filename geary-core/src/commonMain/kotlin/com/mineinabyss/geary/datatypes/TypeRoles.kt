@@ -17,7 +17,7 @@ public val HOLDS_DATA: ULong = 1uL shl 62
 
 public const val TYPE_ROLES_MASK: ULong = 0xFF00000000000000uL
 public const val ENTITY_MASK: ULong = 0x00FFFFFFFFFFFFFFuL
-public const val RELATION_KIND_MASK: ULong = 0x00FFFFFF00000000uL
+public const val RELATION_KIND_MASK: ULong = 0xFFFFFFFF00000000uL
 public const val RELATION_TARGET_MASK: ULong = 0x00000000FFFFFFFFuL
 
 public inline fun GearyComponentId.isRelation(): Boolean = this.hasRole(RELATION)

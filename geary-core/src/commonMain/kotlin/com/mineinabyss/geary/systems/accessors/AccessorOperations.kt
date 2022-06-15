@@ -63,9 +63,10 @@ public open class AccessorOperations {
             val target = typeOf<T>()
             val kindIsNullable = kind.isMarkedNullable
             val relationKind = if (kind.classifier == Any::class) null else componentId(kind)
+            //TODO decide if we want to support this
             val relationTarget = if (target.classifier == Any::class) null else componentId(target)
             //TODO could we reuse code between hasRelation and here?
-            holder._family.hasRelation(kind, target)
+            holder._family.hasRelation<K, T>()
             RelationWithDataAccessor(index, kindIsNullable, relationKind, relationTarget)
         }
     }
