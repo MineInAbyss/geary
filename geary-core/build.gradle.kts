@@ -43,10 +43,10 @@ kotlin {
             useJUnitPlatform()
         }
     }
-    js(IR) {
-        browser()
-        nodejs()
-    }
+//    js(IR) {
+//        browser()
+//        nodejs()
+//    }
     sourceSets {
         all {
             explicitApi()
@@ -98,11 +98,11 @@ kotlin {
         }
         val jvmTest by getting
 
-        val jsMain by getting {
-            dependencies {
-                api(gearylibs.bitvector.js)
-            }
-        }
+//        val jsMain by getting {
+//            dependencies {
+//                api(gearylibs.bitvector.js)
+//            }
+//        }
     }
 }
 

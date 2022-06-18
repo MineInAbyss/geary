@@ -6,22 +6,20 @@ import com.mineinabyss.geary.datatypes.family.Family
 public fun GearyType.hasRelationTarget(
     target: GearyEntityId,
     kindMustHoldData: Boolean = false
-): Boolean = any { comp ->
-    if (!comp.isRelation()) return@any false
-    val relationInType = Relation.of(comp)
-    relationInType.target == target &&
-            (!kindMustHoldData || contains(relationInType.kind.withRole(HOLDS_DATA)))
+): Boolean = any {
+    it.isRelation() && Relation.of(it).run {
+        this.target == target && (!kindMustHoldData || contains(this.kind.withRole(HOLDS_DATA)))
+    }
 }
 
 public fun GearyType.hasRelationKind(
     kind: GearyComponentId,
     targetMustHoldData: Boolean = false
-): Boolean =
-    any {
-        it.isRelation() && with(Relation.of(it)) {
-            this.kind == kind && (!targetMustHoldData ||)
-        }
+): Boolean = any {
+    it.isRelation() && Relation.of(it).run {
+        this.kind == kind && (!targetMustHoldData || contains(this.target.withRole(HOLDS_DATA)))
     }
+}
 
 public operator fun Family.contains(type: GearyType): Boolean = has(type)
 

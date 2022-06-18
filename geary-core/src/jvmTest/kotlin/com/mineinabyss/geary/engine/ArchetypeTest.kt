@@ -5,12 +5,12 @@ import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.datatypes.GearyType
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.datatypes.Relation
+import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
-import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
@@ -22,9 +22,10 @@ internal class ArchetypeTest : GearyTest() {
         @Test
         fun `archetype ids assigned correctly`() {
             engine.rootArchetype.id shouldBe 0
-            (engine.rootArchetype + 1u).id shouldBe 1
-            (engine.rootArchetype + 1u + 2u).id shouldBe 2
-            (engine.rootArchetype + 1u).id shouldBe 1
+            // Some other archetypes are created on start, but following ones should come in order
+            val start = (engine.rootArchetype + 1u).id
+            (engine.rootArchetype + 1u + 2u).id shouldBe start + 1
+            (engine.rootArchetype + 1u).id shouldBe start
         }
 
         @Test
@@ -48,16 +49,15 @@ internal class ArchetypeTest : GearyTest() {
     fun matchedRelations() {
         val target = entity()
         val target2 = entity()
-        val persists = Relation.of<Persists>(target).id or HOLDS_DATA
-        val instanceOf = Relation.of<InstanceOf>(target).id
-        val instanceOf2 = Relation.of<InstanceOf>(target2).id
+        val persists = Relation.of<Persists>(target).withRole(HOLDS_DATA)
+        val instanceOf = Relation.of<InstanceOf>(target)
+        val instanceOf2 = Relation.of<InstanceOf>(target2)
         val arc = Archetype(
             engine,
-            GearyType(listOf(persists, instanceOf, instanceOf2)),
+            GearyType(listOf(persists.id, instanceOf.id, instanceOf2.id)),
             0
         )
         arc.relationsByTarget[target.id.toLong()].shouldContainExactlyInAnyOrder(persists, instanceOf)
         arc.relationsByKind[componentId<InstanceOf>().toLong()].shouldContainExactlyInAnyOrder(instanceOf, instanceOf2)
-        arc.dataHoldingRelations[componentId<Persists>().toLong()].shouldContainExactly(persists)
     }
 }

@@ -29,7 +29,7 @@ public value class Relation private constructor(
     * [target] 0x00000000FFFFFFFF
     */
     public val kind: GearyComponentId
-        get() = id and RELATION_KIND_MASK shr 32 or (id and TYPE_ROLES_MASK).withoutRole(RELATION)
+        get() = id and TYPE_ROLES_MASK.inv() and RELATION_KIND_MASK shr 32 or (id and TYPE_ROLES_MASK).withoutRole(RELATION)
     public val target: GearyEntityId get() = id and RELATION_TARGET_MASK
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
@@ -41,7 +41,7 @@ public value class Relation private constructor(
             kind: GearyComponentId, target: GearyEntityId
         ): Relation = Relation(
             (kind shl 32 and RELATION_KIND_MASK and TYPE_ROLES_MASK.inv()) // Add kind entity id shifted left
-                    or kind and TYPE_ROLES_MASK // Add type roles on kind
+                    or (kind and TYPE_ROLES_MASK) // Add type roles on kind
                     or RELATION // Add relation type role
                     or (target and RELATION_TARGET_MASK) // Add target, stripping any type roles
         )

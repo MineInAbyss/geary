@@ -7,10 +7,11 @@ import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.helpers.tests.GearyTest
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-internal class FamilyTest {
+internal class FamilyTest: GearyTest() {
     @Test
     fun contains() {
         val family = family {
@@ -31,7 +32,8 @@ internal class FamilyTest {
 
         (GearyType(listOf(Relation.of<Persists>(other).id)) in family) shouldBe false
         (GearyType(listOf(Relation.of<Persists>(target).id)) in family) shouldBe true
-        (GearyType(listOf(Relation.of<Persists>(target).withRole(HOLDS_DATA).id)) in family) shouldBe true
+        // Archetypes will always have a non HOLDS_DATA version of a component present, but this alone should not succeed
+        (GearyType(listOf(Relation.of<Persists>(target).withRole(HOLDS_DATA).id)) in family) shouldBe false
         (GearyType(listOf(Relation.of<Persists>(target).id, target.id)) in family) shouldBe true
     }
 

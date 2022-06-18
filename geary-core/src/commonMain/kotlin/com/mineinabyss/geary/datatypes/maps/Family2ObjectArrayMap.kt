@@ -65,7 +65,13 @@ internal class Family2ObjectArrayMap<T> {
             is Family.Leaf.AnyToTarget -> {
                 // The bits for relationId in componentMap represent archetypes with any relations containing target
                 val relationId = Relation.of(componentId<Any>(), family.target).id
-                componentMap[relationId.toLong()]?.copy() ?: bitsOf()
+                componentMap[relationId.toLong()]?.copy()?.apply {
+                    if (family.kindMustHoldData) forEachBit { index ->
+                        val type = elementTypes[index]
+                        if (!type.hasRelationTarget(family.target, kindMustHoldData = true))
+                            clear(index)
+                    }
+                } ?: bitsOf()
             }
             is Family.Leaf.KindToAny -> {
                 // The bits for relationId in componentMap represent archetypes with any relations containing kind
@@ -73,8 +79,6 @@ internal class Family2ObjectArrayMap<T> {
                 componentMap[relationId.toLong()]?.copy()?.apply {
                     if (family.targetMustHoldData) forEachBit { index ->
                         val type = elementTypes[index]
-                        // TODO store list of matching relations somewhere so we dont have to filter through the
-                        //  whole type every time.
                         if (!type.hasRelationTarget(family.kind, kindMustHoldData = true))
                             clear(index)
                     }

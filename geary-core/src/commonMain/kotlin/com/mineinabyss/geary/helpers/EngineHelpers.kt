@@ -41,7 +41,7 @@ public inline fun <reified T> componentId(): GearyComponentId = componentId(T::c
 
 /** Gets or registers the id of a component of type [T], adding the [HOLDS_DATA] role if [T] is not nullable. */
 public inline fun <reified T> componentIdWithNullable(): GearyComponentId =
-    componentId<T>().withRole(if (typeOf<T>().isMarkedNullable) HOLDS_DATA else NO_ROLE)
+    componentId<T>().withRole(if (typeOf<T>().isMarkedNullable) NO_ROLE else HOLDS_DATA)
 
 /**
  * Gets the id of a component by its serial name.
