@@ -2,6 +2,7 @@ package com.mineinabyss.geary.datatypes.family
 
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.SetComponent
+import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.componentId
@@ -90,15 +91,13 @@ public sealed class MutableFamily : Family {
             has(id.withRole(HOLDS_DATA))
         }
 
-        private val anyComponentId = componentId<Any>()
-
         /** Matches against relations using same rules as [Archetype.getRelations] */
         public fun hasRelation(
             kind: GearyComponentId,
             target: GearyEntityId,
         ) {
-            val specificKind = kind and ENTITY_MASK != anyComponentId
-            val specificTarget = target and ENTITY_MASK != anyComponentId
+            val specificKind = kind and ENTITY_MASK != globalContext.components.any
+            val specificTarget = target and ENTITY_MASK != globalContext.components.any
             return when {
                 specificKind && specificTarget -> has(Relation.of(kind, target).id)
                 specificTarget -> add(Leaf.AnyToTarget(target, kind.holdsData()))

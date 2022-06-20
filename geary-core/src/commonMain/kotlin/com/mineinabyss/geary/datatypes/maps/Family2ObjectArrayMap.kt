@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.datatypes.maps
 
+import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.hasRelationKind
 import com.mineinabyss.geary.helpers.hasRelationTarget
 
@@ -33,8 +33,8 @@ internal class Family2ObjectArrayMap<T> {
             // See componentMap definition for relations
             if (id.isRelation()) {
                 val relation = id.toRelation()!!
-                set(Relation.of(relation.kind, componentId<Any>()).id)
-                set(Relation.of(componentId<Any>(), relation.target).id)
+                set(Relation.of(relation.kind, globalContext.components.any).id)
+                set(Relation.of(globalContext.components.any, relation.target).id)
             }
             set(id)
         }
@@ -65,7 +65,7 @@ internal class Family2ObjectArrayMap<T> {
             is Family.Leaf.Component -> componentMap[family.component.toLong()]?.copy() ?: bitsOf()
             is Family.Leaf.AnyToTarget -> {
                 // The bits for relationId in componentMap represent archetypes with any relations containing target
-                val relationId = Relation.of(componentId<Any>(), family.target).id
+                val relationId = Relation.of(globalContext.components.any, family.target).id
                 componentMap[relationId.toLong()]?.copy()?.apply {
                     if (family.kindMustHoldData) forEachBit { index ->
                         val type = elementTypes[index]
@@ -76,7 +76,7 @@ internal class Family2ObjectArrayMap<T> {
             }
             is Family.Leaf.KindToAny -> {
                 // The bits for relationId in componentMap represent archetypes with any relations containing kind
-                val relationId = Relation.of(family.kind, componentId<Any>()).id
+                val relationId = Relation.of(family.kind, globalContext.components.any).id
                 componentMap[relationId.toLong()]?.copy()?.apply {
                     if (family.targetMustHoldData) forEachBit { index ->
                         val type = elementTypes[index]

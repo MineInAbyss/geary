@@ -2,13 +2,13 @@ package com.mineinabyss.geary.engine.archetypes
 
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.SetComponent
+import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.engine.GearyEngine
 import com.mineinabyss.geary.events.GearyHandler
-import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.helpers.toGeary
@@ -130,13 +130,13 @@ public data class Archetype(
         if (componentId in componentAddEdges)
             componentAddEdges[componentId]
         else
-            engine.getArchetype(type.plus(componentId))
+            globalContext.engine.getArchetype(type.plus(componentId))
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
     public operator fun minus(componentId: GearyComponentId): Archetype =
         if (componentId in componentRemoveEdges)
             componentRemoveEdges[componentId]
-        else engine.getArchetype(type.minus(componentId)).also {
+        else globalContext.engine.getArchetype(type.minus(componentId)).also {
             componentRemoveEdges[componentId] = it
         }
 
@@ -296,8 +296,8 @@ public data class Archetype(
      * All other roles are ignored for the [target].
      */
     internal fun getRelations(kind: GearyComponentId, target: GearyEntityId): List<Relation> {
-        val specificKind = kind and ENTITY_MASK != componentId<Any>() //TODO use Components class
-        val specificTarget = target and ENTITY_MASK != componentId<Any>()
+        val specificKind = kind and ENTITY_MASK != globalContext.components.any //TODO use Components class
+        val specificTarget = target and ENTITY_MASK != globalContext.components.any
         return when {
             specificKind && specificTarget -> listOf(Relation.of(kind, target))
             specificTarget -> relationsByTarget[target.toLong()]

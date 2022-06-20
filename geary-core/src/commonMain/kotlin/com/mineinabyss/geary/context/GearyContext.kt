@@ -4,4 +4,5 @@ public interface GearyContext :
     EngineContext,
     FormatsContext,
     SerializersContext,
-    QueryContext
+    QueryContext,
+    ComponentsContext
