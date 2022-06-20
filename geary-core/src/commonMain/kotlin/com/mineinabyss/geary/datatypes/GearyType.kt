@@ -91,6 +91,8 @@ public value class GearyType private constructor(
 
     }
 
+    //TODO intersection and union
+
     override fun toString(): String =
         inner.joinToString(", ", prefix = "[", postfix = "]") { it.readableString() }
 }

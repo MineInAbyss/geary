@@ -18,7 +18,7 @@ class GearyTypeFamilyHelpersTest : GearyTest() {
     @Test
     fun contains() {
         val type = entity { setRelation("", 10uL.toGeary()) }.type
-        MutableFamily.Leaf.AnyToTarget(componentId<String>(), false).contains(type) shouldBe true
-        MutableFamily.Leaf.AnyToTarget(componentId<String>(), true).contains(type) shouldBe false
+        MutableFamily.Leaf.KindToAny(componentId<String>(), false).contains(type) shouldBe true
+        MutableFamily.Leaf.KindToAny(componentId<String>(), true).contains(type) shouldBe false
     }
 }

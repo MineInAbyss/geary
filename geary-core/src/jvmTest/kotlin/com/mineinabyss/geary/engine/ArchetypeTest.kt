@@ -3,9 +3,7 @@ package com.mineinabyss.geary.engine
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.datatypes.GearyType
-import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.datatypes.Relation
-import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
@@ -49,9 +47,9 @@ internal class ArchetypeTest : GearyTest() {
     fun matchedRelations() {
         val target = entity()
         val target2 = entity()
-        val persists = Relation.of<Persists>(target).withRole(HOLDS_DATA)
-        val instanceOf = Relation.of<InstanceOf>(target)
-        val instanceOf2 = Relation.of<InstanceOf>(target2)
+        val persists = Relation.of<Persists>(target)
+        val instanceOf = Relation.of<InstanceOf?>(target)
+        val instanceOf2 = Relation.of<InstanceOf?>(target2)
         val arc = Archetype(
             engine,
             GearyType(listOf(persists.id, instanceOf.id, instanceOf2.id)),

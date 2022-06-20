@@ -56,6 +56,7 @@ public data class Archetype(
     internal val componentRemoveEdges = CompId2ArchetypeMap(engine)
 
     internal val relations = type.inner.mapNotNull { it.toRelation() }
+    internal val relationsWithData = relations.filter { it.id.holdsData() }
 
     /** Map of relation [Relation.target] id to a list of relations with that [Relation.target]. */
     internal val relationsByTarget: Long2ObjectMap<List<Relation>> = relations
@@ -120,24 +121,15 @@ public data class Archetype(
     }
 
 
-    /** @return Whether this archetype has a [componentId] in its type, regardless of the [HOLDS_DATA] role. */
-    public operator fun contains(componentId: GearyComponentId): Boolean =
-        // Check if contains component or the version with the HOLDS_DATA bit flipped
-        componentId in type || componentId.withInvertedRole(HOLDS_DATA) in type
+    /** @return Whether this archetype has a [componentId] in its type. */
+    public operator fun contains(componentId: GearyComponentId): Boolean = componentId in type
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
     public operator fun plus(componentId: GearyComponentId): Archetype =
         if (componentId in componentAddEdges)
             componentAddEdges[componentId]
         else
-            engine.getArchetype(
-                type.let {
-                    // Ensure that when adding an ID that holds data, we remove the non-data-holding ID
-                    if (componentId.holdsData() && !componentId.isRelation())
-                        it.minus(componentId.withoutRole(HOLDS_DATA))
-                    else it
-                }.plus(componentId)
-            )
+            engine.getArchetype(type.plus(componentId))
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
     public operator fun minus(componentId: GearyComponentId): Archetype =

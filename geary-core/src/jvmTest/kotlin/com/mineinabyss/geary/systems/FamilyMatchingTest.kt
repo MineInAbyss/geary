@@ -53,9 +53,7 @@ class FamilyMatchingTest: GearyTest() {
             set("Test")
             set(1)
         }
-        queryManager.getEntitiesMatching(system.family).apply {
-            shouldContainAll(entity, entity2)
-        }
+        queryManager.getEntitiesMatching(system.family).shouldContainAll(entity, entity2)
     }
 
     @Test

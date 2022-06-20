@@ -10,6 +10,7 @@ import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.component
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import kotlinx.serialization.Serializable
@@ -191,7 +192,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
         getRelations<Persists, Any>().mapTo(mutableSetOf()) { it.target }
 
     /** Gets all non-persisting components on this entity. */
-    public inline fun getInstanceComponents(): Set<GearyComponent> =
+    public inline fun getAllNotPersisting(): Set<GearyComponent> =
         getAll() - getAllPersisting()
 
     /**
@@ -231,21 +232,22 @@ public value class GearyEntity(public val id: GearyEntityId) {
     public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> getRelations(): Set<RelationWithData<K, T>> {
         val kind = typeOf<K>()
         val target = typeOf<T>()
+        val entity = this
         return when {
             kind.classifier == Any::class && target.classifier == Any::class -> {
                 TODO("Getting Any to Any relations is not currently supported.")
             }
-            kind.classifier == Any::class -> globalContext.engine.getRelationsByKindFor(
-                entity = this,
-                type = componentId<K>(),
-                kindMustHoldData = kind.isMarkedNullable,
-                targetMustHoldData = target.isMarkedNullable,
-            )
-            target.classifier == Any::class -> globalContext.engine.getRelationsByTargetFor(
+            kind.classifier == Any::class -> globalContext.engine.getRelationsByTargetFor(
                 entity = this,
                 target = componentId<T>(),
-                kindMustHoldData = kind.isMarkedNullable,
-                targetMustHoldData = target.isMarkedNullable
+                kindMustHoldData = !kind.isMarkedNullable,
+                targetMustHoldData = !target.isMarkedNullable,
+            )
+            target.classifier == Any::class -> globalContext.engine.getRelationsByKindFor(
+                entity = this,
+                kind = componentIdWithNullable<K>(),
+                kindMustHoldData = !kind.isMarkedNullable,
+                targetMustHoldData = !target.isMarkedNullable
             )
             else -> error("One of ${K::class.simpleName} or ${T::class.simpleName} must be Any when getting relations.")
         } as Set<RelationWithData<K, T>>

@@ -146,7 +146,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
     override fun getComponentsFor(entity: GearyEntity): Array<GearyComponent> {
         val (archetype, row) = getRecord(entity)
         return archetype.getComponents(row).also { array ->
-            for (relation in archetype.relations) {
+            for (relation in archetype.relationsWithData) {
                 val i = archetype.indexOf(relation.id)
                 array[i] = RelationWithData(array[i], null, relation)
             }
@@ -155,12 +155,12 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
 
     private fun List<Relation>.readData(
         record: Record,
-        typeMustHoldData: Boolean,
+        kindMustHoldData: Boolean,
         targetMustHoldData: Boolean
     ): Set<RelationWithData<*, *>> {
         val (archetype, row) = record
         return mapNotNullTo(mutableSetOf()) { relation ->
-            if (typeMustHoldData && !relation.id.holdsData()) return@mapNotNullTo null
+            if (kindMustHoldData && !relation.id.holdsData()) return@mapNotNullTo null
             val targetDataId = relation.target.withRole(HOLDS_DATA)
             if (targetMustHoldData && targetDataId !in archetype) return@mapNotNullTo null
             RelationWithData(
@@ -185,12 +185,12 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
 
     override fun getRelationsByKindFor(
         entity: GearyEntity,
-        type: GearyComponentId,
+        kind: GearyComponentId,
         kindMustHoldData: Boolean,
         targetMustHoldData: Boolean
     ): Set<RelationWithData<*, *>> {
         val record = getRecord(entity)
-        return record.archetype.relationsByKind[type.toLong()]?.readData(
+        return record.archetype.relationsByKind[kind.toLong()]?.readData(
             record, kindMustHoldData, targetMustHoldData
         ) ?: setOf()
     }
@@ -227,7 +227,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
         }
 
     override fun hasComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean =
-        getRecord(entity).archetype.contains(componentId)
+        componentId in getRecord(entity).archetype
 
     override fun removeEntity(entity: GearyEntity, event: Boolean) {
         if (event) entity.callEvent(EntityRemoved())

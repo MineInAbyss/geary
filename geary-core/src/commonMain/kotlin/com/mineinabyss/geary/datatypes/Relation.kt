@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.helpers.readableString
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
@@ -49,11 +50,11 @@ public value class Relation private constructor(
         public fun of(kind: KClass<*>, target: KClass<*>): Relation =
             of(componentId(kind), componentId(target))
 
-        public inline fun <reified K : GearyComponent, reified T : GearyComponent> of(): Relation =
-            of(componentId<K>(), componentId<T>())
+        public inline fun <reified K : GearyComponent?, reified T : GearyComponent> of(): Relation =
+            of(componentIdWithNullable<K>(), componentId<T>())
 
-        public inline fun <reified K : GearyComponent> of(target: GearyEntity): Relation =
-            of(componentId<K>(), target.id)
+        public inline fun <reified K : GearyComponent?> of(target: GearyEntity): Relation =
+            of(componentIdWithNullable<K>(), target.id)
 
         /**
          * Creates a relation from an id that is assumed to be valid. Use this to avoid boxing Relation because of

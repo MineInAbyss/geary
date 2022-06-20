@@ -3,6 +3,7 @@ package com.mineinabyss.geary.datatypes.maps
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.hasRelationKind
 import com.mineinabyss.geary.helpers.hasRelationTarget
 
 /**
@@ -79,7 +80,7 @@ internal class Family2ObjectArrayMap<T> {
                 componentMap[relationId.toLong()]?.copy()?.apply {
                     if (family.targetMustHoldData) forEachBit { index ->
                         val type = elementTypes[index]
-                        if (!type.hasRelationTarget(family.kind, kindMustHoldData = true))
+                        if (!type.hasRelationKind(family.kind, targetMustHoldData = true))
                             clear(index)
                     }
                 } ?: bitsOf()

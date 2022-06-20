@@ -38,7 +38,7 @@ public abstract class Engine : KoinComponent, EngineContext, CoroutineScope {
 
     public abstract fun getRelationsByKindFor(
         entity: GearyEntity,
-        type: GearyComponentId,
+        kind: GearyComponentId,
         kindMustHoldData: Boolean,
         targetMustHoldData: Boolean
     ): Set<RelationWithData<*, *>>

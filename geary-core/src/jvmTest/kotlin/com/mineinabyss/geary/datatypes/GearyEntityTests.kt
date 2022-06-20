@@ -36,7 +36,7 @@ internal class GearyEntityTests : GearyTest() {
         entity {
             add<String>()
             set(1)
-        }.type.getArchetype() shouldBe engine.rootArchetype + componentId<String>() + (HOLDS_DATA or componentId<Int>())
+        }.type.getArchetype() shouldBe engine.rootArchetype + componentId<String>() + componentId<Int>() + (HOLDS_DATA or componentId<Int>())
     }
 
     @Test
@@ -52,7 +52,7 @@ internal class GearyEntityTests : GearyTest() {
         entity {
             add<String>()
             set("Test")
-        }.type.getArchetype() shouldBe engine.rootArchetype + (componentId<String>() or HOLDS_DATA)
+        }.type.getArchetype() shouldBe engine.rootArchetype + componentId<String>() + (componentId<String>() or HOLDS_DATA)
     }
 
     @Test
@@ -84,7 +84,7 @@ internal class GearyEntityTests : GearyTest() {
         val entitySetAll = entity {
             setAll(listOf("Test", 1))
         }
-        entity.type.inner.shouldContainExactlyInAnyOrder("Test", 1)
+        entity.getAll().shouldContainExactlyInAnyOrder("Test", 1)
         entity.type.inner shouldContainExactly entitySetAll.type.inner
     }
 
@@ -93,20 +93,23 @@ internal class GearyEntityTests : GearyTest() {
         val entity = entity {
             setRelation<String, Int>("String to int relation")
         }
-        entity.type.inner.shouldContainExactly(Relation.of<Int, String>().id)
+        entity.type.inner.shouldContainExactlyInAnyOrder(
+            Relation.of<String?, Int>().id,
+            Relation.of<String, Int>().id,
+        )
     }
 
     @Test
     fun `getAll with relations`() {
         val prefab = entity()
-        entity {
+        val entity = entity {
             set("Test")
             setRelation<Persists, String>(Persists())
             addRelation<InstanceOf>(prefab)
-        }.getAll().shouldContainExactly(
+        }
+        entity.getAll().shouldContainExactlyInAnyOrder(
             "Test",
             RelationWithData(Persists(), null, relation = Relation.of<Persists, String>().withRole(HOLDS_DATA)),
-            Relation.of<InstanceOf>(prefab)
         )
     }
 
@@ -115,10 +118,11 @@ internal class GearyEntityTests : GearyTest() {
         val entity = entity {
             setPersisting("Test")
         }
-        val relations =
-            entity.type.getArchetype().relationsByTarget[componentId<Persists>().toLong()]!!
-        relations.size shouldBe 1
-        relations.first().kind shouldBe componentId<String>()
+        val relations = entity.type.getArchetype()
+            .relationsByKind[componentId<Persists>().toLong()]!!
+
+        relations.size shouldBe 1 // one for persisting
+        relations.first().target shouldBe componentId<String>()
         entity.getAllPersisting().shouldContainExactly("Test")
     }
 
