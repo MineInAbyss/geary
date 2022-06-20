@@ -3,9 +3,8 @@ package com.mineinabyss.geary.systems
 import com.mineinabyss.geary.context.GearyContext
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.datatypes.GearyComponent
-import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.datatypes.withRole
+import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.events.GearyHandler
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.systems.accessors.*
@@ -57,9 +56,14 @@ public abstract class GearyListener : AccessorOperations(), GearySystem, Accesso
     /** Gets a component, ensuring it is on the entity. */
     public inline fun <reified T : GearyComponent> onSet(): AccessorBuilder<ComponentAccessor<T>> {
         return AccessorBuilder { holder, index ->
-            event._family.onAdd(componentId<T>().withRole(HOLDS_DATA))
+            event._family.onSet(componentId<T>())
             get<T>().build(holder, index)
         }
+    }
+
+    public inline fun <reified T : GearyComponent> onAdd(): Family {
+        event._family.onAdd(componentId<T>())
+        return family { has<T>() }
     }
 }
 

@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.datatypes.family
 
 import com.mineinabyss.geary.components.events.AddedComponent
+import com.mineinabyss.geary.components.events.SetComponent
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
@@ -60,7 +61,7 @@ public sealed class MutableFamily : Family {
 
         public val elements: MutableList<Family> = mutableListOf()
 
-        private var onAdd: Or? = null
+        private val onAdd: Or by lazy { Or().also { add(it) } }
 
         public override val components: List<GearyComponentId> get() = _components
         public override val componentsWithData: List<GearyComponentId> get() = _componentsWithData
@@ -133,10 +134,11 @@ public sealed class MutableFamily : Family {
         public inline fun <reified K> hasRelation(target: GearyEntity): Unit = hasRelation<K>(target.id)
 
         public fun onAdd(id: GearyComponentId) {
-            (onAdd ?: Or().also {
-                onAdd = it
-                add(it)
-            }).apply { hasRelation<AddedComponent>(id) }
+            onAdd.hasRelation<AddedComponent?>(id)
+        }
+
+        public fun onSet(id: GearyComponentId) {
+            onAdd.hasRelation<SetComponent?>(id)
         }
 
         public inline fun or(init: Or.() -> Unit) {
