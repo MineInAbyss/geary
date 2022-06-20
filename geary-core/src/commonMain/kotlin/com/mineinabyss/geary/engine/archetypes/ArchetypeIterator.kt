@@ -14,12 +14,11 @@ internal data class ArchetypeIterator(
 
     inline fun forEach(upTo: Int, crossinline run: (TargetScope) -> Unit) {
         while (row < archetype.size && row <= upTo) {
-            val dataScope =
-                RawAccessorDataScope(
-                    archetype = archetype,
-                    row = row++,
-                    perArchetypeData = perArchCache
-                )
+            val dataScope = RawAccessorDataScope(
+                archetype = archetype,
+                row = row++,
+                perArchetypeData = perArchCache
+            )
             holder.forEachCombination(dataScope) { data ->
                 run(
                     TargetScope(

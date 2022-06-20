@@ -65,11 +65,9 @@ public sealed class MutableFamily : Family {
 
         public override val components: List<GearyComponentId> get() = _components
         public override val componentsWithData: List<GearyComponentId> get() = _componentsWithData
-        public override val relationTargetIds: List<GearyEntityId> get() = _relationValueIds
 
         private val _components = mutableListOf<GearyComponentId>()
         private val _componentsWithData = mutableListOf<GearyComponentId>()
-        private val _relationValueIds = mutableListOf<GearyEntityId>()
 
         public fun add(element: Family) {
             elements += element
@@ -79,7 +77,6 @@ public sealed class MutableFamily : Family {
                     _components += comp
                     if (comp.holdsData()) _componentsWithData += comp
                 }
-                is Leaf.AnyToTarget -> _relationValueIds += element.target
                 else -> {}
             }
         }

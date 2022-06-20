@@ -23,7 +23,6 @@ public sealed interface Family {
     public sealed interface Selector : Family {
         public val components: List<GearyComponentId>
         public val componentsWithData: List<GearyComponentId>
-        public val relationTargetIds: List<GearyEntityId>
 
         public sealed interface And : Selector {
             public val and: List<Family>

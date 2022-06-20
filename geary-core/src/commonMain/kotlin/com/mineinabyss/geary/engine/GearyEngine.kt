@@ -201,7 +201,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
         noEvent: Boolean
     ) {
         getRecord(entity).apply {
-            archetype.addComponent(this, HOLDS_DATA.inv() and componentId, !noEvent)
+            archetype.addComponent(this, componentId.withoutRole(HOLDS_DATA), !noEvent)
         }
     }
 

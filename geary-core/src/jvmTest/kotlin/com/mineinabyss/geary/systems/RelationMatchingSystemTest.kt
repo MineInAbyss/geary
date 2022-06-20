@@ -2,13 +2,12 @@ package com.mineinabyss.geary.systems
 
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.Persists
-import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.systems.accessors.TargetScope
 import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.collections.shouldNotContainAll
 import io.kotest.matchers.shouldBe
@@ -18,21 +17,19 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
 class RelationMatchingSystemTest : GearyTest() {
-    var ran = 0
-    val systemPersists = object : TickingSystem() {
-        val TargetScope.persists by relation<Persists, Any?>()
-
-        override fun TargetScope.tick() {
-            ran++
-            family.relationTargetIds shouldContain persists.targetEntity
-            persists.kind.shouldBeInstanceOf<Persists>()
-        }
-    }
-
     @Test
     fun relations() = runTest {
-        queryManager.trackQuery(systemPersists)
-        systemPersists.family.relationTargetIds.shouldContainExactly(componentId<Persists>())
+        clearEngine()
+        var ran = 0
+        val systemPersists = object : TickingSystem() {
+            val TargetScope.persists by relation<Persists, Any?>()
+
+            override fun TargetScope.tick() {
+                ran++
+                persists.kind.shouldBeInstanceOf<Persists>()
+            }
+        }
+        engine.addSystem(systemPersists)
         val entity = entity {
             addRelation<Persists, String>()
             add<String>()
@@ -45,11 +42,12 @@ class RelationMatchingSystemTest : GearyTest() {
             setRelation<Persists, Int>(Persists())
             add<String>()
         }
+        (entity3.type in systemPersists.family) shouldBe true
         systemPersists.matchedArchetypes.shouldNotContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
-        systemPersists.matchedArchetypes.shouldContainExactly(entity3.type.getArchetype())
+        systemPersists.matchedArchetypes.shouldContain(entity3.type.getArchetype())
 
-        engine.tick(1)
-        ran shouldBe 2
+        engine.tick(0)
+        ran shouldBe 1
     }
 
     @Test
@@ -66,22 +64,27 @@ class RelationMatchingSystemTest : GearyTest() {
                 instanceOf.kind shouldBe null
             }
         }
-        queryManager.trackQuery(system)
+        engine.addSystem(system)
 
         entity {
-            addRelation<Persists, String>()
-            setRelation<Persists, Int>(Persists())
-            setRelation<Persists, Short>(Persists())
-            setRelation<Persists, Double>(Persists())
-            addRelation<InstanceOf, String>()
-            addRelation<InstanceOf, Int>()
+            setRelation<Persists, Int>(Persists()) // Yes
             set(1)
+
+            setRelation<Persists, Short>(Persists()) // Yes
             set(1.toShort())
+
+            addRelation<InstanceOf, String>() // Yes
             set("")
+
+            addRelation<InstanceOf, Int>() // Yes
+
+            setRelation<Persists, Double>(Persists()) // No
             add<Double>()
+
+            addRelation<Persists, String>() // No
         }
 
-        engine.tick(1)
+        engine.tick(0)
 
         // Only two of the Persists relations are valid, times both InstanceOf are valid
         ran shouldBe 2 * 2
@@ -114,6 +117,6 @@ class RelationMatchingSystemTest : GearyTest() {
         system.matchedArchetypes.shouldNotContain(entity.type.getArchetype())
         system.matchedArchetypes.shouldContain(entityWithData.type.getArchetype())
 
-        engine.tick(1)
+        engine.tick(0)
     }
 }

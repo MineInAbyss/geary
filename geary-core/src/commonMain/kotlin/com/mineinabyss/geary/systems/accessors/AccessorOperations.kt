@@ -4,10 +4,10 @@ import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.systems.accessors.types.ComponentAccessor
 import com.mineinabyss.geary.systems.accessors.types.ComponentOrDefaultAccessor
 import com.mineinabyss.geary.systems.accessors.types.RelationWithDataAccessor
-import kotlin.reflect.typeOf
 
 /**
  * An empty interface that limits [AccessorBuilder] helper functions only to classes that use [Accessor]s.
@@ -51,23 +51,17 @@ public open class AccessorOperations {
      * #### Matching any relation
      * If one type is [Any], this will get all relations matching the other type.
      *
-     * - `relation<String?, Any>()` will match against all relations with a [String] key and any value.
-     * - `relation<Any, String>()` will match against all relations with any key and a [String] value,
-     *   so long as the entity also has a key of that type set.
+     * TODO update these
+     * - `relation<String?, Any>()` will match against all relations of kind [String] and any target.
+     * - `relation<Any, String>()` will match against all relations with any kind and a [String] target,
+     *   so long as the relation holds data.
      *
      * @see flatten
      */
     public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> relation(): AccessorBuilder<RelationWithDataAccessor<K, T>> {
         return AccessorBuilder { holder, index ->
-            val kind = typeOf<K>()
-            val target = typeOf<T>()
-            val kindIsNullable = kind.isMarkedNullable
-            val relationKind = if (kind.classifier == Any::class) null else componentId(kind)
-            //TODO decide if we want to support this
-            val relationTarget = if (target.classifier == Any::class) null else componentId(target)
-            //TODO could we reuse code between hasRelation and here?
             holder._family.hasRelation<K, T>()
-            RelationWithDataAccessor(index, kindIsNullable, relationKind, relationTarget)
+            RelationWithDataAccessor(index, componentIdWithNullable<K>(), componentIdWithNullable<T>())
         }
     }
 }
