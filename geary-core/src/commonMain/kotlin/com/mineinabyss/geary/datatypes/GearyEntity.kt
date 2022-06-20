@@ -12,11 +12,11 @@ import com.mineinabyss.geary.helpers.component
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.helpers.temporaryEntity
+import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
-import kotlin.reflect.typeOf
 
 /**
  * A wrapper around [GearyEntityId] that gets inlined to just a long (no performance degradation since no boxing occurs).
@@ -189,7 +189,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
 
     /** Gets all persisting components on this entity. */
     public inline fun getAllPersisting(): Set<GearyComponent> =
-        getRelations<Persists, Any>().mapTo(mutableSetOf()) { it.target }
+        getRelationsWithData<Persists, Any>().mapTo(mutableSetOf()) { it.targetData }
 
     /** Gets all non-persisting components on this entity. */
     public inline fun getAllNotPersisting(): Set<GearyComponent> =
@@ -220,39 +220,27 @@ public value class GearyEntity(public val id: GearyEntityId) {
 
     // Relations
 
-    /** Gets the value of a relation with key of type [K] and value of type [T]. */
+    /** Gets the data stored under the relation of kind [K] and target [T]. */
     public inline fun <reified K : GearyComponent, reified T : GearyComponent> getRelation(): K? {
         return getRelation(component<T>())
     }
 
+    /** Gets the data stored under the relation of kind [K] and target [target]. */
     public inline fun <reified K : GearyComponent> getRelation(target: GearyEntity): K? {
         return get(Relation.of<K>(target).id) as? K
     }
 
-    public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> getRelations(): Set<RelationWithData<K, T>> {
-        val kind = typeOf<K>()
-        val target = typeOf<T>()
-        val entity = this
-        return when {
-            kind.classifier == Any::class && target.classifier == Any::class -> {
-                TODO("Getting Any to Any relations is not currently supported.")
-            }
-            kind.classifier == Any::class -> globalContext.engine.getRelationsByTargetFor(
-                entity = this,
-                target = componentId<T>(),
-                kindMustHoldData = !kind.isMarkedNullable,
-                targetMustHoldData = !target.isMarkedNullable,
-            )
-            target.classifier == Any::class -> globalContext.engine.getRelationsByKindFor(
-                entity = this,
-                kind = componentIdWithNullable<K>(),
-                kindMustHoldData = !kind.isMarkedNullable,
-                targetMustHoldData = !target.isMarkedNullable
-            )
-            else -> error("One of ${K::class.simpleName} or ${T::class.simpleName} must be Any when getting relations.")
-        } as Set<RelationWithData<K, T>>
-    }
+    /** Like [getRelations], but reads appropriate data as requested and puts it in a [RelationWithData] object. */
+    @Suppress("UNCHECKED_CAST") // Intrnal logic ensures cast always succeeds
+    public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> getRelationsWithData(): List<RelationWithData<K, T>> =
+        globalContext.engine.getRelationsWithDataFor(this, componentIdWithNullable<K>(), componentIdWithNullable<T>()) as List<RelationWithData<K, T>>
 
+    /** Queries for relations using the same format as [AccessorOperations.relation]. */
+    public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> getRelations(): List<Relation> =
+        getRelations(componentIdWithNullable<K>(), componentIdWithNullable<T>())
+
+    public fun getRelations(kind: GearyComponentId, target: GearyEntityId): List<Relation> =
+        getRecord().archetype.getRelations(kind, target)
 
     public inline fun <reified K : GearyComponent, reified T : GearyComponent> hasRelation(): Boolean =
         hasRelation<K>(component<T>())

@@ -26,7 +26,7 @@ class RelationMatchingSystemTest : GearyTest() {
 
             override fun TargetScope.tick() {
                 ran++
-                persists.kind.shouldBeInstanceOf<Persists>()
+                persists.data.shouldBeInstanceOf<Persists>()
             }
         }
         engine.addSystem(systemPersists)
@@ -59,9 +59,9 @@ class RelationMatchingSystemTest : GearyTest() {
             val TargetScope.instanceOf by relation<InstanceOf?, Any?>()
             override fun TargetScope.tick() {
                 ran++
-                persists.kind.shouldBeInstanceOf<Persists>()
-                persists.target shouldNotBe null
-                instanceOf.kind shouldBe null
+                persists.data.shouldBeInstanceOf<Persists>()
+                persists.targetData shouldNotBe null
+                instanceOf.data shouldBe null
             }
         }
         engine.addSystem(system)
@@ -97,8 +97,8 @@ class RelationMatchingSystemTest : GearyTest() {
             val TargetScope.withData by relation<Persists, Any>()
 
             override fun TargetScope.tick() {
-                withData.kind shouldBe Persists()
-                withData.target shouldBe "Test"
+                withData.data shouldBe Persists()
+                withData.targetData shouldBe "Test"
             }
         }
 

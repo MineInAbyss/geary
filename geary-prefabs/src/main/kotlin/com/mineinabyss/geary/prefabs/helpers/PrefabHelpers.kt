@@ -4,11 +4,12 @@ import com.mineinabyss.geary.components.relations.DontInherit
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.helpers.addParent
+import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.helpers.with
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 
 val GearyEntity.prefabs: List<GearyEntity>
-    get() = getRelations<InstanceOf?, Any?>().map { it.targetEntity }
+    get() = getRelations<InstanceOf?, Any?>().map { it.target.toGeary() }
 
 /** Adds a [prefab] entity to this entity.  */
 fun GearyEntity.addPrefab(prefab: GearyEntity) {

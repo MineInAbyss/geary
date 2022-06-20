@@ -3,6 +3,7 @@ package com.mineinabyss.geary.datatypes.family
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.SetComponent
 import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 
@@ -89,24 +90,9 @@ public sealed class MutableFamily : Family {
             has(id.withRole(HOLDS_DATA))
         }
 
-//        public fun hasRelation(key: KType, value: KType) {
-//            val anyKey = (key.classifier == Any::class)
-//            val anyValue = (value.classifier == Any::class)
-//            val relationKey = if (anyKey) null else componentId(key)
-//            val relationValue = if (anyValue) null else componentId(value)
-//
-//        }
-
         private val anyComponentId = componentId<Any>()
 
-        /**
-         * When [kind] or [target] are the [Any] component, matches against any relation.
-         * Both [kind] and [target] cannot be [Any].
-         *
-         * The if a parameter is the [Any] component, the [HOLDS_DATA] role indicates whether other components
-         * matched must also hold data themselves.
-         * All other roles are ignored for the [target].
-         */
+        /** Matches against relations using same rules as [Archetype.getRelations] */
         public fun hasRelation(
             kind: GearyComponentId,
             target: GearyEntityId,

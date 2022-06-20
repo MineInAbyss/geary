@@ -153,46 +153,19 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
         }
     }
 
-    private fun List<Relation>.readData(
-        record: Record,
-        kindMustHoldData: Boolean,
-        targetMustHoldData: Boolean
-    ): Set<RelationWithData<*, *>> {
-        val (archetype, row) = record
-        return mapNotNullTo(mutableSetOf()) { relation ->
-            if (kindMustHoldData && !relation.id.holdsData()) return@mapNotNullTo null
-            val targetDataId = relation.target.withRole(HOLDS_DATA)
-            if (targetMustHoldData && targetDataId !in archetype) return@mapNotNullTo null
+    override fun getRelationsWithDataFor(
+        entity: GearyEntity,
+        kind: GearyComponentId,
+        target: GearyEntityId,
+    ): List<RelationWithData<*, *>> {
+        val (arc, row) = getRecord(entity)
+        return arc.getRelations(kind, target).map { relation ->
             RelationWithData(
-                kind = archetype[row, relation.id],
-                target = archetype[row, targetDataId],
+                data = if (kind.hasRole(HOLDS_DATA)) arc[row, relation.id] else null,
+                targetData = if (target.hasRole(HOLDS_DATA)) arc[row, relation.target.withRole(HOLDS_DATA)] else null,
                 relation = relation
             )
         }
-    }
-
-    override fun getRelationsByTargetFor(
-        entity: GearyEntity,
-        target: GearyEntityId,
-        kindMustHoldData: Boolean,
-        targetMustHoldData: Boolean
-    ): Set<RelationWithData<*, *>> {
-        val record = getRecord(entity)
-        return record.archetype.relationsByTarget[target.toLong()]?.readData(
-            record, kindMustHoldData, targetMustHoldData
-        ) ?: setOf()
-    }
-
-    override fun getRelationsByKindFor(
-        entity: GearyEntity,
-        kind: GearyComponentId,
-        kindMustHoldData: Boolean,
-        targetMustHoldData: Boolean
-    ): Set<RelationWithData<*, *>> {
-        val record = getRecord(entity)
-        return record.archetype.relationsByKind[kind.toLong()]?.readData(
-            record, kindMustHoldData, targetMustHoldData
-        ) ?: setOf()
     }
 
     override fun addComponentFor(

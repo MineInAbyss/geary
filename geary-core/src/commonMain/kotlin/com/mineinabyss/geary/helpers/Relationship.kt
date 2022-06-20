@@ -45,7 +45,7 @@ public fun GearyEntity.clearChildren() {
 
 /** Gets the first parent of this entity */
 public val GearyEntity.parent: GearyEntity?
-    get() = getRelations<ChildOf?, Any?>().firstOrNull()?.targetEntity
+    get() = getRelations<ChildOf?, Any?>().firstOrNull()?.target?.toGeary()
 
 /** Runs code on the first parent of this entity. */
 public inline fun GearyEntity.onParent(
@@ -57,4 +57,4 @@ public inline fun GearyEntity.onParent(
 }
 
 public val GearyEntity.parents: Set<GearyEntity>
-    get() = getRelations<ChildOf?, Any?>().mapTo(mutableSetOf()) { it.targetEntity }
+    get() = getRelations<ChildOf?, Any?>().mapTo(mutableSetOf()) { it.target.toGeary() }

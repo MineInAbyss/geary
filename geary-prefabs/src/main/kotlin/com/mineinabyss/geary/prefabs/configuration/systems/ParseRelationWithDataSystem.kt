@@ -12,7 +12,7 @@ class ParseRelationWithDataSystem : GearyListener() {
 
     @Handler
     private fun TargetScope.convertToRelation() {
-        val data = relationWithData.kind
+        val data = relationWithData.data
         if(data != null) entity.set(data, relationWithData.relation.id)
         else entity.add(relationWithData.relation.id)
         entity.remove(relationWithData.relation.id)

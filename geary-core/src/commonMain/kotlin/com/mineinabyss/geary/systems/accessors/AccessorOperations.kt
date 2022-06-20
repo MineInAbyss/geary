@@ -38,25 +38,16 @@ public open class AccessorOperations {
     }
 
     /**
-     * This function allows you to access a specific relation or all relations with a certain key or value.
+     * Queries for a specific relation or by kind/target.
      *
      * #### Nullability
-     * If [K] is nullable, just the relation needs to be present.
+     * Additional checks are done if [K] or [T] are not nullable:
+     * - [K] is NOT nullable => the relation must hold data.
+     * - [T] is NOT nullable => the relation target must also be present as a component with data on the entity.
      *
-     * If [K] is NOT nullable, the entity must have a component of type [K] set.
-     *
-     * - `relation<String?, Int>()` will match the specific relation with key [String] and value [Int], regardless
-     * of whether the entity has a component [Int] with data.
-     *
-     * #### Matching any relation
-     * If one type is [Any], this will get all relations matching the other type.
-     *
-     * TODO update these
-     * - `relation<String?, Any>()` will match against all relations of kind [String] and any target.
-     * - `relation<Any, String>()` will match against all relations with any kind and a [String] target,
-     *   so long as the relation holds data.
-     *
-     * @see flatten
+     * #### Query by kind/target
+     * - One of [K] or [T] is [Any] => gets all relations matching the other (specified) type.
+     * - Note: nullability rules are still upheld with [Any].
      */
     public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> relation(): AccessorBuilder<RelationWithDataAccessor<K, T>> {
         return AccessorBuilder { holder, index ->

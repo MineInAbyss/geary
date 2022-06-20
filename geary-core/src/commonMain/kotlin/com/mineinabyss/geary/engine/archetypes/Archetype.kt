@@ -8,6 +8,7 @@ import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.engine.GearyEngine
 import com.mineinabyss.geary.events.GearyHandler
+import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.helpers.toGeary
@@ -282,6 +283,31 @@ public data class Archetype(
             return arr as Array<GearyComponent>
         } else
             return Array(componentData.size) { i: Int -> componentData[i][row] }
+    }
+
+    /**
+     * Queries for specific relations or by kind/target.
+     *
+     * When [kind] or [target] are the [Any] component, matches against any relation.
+     * Both [kind] and [target] cannot be [Any].
+     *
+     * The if a parameter is the [Any] component, the [HOLDS_DATA] role indicates whether other components
+     * matched must also hold data themselves.
+     * All other roles are ignored for the [target].
+     */
+    internal fun getRelations(kind: GearyComponentId, target: GearyEntityId): List<Relation> {
+        val specificKind = kind and ENTITY_MASK != componentId<Any>() //TODO use Components class
+        val specificTarget = target and ENTITY_MASK != componentId<Any>()
+        return when {
+            specificKind && specificTarget -> listOf(Relation.of(kind, target))
+            specificTarget -> relationsByTarget[target.toLong()]
+            specificKind -> relationsByKind[kind.toLong()]
+            else -> relations
+        }?.run { //TODO this technically doesnt need to run when specificKind is set
+            if (kind.hasRole(HOLDS_DATA)) filter { it.hasRole(HOLDS_DATA) } else this
+        }?.run {
+            if (target.holdsData()) filter { it.target.withRole(HOLDS_DATA) in type } else this
+        } ?: emptyList()
     }
 
     internal fun scheduleRemoveRow(row: Int) {
