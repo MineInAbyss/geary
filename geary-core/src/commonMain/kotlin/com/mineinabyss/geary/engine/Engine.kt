@@ -85,6 +85,7 @@ public abstract class Engine : KoinComponent, EngineContext, CoroutineScope {
     /** Gets or creates an archetype from a [type]. */
     public abstract fun getArchetype(type: GearyType): Archetype
 
+    /** Gets the record of a given entity, or throws an error if the entity id is not active in the engine. */
     internal abstract fun getRecord(entity: GearyEntity): Record
 
     /** Updates the record of a given entity */

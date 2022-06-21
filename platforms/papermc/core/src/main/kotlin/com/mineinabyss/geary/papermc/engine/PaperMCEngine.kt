@@ -37,7 +37,6 @@ class PaperMCEngine(private val plugin: Plugin) : GearyEngine(tickDuration = 1.t
     override fun scheduleSystemTicking() {
         //tick all systems every interval ticks
         launch(plugin.minecraftDispatcher) {
-//        Bukkit.getScheduler().scheduleSyncRepeatingTask(, {
             while (true) {
                 tick(Bukkit.getServer().currentTick.toLong())
                 delay(tickDuration)

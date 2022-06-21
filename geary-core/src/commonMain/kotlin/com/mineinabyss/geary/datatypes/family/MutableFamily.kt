@@ -2,6 +2,7 @@ package com.mineinabyss.geary.datatypes.family
 
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.SetComponent
+import com.mineinabyss.geary.components.events.UpdatedComponent
 import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
@@ -120,6 +121,11 @@ public sealed class MutableFamily : Family {
         }
 
         public fun onSet(id: GearyComponentId) {
+            onAdd.hasRelation<UpdatedComponent?>(id)
+            onAdd.hasRelation<SetComponent?>(id)
+        }
+
+        public fun onFirstSet(id: GearyComponentId) {
             onAdd.hasRelation<SetComponent?>(id)
         }
 

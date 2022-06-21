@@ -12,3 +12,5 @@ package com.mineinabyss.geary.components.events
 public sealed class AddedComponent
 
 public sealed class SetComponent
+
+public sealed class UpdatedComponent

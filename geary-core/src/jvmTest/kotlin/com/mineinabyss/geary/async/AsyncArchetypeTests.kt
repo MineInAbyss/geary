@@ -22,8 +22,8 @@ class AsyncArchetypeTests : GearyTest() {
         concurrentOperation(10000) {
             arc.addEntityWithData(engine.newEntity().getRecord(), arrayOf("Test"))
         }.awaitAll()
-        arc.ids.size shouldBe 10000
-        arc.ids.shouldBeUnique()
+        arc.entities.size shouldBe 10000
+        arc.entities.shouldBeUnique()
     }
 
 

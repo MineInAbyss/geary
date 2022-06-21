@@ -61,6 +61,13 @@ public abstract class GearyListener : AccessorOperations(), GearySystem, Accesso
         }
     }
 
+    public inline fun <reified T : GearyComponent> onFirstSet(): AccessorBuilder<ComponentAccessor<T>> {
+        return AccessorBuilder { holder, index ->
+            event._family.onFirstSet(componentId<T>())
+            get<T>().build(holder, index)
+        }
+    }
+
     public inline fun <reified T : GearyComponent> onAdd(): Family {
         event._family.onAdd(componentId<T>())
         return family { has<T>() }

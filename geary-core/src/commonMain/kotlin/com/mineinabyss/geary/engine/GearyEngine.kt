@@ -23,7 +23,6 @@ import kotlinx.coroutines.*
 import org.koin.core.component.inject
 import org.koin.core.logger.Logger
 import kotlin.coroutines.CoroutineContext
-import kotlin.jvm.Synchronized
 import kotlin.reflect.KClass
 import kotlin.time.Duration
 
@@ -51,6 +50,18 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
 
     public val archetypeCount: Int get() = archetypes.size
 
+    private val archetypeWriteLock = SynchronizedObject()
+    private val classToComponentMapLock = SynchronizedObject()
+
+    private val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
+    private val registeredListeners: MutableSet<GearyListener> = mutableSetOf()
+
+    //TODO what data structure is most efficient here?
+    private val queuedCleanup = mutableSetOf<Archetype>()
+    private val runningAsyncJobs = mutableSetOf<Job>()
+    private var iterationJob: Job? = null
+    private val safeDispatcher = Dispatchers.Default.limitedParallelism(1)
+
     internal fun init() {
         //Register an entity for the ComponentInfo component, otherwise getComponentIdForClass does a StackOverflow
         val componentInfo = newEntity()
@@ -65,9 +76,6 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
             }
         }
     }
-
-    private val registeredSystems: MutableSet<TickingSystem> = mutableSetOf()
-    private val registeredListeners: MutableSet<GearyListener> = mutableSetOf()
 
     /** Describes how to individually tick each system */
     protected open suspend fun TickingSystem.runSystem() {
@@ -125,7 +133,6 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
         }
     }
 
-    /** Gets the record of a given entity, or throws an error if the entity id is not active in the engine. */
     override fun getRecord(entity: GearyEntity): Record =
         typeMap.get(entity)
 
@@ -140,7 +147,13 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
     }
 
     override fun scheduleSystemTicking() {
-        TODO("Implement a system for ticking independent of spigot")
+        var tick = 0L
+        launch {
+            while (true) {
+                tick(tick++)
+                delay(tickDuration)
+            }
+        }
     }
 
     override fun getComponentsFor(entity: GearyEntity): Array<GearyComponent> {
@@ -222,7 +235,6 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
     }
 
     override fun clearEntity(entity: GearyEntity) {
-        // TODO might make sense as non blocking?
         val (archetype, row) = getRecord(entity)
         archetype.scheduleRemoveRow(row)
         rootArchetype.addEntityWithData(getRecord(entity), arrayOf())
@@ -230,8 +242,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
 
     override fun getArchetype(id: Int): Archetype = archetypes[id]
 
-    @Synchronized //TODO multiplatform support
-    override fun getArchetype(type: GearyType): Archetype {
+    override fun getArchetype(type: GearyType): Archetype = synchronized(archetypeWriteLock) {
         var node = rootArchetype
         type.forEach { compId ->
             node =
@@ -241,14 +252,12 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
         return node
     }
 
-    private val classToComponentMapLock = SynchronizedObject()
-    override fun getOrRegisterComponentIdForClass(kClass: KClass<*>): GearyComponentId {
+    override fun getOrRegisterComponentIdForClass(kClass: KClass<*>): GearyComponentId =
         synchronized(classToComponentMapLock) {
             val id = classToComponentMap[kClass]
             if (id == (-1L).toULong()) return registerComponentIdForClass(kClass)
             return id
         }
-    }
 
     private fun registerComponentIdForClass(kClass: KClass<*>): GearyComponentId {
         val compEntity = newEntity(initialComponents = listOf(ComponentInfo(kClass)))
@@ -259,12 +268,6 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
     internal fun scheduleRemove(archetype: Archetype) {
         queuedCleanup += archetype
     }
-
-    //TODO what data structure is most efficient here?
-    private val queuedCleanup = mutableSetOf<Archetype>()
-    private val runningAsyncJobs = mutableSetOf<Job>()
-    private var iterationJob: Job? = null
-    private val safeDispatcher = Dispatchers.Default.limitedParallelism(1)
 
     override fun runSafely(scope: CoroutineScope, job: Job) {
         launch(safeDispatcher) {
@@ -308,7 +311,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
         logger.debug("Finished engine tick")
     }
 
-    internal fun cleanup() {
+    private fun cleanup() {
         queuedCleanup.forEach { archetype ->
             archetype.cleanup()
         }

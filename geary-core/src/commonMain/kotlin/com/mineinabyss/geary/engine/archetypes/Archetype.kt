@@ -2,6 +2,7 @@ package com.mineinabyss.geary.engine.archetypes
 
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.SetComponent
+import com.mineinabyss.geary.components.events.UpdatedComponent
 import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
@@ -217,6 +218,10 @@ public data class Archetype(
         val addIndex = indexOf(dataComponent)
         if (addIndex != -1) {
             componentData[addIndex][row] = data
+            if(callEvent) temporaryEntity { componentAddEvent ->
+                componentAddEvent.addRelation<UpdatedComponent>(componentId.toGeary(), noEvent = true)
+                record.archetype.callEvent(componentAddEvent, record.row)
+            }
             return false
         }
 

@@ -20,7 +20,7 @@ internal class ComponentAddEventTest : GearyTest() {
         val TargetScope.double by onSet<Double>()
 
         @Handler
-        fun increment() {
+        fun TargetScope.increment() {
             inc++
         }
     }
@@ -43,10 +43,9 @@ internal class ComponentAddEventTest : GearyTest() {
             set(1f)
             addedListeners() shouldBe 1
             inc shouldBe 1
-            set("")
+            set("a")
             addedListeners() shouldBe 1
-            //TODO decide on this behaviour
-            inc shouldBe 1
+            inc shouldBe 2
         }
     }
 }
