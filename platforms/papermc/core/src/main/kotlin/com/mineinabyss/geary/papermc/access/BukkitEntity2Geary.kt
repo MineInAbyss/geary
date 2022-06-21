@@ -114,6 +114,5 @@ class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin() {
     @EventHandler(priority = EventPriority.LOWEST)
     fun PlayerPostRespawnEvent.onPlayerRespawn() {
         //TODO add Dead component on death and remove it here
-        // Or should we add an inactive component that prevents systems from iterating over dead players?
     }
 }

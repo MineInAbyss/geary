@@ -48,7 +48,6 @@ class GearyPluginImpl : GearyPlugin() {
         val engine = PaperMCEngine(this@GearyPluginImpl)
         val serializers = GearySerializers()
         val formats = GearyFormats(serializers)
-        //TODO hopefully we can combine with statements in the future
         val queryManager = QueryManager()
         val uuid2GearyMap = UUID2GearyMap(engine)
         val prefabManager = PrefabManager()

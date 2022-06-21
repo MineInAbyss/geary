@@ -18,8 +18,6 @@ internal class AccessorHolderTest : GearyTest() {
     @Test
     fun fancyAccessors() {
         val entity = entity()
-        //TODO put back when Koin comes
-//        FancyQuery.toList().isEmpty() shouldBe true
         FancyQuery.firstOrNull { it.entity == entity } shouldBe null
         entity.set(1)
         FancyQuery.run {

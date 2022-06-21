@@ -52,8 +52,7 @@ public abstract class GearyListener : AccessorOperations(), GearySystem, Accesso
     public fun Family.onEvent(): DirectAccessor<Family> =
         event._family.add(this).let { DirectAccessor(this) }
 
-    //TODO make it work with non-set components
-    /** Gets a component, ensuring it is on the entity. */
+    /** Fires when an entity has a component of type [T] set or updated. */
     public inline fun <reified T : GearyComponent> onSet(): AccessorBuilder<ComponentAccessor<T>> {
         return AccessorBuilder { holder, index ->
             event._family.onSet(componentId<T>())
@@ -61,6 +60,7 @@ public abstract class GearyListener : AccessorOperations(), GearySystem, Accesso
         }
     }
 
+    /** Fires when an entity has a component of type [T] set, only if it was not set before. */
     public inline fun <reified T : GearyComponent> onFirstSet(): AccessorBuilder<ComponentAccessor<T>> {
         return AccessorBuilder { holder, index ->
             event._family.onFirstSet(componentId<T>())
@@ -68,6 +68,7 @@ public abstract class GearyListener : AccessorOperations(), GearySystem, Accesso
         }
     }
 
+    /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
     public inline fun <reified T : GearyComponent> onAdd(): Family {
         event._family.onAdd(componentId<T>())
         return family { has<T>() }

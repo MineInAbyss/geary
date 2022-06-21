@@ -42,7 +42,6 @@ public abstract class GearyQuery : AccessorHolder(), Iterable<TargetScope>, Gear
     public inline fun fastForEach(crossinline run: (TargetScope) -> Unit) {
         if (!registered) {
             queryManager.trackQuery(this)
-            registered = true
         }
         val matched = matchedArchetypes.toList()
         val sizes = matched.map { it.size - 1 }

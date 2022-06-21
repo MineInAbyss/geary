@@ -41,7 +41,6 @@ public open class AccessorHolder: AccessorOperations() {
     }
 
     /** Calculates, or gets cached values for an [archetype] */
-    //TODO return inline class for type safety
     public fun cacheForArchetype(archetype: Archetype): List<List<Any?>> =
         perArchetypeCache.getOrPut(archetype.id) {
             val accessorCache: List<MutableList<Any?>> = accessors.map { it.cached.mapTo(mutableListOf()) { null } }

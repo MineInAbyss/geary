@@ -36,7 +36,8 @@ public class QueryManager : EngineContext by GearyContextKoin() {
         val matched = archetypes.match(query.family)
         query.matchedArchetypes += matched
         queries.add(query)
-    } //TODO track query on registering doesnt mark query as registered (it runs twice)
+        query.registered = true
+    }
 
     internal fun registerArchetype(archetype: Archetype) {
         archetypes.add(archetype, archetype.type)
@@ -55,9 +56,8 @@ public class QueryManager : EngineContext by GearyContextKoin() {
     //TODO convert to Sequence
     public fun getEntitiesMatching(family: Family): List<GearyEntity> {
         return archetypes.match(family).flatMap { arc ->
-            arc.cleanup() //TODO async safety
+            arc.cleanup()
             arc.entities
         }
     }
 }
-

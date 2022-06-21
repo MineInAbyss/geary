@@ -17,8 +17,7 @@ import com.mineinabyss.geary.systems.GearySystem
  */
 public open class ResultScope(
     public val entity: GearyEntity,
-    //TODO this should be hidden
-    public val data: List<*>,
+    internal val data: List<*>,
 )
 
 /**
