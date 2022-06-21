@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.datatypes
 
+import com.mineinabyss.geary.components.relations.InstanceOf
+import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.readableString
 import kotlin.jvm.JvmInline
 
@@ -13,11 +15,14 @@ public value class GearyType private constructor(
     @PublishedApi
     internal val inner: ULongArray
 ) {
-    public val size: Int get() = inner.size
-
     public constructor() : this(ULongArray(0))
 
     public constructor(ids: Collection<GearyComponentId>) : this(inner = ids.toULongArray().apply { sort() })
+
+    public val size: Int get() = inner.size
+
+    public val prefabs: GearyType
+        get() = filter { contains(Relation.of(componentId<InstanceOf>(), it).id) }
 
     public operator fun contains(id: GearyComponentId): Boolean = indexOf(id) != -1
 
@@ -88,7 +93,6 @@ public value class GearyType private constructor(
         for (i in 0 until removeAt) arr[i] = inner[i]
         for (i in (removeAt + 1)..inner.lastIndex) arr[i - 1] = inner[i]
         return GearyType(arr)
-
     }
 
     //TODO intersection and union
