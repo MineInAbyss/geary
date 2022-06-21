@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.helpers
 
+import com.mineinabyss.geary.annotations.optin.ExperimentalAsyncGearyAPI
 import com.mineinabyss.geary.components.ComponentInfo
 import com.mineinabyss.geary.context.globalContext
-import com.mineinabyss.geary.datatypes.GearyComponentId
-import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.systems.GearySystem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -11,6 +11,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 /** Creates a new empty entity. May reuse recently deleted entity ids. */
 public fun entity(): GearyEntity = globalContext.engine.newEntity()
@@ -31,8 +32,16 @@ public inline fun <T> temporaryEntity(
     }
 }
 
+public inline fun <reified T> component(): GearyEntity = component(T::class)
+
+public fun component(kClass: KClass<*>): GearyEntity = componentId(kClass).toGeary()
+
 /** Gets or registers the id of a component of type [T] */
 public inline fun <reified T> componentId(): GearyComponentId = componentId(T::class)
+
+/** Gets or registers the id of a component of type [T], adding the [HOLDS_DATA] role if [T] is not nullable. */
+public inline fun <reified T> componentIdWithNullable(): GearyComponentId =
+    componentId<T>().withRole(if (typeOf<T>().isMarkedNullable) NO_ROLE else HOLDS_DATA)
 
 /**
  * Gets the id of a component by its serial name.
@@ -49,6 +58,7 @@ public fun componentId(kType: KType): GearyComponentId =
 public fun componentId(kClass: KClass<*>): GearyComponentId =
     globalContext.engine.getOrRegisterComponentIdForClass(kClass)
 
+
 @Deprecated("Should not be getting an id for an id!", ReplaceWith("componentId(component)"))
 @Suppress("UNUSED_PARAMETER")
 public fun componentId(kClass: KClass<out GearyComponentId>): Nothing =
@@ -62,15 +72,9 @@ public fun systems(vararg systems: GearySystem): List<Deferred<Unit>> {
     return systems.map { globalContext.engine.async { globalContext.engine.addSystem(it) } }
 }
 
-/**
- * Currently no safety guaranteed due to internal scheduling issues.
- */
-@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
-public annotation class ExperimentalAsyncGearyAPI
-
 @ExperimentalAsyncGearyAPI
 public inline fun <T> runSafely(
-    scope: CoroutineScope = globalContext.engine, /*crossinline*/
+    scope: CoroutineScope = globalContext.engine,
     crossinline run: suspend () -> T
 ): Deferred<T> {
     val deferred = globalContext.engine.async(start = CoroutineStart.LAZY) { run() }

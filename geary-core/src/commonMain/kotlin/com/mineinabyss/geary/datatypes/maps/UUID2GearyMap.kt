@@ -6,14 +6,12 @@ import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.components.RegenerateUUIDOnClash
 import com.mineinabyss.geary.components.events.EntityRemoved
 import com.mineinabyss.geary.datatypes.GearyEntity
-import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.has
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.TargetScope
-import com.mineinabyss.geary.systems.accessors.get
 
 public class UUID2GearyMap(
     override val engine: Engine
@@ -37,7 +35,7 @@ public class UUID2GearyMap(
     }
 
     public inner class TrackUuidOnAdd : GearyListener() {
-        private val TargetScope.uuid by added<Uuid>().onTarget()
+        private val TargetScope.uuid by onSet<Uuid>().onTarget()
 
         @Handler
         private fun TargetScope.track() {

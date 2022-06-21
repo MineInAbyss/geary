@@ -1,59 +1,60 @@
 package com.mineinabyss.geary.datatypes
 
-import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.componentIdWithNullable
+import com.mineinabyss.geary.helpers.readableString
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
 
 /**
- * A combination of two [GearyComponentId]s into one that represents a relation between
- * the two. Used for "adding a component to another component."
+ * A combination of a data [kind] and [target] entity that represents a relation between two entities.
  *
- * Data of the [value]'s type is stored under the relation's full [id] in archetypes.
- * The [key] points to another component this relation references.
+ * When a relation is added to a `source` entity,
+ * we say the `source` has a relation of the kind [kind] with [target].
  *
- * ```
- * [value] bits: 0x00FFFFFF00000000
- * [key]   bits: 0xFF000000FFFFFFFF
- * ```
+ * For example: `Alice` has a relation of the kind `Friend` with `Bob`.
  *
- * @property value The part of the relation which determines the data type of the full relation.
- * @property key The part of the relation that points to another component on the entity.
- *
+ * @property kind The part of the relation which determines its data type. It includes all the relation's type roles,
+ * except the [RELATION] role.
+ * @property target The part of the relation that points to another entity.
  */
 @Serializable
 @JvmInline
 public value class Relation private constructor(
     public val id: GearyComponentId
 ) : Comparable<Relation> {
-    public val value: RelationValueId get() = RelationValueId(id and RELATION_VALUE_MASK shr 32)
-    public val key: GearyComponentId get() = id and RELATION_KEY_MASK and RELATION.inv()
+    /*
+    * Internal representation of bits:
+    * [kind]   0xFFFFFFFF00000000
+    * [target] 0x00000000FFFFFFFF
+    */
+    public val kind: GearyComponentId
+        get() = id and TYPE_ROLES_MASK.inv() and RELATION_KIND_MASK shr 32 or (id and TYPE_ROLES_MASK).withoutRole(RELATION)
+    public val target: GearyEntityId get() = id and RELATION_TARGET_MASK
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
 
-    override fun toString(): String = "${key.readableString()} to ${value.id.readableString()}"
+    override fun toString(): String = "${kind.readableString()} to ${target.readableString()}"
 
     public companion object {
         public fun of(
-            key: GearyComponentId,
-            value: RelationValueId
+            kind: GearyComponentId, target: GearyEntityId
         ): Relation = Relation(
-            (value.id shl 32 and RELATION_VALUE_MASK)
-                    or (key and RELATION_KEY_MASK)
-                    or RELATION
+            (kind shl 32 and RELATION_KIND_MASK and TYPE_ROLES_MASK.inv()) // Add kind entity id shifted left
+                    or (kind and TYPE_ROLES_MASK) // Add type roles on kind
+                    or RELATION // Add relation type role
+                    or (target and RELATION_TARGET_MASK) // Add target, stripping any type roles
         )
 
-        public fun of(key: GearyComponentId, value: GearyComponentId): Relation =
-            of(key, RelationValueId(value))
+        public fun of(kind: KClass<*>, target: KClass<*>): Relation =
+            of(componentId(kind), componentId(target))
 
-        public fun of(key: KClass<*>, value: KClass<*>): Relation = GearyContextKoin {
-            of(componentId(key), componentId(value))
-        }
+        public inline fun <reified K : GearyComponent?, reified T : GearyComponent> of(): Relation =
+            of(componentIdWithNullable<K>(), componentId<T>())
 
-        public inline fun <reified K : GearyComponent, reified V : GearyComponent> of(): Relation = GearyContextKoin {
-            of(componentId<K>(), componentId<V>())
-        }
+        public inline fun <reified K : GearyComponent?> of(target: GearyEntity): Relation =
+            of(componentIdWithNullable<K>(), target.id)
 
         /**
          * Creates a relation from an id that is assumed to be valid. Use this to avoid boxing Relation because of
@@ -62,15 +63,5 @@ public value class Relation private constructor(
         public fun of(id: GearyComponentId): Relation = Relation(id)
     }
 }
-
-/**
- * Data of this parent's type is stored under a [Relation]'s full [id][Relation.id] in archetypes.
- *
- * ```
- * Parent bits:     0x00FFFFFF00000000
- * ```
- */
-@JvmInline
-public value class RelationValueId(public val id: GearyComponentId)
 
 public fun GearyComponentId.toRelation(): Relation? = Relation.of(this).takeIf { isRelation() }

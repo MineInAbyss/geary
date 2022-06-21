@@ -43,16 +43,17 @@ kotlin {
             useJUnitPlatform()
         }
     }
-    js(IR) {
-        browser()
-        nodejs()
-    }
+//    js(IR) {
+//        browser()
+//        nodejs()
+//    }
     sourceSets {
         all {
             explicitApi()
             languageSettings {
                 optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
                 optIn("kotlin.time.ExperimentalTime")
+                optIn("kotlin.ExperimentalUnsignedTypes")
                 optIn("kotlinx.serialization.ExperimentalSerializationApi")
                 optIn("kotlin.RequiresOptIn")
             }
@@ -97,11 +98,11 @@ kotlin {
         }
         val jvmTest by getting
 
-        val jsMain by getting {
-            dependencies {
-                api(gearylibs.bitvector.js)
-            }
-        }
+//        val jsMain by getting {
+//            dependencies {
+//                api(gearylibs.bitvector.js)
+//            }
+//        }
     }
 }
 

@@ -6,7 +6,6 @@ import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.components.events.EntityRemoved
 import com.mineinabyss.geary.datatypes.GearyEntity
-import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.has
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.systems
 import com.mineinabyss.geary.helpers.toGeary
@@ -18,7 +17,6 @@ import com.mineinabyss.geary.papermc.store.hasComponentsEncoded
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.TargetScope
-import com.mineinabyss.geary.systems.accessors.get
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.typealiases.BukkitEntity
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap
@@ -30,32 +28,32 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import kotlin.collections.set
 
-public class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin() {
+class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin() {
     private val entityMap = Int2LongOpenHashMap().apply { defaultReturnValue(-1) }
 
-    public fun startTracking() {
+    fun startTracking() {
         geary.registerEvents(this)
         systems(Register(), Unregister())
     }
 
-    public operator fun get(entityId: Int): GearyEntity? {
+    operator fun get(entityId: Int): GearyEntity? {
         val id = entityMap.get(entityId)
         if (id == -1L) return null
         return id.toGeary()
     }
 
-    public operator fun set(bukkit: BukkitEntity, entity: GearyEntity) {
+    operator fun set(bukkit: BukkitEntity, entity: GearyEntity) {
         entityMap[bukkit.entityId] = entity.id.toLong()
     }
 
-    public operator fun contains(entityId: Int): Boolean = entityMap.containsKey(entityId)
+    operator fun contains(entityId: Int): Boolean = entityMap.containsKey(entityId)
 
-    public fun remove(entityId: Int): GearyEntity? {
+    fun remove(entityId: Int): GearyEntity? {
         return entityMap.remove(entityId).takeIf { it != -1L }?.toGeary()
     }
 
     private inner class Register : GearyListener() {
-        val TargetScope.bukkit by added<BukkitEntity>()
+        val TargetScope.bukkit by onSet<BukkitEntity>()
 
         @Handler
         fun TargetScope.loadPersisted() {
@@ -86,20 +84,20 @@ public class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin
 
     /** Remove entities from ECS when they are removed from Bukkit for any reason (Uses PaperMC event) */
     @EventHandler(priority = EventPriority.LOWEST)
-    public fun EntityAddToWorldEvent.onBukkitEntityAdd() {
+    fun EntityAddToWorldEvent.onBukkitEntityAdd() {
         // Only remove player from ECS on disconnect, not death
         if (entity is Player) return
         entity.toGeary()
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public fun PlayerJoinEvent.onPlayerLogin() {
+    fun PlayerJoinEvent.onPlayerLogin() {
         player.toGeary()
     }
 
     /** Remove entities from ECS when they are removed from Bukkit for any reason (Uses PaperMC event) */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
+    fun EntityRemoveFromWorldEvent.onBukkitEntityRemove() {
         // Only remove player from ECS on disconnect, not death
         if (entity is Player) return
         // We remove the geary entity one tick after the Bukkit one has been removed to ensure nothing
@@ -108,14 +106,13 @@ public class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public fun PlayerQuitEvent.onPlayerLogout() {
+    fun PlayerQuitEvent.onPlayerLogout() {
         player.toGearyOrNull()?.removeEntity()
     }
 
     /** Player death counts as an entity being removed from the world so we should add them back after respawn */
     @EventHandler(priority = EventPriority.LOWEST)
-    public fun PlayerPostRespawnEvent.onPlayerRespawn() {
+    fun PlayerPostRespawnEvent.onPlayerRespawn() {
         //TODO add Dead component on death and remove it here
-        // Or should we add an inactive component that prevents systems from iterating over dead players?
     }
 }

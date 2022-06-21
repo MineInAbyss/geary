@@ -4,11 +4,10 @@ import com.mineinabyss.geary.context.EngineContext
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.datatypes.maps.Component2ObjectArrayMap
+import com.mineinabyss.geary.datatypes.maps.Family2ObjectArrayMap
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.events.GearyHandler
 import com.mineinabyss.geary.helpers.contains
-import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.query.GearyQuery
 
 public class QueryManager : EngineContext by GearyContextKoin() {
@@ -17,7 +16,7 @@ public class QueryManager : EngineContext by GearyContextKoin() {
     private val targetListeners = mutableListOf<GearyListener>()
     private val eventHandlers = mutableListOf<GearyHandler>()
 
-    private val archetypes = Component2ObjectArrayMap<Archetype>()
+    private val archetypes = Family2ObjectArrayMap<Archetype>()
 
     public fun init() {
         registerArchetype(engine.rootArchetype)
@@ -37,7 +36,8 @@ public class QueryManager : EngineContext by GearyContextKoin() {
         val matched = archetypes.match(query.family)
         query.matchedArchetypes += matched
         queries.add(query)
-    } //TODO track query on registering doesnt mark query as registered (it runs twice)
+        query.registered = true
+    }
 
     internal fun registerArchetype(archetype: Archetype) {
         archetypes.add(archetype, archetype.type)
@@ -56,12 +56,8 @@ public class QueryManager : EngineContext by GearyContextKoin() {
     //TODO convert to Sequence
     public fun getEntitiesMatching(family: Family): List<GearyEntity> {
         return archetypes.match(family).flatMap { arc ->
-            arc.cleanup() //TODO async safety
-            arc.ids.map { it.toGeary() }
+            arc.cleanup()
+            arc.entities
         }
     }
-}
-
-public interface QueryContext {
-    public val queryManager: QueryManager
 }

@@ -6,11 +6,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * A component that will add a relation to this entity with a [key], [value] pair.
+ * A component that will add a relation to this entity with a [target], [data] pair.
  */
 @Serializable
 @SerialName("geary:relation")
-public data class RelationOnPrefab(
-    val key: String,
-    val value: @Polymorphic GearyComponent,
+data class RelationOnPrefab(
+    val target: String,
+    val data: @Polymorphic GearyComponent,
 )

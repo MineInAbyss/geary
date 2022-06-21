@@ -10,13 +10,14 @@ import okio.Path
 
 public class YamlFormat(
     module: SerializersModule
-): PrefabFormat {
+) : PrefabFormat {
     private val yaml = Yaml(
-            serializersModule = module,
-            configuration = YamlConfiguration(
-                encodeDefaults = false
-            )
+        serializersModule = module,
+        configuration = YamlConfiguration(
+            encodeDefaults = false
         )
+    )
+
     override fun <T> decodeFromFile(deserializer: DeserializationStrategy<T>, path: Path): T {
         return yaml.decodeFromStream(deserializer, path.toFile().inputStream())
     }

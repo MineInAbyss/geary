@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.prefabs
 
-import com.mineinabyss.geary.components.NoInherit
+import com.mineinabyss.geary.components.relations.DontInherit
 import com.mineinabyss.geary.context.GearyContext
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.datatypes.GearyEntity
@@ -59,7 +59,7 @@ class PrefabManager : GearyContext by GearyContextKoin() {
                 ?: error("Unknown file format $ext")
             val entity = writeTo ?: entity()
             entity.set(Prefab(file))
-            entity.setRelation(Prefab::class, NoInherit)
+            entity.addRelation<DontInherit, Prefab>()
             entity.setAll(decoded)
 
             val key = PrefabKey.of(namespace, name)

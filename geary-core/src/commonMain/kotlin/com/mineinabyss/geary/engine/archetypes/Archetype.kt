@@ -1,5 +1,9 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import com.mineinabyss.geary.components.events.AddedComponent
+import com.mineinabyss.geary.components.events.SetComponent
+import com.mineinabyss.geary.components.events.UpdatedComponent
+import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
@@ -7,6 +11,7 @@ import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.engine.GearyEngine
 import com.mineinabyss.geary.events.GearyHandler
 import com.mineinabyss.geary.helpers.contains
+import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
@@ -29,21 +34,23 @@ public data class Archetype(
     /** A mutex for anything which needs the size of ids to remain unchanged. */
     private val entityAddition = SynchronizedObject()
 
+    public val entities: List<GearyEntity> get() = ids.map { it.toGeary() }
+
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
-    //TODO aim to make private
-    internal val ids: IdList = IdList()
+    private val ids: IdList = IdList()
     private val queuedRemoval = mutableListOf<Int>()
     private val queueRemoval = SynchronizedObject()
 
-    internal var isIterating = false
+    @PublishedApi
+    internal var isIterating: Boolean = false
 
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
-    private val dataHoldingType = type.filter { it.holdsData() || it.isRelation() }
+    private val dataHoldingType: GearyType = type.filter { it.holdsData() }
 
     /** An outer list with indices for component ids, and sub-lists with data indexed by entity [ids]. */
-    internal val componentData: List<MutableList<GearyComponent>> =
-        dataHoldingType.map { mutableListOf() }
+    internal val componentData: Array<MutableList<GearyComponent>> =
+        Array(dataHoldingType.size) { mutableListOf() }
 
     /** Edges to other archetypes where a single component has been added. */
     internal val componentAddEdges = CompId2ArchetypeMap(engine)
@@ -52,30 +59,30 @@ public data class Archetype(
     internal val componentRemoveEdges = CompId2ArchetypeMap(engine)
 
     internal val relations = type.inner.mapNotNull { it.toRelation() }
+    internal val relationsWithData = relations.filter { it.id.holdsData() }
 
-    /** Map of relation [Relation.value] id to a list of relations with that [Relation.value]. */
-    internal val relationsByValue: Long2ObjectMap<List<Relation>> = relations
-        .groupBy { it.value.id.toLong() }
+    /** Map of relation [Relation.target] id to a list of relations with that [Relation.target]. */
+    internal val relationsByTarget: Long2ObjectMap<List<Relation>> = relations
+        .groupBy { it.target.toLong() }
 
-    /** Map of relation [Relation.key] id to a list of relations with that [Relation.key]. */
-    internal val relationsByKey: Long2ObjectMap<List<Relation>> = relations
-        .groupBy { it.key.toLong() }
+    /** Map of relation [Relation.kind] id to a list of relations with that [Relation.kind]. */
+    internal val relationsByKind: Long2ObjectMap<List<Relation>> = relations
+        .groupBy { it.kind.toLong() }
 
-    /** A map of a relation's data type id to full relations that store data of that type. */
-    internal val dataHoldingRelations: Long2ObjectMap<List<Relation>> by lazy {
-        val map = mutableMapOf<Long, List<Relation>>()
-        relationsByValue.forEach { (key, values) ->
-            val dataHolding = values.filter { it.key.holdsData() }
-            if (dataHolding.isNotEmpty()) map[key] = dataHolding
-        }
-        map
-    }
+//    /** A map of a relation's kind to full relations that store data of that kind. */
+//    internal val dataHoldingRelations: Long2ObjectMap<List<Relation>> by lazy {
+//        val map = mutableMapOf<Long, List<Relation>>()
+//        relationsByTarget.forEach { (key, values) ->
+//            val dataHolding = values.filter { it.kind.holdsData() }
+//            if (dataHolding.isNotEmpty()) map[key] = dataHolding
+//        }
+//        map
+//    }
 
 
     /** A map of component ids to index used internally in this archetype (ex. in [componentData])*/
-    private val comp2indices = mutableMapOf<Long, Int>().apply {
+    private val comp2indices: Map<Long, Int> = buildMap {
         dataHoldingType.forEachIndexed { i, compId -> put(compId.toLong(), i) }
-//        defaultReturnValue(-1)
     }
 
     /** The amount of entities stored in this archetype. */
@@ -98,12 +105,6 @@ public data class Archetype(
         return ids[row].toGeary()
     }
 
-    /** @return This Archetype's [relationsByValue] that are also a part of [matchRelations]. */
-    public fun matchedRelationsFor(matchRelations: Collection<RelationValueId>): Map<RelationValueId, List<Relation>> =
-        matchRelations
-            .filter { it.id.toLong() in relationsByValue }
-            .associateWith { relationsByValue[it.id.toLong()]!! } //TODO handle null error
-
     /**
      * Used to pack data closer together and avoid having hashmaps throughout the archetype.
      *
@@ -123,30 +124,21 @@ public data class Archetype(
     }
 
 
-    /** @return Whether this archetype has a [componentId] in its type, regardless of the [HOLDS_DATA] role. */
-    public operator fun contains(componentId: GearyComponentId): Boolean =
-        // Check if contains component or the version with the HOLDS_DATA bit flipped
-        componentId in type || componentId.withInvertedRole(HOLDS_DATA) in type
+    /** @return Whether this archetype has a [componentId] in its type. */
+    public operator fun contains(componentId: GearyComponentId): Boolean = componentId in type
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
     public operator fun plus(componentId: GearyComponentId): Archetype =
         if (componentId in componentAddEdges)
             componentAddEdges[componentId]
         else
-            engine.getArchetype(
-                type.let {
-                    // Ensure that when adding an ID that holds data, we remove the non-data-holding ID
-                    if (componentId.holdsData() && !componentId.isRelation())
-                        it.minus(componentId.withoutRole(HOLDS_DATA))
-                    else it
-                }.plus(componentId)
-            )
+            globalContext.engine.getArchetype(type.plus(componentId))
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
     public operator fun minus(componentId: GearyComponentId): Archetype =
         if (componentId in componentRemoveEdges)
             componentRemoveEdges[componentId]
-        else engine.getArchetype(type.minus(componentId)).also {
+        else globalContext.engine.getArchetype(type.minus(componentId)).also {
             componentRemoveEdges[componentId] = it
         }
 
@@ -178,7 +170,7 @@ public data class Archetype(
     //  (ex when set calls remove).
 
     /**
-     * Add a [component] to an entity represented by [record], moving it to the appropriate archetype.
+     * Add a [componentId] to an entity represented by [record], moving it to the appropriate archetype.
      *
      * @return Whether the record has changed.
      *
@@ -186,56 +178,56 @@ public data class Archetype(
      */
     internal fun addComponent(
         record: Record,
-        component: GearyComponentId
+        componentId: GearyComponentId,
+        callEvent: Boolean,
     ): Boolean {
         // if already present in this archetype, stop here since we dont need to update any data
-        if (contains(component)) return false
+        if (contains(componentId)) return false
 
-        val moveTo = this + (component.withoutRole(HOLDS_DATA))
+        val moveTo = this + (componentId.withoutRole(HOLDS_DATA))
 
         val componentData = getComponents(record.row)
         scheduleRemoveRow(record.row)
         moveTo.addEntityWithData(record, componentData)
+
+        if (callEvent) temporaryEntity { componentAddEvent ->
+            componentAddEvent.addRelation<AddedComponent>(componentId.toGeary(), noEvent = true)
+            record.archetype.callEvent(componentAddEvent, record.row)
+        }
         return true
     }
 
     /**
      * Sets [data] at a [componentId] for an [record], moving it to the appropriate archetype.
-     * Will remove [componentId] without the [HOLDS_DATA] role if present so an archetype never has both data/no data
-     * components at once.
+     * Will ensure this component without [HOLDS_DATA] is always present.
      *
-     * @return The new [Record] to be associated with this entity from now on, or null if the [componentId] was already
-     * present in this archetype.
+     * @return Whether the record has changed.
      *
      * @see Engine.setComponentFor
      */
     internal fun setComponent(
         record: Record,
         componentId: GearyComponentId,
-        data: GearyComponent
+        data: GearyComponent,
+        callEvent: Boolean,
     ): Boolean {
         val row = record.row
-        val isRelation = componentId.isRelation()
-
-        // Relations should not add the HOLDS_DATA bit since the type roles are of the relation's child
-        val dataComponent = if (isRelation) componentId else componentId.withRole(HOLDS_DATA)
-
+        val dataComponent = componentId.withRole(HOLDS_DATA)
 
         //If component already in this type, just update the data
         val addIndex = indexOf(dataComponent)
         if (addIndex != -1) {
             componentData[addIndex][row] = data
+            if(callEvent) temporaryEntity { componentAddEvent ->
+                componentAddEvent.addRelation<UpdatedComponent>(componentId.toGeary(), noEvent = true)
+                record.archetype.callEvent(componentAddEvent, record.row)
+            }
             return false
         }
 
-        //if component was added but not set, remove the added component before setting this one
-        val addId = dataComponent.withoutRole(HOLDS_DATA)
-
-        if (addId in type) {
-            removeComponent(record, addId)
-            record.archetype.setComponent(record, dataComponent, data)
-        }
-
+        //if component is not already added, add it, then set
+        if (addComponent(record, dataComponent.withoutRole(HOLDS_DATA), callEvent))
+            return record.archetype.setComponent(record, dataComponent, data, callEvent)
 
         val moveTo = this + dataComponent
         val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
@@ -243,6 +235,11 @@ public data class Archetype(
 
         scheduleRemoveRow(row)
         moveTo.addEntityWithData(record, componentData)
+
+        if (callEvent) temporaryEntity { componentAddEvent ->
+            componentAddEvent.addRelation<SetComponent>(componentId.toGeary(), noEvent = true)
+            record.archetype.callEvent(componentAddEvent, record.row)
+        }
         return true
     }
 
@@ -256,7 +253,7 @@ public data class Archetype(
     internal fun removeComponent(
         record: Record,
         component: GearyComponentId
-    ): Boolean = synchronized(record) { //TODO find a proper library for this or make async
+    ): Boolean = synchronized(record) {
         with(record.archetype) {
             val row = record.row
 
@@ -294,11 +291,36 @@ public data class Archetype(
             return Array(componentData.size) { i: Int -> componentData[i][row] }
     }
 
+    /**
+     * Queries for specific relations or by kind/target.
+     *
+     * When [kind] or [target] are the [Any] component, matches against any relation.
+     * Both [kind] and [target] cannot be [Any].
+     *
+     * The if a parameter is the [Any] component, the [HOLDS_DATA] role indicates whether other components
+     * matched must also hold data themselves.
+     * All other roles are ignored for the [target].
+     */
+    internal fun getRelations(kind: GearyComponentId, target: GearyEntityId): List<Relation> {
+        val specificKind = kind and ENTITY_MASK != globalContext.components.any
+        val specificTarget = target and ENTITY_MASK != globalContext.components.any
+        return when {
+            specificKind && specificTarget -> listOf(Relation.of(kind, target))
+            specificTarget -> relationsByTarget[target.toLong()]
+            specificKind -> relationsByKind[kind.toLong()]
+            else -> relations
+        }?.run { //TODO this technically doesnt need to run when specificKind is set
+            if (kind.hasRole(HOLDS_DATA)) filter { it.hasRole(HOLDS_DATA) } else this
+        }?.run {
+            if (target.holdsData()) filter { it.target.withRole(HOLDS_DATA) in type } else this
+        } ?: emptyList()
+    }
+
     internal fun scheduleRemoveRow(row: Int) {
         synchronized(queueRemoval) {
             queuedRemoval.add(row)
         }
-        //TODO another variable, is scheduled so we dont do a hashmap lookup each time
+        //TODO another variable (isScheduled) so we dont do a hashmap lookup each time
         if (!isIterating) (engine as GearyEngine).scheduleRemove(this)
     }
 
@@ -411,12 +433,13 @@ public data class Archetype(
 //    }
 
     /** Creates and tracks an [ArchetypeIterator] for a query. */
+    @PublishedApi
     internal fun iteratorFor(query: GearyQuery): ArchetypeIterator {
-        val iterator = ArchetypeIterator(this, query)
-        return iterator
+        return ArchetypeIterator(this, query)
     }
 
     /** Removes any queued up entity deletions. */
+    @PublishedApi
     internal fun cleanup() {
         synchronized(queueRemoval) {
             if (!isIterating)

@@ -2,72 +2,57 @@ package com.mineinabyss.geary.systems.accessors
 
 import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
-import com.mineinabyss.geary.datatypes.RelationValueId
 import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.systems.accessors.types.ComponentAccessor
 import com.mineinabyss.geary.systems.accessors.types.ComponentOrDefaultAccessor
 import com.mineinabyss.geary.systems.accessors.types.RelationWithDataAccessor
-import kotlin.reflect.typeOf
 
 /**
  * An empty interface that limits [AccessorBuilder] helper functions only to classes that use [Accessor]s.
  */
-public interface AccessorOperations
-
-/** Gets a component, ensuring it is on the entity. */
-public inline fun <reified T : GearyComponent> AccessorOperations.get(): AccessorBuilder<ComponentAccessor<T>> {
-    return AccessorBuilder { holder, index ->
-        val component = componentId<T>().withRole(HOLDS_DATA)
-        holder._family.has(component)
-        ComponentAccessor(index, component)
+public open class AccessorOperations {
+    /** Gets a component, ensuring it is on the entity. */
+    public inline fun <reified T : GearyComponent> get(): AccessorBuilder<ComponentAccessor<T>> {
+        return AccessorBuilder { holder, index ->
+            val component = componentId<T>().withRole(HOLDS_DATA)
+            holder._family.has(component)
+            ComponentAccessor(index, component)
+        }
     }
-}
 
-/** Gets a component or provides a [default] if the entity doesn't have it. */
-public inline fun <reified T : GearyComponent?> AccessorOperations.getOrDefault(
-    default: T
-): AccessorBuilder<ComponentOrDefaultAccessor<T>> {
-    return AccessorBuilder { _, index ->
-        val component = componentId<T>().withRole(HOLDS_DATA)
-        ComponentOrDefaultAccessor(index, component, default)
+    /** Gets a component or provides a [default] if the entity doesn't have it. */
+    public inline fun <reified T : GearyComponent?> getOrDefault(
+        default: T
+    ): AccessorBuilder<ComponentOrDefaultAccessor<T>> {
+        return AccessorBuilder { _, index ->
+            val component = componentId<T>().withRole(HOLDS_DATA)
+            ComponentOrDefaultAccessor(index, component, default)
+        }
     }
-}
 
-/** Gets a component or `null` if the entity doesn't have it. */
-public inline fun <reified T : GearyComponent?> AccessorOperations.getOrNull(): AccessorBuilder<ComponentOrDefaultAccessor<T?>> {
-    return getOrDefault(null)
-}
+    /** Gets a component or `null` if the entity doesn't have it. */
+    public inline fun <reified T : GearyComponent?> getOrNull(): AccessorBuilder<ComponentOrDefaultAccessor<T?>> {
+        return getOrDefault(null)
+    }
 
-/**
- * This function allows you to access a specific relation or all relations with a certain key or value.
- *
- * #### Nullability
- * If [K] is nullable, just the relation needs to be present.
- *
- * If [K] is NOT nullable, the entity must have a component of type [K] set.
- *
- * - `relation<String?, Int>()` will match the specific relation with key [String] and value [Int], regardless
- * of whether the entity has a component [Int] with data.
- *
- * #### Matching any relation
- * If one type is [Any], this will get all relations matching the other type.
- *
- * - `relation<String?, Any>()` will match against all relations with a [String] key and any value.
- * - `relation<Any, String>()` will match against all relations with any key and a [String] value,
- *   so long as the entity also has a key of that type set.
- *
- * @see flatten
- */
-public inline fun <reified K : GearyComponent?, reified V : GearyComponent> AccessorOperations.relation(): AccessorBuilder<RelationWithDataAccessor<K, V>> {
-    return AccessorBuilder { holder, index ->
-        val key = typeOf<K>()
-        val value = typeOf<V>()
-        val keyIsNullable = key.isMarkedNullable
-        val relationKey = if (key.classifier == Any::class) null else componentId(key)
-        val relationValue = if (value.classifier == Any::class) null else RelationValueId(componentId(value))
-        //TODO could we reuse code between hasRelation and here?
-        holder._family.hasRelation(key, value)
-        RelationWithDataAccessor(index, keyIsNullable, relationValue, relationKey)
+    /**
+     * Queries for a specific relation or by kind/target.
+     *
+     * #### Nullability
+     * Additional checks are done if [K] or [T] are not nullable:
+     * - [K] is NOT nullable => the relation must hold data.
+     * - [T] is NOT nullable => the relation target must also be present as a component with data on the entity.
+     *
+     * #### Query by kind/target
+     * - One of [K] or [T] is [Any] => gets all relations matching the other (specified) type.
+     * - Note: nullability rules are still upheld with [Any].
+     */
+    public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> getRelations(): AccessorBuilder<RelationWithDataAccessor<K, T>> {
+        return AccessorBuilder { holder, index ->
+            holder._family.hasRelation<K, T>()
+            RelationWithDataAccessor(index, componentIdWithNullable<K>(), componentIdWithNullable<T>())
+        }
     }
 }

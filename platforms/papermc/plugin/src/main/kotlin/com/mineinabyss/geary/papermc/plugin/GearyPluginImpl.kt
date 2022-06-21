@@ -3,6 +3,7 @@ package com.mineinabyss.geary.papermc.plugin
 import com.mineinabyss.geary.addon.*
 import com.mineinabyss.geary.addon.GearyLoadPhase.ENABLE
 import com.mineinabyss.geary.datatypes.maps.UUID2GearyMap
+import com.mineinabyss.geary.engine.Components
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.formats.YamlFormat
 import com.mineinabyss.geary.helpers.withSerialName
@@ -47,7 +48,6 @@ class GearyPluginImpl : GearyPlugin() {
         val engine = PaperMCEngine(this@GearyPluginImpl)
         val serializers = GearySerializers()
         val formats = GearyFormats(serializers)
-        //TODO hopefully we can combine with statements in the future
         val queryManager = QueryManager()
         val uuid2GearyMap = UUID2GearyMap(engine)
         val prefabManager = PrefabManager()
@@ -65,7 +65,8 @@ class GearyPluginImpl : GearyPlugin() {
             single<PrefabManager> { prefabManager }
             single<GearySerializers> { serializers }
             single<GearyFormats> { formats }
-            singleConfig(GearyConfig.serializer(), this@GearyPluginImpl)
+            single<Components> { Components() }
+            singleConfig<GearyConfig>(GearyConfig.serializer(),this@GearyPluginImpl)
         })
 
         engine.start()

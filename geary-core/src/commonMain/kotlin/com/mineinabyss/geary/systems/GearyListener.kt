@@ -3,9 +3,8 @@ package com.mineinabyss.geary.systems
 import com.mineinabyss.geary.context.GearyContext
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.datatypes.GearyComponent
-import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.datatypes.withRole
+import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.events.GearyHandler
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.systems.accessors.*
@@ -21,7 +20,8 @@ import kotlin.reflect.KProperty
  * [GearyHandler]s can be defined inside by annotating a function with [Handler], these
  * are the actual functions that run when a matching event is found.
  */
-public abstract class GearyListener : GearySystem, AccessorOperations, AccessorScopeSelector, GearyContext by GearyContextKoin() {
+public abstract class GearyListener : AccessorOperations(), GearySystem, AccessorScopeSelector,
+    GearyContext by GearyContextKoin() {
     public val source: AccessorHolder = AccessorHolder()
     public val target: AccessorHolder = AccessorHolder()
     public val event: AccessorHolder = AccessorHolder()
@@ -52,13 +52,26 @@ public abstract class GearyListener : GearySystem, AccessorOperations, AccessorS
     public fun Family.onEvent(): DirectAccessor<Family> =
         event._family.add(this).let { DirectAccessor(this) }
 
-    //TODO make it work with non-set components
-    /** Gets a component, ensuring it is on the entity. */
-    public inline fun <reified T : GearyComponent> added(): AccessorBuilder<ComponentAccessor<T>> {
+    /** Fires when an entity has a component of type [T] set or updated. */
+    public inline fun <reified T : GearyComponent> onSet(): AccessorBuilder<ComponentAccessor<T>> {
         return AccessorBuilder { holder, index ->
-            event._family.onAdded(componentId<T>().withRole(HOLDS_DATA))
+            event._family.onSet(componentId<T>())
             get<T>().build(holder, index)
         }
+    }
+
+    /** Fires when an entity has a component of type [T] set, only if it was not set before. */
+    public inline fun <reified T : GearyComponent> onFirstSet(): AccessorBuilder<ComponentAccessor<T>> {
+        return AccessorBuilder { holder, index ->
+            event._family.onFirstSet(componentId<T>())
+            get<T>().build(holder, index)
+        }
+    }
+
+    /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
+    public inline fun <reified T : GearyComponent> onAdd(): Family {
+        event._family.onAdd(componentId<T>())
+        return family { has<T>() }
     }
 }
 

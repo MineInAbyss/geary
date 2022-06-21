@@ -6,7 +6,6 @@ import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.soywiz.kds.IntSet
 import com.soywiz.kds.intSetOf
 
-//TODO use multiple receivers with Kotlin 1.6.20
 public fun GearyType.getArchetype(): Archetype =
     globalContext.engine.getArchetype(this)
 

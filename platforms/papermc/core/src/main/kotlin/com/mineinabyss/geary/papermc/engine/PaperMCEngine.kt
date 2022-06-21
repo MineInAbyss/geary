@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.papermc.engine
 
+import co.aikar.timings.Timings
 import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import com.mineinabyss.geary.engine.GearyEngine
 import com.mineinabyss.geary.systems.GearySystem
@@ -18,12 +19,12 @@ class PaperMCEngine(private val plugin: Plugin) : GearyEngine(tickDuration = 1.t
 
     override suspend fun TickingSystem.runSystem() {
         // Adds a line in timings report showing which systems take up more time.
-//        val timing = Timings.ofStart(plugin, javaClass.name)
+        val timing = Timings.ofStart(plugin, javaClass.name)
         runCatching {
             doTick()
         }.apply {
             // We want to stop the timing no matter what, but still propagate error up
-//            timing.stopTiming() //TODO doTick can suspend and then timings don't work
+            timing.stopTiming()
         }.getOrThrow()
     }
 
@@ -37,7 +38,6 @@ class PaperMCEngine(private val plugin: Plugin) : GearyEngine(tickDuration = 1.t
     override fun scheduleSystemTicking() {
         //tick all systems every interval ticks
         launch(plugin.minecraftDispatcher) {
-//        Bukkit.getScheduler().scheduleSyncRepeatingTask(, {
             while (true) {
                 tick(Bukkit.getServer().currentTick.toLong())
                 delay(tickDuration)

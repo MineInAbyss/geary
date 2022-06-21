@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.engine
 
-import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.ComponentInfo
-import com.mineinabyss.geary.components.RelationComponent
+import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.context.EngineContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.GearySystem
+import com.mineinabyss.geary.systems.accessors.RelationWithData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import org.koin.core.component.KoinComponent
@@ -36,15 +36,15 @@ public abstract class Engine : KoinComponent, EngineContext, CoroutineScope {
     /** Gets a list of all the components [entity] has, as well as relations in the form of [RelationComponent]. */
     public abstract fun getComponentsFor(entity: GearyEntity): Array<GearyComponent>
 
-    //TODO clean up so it's consistent with Accessor's relation format
     /**
-     * Gets a list of relations on [entity] with to value [relationValueId].
+     * Gets relations in the same format as [Archetype.getRelations], but when kind/target [HOLDS_DATA], the appropriate
+     * data is written to a [RelationWithData] object.
      */
-    public abstract fun getRelationsFor(
+    public abstract fun getRelationsWithDataFor(
         entity: GearyEntity,
-        relationValueId: RelationValueId
-    ): Set<Pair<GearyComponent, Relation>>
-
+        kind: GearyComponentId,
+        target: GearyEntityId
+    ): List<RelationWithData<*, *>>
 
     /** Checks whether an [entity] has a [componentId] */
     public abstract fun hasComponentFor(entity: GearyEntity, componentId: GearyComponentId): Boolean
@@ -85,6 +85,7 @@ public abstract class Engine : KoinComponent, EngineContext, CoroutineScope {
     /** Gets or creates an archetype from a [type]. */
     public abstract fun getArchetype(type: GearyType): Archetype
 
+    /** Gets the record of a given entity, or throws an error if the entity id is not active in the engine. */
     internal abstract fun getRecord(entity: GearyEntity): Record
 
     /** Updates the record of a given entity */

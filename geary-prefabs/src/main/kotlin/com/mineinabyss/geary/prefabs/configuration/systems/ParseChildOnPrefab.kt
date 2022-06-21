@@ -3,7 +3,7 @@ package com.mineinabyss.geary.prefabs.configuration.systems
 import com.mineinabyss.geary.annotations.AutoScan
 import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.components.EntityName
-import com.mineinabyss.geary.components.NoInherit
+import com.mineinabyss.geary.components.relations.DontInherit
 import com.mineinabyss.geary.helpers.addParent
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.prefabs.configuration.components.ChildOnPrefab
@@ -14,7 +14,7 @@ import com.mineinabyss.geary.systems.accessors.TargetScope
 
 @AutoScan
 class ParseChildOnPrefab : GearyListener() {
-    private val TargetScope.child by added<ChildOnPrefab>()
+    private val TargetScope.child by onSet<ChildOnPrefab>()
 
     @Handler
     private fun TargetScope.convertToRelation() {
@@ -28,7 +28,7 @@ class ParseChildOnPrefab : GearyListener() {
 
 @AutoScan
 class ParseChildrenOnPrefab : GearyListener() {
-    private val TargetScope.children by added<ChildrenOnPrefab>()
+    private val TargetScope.children by onSet<ChildrenOnPrefab>()
 
     @Handler
     private fun TargetScope.convertToRelation() {
@@ -37,7 +37,7 @@ class ParseChildrenOnPrefab : GearyListener() {
                 set(EntityName(name))
                 set(Prefab())
                 addParent(entity)
-                setRelation(Prefab::class, NoInherit)
+                addRelation<DontInherit, Prefab>()
                 setAll(components)
             }
         }

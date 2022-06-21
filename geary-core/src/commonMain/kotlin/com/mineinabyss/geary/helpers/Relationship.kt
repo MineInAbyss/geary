@@ -1,12 +1,11 @@
 package com.mineinabyss.geary.helpers
 
-//TODO add documentation and maybe split into two files
-
-import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.components.relations.ChildOf
+import com.mineinabyss.geary.datatypes.GearyEntity
 
 /** Adds a [parent] entity to this entity.  */
 public fun GearyEntity.addParent(parent: GearyEntity) {
-    add(parent.id.withRole(CHILDOF))
+    addRelation<ChildOf>(parent)
 }
 
 /** Adds a list of [parents] entities to this entity. */
@@ -16,7 +15,7 @@ public fun GearyEntity.addParents(parents: Array<GearyEntity>) {
 
 /** Removes a [parent], also unlinking this child from that parent. */
 public fun GearyEntity.removeParent(parent: GearyEntity) {
-    remove(parent.id.withRole(CHILDOF))
+    removeRelation<ChildOf>(parent)
 }
 
 /** Removes all of this entity's parents, also unlinking this child from them. */
@@ -46,10 +45,7 @@ public fun GearyEntity.clearChildren() {
 
 /** Gets the first parent of this entity */
 public val GearyEntity.parent: GearyEntity?
-    get() {
-        type.forEach { if (it.isChild()) return (it and ENTITY_MASK).toGeary() }
-        return null
-    }
+    get() = getRelations<ChildOf?, Any?>().firstOrNull()?.target?.toGeary()
 
 /** Runs code on the first parent of this entity. */
 public inline fun GearyEntity.onParent(
@@ -61,10 +57,4 @@ public inline fun GearyEntity.onParent(
 }
 
 public val GearyEntity.parents: Set<GearyEntity>
-    get() {
-        val parents = mutableSetOf<GearyEntity>()
-        type.forEach {
-            if (id.isChild()) parents.add((id and ENTITY_MASK).toGeary())
-        }
-        return parents
-    }
+    get() = getRelations<ChildOf?, Any?>().mapTo(mutableSetOf()) { it.target.toGeary() }

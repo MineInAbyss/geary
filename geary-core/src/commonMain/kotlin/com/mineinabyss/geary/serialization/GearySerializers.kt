@@ -50,7 +50,6 @@ public class GearySerializers {
     public fun getSerialNameFor(kClass: KClass<out GearyComponent>): String? =
         component2serialName[kClass]
 
-    //TODO make internal once we switch off of a singleton object
     public fun addSerializersModule(namespace: String, module: SerializersModule) {
         addonToModuleMap[namespace] =
             addonToModuleMap.getOrElse(namespace) { EmptySerializersModule }.overwriteWith(module)

@@ -30,7 +30,7 @@ public abstract class TickingSystem(
     }
 
     protected open fun tick() {
-        forEach(run = { it.tick() })
+        fastForEach(run = { it.tick() })
     }
 
     protected open fun TargetScope.tick() {}

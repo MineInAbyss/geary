@@ -7,14 +7,14 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.*
 
-public class FileSystemStore(
+class FileSystemStore(
     private val root: Path,
     private val format: BinaryFormat,
 ) : GearyStore {
     override suspend fun encode(entity: GearyEntity): ByteArray {
         return format.encodeToByteArray(
             GearyStore.componentsSerializer,
-            entity.getPersistingComponents()
+            entity.getAllPersisting()
         )
     }
 
