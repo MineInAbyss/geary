@@ -22,7 +22,7 @@ class RelationMatchingSystemTest : GearyTest() {
         clearEngine()
         var ran = 0
         val systemPersists = object : TickingSystem() {
-            val TargetScope.persists by relation<Persists, Any?>()
+            val TargetScope.persists by getRelations<Persists, Any?>()
 
             override fun TargetScope.tick() {
                 ran++
@@ -55,8 +55,8 @@ class RelationMatchingSystemTest : GearyTest() {
         clearEngine()
         var ran = 0
         val system = object : TickingSystem() {
-            val TargetScope.persists by relation<Persists, Any>()
-            val TargetScope.instanceOf by relation<InstanceOf?, Any?>()
+            val TargetScope.persists by getRelations<Persists, Any>()
+            val TargetScope.instanceOf by getRelations<InstanceOf?, Any?>()
             override fun TargetScope.tick() {
                 ran++
                 persists.data.shouldBeInstanceOf<Persists>()
@@ -94,7 +94,7 @@ class RelationMatchingSystemTest : GearyTest() {
     fun relationsWithData() = runTest {
         clearEngine()
         val system = object : TickingSystem() {
-            val TargetScope.withData by relation<Persists, Any>()
+            val TargetScope.withData by getRelations<Persists, Any>()
 
             override fun TargetScope.tick() {
                 withData.data shouldBe Persists()

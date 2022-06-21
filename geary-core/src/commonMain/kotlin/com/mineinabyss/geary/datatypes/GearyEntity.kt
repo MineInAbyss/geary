@@ -235,7 +235,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
     public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> getRelationsWithData(): List<RelationWithData<K, T>> =
         globalContext.engine.getRelationsWithDataFor(this, componentIdWithNullable<K>(), componentIdWithNullable<T>()) as List<RelationWithData<K, T>>
 
-    /** Queries for relations using the same format as [AccessorOperations.relation]. */
+    /** Queries for relations using the same format as [AccessorOperations.getRelations]. */
     public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> getRelations(): List<Relation> =
         getRelations(componentIdWithNullable<K>(), componentIdWithNullable<T>())
 

@@ -49,7 +49,7 @@ public open class AccessorOperations {
      * - One of [K] or [T] is [Any] => gets all relations matching the other (specified) type.
      * - Note: nullability rules are still upheld with [Any].
      */
-    public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> relation(): AccessorBuilder<RelationWithDataAccessor<K, T>> {
+    public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> getRelations(): AccessorBuilder<RelationWithDataAccessor<K, T>> {
         return AccessorBuilder { holder, index ->
             holder._family.hasRelation<K, T>()
             RelationWithDataAccessor(index, componentIdWithNullable<K>(), componentIdWithNullable<T>())
