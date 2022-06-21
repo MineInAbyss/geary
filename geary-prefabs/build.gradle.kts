@@ -5,7 +5,8 @@ plugins {
     id("com.mineinabyss.conventions.testing")
     id("org.jetbrains.dokka")
 }
-
+repositories {
+}
 dependencies {
     compileOnly(gearylibs.fastutil)
 
