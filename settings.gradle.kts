@@ -12,7 +12,6 @@ pluginManagement {
         google()
         maven("https://repo.mineinabyss.com/releases")
         maven("https://repo.papermc.io/repository/maven-public/")
-        mavenLocal()
     }
 
     resolutionStrategy {
@@ -34,7 +33,6 @@ dependencyResolutionManagement {
 
     repositories {
         maven("https://repo.mineinabyss.com/releases")
-        mavenLocal()
     }
 
     versionCatalogs {

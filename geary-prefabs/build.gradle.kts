@@ -6,7 +6,6 @@ plugins {
     id("org.jetbrains.dokka")
 }
 repositories {
-    mavenLocal()
 }
 dependencies {
     compileOnly(gearylibs.fastutil)

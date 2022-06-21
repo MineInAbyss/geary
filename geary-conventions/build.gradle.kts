@@ -17,7 +17,6 @@ repositories {
     mavenCentral()
     maven("https://repo.mineinabyss.com/releases")
     maven("https://repo.papermc.io/repository/maven-public/")
-    mavenLocal()
 }
 
 dependencies {

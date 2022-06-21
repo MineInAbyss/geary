@@ -13,7 +13,6 @@ plugins {
 
 repositories {
     mavenCentral()
-    mavenLocal()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
     maven("https://repo.papermc.io/repository/maven-public/")

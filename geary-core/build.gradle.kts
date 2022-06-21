@@ -21,7 +21,6 @@ apply(plugin = "kotlinx-atomicfu")
 
 repositories {
     mavenCentral()
-    mavenLocal()
     google()
 }
 

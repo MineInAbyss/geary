@@ -4,7 +4,6 @@ plugins {
 
 repositories {
     mavenCentral()
-    mavenLocal()
     maven("https://repo.mineinabyss.com/releases")
     maven("https://jitpack.io")
 }
