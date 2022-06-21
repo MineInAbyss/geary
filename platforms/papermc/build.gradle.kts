@@ -14,7 +14,6 @@ configurations {
             val (group, module) = dep.get().module.toString().split(":")
             exclude(group, module)
         }
-        //TODO any libs here are included in our platform system on papermc, find a way to exclude all automatically
         excludeDep(libs.koin.core)
         excludeDep(libs.fastutil)
         excludeDep(libs.kotlin.reflect)

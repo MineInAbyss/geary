@@ -33,9 +33,10 @@ public data class Archetype(
     /** A mutex for anything which needs the size of ids to remain unchanged. */
     private val entityAddition = SynchronizedObject()
 
+    public val entities: List<GearyEntity> get() = ids.map { it.toGeary() }
+
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
-    //TODO aim to make private
-    internal val ids: IdList = IdList()
+    private val ids: IdList = IdList()
     private val queuedRemoval = mutableListOf<Int>()
     private val queueRemoval = SynchronizedObject()
 
@@ -247,7 +248,7 @@ public data class Archetype(
     internal fun removeComponent(
         record: Record,
         component: GearyComponentId
-    ): Boolean = synchronized(record) { //TODO find a proper library for this or make async
+    ): Boolean = synchronized(record) {
         with(record.archetype) {
             val row = record.row
 
@@ -296,7 +297,7 @@ public data class Archetype(
      * All other roles are ignored for the [target].
      */
     internal fun getRelations(kind: GearyComponentId, target: GearyEntityId): List<Relation> {
-        val specificKind = kind and ENTITY_MASK != globalContext.components.any //TODO use Components class
+        val specificKind = kind and ENTITY_MASK != globalContext.components.any
         val specificTarget = target and ENTITY_MASK != globalContext.components.any
         return when {
             specificKind && specificTarget -> listOf(Relation.of(kind, target))
@@ -314,7 +315,7 @@ public data class Archetype(
         synchronized(queueRemoval) {
             queuedRemoval.add(row)
         }
-        //TODO another variable, is scheduled so we dont do a hashmap lookup each time
+        //TODO another variable (isScheduled) so we dont do a hashmap lookup each time
         if (!isIterating) (engine as GearyEngine).scheduleRemove(this)
     }
 

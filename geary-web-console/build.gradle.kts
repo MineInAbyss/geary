@@ -28,7 +28,6 @@ kotlin {
     }
 
     sourceSets {
-        //TODO potentially version catalogs will help since we can't use platforms here AFAIK
         val commonMain by getting {
             dependencies {
                 compileOnly(libs.kotlin.stdlib)

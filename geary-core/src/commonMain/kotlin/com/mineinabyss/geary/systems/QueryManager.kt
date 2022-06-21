@@ -8,7 +8,6 @@ import com.mineinabyss.geary.datatypes.maps.Family2ObjectArrayMap
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.events.GearyHandler
 import com.mineinabyss.geary.helpers.contains
-import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.query.GearyQuery
 
 public class QueryManager : EngineContext by GearyContextKoin() {
@@ -57,7 +56,7 @@ public class QueryManager : EngineContext by GearyContextKoin() {
     public fun getEntitiesMatching(family: Family): List<GearyEntity> {
         return archetypes.match(family).flatMap { arc ->
             arc.cleanup() //TODO async safety
-            arc.ids.map { it.toGeary() }
+            arc.entities
         }
     }
 }

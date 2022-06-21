@@ -330,7 +330,8 @@ public value class GearyEntity(public val id: GearyEntityId) {
     // Dangerous operations
 
     @DangerousComponentOperation
-    public fun set(components: Collection<GearyComponent>): Unit = TODO()
+    public fun set(components: Collection<GearyComponent>): Unit =
+        set(component = components)
 
     @DangerousComponentOperation
     public fun setPersisting(components: Collection<GearyComponent>): Collection<GearyComponent> =

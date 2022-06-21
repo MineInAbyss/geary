@@ -30,5 +30,4 @@ public fun Family.has(type: GearyType): Boolean = when (this) {
     is Family.Leaf.Component -> component in type
     is Family.Leaf.KindToAny -> type.hasRelationKind(kind, targetMustHoldData)
     is Family.Leaf.AnyToTarget -> type.hasRelationTarget(target, kindMustHoldData)
-    else -> TODO("Kotlin compiler is shitting itself")
 }
