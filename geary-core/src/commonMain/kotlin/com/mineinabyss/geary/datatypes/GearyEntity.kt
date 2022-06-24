@@ -39,12 +39,12 @@ public value class GearyEntity(public val id: GearyEntityId) {
 
     public val children: List<GearyEntity>
         get() = globalContext.queryManager.getEntitiesMatching(family {
-            hasRelation<ChildOf>(this@GearyEntity)
+            hasRelation<ChildOf?>(this@GearyEntity)
         })
 
     public val instances: List<GearyEntity>
         get() = globalContext.queryManager.getEntitiesMatching(family {
-            hasRelation<InstanceOf>(this@GearyEntity)
+            hasRelation<InstanceOf?>(this@GearyEntity)
         })
 
     /** Remove this entity from the ECS. */

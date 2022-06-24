@@ -8,13 +8,15 @@ import com.mineinabyss.geary.systems.accessors.TargetScope
 
 @AutoScan
 class ParseRelationWithDataSystem : GearyListener() {
-    private val TargetScope.relationWithData by onSet<RelationWithData<*,*>>()
+    private val TargetScope.relationWithData by onSet<RelationWithData<*, *>>()
 
     @Handler
     private fun TargetScope.convertToRelation() {
         val data = relationWithData.data
-        if(data != null) entity.set(data, relationWithData.relation.id)
+        val targetData = relationWithData.targetData
+        if (data != null) entity.set(data, relationWithData.relation.id)
         else entity.add(relationWithData.relation.id)
-        entity.remove(relationWithData.relation.id)
+        if (targetData != null) entity.set(targetData, relationWithData.target.id)
+        entity.remove<RelationWithData<*, *>>()
     }
 }
