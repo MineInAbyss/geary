@@ -16,8 +16,8 @@ fun GearyEntity.addPrefab(prefab: GearyEntity) {
     addRelation<InstanceOf>(prefab)
     //TODO this isn't copying over any relations
     val comp = prefab.getAll().toMutableSet()
-    prefab.getRelations<DontInherit?, Any?>().forEach {
-        comp -= it.target
+    prefab.getRelationsWithData<DontInherit?, Any>().forEach {
+        comp -= it.targetData
     }
     prefab.children.forEach { it.addParent(this) }
     setAll(comp, override = false) //TODO plan out more thoroughly and document overriding behaviour

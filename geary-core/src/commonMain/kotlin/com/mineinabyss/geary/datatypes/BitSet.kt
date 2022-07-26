@@ -5,6 +5,7 @@ package com.mineinabyss.geary.datatypes
  */
 public expect class BitSet() {
     //    public val length: Int
+    public fun isEmpty(): Boolean
     public operator fun get(index: Int): Boolean
     public fun set(index: Int)
     public fun set(from: Int, to: Int)
@@ -14,10 +15,12 @@ public expect class BitSet() {
     public fun andNot(other: BitSet)
     public fun or(other: BitSet)
     public fun xor(other: BitSet)
+    public fun clear()
 
     public inline fun forEachBit(crossinline loop: (Int) -> Unit)
 
     public fun copy(): BitSet
+
 }
 
 public fun bitsOf(): BitSet = BitSet()

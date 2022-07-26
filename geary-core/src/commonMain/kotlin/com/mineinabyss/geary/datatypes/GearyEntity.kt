@@ -233,7 +233,11 @@ public value class GearyEntity(public val id: GearyEntityId) {
     /** Like [getRelations], but reads appropriate data as requested and puts it in a [RelationWithData] object. */
     @Suppress("UNCHECKED_CAST") // Intrnal logic ensures cast always succeeds
     public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> getRelationsWithData(): List<RelationWithData<K, T>> =
-        globalContext.engine.getRelationsWithDataFor(this, componentIdWithNullable<K>(), componentIdWithNullable<T>()) as List<RelationWithData<K, T>>
+        globalContext.engine.getRelationsWithDataFor(
+            this,
+            componentIdWithNullable<K>(),
+            componentIdWithNullable<T>()
+        ) as List<RelationWithData<K, T>>
 
     /** Queries for relations using the same format as [AccessorOperations.getRelations]. */
     public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> getRelations(): List<Relation> =

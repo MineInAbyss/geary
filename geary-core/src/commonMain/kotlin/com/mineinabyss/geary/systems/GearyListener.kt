@@ -68,6 +68,7 @@ public abstract class GearyListener : AccessorOperations(), GearySystem, Accesso
         }
     }
 
+    //TODO support onAdd for relations
     /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
     public inline fun <reified T : GearyComponent> onAdd(): Family {
         event._family.onAdd(componentId<T>())

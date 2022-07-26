@@ -22,7 +22,8 @@ public value class GearyType private constructor(
     public val size: Int get() = inner.size
 
     public val prefabs: GearyType
-        get() = filter { contains(Relation.of(componentId<InstanceOf>(), it).id) }
+        get() = GearyType(filter { contains(Relation.of(componentId<InstanceOf>(), it).id) }
+            .map { Relation.of(it).target })
 
     public operator fun contains(id: GearyComponentId): Boolean = indexOf(id) != -1
 

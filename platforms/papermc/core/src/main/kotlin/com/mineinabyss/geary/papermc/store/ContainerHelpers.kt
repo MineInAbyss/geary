@@ -37,18 +37,17 @@ fun GearyEntity.encodeComponentsTo(item: ItemStack) {
 
 
 /** Decodes a [PersistentDataContainer]'s components, adding them to this entity and its list of persisting components */
-fun GearyEntity.decodeComponentsFrom(pdc: PersistentDataContainer) {
-    decodeComponentsFrom(pdc.decodeComponents())
+fun GearyEntity.loadComponentsFrom(pdc: PersistentDataContainer) {
+    loadComponentsFrom(pdc.decodeComponents())
 }
 
-fun GearyEntity.decodeComponentsFrom(decodedEntityData: DecodedEntityData) {
+fun GearyEntity.loadComponentsFrom(decodedEntityData: DecodedEntityData) {
     val (components, type) = decodedEntityData
 
     // Components written to this entity's PDC will override the ones defined in type
     setAllPersisting(components)
-    type.forEach {
-        addPrefab(it.toGeary())
-    }
+    //TODO this should just add the id and a listener handle what addPrefab currently does
+    type.forEach { addPrefab(it.toGeary()) }
 }
 
 fun PersistentDataHolder.decodeComponents(): DecodedEntityData =

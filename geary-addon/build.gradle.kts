@@ -5,9 +5,6 @@ plugins {
     id("com.mineinabyss.conventions.testing")
 }
 
-repositories {
-}
-
 dependencies {
     implementation(libs.reflections)
     implementation(libs.kotlin.reflect)

@@ -7,7 +7,6 @@ import com.mineinabyss.geary.papermc.StartupEventListener
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
-import com.mineinabyss.idofront.commands.execution.stopCommand
 import com.mineinabyss.idofront.messaging.info
 import com.rylinaux.plugman.util.PluginUtil
 import kotlinx.coroutines.launch
@@ -22,7 +21,7 @@ internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter, GearyMCC
                 action {
                     engine.launch {
                         prefabManager.reread(
-                            PrefabKey.ofOrNull(prefab)?.toEntity() ?: command.stopCommand("Prefab key not found")
+                            PrefabKey.of(prefab).toEntity()
                         )
                     }
                 }

@@ -23,6 +23,10 @@ inline fun <reified T : GearyComponent> PersistentDataContainer.has(): Boolean {
     return has(globalContextMC.serializers.getNamespacedKeyFor<T>() ?: return false, BYTE_ARRAY)
 }
 
+inline fun <reified T : GearyComponent> PersistentDataContainer.remove() {
+    return remove(globalContextMC.serializers.getNamespacedKeyFor<T>() ?: return)
+}
+
 /**
  * Encodes a component into this [PersistentDataContainer], where the serializer and key can automatically be found via
  * [Formats].
@@ -44,7 +48,6 @@ fun <T : GearyComponent> PersistentDataContainer.encode(
  * found via [Formats].
  */
 //TODO use context when compiler fixed
-/**/
 inline fun <reified T : GearyComponent> PersistentDataContainer.decode(): T? {
     return decode(
         serializer = globalContext.serializers.getSerializerFor(T::class) ?: return null,
@@ -132,7 +135,7 @@ fun PersistentDataContainer.decodeComponents(): DecodedEntityData =
             .mapNotNull { decode(it) }
             .toSet(),
         type = GearyType(decodePrefabs().mapNotNull {
-            Relation.of<InstanceOf>(it.toEntity() ?: return@mapNotNull null).id
+            Relation.of<InstanceOf?>(it.toEntityOrNull() ?: return@mapNotNull null).id
         })
     )
 

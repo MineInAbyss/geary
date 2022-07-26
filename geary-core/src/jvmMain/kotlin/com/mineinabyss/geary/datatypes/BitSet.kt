@@ -15,6 +15,8 @@ public actual class BitSet {
         inner = from
     }
 
+    public actual fun isEmpty(): Boolean = inner.isEmpty
+
     public actual operator fun get(index: Int): Boolean =
         inner.contains(index)
 
@@ -48,6 +50,10 @@ public actual class BitSet {
 
     public actual fun xor(other: BitSet) {
         inner.xor(other.inner)
+    }
+
+    public actual fun clear() {
+        inner.clear()
     }
 
     public actual inline fun forEachBit(crossinline loop: (Int) -> Unit) {

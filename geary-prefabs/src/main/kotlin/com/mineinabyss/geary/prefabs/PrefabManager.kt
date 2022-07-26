@@ -12,6 +12,7 @@ import com.mineinabyss.geary.serialization.GearyEntitySerializer
 import com.mineinabyss.idofront.messaging.logError
 import okio.Path.Companion.toOkioPath
 import java.io.File
+import java.util.*
 
 /**
  * Manages registered prefabs and accessing them via name.
@@ -60,6 +61,7 @@ class PrefabManager : GearyContext by GearyContextKoin() {
             val entity = writeTo ?: entity()
             entity.set(Prefab(file))
             entity.addRelation<DontInherit, Prefab>()
+            entity.addRelation<DontInherit, UUID>()
             entity.setAll(decoded)
 
             val key = PrefabKey.of(namespace, name)

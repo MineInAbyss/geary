@@ -11,9 +11,9 @@ import com.mineinabyss.geary.helpers.systems
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.papermc.GearyMCContext
 import com.mineinabyss.geary.papermc.GearyMCContextKoin
-import com.mineinabyss.geary.papermc.store.decodeComponentsFrom
 import com.mineinabyss.geary.papermc.store.encodeComponentsTo
 import com.mineinabyss.geary.papermc.store.hasComponentsEncoded
+import com.mineinabyss.geary.papermc.store.loadComponentsFrom
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.TargetScope
@@ -61,7 +61,7 @@ class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin() {
 
             val pdc = bukkit.persistentDataContainer
             if (pdc.hasComponentsEncoded)
-                entity.decodeComponentsFrom(pdc)
+                entity.loadComponentsFrom(pdc)
             // allow us to both get the BukkitEntity and specific class (ex Player)
             bukkit.type.entityClass?.kotlin?.let { bukkitClass ->
                 entity.set(bukkit, bukkitClass)

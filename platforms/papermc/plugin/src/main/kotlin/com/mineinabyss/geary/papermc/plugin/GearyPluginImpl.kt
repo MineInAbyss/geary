@@ -66,7 +66,7 @@ class GearyPluginImpl : GearyPlugin() {
             single<GearySerializers> { serializers }
             single<GearyFormats> { formats }
             single<Components> { Components() }
-            singleConfig<GearyConfig>(GearyConfig.serializer(),this@GearyPluginImpl)
+            singleConfig<GearyConfig>(this@GearyPluginImpl)
         })
 
         engine.start()
