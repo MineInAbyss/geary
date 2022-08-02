@@ -222,7 +222,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
         entity.apply {
             children.forEach {
                 // Remove self from the child's parents or remove the child if it no longer has parents
-                if (parents == setOf(this)) it.removeEntity(event)
+                if (it.parents == setOf(this)) it.removeEntity(event)
                 else it.removeParent(this)
             }
         }

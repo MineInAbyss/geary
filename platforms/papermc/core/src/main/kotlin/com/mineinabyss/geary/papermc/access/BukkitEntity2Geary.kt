@@ -105,7 +105,7 @@ class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin() {
         entity.toGearyOrNull()?.removeEntity()
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST)
     fun PlayerQuitEvent.onPlayerLogout() {
         player.toGearyOrNull()?.removeEntity()
     }

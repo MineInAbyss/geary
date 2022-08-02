@@ -7,8 +7,8 @@ import com.mineinabyss.geary.systems.GearySystem
 import com.mineinabyss.geary.systems.TickingSystem
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.time.ticks
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.event.Listener
@@ -40,7 +40,7 @@ class PaperMCEngine(private val plugin: Plugin) : GearyEngine(tickDuration = 1.t
         launch(plugin.minecraftDispatcher) {
             while (true) {
                 tick(Bukkit.getServer().currentTick.toLong())
-                delay(tickDuration)
+                yield()
             }
         }
     }

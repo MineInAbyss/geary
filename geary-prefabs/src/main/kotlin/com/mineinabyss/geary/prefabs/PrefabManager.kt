@@ -10,6 +10,7 @@ import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
 import com.mineinabyss.geary.serialization.GearyEntitySerializer
 import com.mineinabyss.idofront.messaging.logError
+import com.mineinabyss.idofront.messaging.logWarn
 import okio.Path.Companion.toOkioPath
 import java.io.File
 import java.util.*
@@ -68,8 +69,8 @@ class PrefabManager : GearyContext by GearyContextKoin() {
             registerPrefab(key, entity)
             entity
         }.onFailure {
-            logError("Error deserializing prefab: $name from ${file.path}")
-            it.printStackTrace()
+            logError("Can't read prefab $name from ${file.path}:")
+            logWarn(it.toString())
         }.getOrNull()
     }
 }
