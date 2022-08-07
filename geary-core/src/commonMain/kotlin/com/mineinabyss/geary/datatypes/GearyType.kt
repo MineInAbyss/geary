@@ -87,6 +87,10 @@ public value class GearyType private constructor(
         return GearyType(arr)
     }
 
+    public operator fun plus(other: GearyType): GearyType {
+        return GearyType(inner.plus(other.inner))
+    }
+
     public operator fun minus(id: GearyComponentId): GearyType {
         val removeAt = binarySearch(id)
         if (removeAt < 0) return this

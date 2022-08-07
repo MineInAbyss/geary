@@ -268,7 +268,7 @@ public value class GearyEntity(public val id: GearyEntityId) {
         globalContext.engine.addComponentFor(this, Relation.of<K?>(target).id, noEvent)
     }
 
-    /** Removes a relation key key of type [K] and value of type [V]. */
+    /** Removes a relation key of type [K] and value of type [V]. */
     public inline fun <reified K : GearyComponent, reified T : GearyComponent> removeRelation(): Boolean {
         return removeRelation<K>(component<T>())
     }
