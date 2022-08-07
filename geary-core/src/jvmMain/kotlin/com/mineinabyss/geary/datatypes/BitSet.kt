@@ -56,6 +56,10 @@ public actual class BitSet {
         inner.clear()
     }
 
+    public actual val cardinality: Int
+        get() = inner.cardinality
+
+
     public actual inline fun forEachBit(crossinline loop: (Int) -> Unit) {
         // Roaring bitsets run into concurrent modification issues where clearing a bit might skip iterating another
         // so we have to clone the set.

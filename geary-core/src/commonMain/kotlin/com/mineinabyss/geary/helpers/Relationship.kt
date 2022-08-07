@@ -1,10 +1,12 @@
 package com.mineinabyss.geary.helpers
 
+import com.mineinabyss.geary.components.CouldHaveChildren
 import com.mineinabyss.geary.components.relations.ChildOf
 import com.mineinabyss.geary.datatypes.GearyEntity
 
 /** Adds a [parent] entity to this entity.  */
 public fun GearyEntity.addParent(parent: GearyEntity) {
+    parent.add<CouldHaveChildren>() // TODO temporarily in place until child queries are faster
     addRelation<ChildOf>(parent)
 }
 

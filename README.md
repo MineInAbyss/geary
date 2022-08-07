@@ -12,11 +12,6 @@
 
 Geary is an Entity Component System (ECS) written in Kotlin and designed for Minecraft server plugins. The engine design is inspired by [flecs](https://github.com/SanderMertens/flecs) and uses archetypes for data storage.
 
-We have two PaperMC plugins using this ECS to add Minecraft-specific functionality:
-- [Mobzy](https://github.com/MineInAbyss/Mobzy) - Custom entities that bridge ECS and Minecraft's very inheritance based entities.
-- [Looty](https://github.com/MineInAbyss/Looty) - Custom, highly configurable items.
-- [Blocky](https://github.com/MineInAbyss/Blocky) - Custom blocks, furniture and more.
-
 ## Features
 
 ### kotlinx.serialization backend
@@ -32,6 +27,15 @@ Idiomatic Kotlin syntax for instantiating entities, iterating over them in syste
 ### Prefabs
 
 Prefabs allow you to reuse components between multiple entities of the same type. The addon DSL allows you to specify a folder to automatically load prefabs from. These may be written in YAML, JSON, and eventually any other backend supported by ktx.serialization.
+
+### Plugins using geary
+
+Consider having a look at our other projects currently using Geary.
+
+- [Mobzy](https://github.com/MineInAbyss/Mobzy) - Custom entities that bridge ECS and Minecraft's very inheritance based entities
+- [Looty](https://github.com/MineInAbyss/Looty) - Custom, highly configurable items
+- [Blocky](https://github.com/MineInAbyss/Blocky) - Custom blocks, furniture and more
+- [Chatty](https://github.com/MineInAbyss/Chatty) - Customizes chat messages with MiniMessage support
 
 ## Examples
 

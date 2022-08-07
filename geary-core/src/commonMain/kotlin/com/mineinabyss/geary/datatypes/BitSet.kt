@@ -16,6 +16,7 @@ public expect class BitSet() {
     public fun or(other: BitSet)
     public fun xor(other: BitSet)
     public fun clear()
+    public val cardinality: Int
 
     public inline fun forEachBit(crossinline loop: (Int) -> Unit)
 

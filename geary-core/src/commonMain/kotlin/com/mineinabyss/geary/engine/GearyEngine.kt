@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.engine
 
 import com.mineinabyss.geary.components.ComponentInfo
+import com.mineinabyss.geary.components.CouldHaveChildren
 import com.mineinabyss.geary.components.events.EntityRemoved
 import com.mineinabyss.geary.context.QueryContext
 import com.mineinabyss.geary.datatypes.*
@@ -123,12 +124,14 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
                 queryManager.trackQuery(system)
                 registeredSystems.add(system)
             }
+
             is GearyListener -> {
                 if (system in registeredListeners) return
                 system.start()
                 queryManager.trackEventListener(system)
                 registeredListeners.add(system)
             }
+
             else -> system.onStart()
         }
     }
@@ -219,7 +222,7 @@ public open class GearyEngine(override val tickDuration: Duration) : TickingEngi
         if (event) entity.callEvent(EntityRemoved())
 
         // remove all children of this entity from the ECS as well
-        entity.apply {
+        if (entity.has<CouldHaveChildren>()) entity.apply {
             children.forEach {
                 // Remove self from the child's parents or remove the child if it no longer has parents
                 if (it.parents == setOf(this)) it.removeEntity(event)

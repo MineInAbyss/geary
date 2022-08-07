@@ -89,10 +89,9 @@ internal class Family2ObjectArrayMap<T> {
     }
 
     fun match(family: Family): List<T> {
-        val matchingElements = mutableListOf<T>()
-        getMatchingBits(family, null)?.forEachBit { matchingElements += elements[it] }
-            ?: return elements.toList()
-
+        val bits = getMatchingBits(family, null) ?: return elements.toList()
+        val matchingElements = ArrayList<T>(bits.cardinality)
+        bits.forEachBit { matchingElements += elements[it] }
         return matchingElements
     }
 }
