@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.papermc.store
 
 import com.mineinabyss.geary.datatypes.GearyComponent
-import com.mineinabyss.geary.datatypes.GearyType
+import com.mineinabyss.geary.datatypes.GearyEntityType
 
-public data class DecodedEntityData(
-    public val persistingComponents: Set<GearyComponent>,
-    public val type: GearyType,
+data class DecodedEntityData(
+    val persistingComponents: Set<GearyComponent>,
+    val type: GearyEntityType,
 )

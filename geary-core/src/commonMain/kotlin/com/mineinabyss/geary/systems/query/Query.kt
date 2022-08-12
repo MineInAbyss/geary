@@ -2,7 +2,7 @@ package com.mineinabyss.geary.systems.query
 
 import com.mineinabyss.geary.context.GearyContext
 import com.mineinabyss.geary.context.GearyContextKoin
-import com.mineinabyss.geary.datatypes.GearyComponent
+import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.accessors.Accessor
@@ -18,7 +18,7 @@ import kotlin.reflect.KProperty
 /**com.mineinabyss.geary.ecs.engine.iteration.accessors
  * @property matchedArchetypes A set of archetypes which have been matched to this query.
  */
-public abstract class GearyQuery : AccessorHolder(), Iterable<TargetScope>, GearyContext by GearyContextKoin() {
+public abstract class Query : AccessorHolder(), Iterable<TargetScope>, GearyContext by GearyContextKoin() {
     @PublishedApi
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
 
@@ -48,7 +48,7 @@ public abstract class GearyQuery : AccessorHolder(), Iterable<TargetScope>, Gear
         matched.fastForEachWithIndex { i, archetype ->
             archetype.cleanup()
             archetype.isIterating = true
-            archetype.iteratorFor(this@GearyQuery).forEach(upTo = sizes[i]) { targetScope ->
+            archetype.iteratorFor(this@Query).forEach(upTo = sizes[i]) { targetScope ->
                 run(targetScope)
             }
             archetype.cleanup()
@@ -58,7 +58,7 @@ public abstract class GearyQuery : AccessorHolder(), Iterable<TargetScope>, Gear
 
     @Suppress("unused") // Specifically
     @Deprecated("Likely trying to access component off entity", ReplaceWith("entity.get()"))
-    protected inline fun <reified T : GearyComponent> TargetScope.get(): ComponentAccessor<T> =
+    protected inline fun <reified T : Component> TargetScope.get(): ComponentAccessor<T> =
         error("Cannot change query at runtime")
 
     @Suppress("UNCHECKED_CAST")

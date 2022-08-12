@@ -7,13 +7,13 @@ import kotlinx.atomicfu.locks.synchronized
 
 public class EntityStack(private val stack: DoubleQueue = DoubleQueue()) {
     private val removedEntitiesLock = SynchronizedObject()
-    public fun push(entity: GearyEntity) {
+    public fun push(entity: Entity) {
         synchronized(removedEntitiesLock) {
             stack.enqueue(Double.fromBits(entity.id.toLong()))
         }
     }
 
-    public fun pop(): GearyEntity = synchronized(removedEntitiesLock) {
+    public fun pop(): Entity = synchronized(removedEntitiesLock) {
         stack.dequeue().toRawBits().toGeary()
     }
 }

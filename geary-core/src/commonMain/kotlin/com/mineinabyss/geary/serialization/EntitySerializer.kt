@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.serialization
 
 import com.mineinabyss.geary.components.EntityName
-import com.mineinabyss.geary.datatypes.GearyComponent
-import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.Component
+import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.parent
 import com.mineinabyss.geary.helpers.toGeary
@@ -15,9 +15,9 @@ import kotlinx.serialization.builtins.ListSerializer
  */
 //context(EngineContext)
 //TODO serialization of value class broken in 1.6.20
-public object GearyEntitySerializer /*: KSerializer<GearyEntity>*/ {
-    public val componentListSerializer: KSerializer<List<GearyComponent>> =
-        ListSerializer(PolymorphicSerializer(GearyComponent::class))
+public object EntitySerializer /*: KSerializer<GearyEntity>*/ {
+    public val componentListSerializer: KSerializer<List<Component>> =
+        ListSerializer(PolymorphicSerializer(Component::class))
 //    override val descriptor: SerialDescriptor = componentListSerializer.descriptor
 //
 //    override fun serialize(encoder: Encoder, value: GearyEntity) {
@@ -30,7 +30,7 @@ public object GearyEntitySerializer /*: KSerializer<GearyEntity>*/ {
 }
 
 //TODO this should be handled within a serializer of sorts for GearyEntity
-public fun GearyEntity.parseEntity(expression: String): GearyEntity {
+public fun Entity.parseEntity(expression: String): Entity {
     return when {
         expression.startsWith("parent") -> {
             val parent = (parent ?: error("Failed to read expression, entity had no parent: $expression"))

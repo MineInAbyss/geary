@@ -8,30 +8,30 @@ import kotlin.jvm.JvmInline
 /**
  * An inlined class used for tracking the components an entity/archetype has.
  *
- * It provides fast (no boxing) functions backed by FastUtil sorted sets to do operations with [GearyComponentId]s.
+ * It provides fast (no boxing) functions backed by FastUtil sorted sets to do operations with [ComponentId]s.
  */
 @JvmInline
-public value class GearyType private constructor(
+public value class EntityType private constructor(
     @PublishedApi
     internal val inner: ULongArray
 ) {
     public constructor() : this(ULongArray(0))
 
-    public constructor(ids: Collection<GearyComponentId>) : this(inner = ids.toULongArray().apply { sort() })
+    public constructor(ids: Collection<ComponentId>) : this(inner = ids.toULongArray().apply { sort() })
 
     public val size: Int get() = inner.size
 
-    public val prefabs: GearyType
-        get() = GearyType(filter { contains(Relation.of(componentId<InstanceOf>(), it).id) }
+    public val prefabs: EntityType
+        get() = EntityType(filter { contains(Relation.of(componentId<InstanceOf>(), it).id) }
             .map { Relation.of(it).target })
 
-    public operator fun contains(id: GearyComponentId): Boolean = indexOf(id) != -1
+    public operator fun contains(id: ComponentId): Boolean = indexOf(id) != -1
 
-    public fun indexOf(id: GearyComponentId): Int {
+    public fun indexOf(id: ComponentId): Int {
         return binarySearch(id).coerceAtLeast(-1)
     }
 
-    public tailrec fun binarySearch(id: GearyComponentId, fromIndex: Int = 0, toIndex: Int = inner.lastIndex): Int {
+    public tailrec fun binarySearch(id: ComponentId, fromIndex: Int = 0, toIndex: Int = inner.lastIndex): Int {
         if (fromIndex > toIndex) return -fromIndex - 1
         val mid = (fromIndex + toIndex) / 2
         val found = inner[mid]
@@ -42,10 +42,10 @@ public value class GearyType private constructor(
         }
     }
 
-    public fun first(): GearyComponentId = inner.first()
-    public fun last(): GearyComponentId = inner.last()
+    public fun first(): ComponentId = inner.first()
+    public fun last(): ComponentId = inner.last()
 
-    public inline fun forEach(run: (GearyComponentId) -> Unit) {
+    public inline fun forEach(run: (ComponentId) -> Unit) {
         inner.forEach(run)
 //        val iterator = inner.iterator()
 //        while (iterator.hasNext()) {
@@ -53,20 +53,20 @@ public value class GearyType private constructor(
 //        }
     }
 
-    public inline fun any(predicate: (GearyComponentId) -> Boolean): Boolean {
+    public inline fun any(predicate: (ComponentId) -> Boolean): Boolean {
         forEach { if (predicate(it)) return true }
         return false
     }
 
-    public inline fun forEachIndexed(run: (Int, GearyComponentId) -> Unit) {
+    public inline fun forEachIndexed(run: (Int, ComponentId) -> Unit) {
         inner.forEachIndexed(run)
 //        val iterator = inner.iterator()
 //        var i = 0
 //        forEach { run(i++, iterator.nextLong().toULong()) }
     }
 
-    public inline fun filter(predicate: (GearyComponentId) -> Boolean): GearyType {
-        return GearyType(inner.filter(predicate))
+    public inline fun filter(predicate: (ComponentId) -> Boolean): EntityType {
+        return EntityType(inner.filter(predicate))
 //        val type = LongAVLTreeSet()
 //        forEach { if (predicate(it)) type.add(it.toLong()) }
 //        return GearyType(type)
@@ -76,7 +76,7 @@ public value class GearyType private constructor(
         return inner.map(transform)
     }
 
-    public operator fun plus(id: GearyComponentId): GearyType {
+    public operator fun plus(id: ComponentId): EntityType {
         val search = binarySearch(id)
         if (search >= 0) return this
         val insertAt = -(search + 1)
@@ -84,20 +84,20 @@ public value class GearyType private constructor(
         for (i in 0 until insertAt) arr[i] = inner[i]
         arr[insertAt] = id
         for (i in insertAt..inner.lastIndex) arr[i + 1] = inner[i]
-        return GearyType(arr)
+        return EntityType(arr)
     }
 
-    public operator fun plus(other: GearyType): GearyType {
-        return GearyType(inner.plus(other.inner))
+    public operator fun plus(other: EntityType): EntityType {
+        return EntityType(inner.plus(other.inner))
     }
 
-    public operator fun minus(id: GearyComponentId): GearyType {
+    public operator fun minus(id: ComponentId): EntityType {
         val removeAt = binarySearch(id)
         if (removeAt < 0) return this
         val arr = ULongArray(inner.size - 1)
         for (i in 0 until removeAt) arr[i] = inner[i]
         for (i in (removeAt + 1)..inner.lastIndex) arr[i - 1] = inner[i]
-        return GearyType(arr)
+        return EntityType(arr)
     }
 
     //TODO intersection and union

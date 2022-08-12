@@ -2,8 +2,8 @@ package com.mineinabyss.geary.prefabs.configuration.components
 
 import com.mineinabyss.geary.context.GearyContext
 import com.mineinabyss.geary.context.GearyContextKoin
-import com.mineinabyss.geary.datatypes.GearyComponent
-import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.Component
+import com.mineinabyss.geary.datatypes.Entity
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -19,9 +19,9 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 @SerialName("geary:copy_to_instances")
-public data class CopyToInstances(
-    private val temporary: Set<@Polymorphic GearyComponent> = setOf(),
-    private val persisting: Set<@Polymorphic GearyComponent> = setOf(),
+data class CopyToInstances(
+    private val temporary: Set<@Polymorphic Component> = setOf(),
+    private val persisting: Set<@Polymorphic Component> = setOf(),
 ): GearyContext by GearyContextKoin() {
     // This is the safest and cleanest way to deep-copy, even if a little performance intense.
     private val serializedComponents by lazy {
@@ -30,7 +30,7 @@ public data class CopyToInstances(
 
     private fun getDeepCopied() = formats.binaryFormat.decodeFromByteArray(serializer(), serializedComponents)
 
-    public fun decodeComponentsTo(entity: GearyEntity, override: Boolean = true) {
+    fun decodeComponentsTo(entity: Entity, override: Boolean = true) {
         val (instance, persist) = getDeepCopied()
         //order of addition specifies that persisting components should override all
         entity.setAll(instance, override)

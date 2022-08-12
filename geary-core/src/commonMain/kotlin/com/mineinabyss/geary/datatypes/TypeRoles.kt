@@ -20,17 +20,17 @@ public const val ENTITY_MASK: ULong = 0x00FFFFFFFFFFFFFFuL
 public const val RELATION_KIND_MASK: ULong = 0xFFFFFFFF00000000uL
 public const val RELATION_TARGET_MASK: ULong = 0x00000000FFFFFFFFuL
 
-public inline fun GearyComponentId.isRelation(): Boolean = this.hasRole(RELATION)
-public inline fun GearyComponentId.holdsData(): Boolean = this.hasRole(HOLDS_DATA)
+public inline fun ComponentId.isRelation(): Boolean = this.hasRole(RELATION)
+public inline fun ComponentId.holdsData(): Boolean = this.hasRole(HOLDS_DATA)
 
-public inline fun GearyComponentId.hasRole(role: ULong): Boolean = this and role != 0uL
+public inline fun ComponentId.hasRole(role: ULong): Boolean = this and role != 0uL
 public inline fun Relation.hasRole(role: ULong): Boolean = id.hasRole(role)
 
-public inline fun GearyComponentId.withRole(role: ULong): ULong = this or role
+public inline fun ComponentId.withRole(role: ULong): ULong = this or role
 public inline fun Relation.withRole(role: ULong): Relation = Relation.of(id.withRole(role))
 
-public inline fun GearyComponentId.withoutRole(role: ULong): ULong = this and role.inv()
+public inline fun ComponentId.withoutRole(role: ULong): ULong = this and role.inv()
 public inline fun Relation.withoutRole(role: ULong): Relation = Relation.of(id.withoutRole(role))
 
-public inline fun GearyComponentId.withInvertedRole(role: ULong): ULong = this xor role
+public inline fun ComponentId.withInvertedRole(role: ULong): ULong = this xor role
 public inline fun Relation.withInvertedRole(role: ULong): Relation = Relation.of(id.withInvertedRole(role))

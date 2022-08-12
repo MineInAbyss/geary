@@ -4,7 +4,7 @@ import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.SourceScope
 import com.mineinabyss.geary.systems.accessors.TargetScope
@@ -16,7 +16,7 @@ class SourceTargetEventTest : GearyTest() {
     class Attack
     data class Health(val amount: Int)
 
-    inner class Interaction : GearyListener() {
+    inner class Interaction : Listener() {
         val SourceScope.strength by get<Strength>()
         val TargetScope.health by get<Health>()
         val EventScope.attacked by family { has<Attack>() }

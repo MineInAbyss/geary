@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.helpers
 
-import com.mineinabyss.geary.datatypes.GearyType
+import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.datatypes.family.MutableFamily
 import com.mineinabyss.geary.helpers.tests.GearyTest
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 class GearyTypeFamilyHelpersTest : GearyTest() {
     @Test
     fun containsRelation() {
-        val type = GearyType(listOf(Relation.of(2uL, 1uL).id, 2uL))
+        val type = EntityType(listOf(Relation.of(2uL, 1uL).id, 2uL))
         type.hasRelationTarget(1uL) shouldBe true
         type.hasRelationTarget(2uL) shouldBe false
     }

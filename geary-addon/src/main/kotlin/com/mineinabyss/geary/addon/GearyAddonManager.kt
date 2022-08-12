@@ -1,14 +1,14 @@
 package com.mineinabyss.geary.addon
 
-import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.prefabs.events.PrefabLoaded
 import com.mineinabyss.idofront.messaging.logInfo
 
-public open class GearyAddonManager {
-    internal val loadingPrefabs = mutableListOf<GearyEntity>()
+open class GearyAddonManager {
+    internal val loadingPrefabs = mutableListOf<Entity>()
     private val actions = sortedMapOf<GearyLoadPhase, MutableList<() -> Unit>>()
 
-    public fun add(phase: GearyLoadPhase, action: () -> Unit) {
+    fun add(phase: GearyLoadPhase, action: () -> Unit) {
         if (actions.isEmpty()) scheduleLoadTasks()
 
         actions.getOrPut(phase) { mutableListOf() }.add(action)
@@ -22,7 +22,7 @@ public open class GearyAddonManager {
     private fun MutableList<() -> Unit>.runAll() = forEach { it() }
 
     /** Tasks to run before all other addon startup tasks execute. */
-    public fun load() {
+    fun load() {
         logInfo("Registering Serializers")
         actions[GearyLoadPhase.REGISTER_SERIALIZERS]?.runAll()
 
@@ -38,7 +38,7 @@ public open class GearyAddonManager {
     }
 
     /** Run addons startup tasks. */
-    public fun enableAddons() {
+    fun enableAddons() {
         logInfo("Running final startup tasks")
         actions[GearyLoadPhase.ENABLE]?.runAll()
         actions.clear()

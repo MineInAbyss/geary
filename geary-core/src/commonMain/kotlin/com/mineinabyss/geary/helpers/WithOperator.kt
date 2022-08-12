@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.helpers
 
 import kotlin.reflect.typeOf
-import com.mineinabyss.geary.datatypes.GearyComponent as GC
-import com.mineinabyss.geary.datatypes.GearyEntity as GE
+import com.mineinabyss.geary.datatypes.Component as GC
+import com.mineinabyss.geary.datatypes.Entity as GE
 
 /** Gets a component of type [T] from an entity, returning null if [T] is nullable, or an error otherwise. */
 public inline fun <reified T : GC?> GE.nullOrError(): T {

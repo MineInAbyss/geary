@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.systems.accessors.types
 
-import com.mineinabyss.geary.datatypes.GearyComponent
-import com.mineinabyss.geary.datatypes.GearyComponentId
+import com.mineinabyss.geary.datatypes.Component
+import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.systems.accessors.ArchetypeCacheScope
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
 
@@ -10,9 +10,9 @@ import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
  *
  * @see getOrDefault
  */
-public class ComponentOrDefaultAccessor<T : GearyComponent?>(
+public class ComponentOrDefaultAccessor<T : Component?>(
     index: Int,
-    componentId: GearyComponentId,
+    componentId: ComponentId,
     private val default: T
 ) : ComponentAccessor<T>(index, componentId) {
     private val ArchetypeCacheScope.dataIndex by cached { archetype.indexOf(componentId) }

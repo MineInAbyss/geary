@@ -1,14 +1,14 @@
 package com.mineinabyss.geary.systems.accessors
 
-import com.mineinabyss.geary.datatypes.GearyEntity
-import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.systems.GearySystem
+import com.mineinabyss.geary.systems.Listener
 
 /**
  * A generic scope for processed data.
  *
  * Other scopes extend this scope without changing much so that we can get type safe access when
- * building accessors. For instance, a [GearyListener] can have accessors for a source, target,
+ * building accessors. For instance, a [Listener] can have accessors for a source, target,
  * or event entity which each contain different data.
  *
  * @see SourceScope
@@ -16,7 +16,7 @@ import com.mineinabyss.geary.systems.GearySystem
  * @see EventScope
  */
 public open class ResultScope(
-    public val entity: GearyEntity,
+    public val entity: Entity,
     internal val data: List<*>,
 )
 
@@ -29,7 +29,7 @@ public open class ResultScope(
  * @see EventScope
  */
 public open class SourceScope(
-    entity: GearyEntity,
+    entity: Entity,
     data: List<*>,
 ) : ResultScope(entity, data)
 
@@ -42,7 +42,7 @@ public open class SourceScope(
  * @see EventScope
  */
 public open class TargetScope(
-    entity: GearyEntity,
+    entity: Entity,
     data: List<*>,
 ) : ResultScope(entity, data)
 
@@ -55,6 +55,6 @@ public open class TargetScope(
  * @see TargetScope
  */
 public class EventScope(
-    entity: GearyEntity,
+    entity: Entity,
     data: List<*>,
 ) : ResultScope(entity, data)

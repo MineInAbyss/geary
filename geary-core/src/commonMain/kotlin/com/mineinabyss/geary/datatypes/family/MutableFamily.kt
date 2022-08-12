@@ -16,16 +16,16 @@ public inline fun family(init: MutableFamily.Selector.And.() -> Unit): Family {
 public sealed class MutableFamily : Family {
     public sealed class Leaf : MutableFamily() {
         public class Component(
-            override var component: GearyComponentId
+            override var component: ComponentId
         ) : Leaf(), Family.Leaf.Component
 
         public class AnyToTarget(
-            public override var target: GearyEntityId,
+            public override var target: EntityId,
             public override val kindMustHoldData: Boolean
         ) : Leaf(), Family.Leaf.AnyToTarget
 
         public class KindToAny(
-            public override var kind: GearyComponentId,
+            public override var kind: ComponentId,
             public override val targetMustHoldData: Boolean
         ) : Leaf(), Family.Leaf.KindToAny
     }
@@ -66,11 +66,11 @@ public sealed class MutableFamily : Family {
 
         private val onAdd: Or by lazy { Or().also { add(it) } }
 
-        public override val components: List<GearyComponentId> get() = _components
-        public override val componentsWithData: List<GearyComponentId> get() = _componentsWithData
+        public override val components: List<ComponentId> get() = _components
+        public override val componentsWithData: List<ComponentId> get() = _componentsWithData
 
-        private val _components = mutableListOf<GearyComponentId>()
-        private val _componentsWithData = mutableListOf<GearyComponentId>()
+        private val _components = mutableListOf<ComponentId>()
+        private val _componentsWithData = mutableListOf<ComponentId>()
 
         public fun add(element: Family) {
             elements += element
@@ -84,18 +84,18 @@ public sealed class MutableFamily : Family {
             }
         }
 
-        public fun has(id: GearyComponentId) {
+        public fun has(id: ComponentId) {
             add(Leaf.Component(id))
         }
 
-        public fun hasSet(id: GearyComponentId) {
+        public fun hasSet(id: ComponentId) {
             has(id.withRole(HOLDS_DATA))
         }
 
         /** Matches against relations using same rules as [Archetype.getRelations] */
         public fun hasRelation(
-            kind: GearyComponentId,
-            target: GearyEntityId,
+            kind: ComponentId,
+            target: EntityId,
         ) {
             val specificKind = kind and ENTITY_MASK != globalContext.components.any
             val specificTarget = target and ENTITY_MASK != globalContext.components.any
@@ -109,23 +109,23 @@ public sealed class MutableFamily : Family {
 
         public inline fun <reified K, reified T> hasRelation(): Unit = hasRelation<K>(componentIdWithNullable<T>())
 
-        public inline fun <reified K> hasRelation(target: GearyEntityId) {
+        public inline fun <reified K> hasRelation(target: EntityId) {
             val kind = componentIdWithNullable<K>()
             hasRelation(kind, target)
         }
 
-        public inline fun <reified K> hasRelation(target: GearyEntity): Unit = hasRelation<K>(target.id)
+        public inline fun <reified K> hasRelation(target: Entity): Unit = hasRelation<K>(target.id)
 
-        public fun onAdd(id: GearyComponentId) {
+        public fun onAdd(id: ComponentId) {
             onAdd.hasRelation<AddedComponent?>(id)
         }
 
-        public fun onSet(id: GearyComponentId) {
+        public fun onSet(id: ComponentId) {
             onAdd.hasRelation<UpdatedComponent?>(id)
             onAdd.hasRelation<SetComponent?>(id)
         }
 
-        public fun onFirstSet(id: GearyComponentId) {
+        public fun onFirstSet(id: ComponentId) {
             onAdd.hasRelation<SetComponent?>(id)
         }
 
@@ -141,17 +141,17 @@ public sealed class MutableFamily : Family {
             add(AndNot().apply(init))
         }
 
-        public inline fun <reified T : GearyComponent> has(): Unit =
+        public inline fun <reified T : Component> has(): Unit =
             has(componentId<T>())
 
-        public inline fun <reified T : GearyComponent> hasSet(): Unit =
+        public inline fun <reified T : Component> hasSet(): Unit =
             hasSet(componentId<T>())
 
-        public fun has(vararg componentIds: GearyComponentId) {
+        public fun has(vararg componentIds: ComponentId) {
             has(componentIds)
         }
 
-        public fun has(componentIds: Collection<GearyComponentId>) {
+        public fun has(componentIds: Collection<ComponentId>) {
             componentIds.forEach(::has)
         }
     }

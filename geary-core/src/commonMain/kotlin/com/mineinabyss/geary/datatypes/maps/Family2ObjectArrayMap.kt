@@ -7,11 +7,11 @@ import com.mineinabyss.geary.helpers.hasRelationKind
 import com.mineinabyss.geary.helpers.hasRelationTarget
 
 /**
- * A map of [GearyComponentId]s to Arrays of objects with the ability to make fast queries based on component IDs.
+ * A map of [ComponentId]s to Arrays of objects with the ability to make fast queries based on component IDs.
  */
 internal class Family2ObjectArrayMap<T> {
     private val elements = mutableListOf<T>()
-    private val elementTypes = mutableListOf<GearyType>()
+    private val elementTypes = mutableListOf<EntityType>()
 
     /**
      * A map of component ids to a [BitSet] where each set bit means that the element at its index in [elements]
@@ -23,12 +23,12 @@ internal class Family2ObjectArrayMap<T> {
      */
     private val componentMap = mutableMapOf<Long, BitSet>()
 
-    fun add(element: T, type: GearyType) {
+    fun add(element: T, type: EntityType) {
         elements += element
         elementTypes += type
         val index = elements.lastIndex
         type.forEach { id ->
-            fun set(i: GearyComponentId) = componentMap.getOrPut(i.toLong()) { bitsOf() }.set(index)
+            fun set(i: ComponentId) = componentMap.getOrPut(i.toLong()) { bitsOf() }.set(index)
 
             // See componentMap definition for relations
             if (id.isRelation()) {

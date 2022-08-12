@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.systems.accessors
 
-import com.mineinabyss.geary.datatypes.GearyComponent
+import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.helpers.componentId
@@ -14,7 +14,7 @@ import com.mineinabyss.geary.systems.accessors.types.RelationWithDataAccessor
  */
 public open class AccessorOperations {
     /** Gets a component, ensuring it is on the entity. */
-    public inline fun <reified T : GearyComponent> get(): AccessorBuilder<ComponentAccessor<T>> {
+    public inline fun <reified T : Component> get(): AccessorBuilder<ComponentAccessor<T>> {
         return AccessorBuilder { holder, index ->
             val component = componentId<T>().withRole(HOLDS_DATA)
             holder._family.has(component)
@@ -23,7 +23,7 @@ public open class AccessorOperations {
     }
 
     /** Gets a component or provides a [default] if the entity doesn't have it. */
-    public inline fun <reified T : GearyComponent?> getOrDefault(
+    public inline fun <reified T : Component?> getOrDefault(
         default: T
     ): AccessorBuilder<ComponentOrDefaultAccessor<T>> {
         return AccessorBuilder { _, index ->
@@ -33,7 +33,7 @@ public open class AccessorOperations {
     }
 
     /** Gets a component or `null` if the entity doesn't have it. */
-    public inline fun <reified T : GearyComponent?> getOrNull(): AccessorBuilder<ComponentOrDefaultAccessor<T?>> {
+    public inline fun <reified T : Component?> getOrNull(): AccessorBuilder<ComponentOrDefaultAccessor<T?>> {
         return getOrDefault(null)
     }
 
@@ -49,7 +49,7 @@ public open class AccessorOperations {
      * - One of [K] or [T] is [Any] => gets all relations matching the other (specified) type.
      * - Note: nullability rules are still upheld with [Any].
      */
-    public inline fun <reified K : GearyComponent?, reified T : GearyComponent?> getRelations(): AccessorBuilder<RelationWithDataAccessor<K, T>> {
+    public inline fun <reified K : Component?, reified T : Component?> getRelations(): AccessorBuilder<RelationWithDataAccessor<K, T>> {
         return AccessorBuilder { holder, index ->
             holder._family.hasRelation<K, T>()
             RelationWithDataAccessor(index, componentIdWithNullable<K>(), componentIdWithNullable<T>())

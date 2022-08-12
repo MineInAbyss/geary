@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 internal class QueryManagerTest : GearyTest() {
 
     private class TestComponent
-    private object EventListener : GearyListener() {
+    private object EventListener : Listener() {
         var ran = 0
         private val TargetScope.testComponent by get<TestComponent>()
 
