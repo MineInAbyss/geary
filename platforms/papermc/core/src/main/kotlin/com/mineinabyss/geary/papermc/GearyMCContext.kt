@@ -12,24 +12,24 @@ import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.geary.prefabs.PrefabManagerContext
 import org.koin.core.component.inject
 
-public interface BukkitEntityAssociationsContext {
-    public val bukkit2Geary: BukkitEntity2Geary
+interface BukkitEntityAssociationsContext {
+    val bukkit2Geary: BukkitEntity2Geary
 }
 
 
-public interface UUID2GearyContext {
-    public val uuid2entity: UUID2GearyMap
+interface UUID2GearyContext {
+    val uuid2entity: UUID2GearyMap
 }
 
-public interface PluginContext {
-    public val geary: GearyPlugin
+interface PluginContext {
+    val geary: GearyPlugin
 }
 
-public interface PaperEngineContext: EngineContext {
+interface PaperEngineContext : EngineContext {
     override val engine: PaperMCEngine
 }
 
-public interface GearyMCContext :
+interface GearyMCContext :
     GearyContext,
     PaperEngineContext,
     PrefabManagerContext,
@@ -37,15 +37,15 @@ public interface GearyMCContext :
     BukkitEntityAssociationsContext,
     UUID2GearyContext,
     PluginContext {
-    public companion object {
+    companion object {
         @Deprecated("Being replaced with context receivers")
-        public inline operator fun <T> invoke(run: GearyMCContext.() -> T): T {
+        inline operator fun <T> invoke(run: GearyMCContext.() -> T): T {
             return GearyMCContextKoin().run(run)
         }
     }
 }
 
-public open class GearyMCContextKoin :
+open class GearyMCContextKoin :
     GearyContextKoin(),
     GearyMCContext {
     override val engine: PaperMCEngine get() = super.engine as PaperMCEngine
@@ -53,9 +53,9 @@ public open class GearyMCContextKoin :
     override val addonManager: GearyAddonManager by inject()
     override val bukkit2Geary: BukkitEntity2Geary by inject()
 
-    public override val geary: GearyPlugin by inject()
+    override val geary: GearyPlugin by inject()
 
-    public override val uuid2entity: UUID2GearyMap by inject()
+    override val uuid2entity: UUID2GearyMap by inject()
 }
 
-public var globalContextMC: GearyMCContext = GearyMCContextKoin()
+var globalContextMC: GearyMCContext = GearyMCContextKoin()

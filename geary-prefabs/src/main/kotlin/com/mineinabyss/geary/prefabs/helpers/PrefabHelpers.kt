@@ -2,17 +2,17 @@ package com.mineinabyss.geary.prefabs.helpers
 
 import com.mineinabyss.geary.components.relations.DontInherit
 import com.mineinabyss.geary.components.relations.InstanceOf
-import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.addParent
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.helpers.with
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 
-val GearyEntity.prefabs: List<GearyEntity>
+val Entity.prefabs: List<Entity>
     get() = getRelations<InstanceOf?, Any?>().map { it.target.toGeary() }
 
 /** Adds a [prefab] entity to this entity.  */
-fun GearyEntity.addPrefab(prefab: GearyEntity) {
+fun Entity.addPrefab(prefab: Entity) {
     addRelation<InstanceOf>(prefab)
     //TODO this isn't copying over any relations
     val comp = prefab.getAll().toMutableSet()
@@ -27,6 +27,6 @@ fun GearyEntity.addPrefab(prefab: GearyEntity) {
 }
 
 /** Adds a [prefab] entity to this entity.  */
-fun GearyEntity.removePrefab(prefab: GearyEntity) {
+fun Entity.removePrefab(prefab: Entity) {
     removeRelation<InstanceOf>(prefab)
 }

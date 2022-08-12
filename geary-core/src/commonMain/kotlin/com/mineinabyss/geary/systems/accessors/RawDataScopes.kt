@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.systems.accessors
 
-import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.engine.archetypes.Archetype
 
 /**
@@ -24,5 +24,5 @@ public class RawAccessorDataScope(
     perArchetypeData: List<List<Any?>>,
     public val row: Int,
 ) : ArchetypeCacheScope(archetype, perArchetypeData) {
-    public val entity: GearyEntity = archetype.getEntity(row)
+    public val entity: Entity = archetype.getEntity(row)
 }

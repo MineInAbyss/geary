@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.events
 
-import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.systems.accessors.SourceScope
@@ -10,10 +10,10 @@ import org.koin.core.component.inject
 import org.koin.core.logger.Logger
 
 /**
- * Generated within a [GearyListener]. Will handle events matching specified components on source/target/event entities.
+ * Generated within a [Listener]. Will handle events matching specified components on source/target/event entities.
  */
-public abstract class GearyHandler(
-    public val parentListener: GearyListener,
+public abstract class Handler(
+    public val parentListener: Listener,
     public val sourceNullable: Boolean,
 ) : KoinComponent {
     private val logger: Logger by inject()

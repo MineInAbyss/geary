@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.systems.accessors.types
 
-import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.*
 
 /**
@@ -9,7 +9,7 @@ import com.mineinabyss.geary.systems.accessors.*
  * Accessor system summary:
  * - An [AccessorOperationsProvider] provides a DSL for creating accessor builders.
  * - Other classes provide functions for building and adding those accessors onto an [AccessorHolderImpl].
- *   This is done to allow registering multiple holders, ex in [GearyListener].
+ *   This is done to allow registering multiple holders, ex in [Listener].
  * - A consumer provides an [RawAccessorDataScope] and uses it to create an iterator with [AccessorHolderImpl.iteratorFor].
  * - The [iterator][AccessorHolder.AccessorCombinationsIterator] requests each accessor
  *   to [parse][readData] the raw data.

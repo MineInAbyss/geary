@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.prefabs.configuration.components
 
-import com.mineinabyss.geary.datatypes.GearyComponent
+import com.mineinabyss.geary.datatypes.Component
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -13,6 +13,6 @@ import kotlinx.serialization.Serializable
 @JvmInline
 @Serializable
 @SerialName("geary:child")
-public value class ChildOnPrefab(
-    public val components: List<@Polymorphic GearyComponent>
+value class ChildOnPrefab(
+    val components: List<@Polymorphic Component>
 )

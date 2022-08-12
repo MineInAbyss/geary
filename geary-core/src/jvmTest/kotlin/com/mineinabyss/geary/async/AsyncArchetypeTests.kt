@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.async
 
-import com.mineinabyss.geary.datatypes.GearyType
+import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
@@ -18,7 +18,7 @@ class AsyncArchetypeTests : GearyTest() {
     @Test
     fun `add entities concurrently`() = runTest {
         clearEngine()
-        val arc = engine.getArchetype(GearyType(ulongArrayOf(componentId<String>() or HOLDS_DATA)))
+        val arc = engine.getArchetype(EntityType(ulongArrayOf(componentId<String>() or HOLDS_DATA)))
         concurrentOperation(10000) {
             arc.addEntityWithData(engine.newEntity().getRecord(), arrayOf("Test"))
         }.awaitAll()
@@ -65,7 +65,7 @@ class AsyncArchetypeTests : GearyTest() {
         println(measureTime {
             for (i in 0 until iters) {
 //            concurrentOperation(iters) { i ->
-                engine.getArchetype(GearyType((0uL..i.toULong()).toList()))
+                engine.getArchetype(EntityType((0uL..i.toULong()).toList()))
                 println("Creating arc $i, total: ${engine.archetypeCount}")
 //            }.awaitAll()
             }

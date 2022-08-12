@@ -3,8 +3,8 @@ package com.mineinabyss.geary.helpers
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.family.Family
 
-public fun GearyType.hasRelationTarget(
-    target: GearyEntityId,
+public fun EntityType.hasRelationTarget(
+    target: EntityId,
     kindMustHoldData: Boolean = false
 ): Boolean = any {
     it.isRelation() && Relation.of(it).run {
@@ -12,8 +12,8 @@ public fun GearyType.hasRelationTarget(
     }
 }
 
-public fun GearyType.hasRelationKind(
-    kind: GearyComponentId,
+public fun EntityType.hasRelationKind(
+    kind: ComponentId,
     targetMustHoldData: Boolean = false
 ): Boolean = any {
     it.isRelation() && Relation.of(it).run {
@@ -21,9 +21,9 @@ public fun GearyType.hasRelationKind(
     }
 }
 
-public operator fun Family.contains(type: GearyType): Boolean = has(type)
+public operator fun Family.contains(type: EntityType): Boolean = has(type)
 
-public fun Family.has(type: GearyType): Boolean = when (this) {
+public fun Family.has(type: EntityType): Boolean = when (this) {
     is Family.Selector.And -> and.all { type in it }
     is Family.Selector.AndNot -> andNot.none { type in it }
     is Family.Selector.Or -> or.any { type in it }

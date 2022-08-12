@@ -5,7 +5,7 @@ import com.mineinabyss.geary.datatypes.*
 import kotlin.reflect.KClass
 
 /** Neatly lists all the components on this entity. */
-public fun GearyEntity.listComponents(): String {
+public fun Entity.listComponents(): String {
     return """Instance:
         ${getAllNotPersisting().joinToString("\n") { "${it::class.simpleName}: $it" }}
         
@@ -14,7 +14,7 @@ public fun GearyEntity.listComponents(): String {
         """.trimIndent()
 }
 
-public fun GearyEntityId.readableString(): String = buildString {
+public fun EntityId.readableString(): String = buildString {
     val id = this@readableString
     if(id.hasRole(RELATION)) {
         append(id.toRelation().toString())

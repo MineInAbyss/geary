@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.systems.accessors.types
 
-import com.mineinabyss.geary.datatypes.GearyComponent
-import com.mineinabyss.geary.datatypes.GearyComponentId
+import com.mineinabyss.geary.datatypes.Component
+import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.systems.accessors.ArchetypeCacheScope
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
 
@@ -11,9 +11,9 @@ import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
  * @see get
  */
 //TODO is it possible to merge with ComponentOrDefaultAccessor
-public open class ComponentAccessor<T : GearyComponent?>(
+public open class ComponentAccessor<T : Component?>(
     index: Int,
-    private val componentId: GearyComponentId,
+    private val componentId: ComponentId,
 ) : IndexedAccessor<T>(index) {
     private val ArchetypeCacheScope.dataIndex by cached { archetype.indexOf(componentId) }
 

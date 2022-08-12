@@ -16,9 +16,9 @@ import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.typeOf
 
 internal actual fun trackEventListener(
-    listener: GearyListener,
-    sourceListeners: MutableList<GearyListener>,
-    targetListeners: MutableList<GearyListener>,
+    listener: Listener,
+    sourceListeners: MutableList<Listener>,
+    targetListeners: MutableList<Listener>,
     archetypes: Family2ObjectArrayMap<Archetype>,
     eventHandlers: MutableList<GearyHandler>
 ) {

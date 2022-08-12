@@ -77,7 +77,7 @@ inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
  */
 fun PersistentDataContainer.encodeComponents(
     components: Collection<GearyComponent>,
-    type: GearyType
+    type: GearyEntityType
 ) {
     hasComponentsEncoded = true
     //remove all keys present on the PDC so we only end up with the new list of components being encoded
@@ -134,7 +134,7 @@ fun PersistentDataContainer.decodeComponents(): DecodedEntityData =
             .filter { it.key.startsWith(COMPONENT_PREFIX) }
             .mapNotNull { decode(it) }
             .toSet(),
-        type = GearyType(decodePrefabs().mapNotNull {
+        type = GearyEntityType(decodePrefabs().mapNotNull {
             Relation.of<InstanceOf?>(it.toEntityOrNull() ?: return@mapNotNull null).id
         })
     )

@@ -22,16 +22,16 @@ import kotlin.reflect.KClass
 @Serializable
 @JvmInline
 public value class Relation private constructor(
-    public val id: GearyComponentId
+    public val id: ComponentId
 ) : Comparable<Relation> {
     /*
     * Internal representation of bits:
     * [kind]   0xFFFFFFFF00000000
     * [target] 0x00000000FFFFFFFF
     */
-    public val kind: GearyComponentId
+    public val kind: ComponentId
         get() = id and TYPE_ROLES_MASK.inv() and RELATION_KIND_MASK shr 32 or (id and TYPE_ROLES_MASK).withoutRole(RELATION)
-    public val target: GearyEntityId get() = id and RELATION_TARGET_MASK
+    public val target: EntityId get() = id and RELATION_TARGET_MASK
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
 
@@ -39,7 +39,7 @@ public value class Relation private constructor(
 
     public companion object {
         public fun of(
-            kind: GearyComponentId, target: GearyEntityId
+            kind: ComponentId, target: EntityId
         ): Relation = Relation(
             (kind shl 32 and RELATION_KIND_MASK and TYPE_ROLES_MASK.inv()) // Add kind entity id shifted left
                     or (kind and TYPE_ROLES_MASK) // Add type roles on kind
@@ -50,18 +50,18 @@ public value class Relation private constructor(
         public fun of(kind: KClass<*>, target: KClass<*>): Relation =
             of(componentId(kind), componentId(target))
 
-        public inline fun <reified K : GearyComponent?, reified T : GearyComponent> of(): Relation =
+        public inline fun <reified K : Component?, reified T : Component> of(): Relation =
             of(componentIdWithNullable<K>(), componentId<T>())
 
-        public inline fun <reified K : GearyComponent?> of(target: GearyEntity): Relation =
+        public inline fun <reified K : Component?> of(target: Entity): Relation =
             of(componentIdWithNullable<K>(), target.id)
 
         /**
          * Creates a relation from an id that is assumed to be valid. Use this to avoid boxing Relation because of
          * the nullable type on [toRelation].
          */
-        public fun of(id: GearyComponentId): Relation = Relation(id)
+        public fun of(id: ComponentId): Relation = Relation(id)
     }
 }
 
-public fun GearyComponentId.toRelation(): Relation? = Relation.of(this).takeIf { isRelation() }
+public fun ComponentId.toRelation(): Relation? = Relation.of(this).takeIf { isRelation() }

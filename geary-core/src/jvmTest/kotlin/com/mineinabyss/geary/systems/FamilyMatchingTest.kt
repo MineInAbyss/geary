@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.datatypes.GearyType
+import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.componentId
@@ -17,7 +17,7 @@ class FamilyMatchingTest: GearyTest() {
     val stringId = componentId<String>() or HOLDS_DATA
     val intId = componentId<Int>()
 
-    val system = object : TickingSystem() {
+    val system = object : RepeatingSystem() {
         val TargetScope.string by get<String>()
         val TargetScope.int by family { has<Int>() }
 
@@ -35,7 +35,7 @@ class FamilyMatchingTest: GearyTest() {
 
     @Test
     fun `family type is correct`() {
-        GearyType(system.family.components).getArchetype() shouldBe engine.rootArchetype + stringId
+        EntityType(system.family.components).getArchetype() shouldBe engine.rootArchetype + stringId
     }
 
     @Test

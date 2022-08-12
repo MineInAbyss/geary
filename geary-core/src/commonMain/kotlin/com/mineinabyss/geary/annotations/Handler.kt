@@ -1,13 +1,13 @@
 package com.mineinabyss.geary.annotations
 
+import com.mineinabyss.geary.events.Handler
+import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.SourceScope
 import com.mineinabyss.geary.systems.accessors.TargetScope
-import com.mineinabyss.geary.systems.GearyListener
-import com.mineinabyss.geary.events.GearyHandler
 
 /**
- * Indicates a function within a [GearyListener] should be registered as a [GearyHandler]
+ * Indicates a function within a [Listener] should be registered as a [Handler]
  *
  * The function can read from different accessors by adding arguments [SourceScope], [TargetScope], [EventScope].
  * They may appear in any order, be omitted, or used as a receiver.

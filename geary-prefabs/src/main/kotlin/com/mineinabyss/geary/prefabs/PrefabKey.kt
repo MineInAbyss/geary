@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.context.globalContext
-import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.prefabs.serializers.PrefabKeySerializer
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
@@ -16,10 +16,10 @@ value class PrefabKey private constructor(val full: String) : KoinComponent {
     val namespace: String get() = full.substringBefore(':')
     val key: String get() = full.substringAfter(':')
 
-    fun toEntity(): GearyEntity = toEntityOrNull()
+    fun toEntity(): Entity = toEntityOrNull()
         ?: error("Requested non null prefab entity for $this, but it does not exist.")
 
-    fun toEntityOrNull(): GearyEntity? = globalContext.prefabManager[this]
+    fun toEntityOrNull(): Entity? = globalContext.prefabManager[this]
 
     override fun toString(): String = full
 

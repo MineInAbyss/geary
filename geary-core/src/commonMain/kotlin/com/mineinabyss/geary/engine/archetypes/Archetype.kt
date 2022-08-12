@@ -7,20 +7,20 @@ import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
+import com.mineinabyss.geary.engine.ArchetypeEngine
 import com.mineinabyss.geary.engine.Engine
-import com.mineinabyss.geary.engine.GearyEngine
-import com.mineinabyss.geary.events.GearyHandler
+import com.mineinabyss.geary.events.Handler
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.helpers.toGeary
-import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.systems.query.GearyQuery
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 
 /**
- * Archetypes store a list of entities with the same [GearyType], and provide functions to
+ * Archetypes store a list of entities with the same [EntityType], and provide functions to
  * quickly move them between archetypes.
  *
  * An example use case: If a query matches an archetype, it will also match all entities inside which
@@ -28,13 +28,13 @@ import kotlinx.atomicfu.locks.synchronized
  */
 public data class Archetype(
     private val engine: Engine,
-    public val type: GearyType,
+    public val type: EntityType,
     public val id: Int
 ) {
     /** A mutex for anything which needs the size of ids to remain unchanged. */
     private val entityAddition = SynchronizedObject()
 
-    public val entities: List<GearyEntity> get() = ids.map { it.toGeary() }
+    public val entities: List<Entity> get() = ids.map { it.toGeary() }
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     private val ids: IdList = IdList()
@@ -46,10 +46,10 @@ public data class Archetype(
 
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
-    private val dataHoldingType: GearyType = type.filter { it.holdsData() }
+    private val dataHoldingType: EntityType = type.filter { it.holdsData() }
 
     /** An outer list with indices for component ids, and sub-lists with data indexed by entity [ids]. */
-    internal val componentData: Array<MutableList<GearyComponent>> =
+    internal val componentData: Array<MutableList<Component>> =
         Array(dataHoldingType.size) { mutableListOf() }
 
     /** Edges to other archetypes where a single component has been added. */
@@ -88,20 +88,20 @@ public data class Archetype(
     /** The amount of entities stored in this archetype. */
     public val size: Int get() = ids.size
 
-    private val _sourceListeners = mutableSetOf<GearyListener>()
-    public val sourceListeners: Set<GearyListener> = _sourceListeners
+    private val _sourceListeners = mutableSetOf<Listener>()
+    public val sourceListeners: Set<Listener> = _sourceListeners
 
-    private val _targetListeners = mutableSetOf<GearyListener>()
-    public val targetListeners: Set<GearyListener> = _targetListeners
+    private val _targetListeners = mutableSetOf<Listener>()
+    public val targetListeners: Set<Listener> = _targetListeners
 
-    private val _eventHandlers = mutableSetOf<GearyHandler>()
+    private val _eventHandlers = mutableSetOf<Handler>()
 
     //TODO update doc
     /** A map of event class type to a set of event handlers which fire on that event. */
-    public val eventHandlers: Set<GearyHandler> = _eventHandlers
+    public val eventHandlers: Set<Handler> = _eventHandlers
 
     // ==== Helper functions ====
-    public fun getEntity(row: Int): GearyEntity {
+    public fun getEntity(row: Int): Entity {
         return ids[row].toGeary()
     }
 
@@ -110,14 +110,14 @@ public data class Archetype(
      *
      * @return The internally used index for this component [id].
      */
-    internal fun indexOf(id: GearyComponentId): Int = comp2indices[id.toLong()] ?: -1
+    internal fun indexOf(id: ComponentId): Int = comp2indices[id.toLong()] ?: -1
 
     /**
      * @return The data under a [componentId] for an entity at [row].
      *
      * @see Record
      */
-    public operator fun get(row: Int, componentId: GearyComponentId): GearyComponent? {
+    public operator fun get(row: Int, componentId: ComponentId): Component? {
         val compIndex = indexOf(componentId)
         if (compIndex == -1) return null
         return componentData[compIndex][row]
@@ -125,17 +125,17 @@ public data class Archetype(
 
 
     /** @return Whether this archetype has a [componentId] in its type. */
-    public operator fun contains(componentId: GearyComponentId): Boolean = componentId in type
+    public operator fun contains(componentId: ComponentId): Boolean = componentId in type
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
-    public operator fun plus(componentId: GearyComponentId): Archetype =
+    public operator fun plus(componentId: ComponentId): Archetype =
         if (componentId in componentAddEdges)
             componentAddEdges[componentId]
         else
             globalContext.engine.getArchetype(type.plus(componentId))
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
-    public operator fun minus(componentId: GearyComponentId): Archetype =
+    public operator fun minus(componentId: ComponentId): Archetype =
         if (componentId in componentRemoveEdges)
             componentRemoveEdges[componentId]
         else globalContext.engine.getArchetype(type.minus(componentId)).also {
@@ -152,8 +152,8 @@ public data class Archetype(
      */
     internal fun addEntityWithData(
         record: Record,
-        data: Array<GearyComponent>,
-        entity: GearyEntity = record.entity,
+        data: Array<Component>,
+        entity: Entity = record.entity,
     ) = synchronized(entityAddition) {
         synchronized(record) {
             ids.add(entity.id.toLong())
@@ -178,7 +178,7 @@ public data class Archetype(
      */
     internal fun addComponent(
         record: Record,
-        componentId: GearyComponentId,
+        componentId: ComponentId,
         callEvent: Boolean,
     ): Boolean {
         // if already present in this archetype, stop here since we dont need to update any data
@@ -207,8 +207,8 @@ public data class Archetype(
      */
     internal fun setComponent(
         record: Record,
-        componentId: GearyComponentId,
-        data: GearyComponent,
+        componentId: ComponentId,
+        data: Component,
         callEvent: Boolean,
     ): Boolean {
         val row = record.row
@@ -252,7 +252,7 @@ public data class Archetype(
      */
     internal fun removeComponent(
         record: Record,
-        component: GearyComponentId
+        component: ComponentId
     ): Boolean = synchronized(record) {
         with(record.archetype) {
             val row = record.row
@@ -278,7 +278,7 @@ public data class Archetype(
     }
 
     /** Gets all the components associated with an entity at a [row]. */
-    internal fun getComponents(row: Int, add: Pair<GearyComponent, Int>? = null): Array<GearyComponent> {
+    internal fun getComponents(row: Int, add: Pair<Component, Int>? = null): Array<Component> {
         if (add != null) {
             val arr = Array<Any?>(componentData.size + 1) { null }
             val (addElement, addIndex) = add
@@ -286,7 +286,7 @@ public data class Archetype(
             arr[addIndex] = addElement
             for (i in addIndex..componentData.lastIndex) arr[i + 1] = componentData[i][row]
             @Suppress("UNCHECKED_CAST") // For loop above ensures no nulls
-            return arr as Array<GearyComponent>
+            return arr as Array<Component>
         } else
             return Array(componentData.size) { i: Int -> componentData[i][row] }
     }
@@ -301,7 +301,7 @@ public data class Archetype(
      * matched must also hold data themselves.
      * All other roles are ignored for the [target].
      */
-    internal fun getRelations(kind: GearyComponentId, target: GearyEntityId): List<Relation> {
+    internal fun getRelations(kind: ComponentId, target: EntityId): List<Relation> {
         val specificKind = kind and ENTITY_MASK != globalContext.components.any
         val specificTarget = target and ENTITY_MASK != globalContext.components.any
         return when {
@@ -321,7 +321,7 @@ public data class Archetype(
             queuedRemoval.add(row)
         }
         //TODO another variable (isScheduled) so we dont do a hashmap lookup each time
-        if (!isIterating) (engine as GearyEngine).scheduleRemove(this)
+        if (!isIterating) (engine as ArchetypeEngine).scheduleRemove(this)
     }
 
     /**
@@ -351,26 +351,26 @@ public data class Archetype(
     // ==== Event listeners ====
 
     /** Adds an event [handler] that listens to certain events relating to entities in this archetype. */
-    public fun addEventHandler(handler: GearyHandler) {
+    public fun addEventHandler(handler: Handler) {
         _eventHandlers += handler
     }
 
-    public fun addSourceListener(handler: GearyListener) {
+    public fun addSourceListener(handler: Listener) {
         _sourceListeners += handler
     }
 
-    public fun addTargetListener(handler: GearyListener) {
+    public fun addTargetListener(handler: Listener) {
         _targetListeners += handler
     }
 
     /** Calls an event with data in an [event entity][event]. */
     public fun callEvent(
-        event: GearyEntity,
+        event: Entity,
         row: Int,
-        source: GearyEntity? = null,
+        source: Entity? = null,
     ) {
         val target = getEntity(row)
-        val engine = (engine as GearyEngine) //TODO expose properly for internal api
+        val engine = (engine as ArchetypeEngine) //TODO expose properly for internal api
 
         val types = engine.typeMap
         // Lock access to entities involved

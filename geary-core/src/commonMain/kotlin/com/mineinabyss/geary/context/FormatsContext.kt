@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.context
 
-import com.mineinabyss.geary.serialization.GearyFormats
+import com.mineinabyss.geary.serialization.Formats
 
 public interface FormatsContext {
-    public val formats: GearyFormats
+    public val formats: Formats
 }

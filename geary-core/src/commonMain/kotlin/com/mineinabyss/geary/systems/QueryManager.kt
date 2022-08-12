@@ -2,19 +2,19 @@ package com.mineinabyss.geary.systems
 
 import com.mineinabyss.geary.context.EngineContext
 import com.mineinabyss.geary.context.GearyContextKoin
-import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.maps.Family2ObjectArrayMap
 import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.events.GearyHandler
+import com.mineinabyss.geary.events.Handler
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.systems.query.GearyQuery
 
 public class QueryManager : EngineContext by GearyContextKoin() {
     private val queries = mutableListOf<GearyQuery>()
-    private val sourceListeners = mutableListOf<GearyListener>()
-    private val targetListeners = mutableListOf<GearyListener>()
-    private val eventHandlers = mutableListOf<GearyHandler>()
+    private val sourceListeners = mutableListOf<Listener>()
+    private val targetListeners = mutableListOf<Listener>()
+    private val eventHandlers = mutableListOf<Handler>()
 
     private val archetypes = Family2ObjectArrayMap<Archetype>()
 
@@ -22,7 +22,7 @@ public class QueryManager : EngineContext by GearyContextKoin() {
         registerArchetype(engine.rootArchetype)
     }
 
-    public fun trackEventListener(listener: GearyListener) {
+    public fun trackEventListener(listener: Listener) {
         trackEventListener(
             listener,
             sourceListeners,
@@ -54,7 +54,7 @@ public class QueryManager : EngineContext by GearyContextKoin() {
     }
 
     //TODO convert to Sequence
-    public fun getEntitiesMatching(family: Family): List<GearyEntity> {
+    public fun getEntitiesMatching(family: Family): List<Entity> {
         return archetypes.match(family).flatMap { arc ->
             arc.cleanup()
             arc.entities

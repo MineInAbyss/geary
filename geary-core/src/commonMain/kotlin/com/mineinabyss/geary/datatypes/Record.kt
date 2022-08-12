@@ -17,7 +17,7 @@ public class Record internal constructor(
         this.row = row
     }
 
-    internal val entity: GearyEntity get() = archetype.getEntity(row)
+    internal val entity: Entity get() = archetype.getEntity(row)
 
     public operator fun component1(): Archetype = archetype
     public operator fun component2(): Int = row

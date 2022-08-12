@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.context
 
-import com.mineinabyss.geary.serialization.GearySerializers
+import com.mineinabyss.geary.serialization.Serializers
 
 public interface SerializersContext {
-    public val serializers: GearySerializers
+    public val serializers: Serializers
 }

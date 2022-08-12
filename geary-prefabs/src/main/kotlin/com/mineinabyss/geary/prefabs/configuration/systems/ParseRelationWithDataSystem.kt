@@ -2,12 +2,12 @@ package com.mineinabyss.geary.prefabs.configuration.systems
 
 import com.mineinabyss.geary.annotations.AutoScan
 import com.mineinabyss.geary.annotations.Handler
-import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import com.mineinabyss.geary.systems.accessors.TargetScope
 
 @AutoScan
-class ParseRelationWithDataSystem : GearyListener() {
+class ParseRelationWithDataSystem : Listener() {
     private val TargetScope.relationWithData by onSet<RelationWithData<*, *>>()
 
     @Handler

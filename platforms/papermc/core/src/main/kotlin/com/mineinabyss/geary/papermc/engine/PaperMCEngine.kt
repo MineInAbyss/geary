@@ -2,9 +2,9 @@ package com.mineinabyss.geary.papermc.engine
 
 import co.aikar.timings.Timings
 import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
-import com.mineinabyss.geary.engine.GearyEngine
+import com.mineinabyss.geary.engine.ArchetypeEngine
 import com.mineinabyss.geary.systems.GearySystem
-import com.mineinabyss.geary.systems.TickingSystem
+import com.mineinabyss.geary.systems.RepeatingSystem
 import com.mineinabyss.idofront.plugin.registerEvents
 import com.mineinabyss.idofront.time.ticks
 import kotlinx.coroutines.launch
@@ -14,10 +14,10 @@ import org.bukkit.NamespacedKey
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
 
-class PaperMCEngine(private val plugin: Plugin) : GearyEngine(tickDuration = 1.ticks) {
+class PaperMCEngine(private val plugin: Plugin) : ArchetypeEngine(tickDuration = 1.ticks) {
     val componentsKey: NamespacedKey = NamespacedKey(plugin, "components")
 
-    override suspend fun TickingSystem.runSystem() {
+    override suspend fun RepeatingSystem.runSystem() {
         // Adds a line in timings report showing which systems take up more time.
         val timing = Timings.ofStart(plugin, javaClass.name)
         runCatching {

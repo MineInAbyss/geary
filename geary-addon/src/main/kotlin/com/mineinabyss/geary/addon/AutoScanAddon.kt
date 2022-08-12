@@ -3,7 +3,7 @@ package com.mineinabyss.geary.addon
 import com.mineinabyss.geary.addon.GearyLoadPhase.REGISTER_SERIALIZERS
 import com.mineinabyss.geary.annotations.AutoScan
 import com.mineinabyss.geary.annotations.ExcludeAutoScan
-import com.mineinabyss.geary.datatypes.GearyComponent
+import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.systems.GearySystem
 import com.mineinabyss.idofront.autoscan.AutoScanner
@@ -23,7 +23,7 @@ import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubclassOf
 
-public class AutoScanAddon(
+class AutoScanAddon(
     pkg: String,
     private val serializationAddon: SerializationAddon,
     private val gearyAddon: GearyAddon,
@@ -45,19 +45,19 @@ public class AutoScanAddon(
      * @see autoScanComponents
      * @see autoScanSystems
      */
-    public fun all() {
+    fun all() {
         components()
         systems()
     }
 
     /**
-     * Registers serializers for [GearyComponent]s on the classpath of [plugin]'s [ClassLoader].
+     * Registers serializers for [Component]s on the classpath of [plugin]'s [ClassLoader].
      *
      * @see AutoScanner
      */
-    public fun components(): Unit = with(serializationAddon) {
+    fun components(): Unit = with(serializationAddon) {
         reflections.getTypesAnnotatedWith(Serializable::class.java)
-            ?.registerSerializers(GearyComponent::class) { kClass, serializer ->
+            ?.registerSerializers(Component::class) { kClass, serializer ->
                 val serialName = serializer?.descriptor?.serialName ?: return@registerSerializers false
                 PrefabKey.ofOrNull(serialName) ?: return@registerSerializers false
                 component(kClass, serializer)
@@ -71,7 +71,7 @@ public class AutoScanAddon(
      *
      * @see AutoScanner
      */
-    public fun systems(): Unit = with(serializationAddon) {
+    fun systems(): Unit = with(serializationAddon) {
         reflections
             .getTypesAnnotatedWith(AutoScan::class.java)
             ?.asSequence()
@@ -91,7 +91,7 @@ public class AutoScanAddon(
      *
      * @see AutoScanner
      */
-    public inline fun <reified T : Any> custom(
+    inline fun <reified T : Any> custom(
         noinline addSubclass: SerializerRegistry<T> = { kClass, serializer ->
             if (serializer != null)
                 subclass(kClass, serializer)
@@ -103,7 +103,7 @@ public class AutoScanAddon(
 
     /** Helper function to register serializers via scanning for geary classes. */
     @OptIn(InternalSerializationApi::class)
-    public fun <T : Any> Collection<Class<*>>.registerSerializers(
+    fun <T : Any> Collection<Class<*>>.registerSerializers(
         kClass: KClass<T>,
         addSubclass: SerializerRegistry<T> = { subClass, serializer ->
             if (serializer != null)
@@ -130,7 +130,7 @@ public class AutoScanAddon(
     }
 }
 
-public inline fun GearyAddon.autoscan(pkg: String, crossinline init: AutoScanAddon.() -> Unit) {
+inline fun GearyAddon.autoscan(pkg: String, crossinline init: AutoScanAddon.() -> Unit) {
     startup {
         REGISTER_SERIALIZERS {
             AutoScanAddon(

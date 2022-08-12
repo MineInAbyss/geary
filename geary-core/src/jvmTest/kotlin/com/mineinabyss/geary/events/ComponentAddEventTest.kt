@@ -4,7 +4,7 @@ import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.TargetScope
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -13,7 +13,7 @@ internal class ComponentAddEventTest : GearyTest() {
     var inc = 0
 
     //TODO write test for all methods of checking for added
-    inner class OnStringAdd : GearyListener() {
+    inner class OnStringAdd : Listener() {
         // All three get added
         val TargetScope.string by onSet<String>()
         val TargetScope.int by onSet<Int>()

@@ -2,14 +2,14 @@ package com.mineinabyss.geary.async
 
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.systems.TickingSystem
+import com.mineinabyss.geary.systems.RepeatingSystem
 import com.mineinabyss.geary.systems.accessors.TargetScope
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 
 class RunSafelyTest: GearyTest() {
-    class CheckAsyncSystem : TickingSystem() {
+    class CheckAsyncSystem : RepeatingSystem() {
         val TargetScope.string by get<String>()
         override fun TargetScope.tick() {
             error("Found entity with string when it should have been removed before iteration")

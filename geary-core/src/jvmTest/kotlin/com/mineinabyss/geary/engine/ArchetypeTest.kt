@@ -2,7 +2,7 @@ package com.mineinabyss.geary.engine
 
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.Persists
-import com.mineinabyss.geary.datatypes.GearyType
+import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.componentId
@@ -28,13 +28,13 @@ internal class ArchetypeTest : GearyTest() {
 
         @Test
         fun `empty type represents empty archetype`() {
-            GearyType().getArchetype() shouldBe engine.rootArchetype
+            EntityType().getArchetype() shouldBe engine.rootArchetype
         }
 
         @Test
         fun `getArchetype returns same as manual archetype adding`() {
             engine.rootArchetype + 1u + 2u + 3u - 1u + 1u shouldBe
-                    GearyType(listOf(1u, 2u, 3u)).getArchetype()
+                    EntityType(listOf(1u, 2u, 3u)).getArchetype()
         }
 
         @Test
@@ -52,7 +52,7 @@ internal class ArchetypeTest : GearyTest() {
         val instanceOf2 = Relation.of<InstanceOf?>(target2)
         val arc = Archetype(
             engine,
-            GearyType(listOf(persists.id, instanceOf.id, instanceOf2.id)),
+            EntityType(listOf(persists.id, instanceOf.id, instanceOf2.id)),
             0
         )
         arc.relationsByTarget[target.id.toLong()].shouldContainExactlyInAnyOrder(persists, instanceOf)

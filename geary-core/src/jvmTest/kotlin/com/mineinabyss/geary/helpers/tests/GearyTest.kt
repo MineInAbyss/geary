@@ -4,9 +4,9 @@ import com.mineinabyss.geary.context.EngineContext
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.context.QueryContext
 import com.mineinabyss.geary.context.globalContext
+import com.mineinabyss.geary.engine.ArchetypeEngine
 import com.mineinabyss.geary.engine.Components
 import com.mineinabyss.geary.engine.Engine
-import com.mineinabyss.geary.engine.GearyEngine
 import com.mineinabyss.geary.systems.QueryManager
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +23,7 @@ import org.koin.dsl.module
 import kotlin.time.Duration.Companion.milliseconds
 
 abstract class GearyTest : KoinComponent, EngineContext {
-    override val engine get() = get<Engine>() as GearyEngine
+    override val engine get() = get<Engine>() as ArchetypeEngine
     val queryManager get() = get<QueryManager>()
 
     init {
@@ -34,7 +34,7 @@ abstract class GearyTest : KoinComponent, EngineContext {
         with(object : QueryContext {
             override val queryManager = QueryManager()
         }) {
-            val engine = GearyEngine(10.milliseconds)
+            val engine = ArchetypeEngine(10.milliseconds)
             @Suppress("RemoveExplicitTypeArguments")
             startKoin {
                 modules(module {

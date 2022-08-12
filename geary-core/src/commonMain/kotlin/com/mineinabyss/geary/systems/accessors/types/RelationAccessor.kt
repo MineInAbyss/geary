@@ -5,10 +5,10 @@ import com.mineinabyss.geary.systems.accessors.ArchetypeCacheScope
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 
-public open class RelationWithDataAccessor<K : GearyComponent?, T : GearyComponent?>(
+public open class RelationWithDataAccessor<K : Component?, T : Component?>(
     index: Int,
-    private val kind: GearyComponentId,
-    private val target: GearyEntityId,
+    private val kind: ComponentId,
+    private val target: EntityId,
 ) : IndexedAccessor<RelationWithData<K, T>>(index) {
     private val ArchetypeCacheScope.matchedRelations: List<Relation> by cached {
         archetype.getRelations(kind, target)

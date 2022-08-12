@@ -17,9 +17,9 @@ internal class FamilyTest: GearyTest() {
         val family = family {
             has(1uL, 2uL, 3uL)
         }
-        (GearyType(listOf(1uL, 2uL)) in family) shouldBe false
-        (GearyType(listOf(1uL, 2uL, 3uL)) in family) shouldBe true
-        (GearyType(listOf(1uL, 2uL, 3uL, 4uL)) in family) shouldBe true
+        (EntityType(listOf(1uL, 2uL)) in family) shouldBe false
+        (EntityType(listOf(1uL, 2uL, 3uL)) in family) shouldBe true
+        (EntityType(listOf(1uL, 2uL, 3uL, 4uL)) in family) shouldBe true
     }
 
     @Test
@@ -30,11 +30,11 @@ internal class FamilyTest: GearyTest() {
             hasRelation<Persists?>(target)
         }
 
-        (GearyType(listOf(Relation.of<Persists?>(other).id)) in family) shouldBe false
-        (GearyType(listOf(Relation.of<Persists?>(target).id)) in family) shouldBe true
+        (EntityType(listOf(Relation.of<Persists?>(other).id)) in family) shouldBe false
+        (EntityType(listOf(Relation.of<Persists?>(target).id)) in family) shouldBe true
         // Archetypes will always have a non HOLDS_DATA version of a component present, but this alone should not succeed
-        (GearyType(listOf(Relation.of<Persists>(target).id)) in family) shouldBe false
-        (GearyType(listOf(Relation.of<Persists?>(target).id, target.id)) in family) shouldBe true
+        (EntityType(listOf(Relation.of<Persists>(target).id)) in family) shouldBe false
+        (EntityType(listOf(Relation.of<Persists?>(target).id, target.id)) in family) shouldBe true
     }
 
     @Test
@@ -45,9 +45,9 @@ internal class FamilyTest: GearyTest() {
             hasRelation<Persists>(target)
         }
 
-        (GearyType(listOf(Relation.of<Persists?>(target).id)) in family) shouldBe false
-        (GearyType(listOf(Relation.of<Persists?>(other).withRole(HOLDS_DATA).id)) in family) shouldBe false
-        (GearyType(listOf(Relation.of<Persists?>(target).withRole(HOLDS_DATA).id)) in family) shouldBe true
+        (EntityType(listOf(Relation.of<Persists?>(target).id)) in family) shouldBe false
+        (EntityType(listOf(Relation.of<Persists?>(other).withRole(HOLDS_DATA).id)) in family) shouldBe false
+        (EntityType(listOf(Relation.of<Persists?>(target).withRole(HOLDS_DATA).id)) in family) shouldBe true
     }
 
     @Test
@@ -64,15 +64,15 @@ internal class FamilyTest: GearyTest() {
             }
         }
 
-        (GearyType(listOf(Relation.of<Persists?>(target).id)) in family) shouldBe false
-        (GearyType(listOf(componentId<String>(), Relation.of<Persists?>(target).id)) in family) shouldBe true
+        (EntityType(listOf(Relation.of<Persists?>(target).id)) in family) shouldBe false
+        (EntityType(listOf(componentId<String>(), Relation.of<Persists?>(target).id)) in family) shouldBe true
 
-        (GearyType(listOf(componentId<String>())) in family) shouldBe false
-        (GearyType(listOf(componentId<Int>())) in family) shouldBe false
-        (GearyType(listOf(componentId<String>(), componentId<Int>())) in family) shouldBe true
+        (EntityType(listOf(componentId<String>())) in family) shouldBe false
+        (EntityType(listOf(componentId<Int>())) in family) shouldBe false
+        (EntityType(listOf(componentId<String>(), componentId<Int>())) in family) shouldBe true
 
-        (GearyType(listOf(componentId<String>(), componentId<Int>())) in family) shouldBe true
+        (EntityType(listOf(componentId<String>(), componentId<Int>())) in family) shouldBe true
 
-        (GearyType(listOf(componentId<String>(), componentId<Int>(), componentId<Double>())) in family) shouldBe false
+        (EntityType(listOf(componentId<String>(), componentId<Int>(), componentId<Double>())) in family) shouldBe false
     }
 }

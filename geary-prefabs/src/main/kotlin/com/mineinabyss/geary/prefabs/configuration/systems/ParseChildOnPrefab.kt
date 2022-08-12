@@ -9,11 +9,11 @@ import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.prefabs.configuration.components.ChildOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.ChildrenOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
-import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.TargetScope
 
 @AutoScan
-class ParseChildOnPrefab : GearyListener() {
+class ParseChildOnPrefab : Listener() {
     private val TargetScope.child by onSet<ChildOnPrefab>()
 
     @Handler
@@ -27,7 +27,7 @@ class ParseChildOnPrefab : GearyListener() {
 }
 
 @AutoScan
-class ParseChildrenOnPrefab : GearyListener() {
+class ParseChildrenOnPrefab : Listener() {
     private val TargetScope.children by onSet<ChildrenOnPrefab>()
 
     @Handler

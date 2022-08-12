@@ -2,7 +2,7 @@ package com.mineinabyss.geary.papermc.plugin
 
 import com.mineinabyss.geary.addon.*
 import com.mineinabyss.geary.addon.GearyLoadPhase.ENABLE
-import com.mineinabyss.geary.datatypes.maps.UUID2GearyMap
+import com.mineinabyss.geary.datatypes.maps.UUID2EntityMap
 import com.mineinabyss.geary.engine.Components
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.formats.YamlFormat
@@ -18,8 +18,8 @@ import com.mineinabyss.geary.papermc.engine.PaperMCEngine
 import com.mineinabyss.geary.papermc.store.FileSystemStore
 import com.mineinabyss.geary.papermc.store.GearyStore
 import com.mineinabyss.geary.prefabs.PrefabManager
-import com.mineinabyss.geary.serialization.GearyFormats
-import com.mineinabyss.geary.serialization.GearySerializers
+import com.mineinabyss.geary.serialization.Formats
+import com.mineinabyss.geary.serialization.Serializers
 import com.mineinabyss.geary.systems.QueryManager
 import com.mineinabyss.idofront.config.singleConfig
 import com.mineinabyss.idofront.config.startOrAppendKoin
@@ -46,10 +46,10 @@ class GearyPluginImpl : GearyPlugin() {
         reloadConfig()
 
         val engine = PaperMCEngine(this@GearyPluginImpl)
-        val serializers = GearySerializers()
-        val formats = GearyFormats(serializers)
+        val serializers = Serializers()
+        val formats = Formats(serializers)
         val queryManager = QueryManager()
-        val uuid2GearyMap = UUID2GearyMap(engine)
+        val uuid2GearyMap = UUID2EntityMap(engine)
         val prefabManager = PrefabManager()
         val addonManager = GearyMCAddonManager()
         val bukkitEntity2Geary = BukkitEntity2Geary()
@@ -60,11 +60,11 @@ class GearyPluginImpl : GearyPlugin() {
             single<QueryManager> { queryManager }
             single<Engine> { engine }
             single<BukkitEntity2Geary> { bukkitEntity2Geary }
-            single<UUID2GearyMap> { uuid2GearyMap }
+            single<UUID2EntityMap> { uuid2GearyMap }
             single<GearyAddonManager> { addonManager }
             single<PrefabManager> { prefabManager }
-            single<GearySerializers> { serializers }
-            single<GearyFormats> { formats }
+            single<Serializers> { serializers }
+            single<Formats> { formats }
             single<Components> { Components() }
             singleConfig<GearyConfig>(this@GearyPluginImpl)
         })
