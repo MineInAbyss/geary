@@ -13,5 +13,5 @@ dependencies {
     api(project(":geary-papermc-core"))
 
     // Other plugins
-    compileOnly(gearylibs.plugman)
+    compileOnly(gearyLibs.plugman)
 }
