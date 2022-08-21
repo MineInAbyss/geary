@@ -11,15 +11,14 @@ import org.koin.core.component.KoinComponent
  * by a '`:`' symbol.
  */
 @Serializable(with = PrefabKeySerializer::class)
-@JvmInline
-value class PrefabKey private constructor(val full: String) : KoinComponent {
-    val namespace: String get() = full.substringBefore(':')
-    val key: String get() = full.substringAfter(':')
-
+// We don't make this a value class since calculating substring is pretty expensive compared to one new object instantiation
+class PrefabKey private constructor(val namespace: String, val key: String) : KoinComponent {
     fun toEntity(): Entity = toEntityOrNull()
         ?: error("Requested non null prefab entity for $this, but it does not exist.")
 
     fun toEntityOrNull(): Entity? = globalContext.prefabManager[this]
+
+    val full get() = "$namespace:$key"
 
     override fun toString(): String = full
 
@@ -29,9 +28,10 @@ value class PrefabKey private constructor(val full: String) : KoinComponent {
 
         /** Creates a key from a string with [namespace] and [key] separated by one '`:`' character. */
         fun of(stringKey: String): PrefabKey {
-            if (stringKey.split(':').size != 2)
+            val split = stringKey.split(':')
+            if (split.size != 2)
                 error("Malformed prefab key: $stringKey. Must only contain one : that splits namespace and key.")
-            return PrefabKey(stringKey)
+            return PrefabKey(split[0], split[1])
         }
 
         /** Creates a key from a [namespace] and [name] which must not contain any '`:`' characters. */

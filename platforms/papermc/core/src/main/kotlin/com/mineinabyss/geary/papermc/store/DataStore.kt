@@ -62,7 +62,7 @@ inline fun <reified T : GearyComponent> PersistentDataContainer.decode(): T? {
 inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
     key: NamespacedKey,
     serializer: DeserializationStrategy<out T>? =
-        globalContext.serializers.getSerializerFor(key.removeComponentPrefix(), T::class)
+        globalContext.serializers.getSerializerFor(key, T::class)
 ): T? {
 
     serializer ?: return null
@@ -92,6 +92,8 @@ fun PersistentDataContainer.encodeComponents(
         encodePrefabs(prefabs.map { it.toRelation()!!.target.toGeary().get<PrefabKey>() }.filterNotNull())
 }
 
+private val PREFABS_KEY = "geary:prefabs".toMCKey()
+
 /**
  * Encodes a list of [PrefabKey]s under the key `geary:prefabs`. When decoding these will be stored in
  * [DecodedEntityData.type].
@@ -104,7 +106,7 @@ fun PersistentDataContainer.encodePrefabs(keys: Collection<PrefabKey>) {
     encode(
         keys.toSet(),
         SetSerializer(PrefabKey.serializer()),
-        "geary:prefabs".toMCKey()
+        PREFABS_KEY
     )
 }
 
@@ -113,7 +115,7 @@ object PrefabNamespaceMigrations {
 }
 
 fun PersistentDataContainer.decodePrefabs(): Set<PrefabKey> =
-    decode("geary:prefabs".toMCKey(), SetSerializer(PrefabKey.serializer()))
+    decode(PREFABS_KEY, SetSerializer(PrefabKey.serializer()))
         ?.map { key ->
             // Migrate namespace if needed
             val migrated = PrefabNamespaceMigrations.migrations.getOrDefault(key.namespace, key.namespace)
