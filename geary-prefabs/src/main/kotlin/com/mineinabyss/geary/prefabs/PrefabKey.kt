@@ -12,7 +12,7 @@ import org.koin.core.component.KoinComponent
  */
 @Serializable(with = PrefabKeySerializer::class)
 // We don't make this a value class since calculating substring is pretty expensive compared to one new object instantiation
-class PrefabKey private constructor(val namespace: String, val key: String) : KoinComponent {
+data class PrefabKey private constructor(val namespace: String, val key: String) : KoinComponent {
     fun toEntity(): Entity = toEntityOrNull()
         ?: error("Requested non null prefab entity for $this, but it does not exist.")
 

@@ -164,7 +164,10 @@ public value class Entity(public val id: EntityId) {
     }
 
     /** Gets a component of type [T] on this entity. */
-    public inline fun <reified T : Component> get(kClass: KClass<out T> = T::class): T? =
+    public inline fun <reified T : Component> get(): T? = get(T::class)
+
+    /** @see get */
+    public inline fun <reified T : Component> get(kClass: KClass<out T>): T? =
         get(componentId(kClass)) as? T
 
     /** Gets a [component] which holds data from this entity. Use [has] if the component is not to hold data. */
@@ -175,8 +178,7 @@ public value class Entity(public val id: EntityId) {
     public inline fun <reified T : Component> getOrSet(
         kClass: KClass<out T> = T::class,
         default: () -> T
-    ): T =
-        get(kClass) ?: default().also { set(it) }
+    ): T = get(kClass) ?: default().also { set(it) }
 
     /** Gets a persisting component of type [T] or adds a [default] if no component was present. */
     public inline fun <reified T : Component> getOrSetPersisting(
@@ -203,7 +205,10 @@ public value class Entity(public val id: EntityId) {
         hasRelation<InstanceOf>(entity)
 
     /** Checks whether this entity has a component of type [T], regardless of it holding data. */
-    public inline fun <reified T : Component> has(kClass: KClass<out T> = T::class): Boolean =
+    public inline fun <reified T : Component> has(): Boolean = has(T::class)
+
+    /** @see has */
+    public inline fun <reified T : Component> has(kClass: KClass<out T>): Boolean =
         has(componentId(kClass))
 
 
