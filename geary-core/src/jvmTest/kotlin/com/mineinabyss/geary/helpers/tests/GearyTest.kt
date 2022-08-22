@@ -4,9 +4,9 @@ import com.mineinabyss.geary.context.EngineContext
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.context.QueryContext
 import com.mineinabyss.geary.context.globalContext
-import com.mineinabyss.geary.engine.ArchetypeEngine
 import com.mineinabyss.geary.engine.Components
 import com.mineinabyss.geary.engine.Engine
+import com.mineinabyss.geary.engine.archetypes.ArchetypeEngine
 import com.mineinabyss.geary.systems.QueryManager
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers

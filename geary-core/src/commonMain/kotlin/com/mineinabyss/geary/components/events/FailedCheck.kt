@@ -5,4 +5,4 @@ package com.mineinabyss.geary.components.events
  *
  * @see RequestCheck
  */
-public object FailedCheck
+public sealed class FailedCheck

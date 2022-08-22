@@ -23,7 +23,7 @@ public abstract class CheckHandler(
     override fun handle(source: SourceScope?, target: TargetScope, event: EventScope) {
         if (!check(source, target, event)) event.entity.apply {
             remove<RequestCheck>()
-            set(FailedCheck)
+            add<FailedCheck>()
         }
     }
 }

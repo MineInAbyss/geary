@@ -7,7 +7,6 @@ import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
-import com.mineinabyss.geary.engine.ArchetypeEngine
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.events.Handler
 import com.mineinabyss.geary.helpers.contains
@@ -27,7 +26,6 @@ import kotlinx.atomicfu.locks.synchronized
  * gives a large performance boost to system iteration.
  */
 public data class Archetype(
-    private val engine: Engine,
     public val type: EntityType,
     public val id: Int
 ) {
@@ -53,10 +51,10 @@ public data class Archetype(
         Array(dataHoldingType.size) { mutableListOf() }
 
     /** Edges to other archetypes where a single component has been added. */
-    internal val componentAddEdges = CompId2ArchetypeMap(engine)
+    internal val componentAddEdges = CompId2ArchetypeMap()
 
     /** Edges to other archetypes where a single component has been removed. */
-    internal val componentRemoveEdges = CompId2ArchetypeMap(engine)
+    internal val componentRemoveEdges = CompId2ArchetypeMap()
 
     internal val relations = type.inner.mapNotNull { it.toRelation() }
     internal val relationsWithData = relations.filter { it.id.holdsData() }
@@ -68,17 +66,6 @@ public data class Archetype(
     /** Map of relation [Relation.kind] id to a list of relations with that [Relation.kind]. */
     internal val relationsByKind: Long2ObjectMap<List<Relation>> = relations
         .groupBy { it.kind.toLong() }
-
-//    /** A map of a relation's kind to full relations that store data of that kind. */
-//    internal val dataHoldingRelations: Long2ObjectMap<List<Relation>> by lazy {
-//        val map = mutableMapOf<Long, List<Relation>>()
-//        relationsByTarget.forEach { (key, values) ->
-//            val dataHolding = values.filter { it.kind.holdsData() }
-//            if (dataHolding.isNotEmpty()) map[key] = dataHolding
-//        }
-//        map
-//    }
-
 
     /** A map of component ids to index used internally in this archetype (ex. in [componentData])*/
     private val comp2indices: Map<Long, Int> = buildMap {
@@ -123,22 +110,16 @@ public data class Archetype(
         return componentData[compIndex][row]
     }
 
-
     /** @return Whether this archetype has a [componentId] in its type. */
     public operator fun contains(componentId: ComponentId): Boolean = componentId in type
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
     public operator fun plus(componentId: ComponentId): Archetype =
-        if (componentId in componentAddEdges)
-            componentAddEdges[componentId]
-        else
-            globalContext.engine.getArchetype(type.plus(componentId))
+        componentAddEdges[componentId] ?: globalContext.engine.getArchetype(type.plus(componentId))
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
     public operator fun minus(componentId: ComponentId): Archetype =
-        if (componentId in componentRemoveEdges)
-            componentRemoveEdges[componentId]
-        else globalContext.engine.getArchetype(type.minus(componentId)).also {
+        componentRemoveEdges[componentId] ?: globalContext.engine.getArchetype(type.minus(componentId)).also {
             componentRemoveEdges[componentId] = it
         }
 
@@ -317,11 +298,13 @@ public data class Archetype(
     }
 
     internal fun scheduleRemoveRow(row: Int) {
-        synchronized(queueRemoval) {
+        if (isIterating) synchronized(queueRemoval) {
             queuedRemoval.add(row)
+        } else {
+            synchronized(entityAddition) {
+                removeEntity(row)
+            }
         }
-        //TODO another variable (isScheduled) so we dont do a hashmap lookup each time
-        if (!isIterating) (engine as ArchetypeEngine).scheduleRemove(this)
     }
 
     /**
@@ -370,7 +353,6 @@ public data class Archetype(
         source: Entity? = null,
     ) {
         val target = getEntity(row)
-        val engine = (engine as ArchetypeEngine) //TODO expose properly for internal api
 
         val types = engine.typeMap
         // Lock access to entities involved

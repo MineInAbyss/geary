@@ -1,3 +1,3 @@
 package com.mineinabyss.geary.components.events
 
-public class EntityRemoved
+public sealed class EntityRemoved

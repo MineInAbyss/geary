@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.engine
+package com.mineinabyss.geary.engine.archetypes
 
 import com.mineinabyss.geary.components.ComponentInfo
 import com.mineinabyss.geary.components.CouldHaveChildren
@@ -7,7 +7,7 @@ import com.mineinabyss.geary.context.QueryContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.ClassToComponentMap
 import com.mineinabyss.geary.datatypes.maps.TypeMap
-import com.mineinabyss.geary.engine.archetypes.Archetype
+import com.mineinabyss.geary.engine.TickingEngine
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.parents
 import com.mineinabyss.geary.helpers.removeParent
@@ -37,13 +37,13 @@ import kotlin.time.Duration
  */
 public open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine(), QueryContext {
     protected val logger: Logger by inject()
+    private val archetypeProvider: ArchetypeProvider by inject()
 
     @PublishedApi
     internal val typeMap: TypeMap = TypeMap()
     override val queryManager: QueryManager by inject()
     private val currId = atomic(0L)
-    final override val rootArchetype: Archetype = Archetype(this, EntityType(), 0)
-    private val archetypes = mutableListOf(rootArchetype)
+    private val archetypes = mutableListOf(archetypeProvider.rootArchetype)
     private val removedEntities = EntityStack()
     private val classToComponentMap = ClassToComponentMap()
     override val coroutineContext: CoroutineContext =
@@ -219,7 +219,9 @@ public open class ArchetypeEngine(override val tickDuration: Duration) : Ticking
         componentId in getRecord(entity).archetype
 
     override fun removeEntity(entity: Entity, event: Boolean) {
-        if (event) entity.callEvent(EntityRemoved())
+        if (event) entity.callEvent {
+            add<EntityRemoved>()
+        }
 
         // remove all children of this entity from the ECS as well
         if (entity.has<CouldHaveChildren>()) entity.apply {

@@ -19,10 +19,6 @@ import kotlin.reflect.KClass
  */
 public abstract class Engine : KoinComponent, EngineContext, CoroutineScope {
     override val engine: Engine get() = this
-    public val name: String = "Unnamed Engine"
-
-    /** The root archetype representing a type of no components */
-    public abstract val rootArchetype: Archetype
 
     /** Get the smallest free entity ID. */
     public abstract fun newEntity(initialComponents: Collection<Component> = listOf()): Entity
@@ -92,6 +88,4 @@ public abstract class Engine : KoinComponent, EngineContext, CoroutineScope {
     public abstract fun setRecord(entity: Entity, record: Record)
 
     public abstract fun runSafely(scope: CoroutineScope, job: Job)
-
-    override fun toString(): String = name
 }
