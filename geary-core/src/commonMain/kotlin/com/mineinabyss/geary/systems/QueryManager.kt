@@ -6,11 +6,12 @@ import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.maps.Family2ObjectArrayMap
 import com.mineinabyss.geary.engine.archetypes.Archetype
+import com.mineinabyss.geary.engine.archetypes.ArchetypeEngine
 import com.mineinabyss.geary.events.Handler
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.systems.query.GearyQuery
 
-public class QueryManager : EngineContext by GearyContextKoin() {
+public class QueryManager {
     private val queries = mutableListOf<GearyQuery>()
     private val sourceListeners = mutableListOf<Listener>()
     private val targetListeners = mutableListOf<Listener>()
@@ -18,8 +19,8 @@ public class QueryManager : EngineContext by GearyContextKoin() {
 
     private val archetypes = Family2ObjectArrayMap<Archetype>()
 
-    public fun init() {
-        registerArchetype(engine.rootArchetype)
+    public fun init(engine: ArchetypeEngine) {
+        registerArchetype(engine.archetypeProvider.rootArchetype)
     }
 
     public fun trackEventListener(listener: Listener) {

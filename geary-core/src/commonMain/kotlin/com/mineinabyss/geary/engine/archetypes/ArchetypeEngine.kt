@@ -7,17 +7,16 @@ import com.mineinabyss.geary.context.QueryContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.ClassToComponentMap
 import com.mineinabyss.geary.datatypes.maps.TypeMap
+import com.mineinabyss.geary.engine.EntityProvider
+import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.engine.TickingEngine
-import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.parents
 import com.mineinabyss.geary.helpers.removeParent
-import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.GearySystem
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.QueryManager
 import com.mineinabyss.geary.systems.RepeatingSystem
 import com.mineinabyss.geary.systems.accessors.RelationWithData
-import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.*
@@ -37,21 +36,18 @@ import kotlin.time.Duration
  */
 public open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine(), QueryContext {
     protected val logger: Logger by inject()
-    private val archetypeProvider: ArchetypeProvider by inject()
-
-    @PublishedApi
-    internal val typeMap: TypeMap = TypeMap()
     override val queryManager: QueryManager by inject()
-    private val currId = atomic(0L)
-    private val archetypes = mutableListOf(archetypeProvider.rootArchetype)
-    private val removedEntities = EntityStack()
+
+    internal val archetypeProvider: ArchetypeProvider by inject()
+    internal val entityProvider: EntityProvider by inject()
+    internal val eventRunner: EventRunner by inject()
+    @PublishedApi
+    internal val typeMap: TypeMap by inject()
+
     private val classToComponentMap = ClassToComponentMap()
     override val coroutineContext: CoroutineContext =
         (CoroutineScope(Dispatchers.Default) + CoroutineName("Geary Engine")).coroutineContext
 
-    public val archetypeCount: Int get() = archetypes.size
-
-    private val archetypeWriteLock = SynchronizedObject()
     private val classToComponentMapLock = SynchronizedObject()
 
     private val registeredSystems: MutableSet<RepeatingSystem> = mutableSetOf()
@@ -83,36 +79,8 @@ public open class ArchetypeEngine(override val tickDuration: Duration) : Ticking
         doTick()
     }
 
-    private fun createArchetype(prevNode: Archetype, componentEdge: ComponentId): Archetype {
-        val arc = Archetype(this, prevNode.type.plus(componentEdge), archetypes.size).also {
-            archetypes += it
-        }
-        arc.componentRemoveEdges[componentEdge] = prevNode
-        prevNode.componentAddEdges[componentEdge] = arc
-        queryManager.registerArchetype(arc)
-        return arc
-    }
-
     override fun newEntity(initialComponents: Collection<Component>): Entity {
-        val entity = try {
-            removedEntities.pop()
-        } catch (e: Exception) {
-            currId.getAndIncrement().toGeary()
-        }
-        createRecord(entity, initialComponents)
-        return entity
-    }
-
-    private fun createRecord(entity: Entity, initialComponents: Collection<Component>) {
-        val ids = initialComponents.map { componentId(it::class) or HOLDS_DATA }
-        val addTo = getArchetype(EntityType(ids))
-        val record = Record(rootArchetype, -1)
-        addTo.addEntityWithData(
-            record,
-            initialComponents.toTypedArray().apply { sortBy { addTo.indexOf(componentId(it::class)) } },
-            entity,
-        )
-        typeMap.set(entity, record)
+        return entityProvider.newEntity(initialComponents)
     }
 
     override fun addSystem(system: GearySystem) {
@@ -136,16 +104,17 @@ public open class ArchetypeEngine(override val tickDuration: Duration) : Ticking
         }
     }
 
-    override fun getRecord(entity: Entity): Record =
+    /** Gets the record of a given entity, or throws an error if the entity id is not active in the engine. */
+    internal fun getRecord(entity: Entity): Record =
         typeMap.get(entity)
 
-    override fun setRecord(entity: Entity, record: Record) {
+    /** Updates the record of a given entity */
+    internal fun setRecord(entity: Entity, record: Record) {
         typeMap.set(entity, record)
     }
 
     override fun getComponentFor(entity: Entity, componentId: ComponentId): Component? {
         val (archetype, row) = getRecord(entity)
-        entity.getRecord()
         return archetype[row, componentId.let { if (it.hasRole(RELATION)) it else it.withRole(HOLDS_DATA) }]
     }
 
@@ -183,6 +152,9 @@ public open class ArchetypeEngine(override val tickDuration: Duration) : Ticking
             )
         }
     }
+
+    override fun getRelationsFor(entity: Entity, kind: ComponentId, target: EntityId): List<Relation> =
+        getRecord(entity).archetype.getRelations(kind, target)
 
     override fun addComponentFor(
         entity: Entity,
@@ -234,28 +206,17 @@ public open class ArchetypeEngine(override val tickDuration: Duration) : Ticking
 
         val (archetype, row) = getRecord(entity)
         archetype.scheduleRemoveRow(row)
-        typeMap.remove(entity)
         //add current id into queue for reuse
-        removedEntities.push(entity)
+        entityProvider.removeEntity(entity)
     }
 
     override fun clearEntity(entity: Entity) {
         val (archetype, row) = getRecord(entity)
         archetype.scheduleRemoveRow(row)
-        rootArchetype.addEntityWithData(getRecord(entity), arrayOf())
+        archetypeProvider.rootArchetype.addEntityWithData(getRecord(entity), arrayOf(), entity)
     }
 
-    override fun getArchetype(id: Int): Archetype = archetypes[id]
-
-    override fun getArchetype(type: EntityType): Archetype = synchronized(archetypeWriteLock) {
-        var node = rootArchetype
-        type.forEach { compId ->
-            node =
-                if (compId in node.componentAddEdges) node.componentAddEdges[compId]
-                else createArchetype(node, compId)
-        }
-        return node
-    }
+    override fun getType(entity: Entity): EntityType = getRecord(entity).archetype.type
 
     override fun getOrRegisterComponentIdForClass(kClass: KClass<*>): ComponentId =
         synchronized(classToComponentMapLock) {
@@ -314,6 +275,10 @@ public open class ArchetypeEngine(override val tickDuration: Duration) : Ticking
         job.join()
         iterationJob = null
         logger.debug("Finished engine tick")
+    }
+
+    override fun callEvent(target: Entity, event: Entity, source: Entity?) {
+        eventRunner.callEvent(getRecord(target), getRecord(event), source?.let { getRecord(it) })
     }
 
     private fun cleanup() {

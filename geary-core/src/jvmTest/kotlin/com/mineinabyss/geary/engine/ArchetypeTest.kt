@@ -17,29 +17,31 @@ import org.junit.jupiter.api.Test
 internal class ArchetypeTest : GearyTest() {
     @Nested
     inner class ArchetypeNavigation {
+        val root = engine.archetypeProvider.rootArchetype
+
         @Test
         fun `archetype ids assigned correctly`() {
-            engine.rootArchetype.id shouldBe 0
+            root.id shouldBe 0
             // Some other archetypes are created on start, but following ones should come in order
-            val start = (engine.rootArchetype + 1u).id
-            (engine.rootArchetype + 1u + 2u).id shouldBe start + 1
-            (engine.rootArchetype + 1u).id shouldBe start
+            val start = (root + 1u).id
+            (root + 1u + 2u).id shouldBe start + 1
+            (root + 1u).id shouldBe start
         }
 
         @Test
         fun `empty type represents empty archetype`() {
-            EntityType().getArchetype() shouldBe engine.rootArchetype
+            EntityType().getArchetype() shouldBe root
         }
 
         @Test
         fun `getArchetype returns same as manual archetype adding`() {
-            engine.rootArchetype + 1u + 2u + 3u - 1u + 1u shouldBe
+            root + 1u + 2u + 3u - 1u + 1u shouldBe
                     EntityType(listOf(1u, 2u, 3u)).getArchetype()
         }
 
         @Test
         fun `reach same archetype from different starting positions`() {
-            engine.rootArchetype + 1u + 2u + 3u shouldBe engine.rootArchetype + 3u + 2u + 1u
+            root + 1u + 2u + 3u shouldBe root + 3u + 2u + 1u
         }
     }
 
@@ -51,7 +53,9 @@ internal class ArchetypeTest : GearyTest() {
         val instanceOf = Relation.of<InstanceOf?>(target)
         val instanceOf2 = Relation.of<InstanceOf?>(target2)
         val arc = Archetype(
-            engine,
+            engine.archetypeProvider,
+            engine.typeMap,
+            engine.eventRunner,
             EntityType(listOf(persists.id, instanceOf.id, instanceOf2.id)),
             0
         )

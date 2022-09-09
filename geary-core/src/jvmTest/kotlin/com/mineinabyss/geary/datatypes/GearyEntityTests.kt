@@ -36,7 +36,7 @@ internal class GearyEntityTests : GearyTest() {
         entity {
             add<String>()
             set(1)
-        }.type.getArchetype() shouldBe engine.rootArchetype + componentId<String>() + componentId<Int>() + (HOLDS_DATA or componentId<Int>())
+        }.type.getArchetype() shouldBe engine.archetypeProvider.rootArchetype + componentId<String>() + componentId<Int>() + (HOLDS_DATA or componentId<Int>())
     }
 
     @Test
@@ -44,7 +44,7 @@ internal class GearyEntityTests : GearyTest() {
         entity {
             set("Test")
             remove<String>()
-        }.type.getArchetype() shouldBe engine.rootArchetype
+        }.type.getArchetype() shouldBe engine.archetypeProvider.rootArchetype
     }
 
     @Test
@@ -52,7 +52,7 @@ internal class GearyEntityTests : GearyTest() {
         entity {
             add<String>()
             set("Test")
-        }.type.getArchetype() shouldBe engine.rootArchetype + componentId<String>() + (componentId<String>() or HOLDS_DATA)
+        }.type.getArchetype() shouldBe engine.archetypeProvider.rootArchetype + componentId<String>() + (componentId<String>() or HOLDS_DATA)
     }
 
     @Test

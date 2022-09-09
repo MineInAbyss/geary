@@ -27,15 +27,11 @@ import kotlin.reflect.KClass
 @JvmInline
 @Suppress("NOTHING_TO_INLINE")
 public value class Entity(public val id: EntityId) {
-    /** Gets the record associated with this entity or throws an error if it is no longer active on the koinGet<Engine>(). */
-    @PublishedApi
-    internal fun getRecord(): Record = globalContext.engine.getRecord(this)
-
     /**
      * Gets this entity's type (the ids of components added to it)
      * or throws an error if it is no longer active on the koinGet<Engine>().
      */
-    public val type: EntityType get() = getRecord().archetype.type
+    public val type: EntityType get() = globalContext.engine.getType(this)
 
     public val children: List<Entity>
         get() = globalContext.queryManager.getEntitiesMatching(family {
@@ -249,7 +245,7 @@ public value class Entity(public val id: EntityId) {
         getRelations(componentIdWithNullable<K>(), componentIdWithNullable<T>())
 
     public fun getRelations(kind: ComponentId, target: EntityId): List<Relation> =
-        getRecord().archetype.getRelations(kind, target)
+        globalContext.engine.getRelationsFor(this, kind, target)
 
     public inline fun <reified K : Component, reified T : Component> hasRelation(): Boolean =
         hasRelation<K>(component<T>())
@@ -317,19 +313,16 @@ public value class Entity(public val id: EntityId) {
         source: Entity? = null,
         crossinline result: (event: Entity) -> T,
     ): T {
-        return getRecord().run {
-            temporaryEntity(callRemoveEvent = false) { event ->
-                init(event)
-                callEvent(event, source)
-                result(event)
-            }
+        return temporaryEntity(callRemoveEvent = false) { event ->
+            init(event)
+            callEvent(event, source)
+            result(event)
         }
     }
 
     /** Calls an event using a specific [entity][event] on this entity. */
     public fun callEvent(event: Entity, source: Entity? = null) {
-        val (arc, row) = getRecord()
-        return arc.callEvent(event, row, source)
+        globalContext.engine.callEvent(this, event, source)
     }
 
     // Other

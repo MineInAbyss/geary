@@ -1,13 +1,11 @@
 package com.mineinabyss.geary.papermc.plugin
 
-import com.mineinabyss.geary.helpers.countChildren
 import com.mineinabyss.geary.papermc.GearyMCContext
 import com.mineinabyss.geary.papermc.GearyMCContextKoin
 import com.mineinabyss.geary.papermc.StartupEventListener
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
-import com.mineinabyss.idofront.messaging.info
 import com.rylinaux.plugman.util.PluginUtil
 import kotlinx.coroutines.launch
 import org.bukkit.command.CommandSender
@@ -34,12 +32,11 @@ internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter, GearyMCC
                     depends.forEach { PluginUtil.load(it.name) }
                 }
             }
-            "countArchetypes" {
-                action {
-                    sender.info("${engine.rootArchetype.countChildren()} archetypes registered.")
-                }
-
-            }
+//            "countArchetypes" {
+//                action {
+//                    sender.info("${(engine).rootArchetype.countChildren()} archetypes registered.")
+//                }
+//            }
             //TODO reimplement
             /*"components"{
                 val type by stringArg()
@@ -64,15 +61,18 @@ internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter, GearyMCC
                 "fullreload",
                 "countArchetypes"
             )
+
             2 -> {
                 when (args[0]) {
                     "reread" -> prefabManager.keys.filter {
                         val arg = args[1].lowercase()
                         it.key.startsWith(arg) || it.full.startsWith(arg)
                     }.map { it.toString() }
+
                     else -> listOf()
                 }
             }
+
             else -> listOf()
         }
     }

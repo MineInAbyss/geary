@@ -13,9 +13,7 @@ import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.TargetScope
 
-public class UUID2GearyMap(
-    override val engine: Engine
-) : GearyListener() {
+public class UUID2GearyMap : GearyListener() {
     private val uuid2geary = mutableMapOf<Uuid, Long>()
 
     public operator fun get(uuid: Uuid): GearyEntity? =

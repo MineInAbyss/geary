@@ -7,13 +7,13 @@ import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
+import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.Engine
+import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.events.Handler
-import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.Listener
-import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.systems.query.GearyQuery
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
@@ -26,6 +26,9 @@ import kotlinx.atomicfu.locks.synchronized
  * gives a large performance boost to system iteration.
  */
 public data class Archetype(
+    private val archetypeProvider: ArchetypeProvider,
+    private val typeMap: TypeMap,
+    private val eventRunner: EventRunner,
     public val type: EntityType,
     public val id: Int
 ) {
@@ -115,11 +118,11 @@ public data class Archetype(
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
     public operator fun plus(componentId: ComponentId): Archetype =
-        componentAddEdges[componentId] ?: globalContext.engine.getArchetype(type.plus(componentId))
+        componentAddEdges[componentId] ?: archetypeProvider.getArchetype(type.plus(componentId))
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
     public operator fun minus(componentId: ComponentId): Archetype =
-        componentRemoveEdges[componentId] ?: globalContext.engine.getArchetype(type.minus(componentId)).also {
+        componentRemoveEdges[componentId] ?: archetypeProvider.getArchetype(type.minus(componentId)).also {
             componentRemoveEdges[componentId] = it
         }
 
@@ -134,7 +137,7 @@ public data class Archetype(
     internal fun addEntityWithData(
         record: Record,
         data: Array<Component>,
-        entity: Entity = record.entity,
+        entity: Entity,
     ) = synchronized(entityAddition) {
         synchronized(record) {
             ids.add(entity.id.toLong())
@@ -168,12 +171,13 @@ public data class Archetype(
         val moveTo = this + (componentId.withoutRole(HOLDS_DATA))
 
         val componentData = getComponents(record.row)
+        val entity = record.entity
         scheduleRemoveRow(record.row)
-        moveTo.addEntityWithData(record, componentData)
+        moveTo.addEntityWithData(record, componentData, entity)
 
         if (callEvent) temporaryEntity { componentAddEvent ->
             componentAddEvent.addRelation<AddedComponent>(componentId.toGeary(), noEvent = true)
-            record.archetype.callEvent(componentAddEvent, record.row)
+            eventRunner.callEvent(record, typeMap[componentAddEvent], null)
         }
         return true
     }
@@ -201,7 +205,7 @@ public data class Archetype(
             componentData[addIndex][row] = data
             if(callEvent) temporaryEntity { componentAddEvent ->
                 componentAddEvent.addRelation<UpdatedComponent>(componentId.toGeary(), noEvent = true)
-                record.archetype.callEvent(componentAddEvent, record.row)
+                eventRunner.callEvent(record, typeMap[componentAddEvent], null)
             }
             return false
         }
@@ -214,12 +218,13 @@ public data class Archetype(
         val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
         val componentData = getComponents(row, add = data to newCompIndex)
 
+        val entity = record.entity
         scheduleRemoveRow(row)
-        moveTo.addEntityWithData(record, componentData)
+        moveTo.addEntityWithData(record, componentData, entity)
 
         if (callEvent) temporaryEntity { componentAddEvent ->
             componentAddEvent.addRelation<SetComponent>(componentId.toGeary(), noEvent = true)
-            record.archetype.callEvent(componentAddEvent, record.row)
+            eventRunner.callEvent(record, typeMap[componentAddEvent], null)
         }
         return true
     }
@@ -252,8 +257,9 @@ public data class Archetype(
                 else (Array<Any>(componentData.size) {}).also { data ->
                     for (i in 0..componentData.lastIndex) data[i] = componentData[i][row]
                 }
-            moveTo.addEntityWithData(record, copiedData)
+            val entity = record.entity
             scheduleRemoveRow(row)
+            moveTo.addEntityWithData(record, copiedData, entity)
         }
         return@synchronized true
     }
@@ -320,7 +326,7 @@ public data class Archetype(
             val replacement = ids[lastIndex]
             ids[row] = replacement
             componentData.forEach { it[row] = it.last() }
-            engine.getRecord(replacement.toGeary()).apply {
+            typeMap.get(replacement.toGeary()).apply {
                 this.archetype = this@Archetype
                 this.row = row
             }
@@ -344,67 +350,6 @@ public data class Archetype(
 
     public fun addTargetListener(handler: Listener) {
         _targetListeners += handler
-    }
-
-    /** Calls an event with data in an [event entity][event]. */
-    public fun callEvent(
-        event: Entity,
-        row: Int,
-        source: Entity? = null,
-    ) {
-        val target = getEntity(row)
-
-        val types = engine.typeMap
-        // Lock access to entities involved
-
-        val origEventArc = types.get(event).archetype
-        val origSourceArc = source?.let { types.get(it) }?.archetype
-
-        //TODO performance upgrade will come when we figure out a solution in QueryManager as well.
-        for (handler in origEventArc.eventHandlers) {
-            // If an event handler has moved the entity to a new archetype, make sure we follow it.
-            val (targetArc, targetRow) = types.get(target)
-            val (eventArc, eventRow) = types.get(event)
-            val sourceRecord = source?.let { types.get(it) }
-            val sourceArc = sourceRecord?.archetype
-            val sourceRow = sourceRecord?.row
-
-            // If there's no source but the handler needs a source, skip
-            if (source == null && !handler.parentListener.source.isEmpty) continue
-
-            // Check that this handler has a listener associated with it.
-            if (!handler.parentListener.target.isEmpty && handler.parentListener !in targetArc.targetListeners) continue
-            if (sourceArc != null && !handler.parentListener.source.isEmpty && handler.parentListener !in sourceArc.sourceListeners) continue
-
-            // Check that we still match the data if archetype of any involved entities changed.
-            if (targetArc != this@Archetype && targetArc.type !in handler.parentListener.target.family) continue
-            if (eventArc != origEventArc && eventArc.type !in handler.parentListener.event.family) continue
-            if (sourceArc != origSourceArc && eventArc.type !in handler.parentListener.source.family) continue
-
-            val listenerName = handler.parentListener::class.simpleName
-            val targetScope = runCatching {
-                RawAccessorDataScope(
-                    archetype = targetArc,
-                    perArchetypeData = handler.parentListener.target.cacheForArchetype(targetArc),
-                    row = targetRow,
-                )
-            }.getOrElse { throw IllegalStateException("Failed while reading target scope on $listenerName", it) }
-            val eventScope = runCatching {
-                RawAccessorDataScope(
-                    archetype = eventArc,
-                    perArchetypeData = handler.parentListener.event.cacheForArchetype(eventArc),
-                    row = eventRow,
-                )
-            }.getOrElse { throw IllegalStateException("Failed while reading event scope on $listenerName", it) }
-            val sourceScope = if (sourceRecord == null) null else runCatching {
-                RawAccessorDataScope(
-                    archetype = sourceArc!!,
-                    perArchetypeData = handler.parentListener.source.cacheForArchetype(sourceArc),
-                    row = sourceRow!!,
-                )
-            }.getOrElse { throw IllegalStateException("Failed while reading source scope on $listenerName", it) }
-            handler.processAndHandle(sourceScope, targetScope, eventScope)
-        }
     }
 
     // ==== Iterators ====
