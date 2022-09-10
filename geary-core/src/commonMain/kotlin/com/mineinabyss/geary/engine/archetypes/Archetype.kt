@@ -7,14 +7,13 @@ import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
-import com.mineinabyss.geary.engine.ArchetypeEngine
+import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.Engine
+import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.events.Handler
-import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.Listener
-import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.systems.query.GearyQuery
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
@@ -27,7 +26,9 @@ import kotlinx.atomicfu.locks.synchronized
  * gives a large performance boost to system iteration.
  */
 public data class Archetype(
-    private val engine: Engine,
+    private val archetypeProvider: ArchetypeProvider,
+    private val typeMap: TypeMap,
+    private val eventRunner: EventRunner,
     public val type: EntityType,
     public val id: Int
 ) {
@@ -53,10 +54,10 @@ public data class Archetype(
         Array(dataHoldingType.size) { mutableListOf() }
 
     /** Edges to other archetypes where a single component has been added. */
-    internal val componentAddEdges = CompId2ArchetypeMap(engine)
+    internal val componentAddEdges = CompId2ArchetypeMap()
 
     /** Edges to other archetypes where a single component has been removed. */
-    internal val componentRemoveEdges = CompId2ArchetypeMap(engine)
+    internal val componentRemoveEdges = CompId2ArchetypeMap()
 
     internal val relations = type.inner.mapNotNull { it.toRelation() }
     internal val relationsWithData = relations.filter { it.id.holdsData() }
@@ -68,17 +69,6 @@ public data class Archetype(
     /** Map of relation [Relation.kind] id to a list of relations with that [Relation.kind]. */
     internal val relationsByKind: Long2ObjectMap<List<Relation>> = relations
         .groupBy { it.kind.toLong() }
-
-//    /** A map of a relation's kind to full relations that store data of that kind. */
-//    internal val dataHoldingRelations: Long2ObjectMap<List<Relation>> by lazy {
-//        val map = mutableMapOf<Long, List<Relation>>()
-//        relationsByTarget.forEach { (key, values) ->
-//            val dataHolding = values.filter { it.kind.holdsData() }
-//            if (dataHolding.isNotEmpty()) map[key] = dataHolding
-//        }
-//        map
-//    }
-
 
     /** A map of component ids to index used internally in this archetype (ex. in [componentData])*/
     private val comp2indices: Map<Long, Int> = buildMap {
@@ -101,7 +91,7 @@ public data class Archetype(
     public val eventHandlers: Set<Handler> = _eventHandlers
 
     // ==== Helper functions ====
-    public fun getEntity(row: Int): Entity {
+    public fun getEntity(row: Int): Entity = synchronized(entityAddition) {
         return ids[row].toGeary()
     }
 
@@ -123,22 +113,16 @@ public data class Archetype(
         return componentData[compIndex][row]
     }
 
-
     /** @return Whether this archetype has a [componentId] in its type. */
     public operator fun contains(componentId: ComponentId): Boolean = componentId in type
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
     public operator fun plus(componentId: ComponentId): Archetype =
-        if (componentId in componentAddEdges)
-            componentAddEdges[componentId]
-        else
-            globalContext.engine.getArchetype(type.plus(componentId))
+        componentAddEdges[componentId] ?: archetypeProvider.getArchetype(type.plus(componentId))
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
     public operator fun minus(componentId: ComponentId): Archetype =
-        if (componentId in componentRemoveEdges)
-            componentRemoveEdges[componentId]
-        else globalContext.engine.getArchetype(type.minus(componentId)).also {
+        componentRemoveEdges[componentId] ?: archetypeProvider.getArchetype(type.minus(componentId)).also {
             componentRemoveEdges[componentId] = it
         }
 
@@ -153,7 +137,7 @@ public data class Archetype(
     internal fun addEntityWithData(
         record: Record,
         data: Array<Component>,
-        entity: Entity = record.entity,
+        entity: Entity,
     ) = synchronized(entityAddition) {
         synchronized(record) {
             ids.add(entity.id.toLong())
@@ -187,12 +171,13 @@ public data class Archetype(
         val moveTo = this + (componentId.withoutRole(HOLDS_DATA))
 
         val componentData = getComponents(record.row)
-        scheduleRemoveRow(record.row)
-        moveTo.addEntityWithData(record, componentData)
+        val entity = record.entity
+        removeEntity(record.row)
+        moveTo.addEntityWithData(record, componentData, entity)
 
         if (callEvent) temporaryEntity { componentAddEvent ->
             componentAddEvent.addRelation<AddedComponent>(componentId.toGeary(), noEvent = true)
-            record.archetype.callEvent(componentAddEvent, record.row)
+            eventRunner.callEvent(record, typeMap[componentAddEvent], null)
         }
         return true
     }
@@ -218,27 +203,28 @@ public data class Archetype(
         val addIndex = indexOf(dataComponent)
         if (addIndex != -1) {
             componentData[addIndex][row] = data
-            if(callEvent) temporaryEntity { componentAddEvent ->
+            if (callEvent) temporaryEntity { componentAddEvent ->
                 componentAddEvent.addRelation<UpdatedComponent>(componentId.toGeary(), noEvent = true)
-                record.archetype.callEvent(componentAddEvent, record.row)
+                eventRunner.callEvent(record, typeMap[componentAddEvent], null)
             }
             return false
         }
 
         //if component is not already added, add it, then set
-        if (addComponent(record, dataComponent.withoutRole(HOLDS_DATA), callEvent))
-            return record.archetype.setComponent(record, dataComponent, data, callEvent)
-
-        val moveTo = this + dataComponent
+        val moveTo =
+            if (contains(dataComponent.withoutRole(HOLDS_DATA)))
+                this + dataComponent
+            else this + dataComponent.withoutRole(HOLDS_DATA) + dataComponent
         val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
         val componentData = getComponents(row, add = data to newCompIndex)
 
-        scheduleRemoveRow(row)
-        moveTo.addEntityWithData(record, componentData)
+        val entity = record.entity
+        removeEntity(row)
+        moveTo.addEntityWithData(record, componentData, entity)
 
         if (callEvent) temporaryEntity { componentAddEvent ->
             componentAddEvent.addRelation<SetComponent>(componentId.toGeary(), noEvent = true)
-            record.archetype.callEvent(componentAddEvent, record.row)
+            eventRunner.callEvent(record, typeMap[componentAddEvent], null)
         }
         return true
     }
@@ -271,25 +257,27 @@ public data class Archetype(
                 else (Array<Any>(componentData.size) {}).also { data ->
                     for (i in 0..componentData.lastIndex) data[i] = componentData[i][row]
                 }
-            moveTo.addEntityWithData(record, copiedData)
-            scheduleRemoveRow(row)
+            val entity = record.entity
+            removeEntity(row)
+            moveTo.addEntityWithData(record, copiedData, entity)
         }
         return@synchronized true
     }
 
     /** Gets all the components associated with an entity at a [row]. */
-    internal fun getComponents(row: Int, add: Pair<Component, Int>? = null): Array<Component> {
-        if (add != null) {
-            val arr = Array<Any?>(componentData.size + 1) { null }
-            val (addElement, addIndex) = add
-            for (i in 0 until addIndex) arr[i] = componentData[i][row]
-            arr[addIndex] = addElement
-            for (i in addIndex..componentData.lastIndex) arr[i + 1] = componentData[i][row]
-            @Suppress("UNCHECKED_CAST") // For loop above ensures no nulls
-            return arr as Array<Component>
-        } else
-            return Array(componentData.size) { i: Int -> componentData[i][row] }
-    }
+    internal fun getComponents(row: Int, add: Pair<Component, Int>? = null): Array<Component> =
+        synchronized(entityAddition) {
+            if (add != null) {
+                val arr = Array<Any?>(componentData.size + 1) { null }
+                val (addElement, addIndex) = add
+                for (i in 0 until addIndex) arr[i] = componentData[i][row]
+                arr[addIndex] = addElement
+                for (i in addIndex..componentData.lastIndex) arr[i + 1] = componentData[i][row]
+                @Suppress("UNCHECKED_CAST") // For loop above ensures no nulls
+                return arr as Array<Component>
+            } else
+                return Array(componentData.size) { i: Int -> componentData[i][row] }
+        }
 
     /**
      * Queries for specific relations or by kind/target.
@@ -316,20 +304,18 @@ public data class Archetype(
         } ?: emptyList()
     }
 
-    internal fun scheduleRemoveRow(row: Int) {
-        synchronized(queueRemoval) {
-            queuedRemoval.add(row)
-        }
-        //TODO another variable (isScheduled) so we dont do a hashmap lookup each time
-        if (!isIterating) (engine as ArchetypeEngine).scheduleRemove(this)
-    }
+//    internal fun scheduleRemoveRow(row: Int) {
+//        synchronized(queueRemoval) {
+//            queuedRemoval.add(row)
+//        }
+//    }
 
     /**
      * Removes the entity at a [row] in this archetype, notifying running archetype iterators.
      *
      * Must be run synchronously.
      */
-    private fun removeEntity(row: Int) {
+    public fun removeEntity(row: Int) {
         val lastIndex = ids.lastIndex
 
         // Move entity in last row to deleted row
@@ -337,7 +323,7 @@ public data class Archetype(
             val replacement = ids[lastIndex]
             ids[row] = replacement
             componentData.forEach { it[row] = it.last() }
-            engine.getRecord(replacement.toGeary()).apply {
+            typeMap.get(replacement.toGeary()).apply {
                 this.archetype = this@Archetype
                 this.row = row
             }
@@ -363,68 +349,6 @@ public data class Archetype(
         _targetListeners += handler
     }
 
-    /** Calls an event with data in an [event entity][event]. */
-    public fun callEvent(
-        event: Entity,
-        row: Int,
-        source: Entity? = null,
-    ) {
-        val target = getEntity(row)
-        val engine = (engine as ArchetypeEngine) //TODO expose properly for internal api
-
-        val types = engine.typeMap
-        // Lock access to entities involved
-
-        val origEventArc = types.get(event).archetype
-        val origSourceArc = source?.let { types.get(it) }?.archetype
-
-        //TODO performance upgrade will come when we figure out a solution in QueryManager as well.
-        for (handler in origEventArc.eventHandlers) {
-            // If an event handler has moved the entity to a new archetype, make sure we follow it.
-            val (targetArc, targetRow) = types.get(target)
-            val (eventArc, eventRow) = types.get(event)
-            val sourceRecord = source?.let { types.get(it) }
-            val sourceArc = sourceRecord?.archetype
-            val sourceRow = sourceRecord?.row
-
-            // If there's no source but the handler needs a source, skip
-            if (source == null && !handler.parentListener.source.isEmpty) continue
-
-            // Check that this handler has a listener associated with it.
-            if (!handler.parentListener.target.isEmpty && handler.parentListener !in targetArc.targetListeners) continue
-            if (sourceArc != null && !handler.parentListener.source.isEmpty && handler.parentListener !in sourceArc.sourceListeners) continue
-
-            // Check that we still match the data if archetype of any involved entities changed.
-            if (targetArc != this@Archetype && targetArc.type !in handler.parentListener.target.family) continue
-            if (eventArc != origEventArc && eventArc.type !in handler.parentListener.event.family) continue
-            if (sourceArc != origSourceArc && eventArc.type !in handler.parentListener.source.family) continue
-
-            val listenerName = handler.parentListener::class.simpleName
-            val targetScope = runCatching {
-                RawAccessorDataScope(
-                    archetype = targetArc,
-                    perArchetypeData = handler.parentListener.target.cacheForArchetype(targetArc),
-                    row = targetRow,
-                )
-            }.getOrElse { throw IllegalStateException("Failed while reading target scope on $listenerName", it) }
-            val eventScope = runCatching {
-                RawAccessorDataScope(
-                    archetype = eventArc,
-                    perArchetypeData = handler.parentListener.event.cacheForArchetype(eventArc),
-                    row = eventRow,
-                )
-            }.getOrElse { throw IllegalStateException("Failed while reading event scope on $listenerName", it) }
-            val sourceScope = if (sourceRecord == null) null else runCatching {
-                RawAccessorDataScope(
-                    archetype = sourceArc!!,
-                    perArchetypeData = handler.parentListener.source.cacheForArchetype(sourceArc),
-                    row = sourceRow!!,
-                )
-            }.getOrElse { throw IllegalStateException("Failed while reading source scope on $listenerName", it) }
-            handler.processAndHandle(sourceScope, targetScope, eventScope)
-        }
-    }
-
     // ==== Iterators ====
 
 //    /** Stops tracking a running [iterator]. */
@@ -438,18 +362,18 @@ public data class Archetype(
         return ArchetypeIterator(this, query)
     }
 
-    /** Removes any queued up entity deletions. */
-    @PublishedApi
-    internal fun cleanup() {
-        synchronized(queueRemoval) {
-            if (!isIterating)
-                queuedRemoval.sort()
-            // Since the rows were added in order while iterating, the list is always sorted,
-            // so we don't worry about moving rows
-            while (queuedRemoval.isNotEmpty()) {
-                val last = queuedRemoval.removeLast()
-                removeEntity(last)
-            }
-        }
-    }
+//    /** Removes any queued up entity deletions. */
+//    @PublishedApi
+//    internal fun cleanup() {
+//        synchronized(queueRemoval) {
+//            if (!isIterating)
+//                queuedRemoval.sort()
+//            // Since the rows were added in order while iterating, the list is always sorted,
+//            // so we don't worry about moving rows
+//            while (queuedRemoval.isNotEmpty()) {
+//                val last = queuedRemoval.removeLast()
+//                removeEntity(last)
+//            }
+//        }
+//    }
 }

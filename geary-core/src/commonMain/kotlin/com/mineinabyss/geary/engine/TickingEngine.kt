@@ -2,7 +2,7 @@ package com.mineinabyss.geary.engine
 
 import kotlin.time.Duration
 
-public abstract class TickingEngine : Engine() {
+public abstract class TickingEngine : Engine {
     public abstract val tickDuration: Duration
 
     private var started: Boolean = false

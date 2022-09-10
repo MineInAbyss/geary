@@ -4,9 +4,13 @@ import com.mineinabyss.geary.context.EngineContext
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.context.QueryContext
 import com.mineinabyss.geary.context.globalContext
-import com.mineinabyss.geary.engine.ArchetypeEngine
+import com.mineinabyss.geary.datatypes.maps.HashTypeMap
+import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.Components
 import com.mineinabyss.geary.engine.Engine
+import com.mineinabyss.geary.engine.EntityProvider
+import com.mineinabyss.geary.engine.EventRunner
+import com.mineinabyss.geary.engine.archetypes.*
 import com.mineinabyss.geary.systems.QueryManager
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -14,7 +18,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.AfterAll
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.logger.Logger
@@ -23,8 +26,8 @@ import org.koin.dsl.module
 import kotlin.time.Duration.Companion.milliseconds
 
 abstract class GearyTest : KoinComponent, EngineContext {
-    override val engine get() = get<Engine>() as ArchetypeEngine
-    val queryManager get() = get<QueryManager>()
+    override val engine get() = globalContext.engine as ArchetypeEngine
+    val queryManager get() = globalContext.queryManager
 
     init {
         clearEngine()
@@ -34,19 +37,22 @@ abstract class GearyTest : KoinComponent, EngineContext {
         with(object : QueryContext {
             override val queryManager = QueryManager()
         }) {
-            val engine = ArchetypeEngine(10.milliseconds)
             @Suppress("RemoveExplicitTypeArguments")
             startKoin {
                 modules(module {
                     single<Logger> { PrintLogger() }
                     single { Components() }
-                    factory<QueryManager> { queryManager }
-                    factory<Engine> { engine }
+                    single<QueryManager> { queryManager }
+                    single<TypeMap> { HashTypeMap() }
+                    single<EventRunner> { ArchetypeEventRunner() }
+                    single<EntityProvider> { EntityByArchetypeProvider() }
+                    single<ArchetypeProvider> { SimpleArchetypeProvider() }
+                    single<Engine> { ArchetypeEngine(10.milliseconds) }
                 })
             }
             globalContext = GearyContextKoin()
             engine.init()
-            queryManager.init()
+            queryManager.init(engine)
         }
     }
 

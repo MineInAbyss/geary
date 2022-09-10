@@ -27,7 +27,8 @@ class FamilyMatchingTest: GearyTest() {
         }
     }
 
-    val correctArchetype = engine.rootArchetype + stringId + intId
+    val root = engine.archetypeProvider.rootArchetype
+    val correctArchetype = root + stringId + intId
 
     init {
         queryManager.trackQuery(system)
@@ -35,7 +36,7 @@ class FamilyMatchingTest: GearyTest() {
 
     @Test
     fun `family type is correct`() {
-        EntityType(system.family.components).getArchetype() shouldBe engine.rootArchetype + stringId
+        EntityType(system.family.components).getArchetype() shouldBe root + stringId
     }
 
     @Test

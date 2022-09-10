@@ -2,9 +2,14 @@ package com.mineinabyss.geary.papermc.plugin
 
 import com.mineinabyss.geary.addon.*
 import com.mineinabyss.geary.addon.GearyLoadPhase.ENABLE
+import com.mineinabyss.geary.datatypes.maps.HashTypeMap
+import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.datatypes.maps.UUID2GearyMap
 import com.mineinabyss.geary.engine.Components
 import com.mineinabyss.geary.engine.Engine
+import com.mineinabyss.geary.engine.EntityProvider
+import com.mineinabyss.geary.engine.EventRunner
+import com.mineinabyss.geary.engine.archetypes.*
 import com.mineinabyss.geary.formats.YamlFormat
 import com.mineinabyss.geary.helpers.withSerialName
 import com.mineinabyss.geary.papermc.GearyConfig
@@ -15,6 +20,7 @@ import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.dsl.GearyMCAddonManager
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.geary.papermc.engine.PaperMCEngine
+import com.mineinabyss.geary.papermc.globalContextMC
 import com.mineinabyss.geary.papermc.store.FileSystemStore
 import com.mineinabyss.geary.papermc.store.GearyStore
 import com.mineinabyss.geary.prefabs.PrefabManager
@@ -45,34 +51,30 @@ class GearyPluginImpl : GearyPlugin() {
         saveDefaultConfig()
         reloadConfig()
 
-        val engine = PaperMCEngine(this@GearyPluginImpl)
-        val serializers = Serializers()
-        val formats = Formats(serializers)
-        val queryManager = QueryManager()
-        val uuid2GearyMap = UUID2GearyMap(engine)
-        val prefabManager = PrefabManager()
-        val addonManager = GearyMCAddonManager()
-        val bukkitEntity2Geary = BukkitEntity2Geary()
-
         startOrAppendKoin(module {
             single<Logger> { GearyLogger(this@GearyPluginImpl) }
             single<GearyPlugin> { this@GearyPluginImpl }
-            single<QueryManager> { queryManager }
-            single<Engine> { engine }
-            single<BukkitEntity2Geary> { bukkitEntity2Geary }
-            single<UUID2GearyMap> { uuid2GearyMap }
-            single<GearyAddonManager> { addonManager }
-            single<PrefabManager> { prefabManager }
-            single<Serializers> { serializers }
-            single<Formats> { formats }
+            single<QueryManager> { QueryManager() }
+            single<TypeMap> { HashTypeMap() }
+            single<EventRunner> { ArchetypeEventRunner() }
+            single<EntityProvider> { EntityByArchetypeProvider() }
+            single<ArchetypeProvider> { SimpleArchetypeProvider() }
+            single<Engine> { PaperMCEngine(this@GearyPluginImpl) }
+            single<BukkitEntity2Geary> { BukkitEntity2Geary() }
+            single<UUID2GearyMap> { UUID2GearyMap() }
+            single<GearyAddonManager> { GearyMCAddonManager() }
+            single<PrefabManager> { PrefabManager() }
+            single<Serializers> { Serializers() }
+            single<Formats> { Formats() }
             single<Components> { Components() }
             singleConfig<GearyConfig>(this@GearyPluginImpl)
         })
 
+        val engine = globalContextMC.engine
         engine.start()
-        queryManager.init()
-        uuid2GearyMap.startTracking()
-        bukkitEntity2Geary.startTracking()
+        globalContextMC.queryManager.init(engine)
+        globalContextMC.uuid2entity.startTracking()
+        globalContextMC.bukkit2Geary.startTracking()
 
         gearyAddon {
             autoscan("com.mineinabyss") {

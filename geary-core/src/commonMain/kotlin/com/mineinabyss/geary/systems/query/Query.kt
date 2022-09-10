@@ -46,12 +46,10 @@ public abstract class Query : AccessorHolder(), Iterable<TargetScope>, GearyCont
         val matched = matchedArchetypes.toList()
         val sizes = matched.map { it.size - 1 }
         matched.fastForEachWithIndex { i, archetype ->
-            archetype.cleanup()
             archetype.isIterating = true
             archetype.iteratorFor(this@Query).forEach(upTo = sizes[i]) { targetScope ->
                 run(targetScope)
             }
-            archetype.cleanup()
             archetype.isIterating = false
         }
     }

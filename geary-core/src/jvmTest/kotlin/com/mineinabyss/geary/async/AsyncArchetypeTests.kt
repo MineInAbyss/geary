@@ -9,18 +9,21 @@ import com.mineinabyss.geary.helpers.toGeary
 import io.kotest.matchers.collections.shouldBeUnique
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 class AsyncArchetypeTests : GearyTest() {
     @Test
     fun `add entities concurrently`() = runTest {
         clearEngine()
-        val arc = engine.getArchetype(EntityType(ulongArrayOf(componentId<String>() or HOLDS_DATA)))
+        val arc = engine.archetypeProvider.getArchetype(EntityType(ulongArrayOf(componentId<String>() or HOLDS_DATA)))
         concurrentOperation(10000) {
-            arc.addEntityWithData(engine.newEntity().getRecord(), arrayOf("Test"))
+            val rec = engine.getRecord(engine.newEntity())
+            arc.addEntityWithData(rec, arrayOf("Test"), rec.entity)
         }.awaitAll()
         arc.entities.size shouldBe 10000
         arc.entities.shouldBeUnique()
@@ -28,20 +31,17 @@ class AsyncArchetypeTests : GearyTest() {
 
 
     // The two tests below are pretty beefy and more like benchmarks so they're disabled by default
+    //TODO move into benchmark and turn back into concurrent version when we actually support concurrency
 //    @Test
     fun `set and remove concurrency`() = runTest {
         println(measureTime {
-            concurrentOperation(100) {
+            repeat(1000000) {
                 val entity = entity()
-                repeat(1000) { id ->
-                    launch {
-//                        entity.withLock {
-                        entity.setRelation("String", id.toULong().toGeary())
-                        println("Locked for ${entity.id}: $id, size ${engine.archetypeCount}")
-//                        }
-                    }
-                }
-            }.awaitAll()
+                repeat(0) { id ->
+                    entity.setRelation("String", id.toULong().toGeary())
+                }//.awaitAll()
+//                    println("Finished for ${entity.id}, arc size ${engine.archetypeProvider.count}")
+            }//.awaitAll()
         })
 //        entity.getComponents().shouldBeEmpty()
     }
@@ -65,11 +65,11 @@ class AsyncArchetypeTests : GearyTest() {
         println(measureTime {
             for (i in 0 until iters) {
 //            concurrentOperation(iters) { i ->
-                engine.getArchetype(EntityType((0uL..i.toULong()).toList()))
-                println("Creating arc $i, total: ${engine.archetypeCount}")
+                engine.archetypeProvider.getArchetype(EntityType((0uL..i.toULong()).toList()))
+                println("Creating arc $i, total: ${engine.archetypeProvider.count}")
 //            }.awaitAll()
             }
         })
-        engine.archetypeCount shouldBe iters + 1
+        engine.archetypeProvider.count shouldBe iters + 1
     }
 }

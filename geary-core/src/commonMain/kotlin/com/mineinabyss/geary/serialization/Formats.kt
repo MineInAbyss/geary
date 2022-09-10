@@ -2,6 +2,8 @@ package com.mineinabyss.geary.serialization
 
 import com.mineinabyss.geary.datatypes.Component
 import kotlinx.serialization.cbor.Cbor
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 /**
  * A singleton for accessing different serialization formats with all the registered serializers for [Component]s
@@ -9,9 +11,8 @@ import kotlinx.serialization.cbor.Cbor
  *
  * Will likely be converted into a service eventually.
  */
-public class Formats(
-    serializers: Serializers
-) {
+public class Formats: KoinComponent {
+    private val serializers: Serializers by inject()
     private val formatMap = mutableMapOf<String, PrefabFormat>()
 
     /** The format to use for encoding binary data (usually not to files) */
