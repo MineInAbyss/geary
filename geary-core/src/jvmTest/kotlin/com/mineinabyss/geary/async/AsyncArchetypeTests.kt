@@ -9,8 +9,11 @@ import com.mineinabyss.geary.helpers.toGeary
 import io.kotest.matchers.collections.shouldBeUnique
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 class AsyncArchetypeTests : GearyTest() {
@@ -28,16 +31,17 @@ class AsyncArchetypeTests : GearyTest() {
 
 
     // The two tests below are pretty beefy and more like benchmarks so they're disabled by default
-    @Test
+    //TODO move into benchmark and turn back into concurrent version when we actually support concurrency
+//    @Test
     fun `set and remove concurrency`() = runTest {
         println(measureTime {
-            concurrentOperation(100) {
+            repeat(1000000) {
                 val entity = entity()
-                concurrentOperation(1000) { id ->
+                repeat(0) { id ->
                     entity.setRelation("String", id.toULong().toGeary())
-                }.awaitAll()
-                println("Finished for ${entity.id}, arc size ${engine.archetypeProvider.count}")
-            }.awaitAll()
+                }//.awaitAll()
+//                    println("Finished for ${entity.id}, arc size ${engine.archetypeProvider.count}")
+            }//.awaitAll()
         })
 //        entity.getComponents().shouldBeEmpty()
     }

@@ -205,14 +205,14 @@ public open class ArchetypeEngine(override val tickDuration: Duration) : Ticking
         }
 
         val (archetype, row) = getRecord(entity)
-        archetype.scheduleRemoveRow(row)
+        archetype.removeEntity(row)
         //add current id into queue for reuse
         entityProvider.removeEntity(entity)
     }
 
     override fun clearEntity(entity: Entity) {
         val (archetype, row) = getRecord(entity)
-        archetype.scheduleRemoveRow(row)
+        archetype.removeEntity(row)
         archetypeProvider.rootArchetype.addEntityWithData(getRecord(entity), arrayOf(), entity)
     }
 
@@ -251,7 +251,6 @@ public open class ArchetypeEngine(override val tickDuration: Duration) : Ticking
     override suspend fun tick(currentTick: Long): Unit = coroutineScope {
         // Create a job but don't start it
         val job = launch(start = CoroutineStart.LAZY) {
-            cleanup()
             registeredSystems
                 .filter { currentTick % (it.interval / tickDuration).toInt().coerceAtLeast(1) == 0L }
                 .forEach {
@@ -279,12 +278,5 @@ public open class ArchetypeEngine(override val tickDuration: Duration) : Ticking
 
     override fun callEvent(target: Entity, event: Entity, source: Entity?) {
         eventRunner.callEvent(getRecord(target), getRecord(event), source?.let { getRecord(it) })
-    }
-
-    private fun cleanup() {
-        queuedCleanup.forEach { archetype ->
-            archetype.cleanup()
-        }
-        queuedCleanup.clear()
     }
 }

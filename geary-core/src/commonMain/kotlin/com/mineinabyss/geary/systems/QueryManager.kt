@@ -57,7 +57,6 @@ public class QueryManager {
     //TODO convert to Sequence
     public fun getEntitiesMatching(family: Family): List<Entity> {
         return archetypes.match(family).flatMap { arc ->
-            arc.cleanup()
             arc.entities
         }
     }
