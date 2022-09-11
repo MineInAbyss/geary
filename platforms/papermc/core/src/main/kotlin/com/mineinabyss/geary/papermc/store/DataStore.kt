@@ -67,7 +67,9 @@ inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
 
     serializer ?: return null
     val encoded = get(key, BYTE_ARRAY) ?: return null
-    return runCatching { globalContext.formats.binaryFormat.decodeFromByteArray(serializer, encoded) }.getOrNull()
+    return runCatching { globalContext.formats.binaryFormat.decodeFromByteArray(serializer, encoded) }
+        .onFailure { it.printStackTrace() }
+        .getOrNull()
 }
 
 /**

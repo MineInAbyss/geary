@@ -15,9 +15,11 @@ internal fun PersistentDataContainer.keysFrom(plugin: Plugin): List<NamespacedKe
 }
 
 /** Converts this string to a [NamespacedKey] with the [COMPONENT_PREFIX] on its key. */
-fun String.toComponentKey(): NamespacedKey =
-    if (this.startsWith(COMPONENT_PREFIX)) toMCKey()
-    else "$COMPONENT_PREFIX$this".toMCKey()
+fun String.toComponentKey(): NamespacedKey {
+    val namespacedKey = toMCKey()
+    return if(namespacedKey.key.startsWith(COMPONENT_PREFIX)) namespacedKey
+    else "${namespacedKey.namespace}:${COMPONENT_PREFIX}${namespacedKey.key}".toMCKey()
+}
 
 /** Gets the serialName associated with this component [NamespacedKey]. */
 fun NamespacedKey.toSerialName(): String = "$namespace:${key.removePrefix(COMPONENT_PREFIX)}"

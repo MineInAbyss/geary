@@ -198,7 +198,7 @@ public value class Entity(public val id: EntityId) {
      * (the other is the prefab this entity was made from).
      */
     public inline fun instanceOf(entity: Entity): Boolean =
-        hasRelation<InstanceOf>(entity)
+        hasRelation<InstanceOf?>(entity)
 
     /** Checks whether this entity has a component of type [T], regardless of it holding data. */
     public inline fun <reified T : Component> has(): Boolean = has(T::class)
@@ -250,7 +250,7 @@ public value class Entity(public val id: EntityId) {
     public inline fun <reified K : Component, reified T : Component> hasRelation(): Boolean =
         hasRelation<K>(component<T>())
 
-    public inline fun <reified K : Component> hasRelation(target: Entity): Boolean =
+    public inline fun <reified K : Component?> hasRelation(target: Entity): Boolean =
         has(Relation.of<K>(target).id)
 
     public inline fun <reified K : Any, reified T : Any> setRelation(data: K, noEvent: Boolean = false) {
