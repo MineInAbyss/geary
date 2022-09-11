@@ -25,7 +25,6 @@ import kotlin.reflect.KClass
  */
 @Serializable
 @JvmInline
-@Suppress("NOTHING_TO_INLINE")
 public value class Entity(public val id: EntityId) {
     /**
      * Gets this entity's type (the ids of components added to it)
@@ -59,7 +58,7 @@ public value class Entity(public val id: EntityId) {
         noEvent: Boolean = false
     ): Unit = set(component, componentId(kClass), noEvent)
 
-    public inline fun set(
+    public fun set(
         component: Component,
         componentId: ComponentId,
         noEvent: Boolean = false
@@ -77,7 +76,7 @@ public value class Entity(public val id: EntityId) {
      *
      * @param noEvent If true, will not fire an [AddedComponent] event.
      */
-    public inline fun add(component: ComponentId, noEvent: Boolean = false) {
+    public fun add(component: ComponentId, noEvent: Boolean = false) {
         globalContext.engine.addComponentFor(this, component, noEvent)
     }
 
@@ -95,7 +94,7 @@ public value class Entity(public val id: EntityId) {
      *
      * @param noEvent If true, will not fire an [AddedComponent] event.
      */
-    public inline fun addAll(components: Collection<ComponentId>, noEvent: Boolean = false) {
+    public fun addAll(components: Collection<ComponentId>, noEvent: Boolean = false) {
         components.forEach { add(it, noEvent) }
     }
 
@@ -120,7 +119,7 @@ public value class Entity(public val id: EntityId) {
      * @param noEvent If true, will not fire an [AddedComponent] event.
      * @see setPersisting
      */
-    public inline fun setAllPersisting(
+    public fun setAllPersisting(
         components: Collection<Component>,
         override: Boolean = true,
         noEvent: Boolean = false
@@ -139,11 +138,11 @@ public value class Entity(public val id: EntityId) {
         remove(componentId<T>()) || remove(componentId<T>() and ENTITY_MASK)
 
     /** Removes a component whose class is [kClass] from this entity. */
-    public inline fun remove(kClass: KClass<*>): Boolean =
+    public fun remove(kClass: KClass<*>): Boolean =
         remove(componentId(kClass))
 
     /** Removes a component with id [component] from this entity. */
-    public inline fun remove(component: ComponentId): Boolean =
+    public fun remove(component: ComponentId): Boolean =
         globalContext.engine.removeComponentFor(this, component)
 
     /**
@@ -151,7 +150,7 @@ public value class Entity(public val id: EntityId) {
      *
      * @see remove
      */
-    public inline fun removeAll(components: Collection<ComponentId>): Boolean =
+    public fun removeAll(components: Collection<ComponentId>): Boolean =
         components.any { remove(it) }
 
     /** Clears all components on this entity. */
@@ -167,7 +166,7 @@ public value class Entity(public val id: EntityId) {
         get(componentId(kClass)) as? T
 
     /** Gets a [component] which holds data from this entity. Use [has] if the component is not to hold data. */
-    public inline fun get(component: ComponentId): Component? =
+    public fun get(component: ComponentId): Component? =
         globalContext.engine.getComponentFor(this, component)
 
     /** Gets a component of type [T] or sets a [default] if no component was present. */
@@ -186,18 +185,18 @@ public value class Entity(public val id: EntityId) {
     public fun getAll(): Set<Component> = globalContext.engine.getComponentsFor(this).toSet()
 
     /** Gets all persisting components on this entity. */
-    public inline fun getAllPersisting(): Set<Component> =
+    public fun getAllPersisting(): Set<Component> =
         getRelationsWithData<Persists, Any>().mapTo(mutableSetOf()) { it.targetData }
 
     /** Gets all non-persisting components on this entity. */
-    public inline fun getAllNotPersisting(): Set<Component> =
+    public fun getAllNotPersisting(): Set<Component> =
         getAll() - getAllPersisting()
 
     /**
      * Checks whether this entity is an instance of another [entity]
      * (the other is the prefab this entity was made from).
      */
-    public inline fun instanceOf(entity: Entity): Boolean =
+    public fun instanceOf(entity: Entity): Boolean =
         hasRelation<InstanceOf?>(entity)
 
     /** Checks whether this entity has a component of type [T], regardless of it holding data. */
@@ -209,7 +208,7 @@ public value class Entity(public val id: EntityId) {
 
 
     /** Checks whether this entity has a [component], regardless of it holding data. */
-    public inline fun has(component: ComponentId): Boolean =
+    public fun has(component: ComponentId): Boolean =
         globalContext.engine.hasComponentFor(this, component)
 
     /**
@@ -217,7 +216,7 @@ public value class Entity(public val id: EntityId) {
      *
      * @see has
      */
-    public inline fun hasAll(components: Collection<KClass<*>>): Boolean = components.all { has(it) }
+    public fun hasAll(components: Collection<KClass<*>>): Boolean = components.all { has(it) }
 
     // Relations
 
@@ -293,7 +292,7 @@ public value class Entity(public val id: EntityId) {
     }, source = source, result = result)
 
     /** Calls an event with [components] attached to it and this entity as the target. */
-    public inline fun callEvent(vararg components: Any, source: Entity? = null): Unit =
+    public fun callEvent(vararg components: Any, source: Entity? = null): Unit =
         callEvent(source = source) {
             setAll(components.toList())
         }
