@@ -21,6 +21,13 @@ jobs:
           java-version: 17
           cache: gradle
 
+      - name: Set env variable from latest maven version
+        run: >
+          echo "RELEASE_VERSION=$( \
+            curl https://repo.mineinabyss.com/releases/com/mineinabyss/geary-core/maven-metadata.xml | \
+            grep -oP '(?!<latest>)[\d\.]*(?=</latest>)' \
+          )" >> $GITHUB_ENV
+
       - name: Run gradle build and publish
         run: >
           gradle build publish dokkaHtmlMultiModule
