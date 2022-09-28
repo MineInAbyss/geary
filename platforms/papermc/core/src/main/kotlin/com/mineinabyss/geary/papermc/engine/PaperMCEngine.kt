@@ -5,7 +5,7 @@ import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import com.mineinabyss.geary.engine.archetypes.ArchetypeEngine
 import com.mineinabyss.geary.systems.GearySystem
 import com.mineinabyss.geary.systems.RepeatingSystem
-import com.mineinabyss.idofront.plugin.registerEvents
+import com.mineinabyss.idofront.plugin.listeners
 import com.mineinabyss.idofront.time.ticks
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -32,7 +32,7 @@ class PaperMCEngine(private val plugin: Plugin) : ArchetypeEngine(tickDuration =
         super.addSystem(system)
 
         if (system is Listener)
-            plugin.registerEvents(system)
+            plugin.listeners(system)
     }
 
     override fun scheduleSystemTicking() {

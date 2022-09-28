@@ -12,7 +12,7 @@ public class Serializers {
     private val serialName2Component: MutableMap<String, KClass<out Component>> = mutableMapOf()
     private val component2serialName: MutableMap<KClass<out Component>, String> = mutableMapOf()
     public val module: SerializersModule by lazy {
-        addonToModuleMap.values.fold(EmptySerializersModule) { acc, module ->
+        addonToModuleMap.values.fold(EmptySerializersModule()) { acc, module ->
             acc.overwriteWith(module)
         }
     }
@@ -52,7 +52,7 @@ public class Serializers {
 
     public fun addSerializersModule(namespace: String, module: SerializersModule) {
         addonToModuleMap[namespace] =
-            addonToModuleMap.getOrElse(namespace) { EmptySerializersModule }.overwriteWith(module)
+            addonToModuleMap.getOrElse(namespace) { EmptySerializersModule() }.overwriteWith(module)
     }
 
     public fun clearSerializerModule(addonName: String) {

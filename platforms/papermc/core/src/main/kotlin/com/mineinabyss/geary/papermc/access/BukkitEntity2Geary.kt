@@ -17,7 +17,7 @@ import com.mineinabyss.geary.papermc.store.loadComponentsFrom
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.TargetScope
-import com.mineinabyss.idofront.plugin.registerEvents
+import com.mineinabyss.idofront.plugin.listeners
 import com.mineinabyss.idofront.typealiases.BukkitEntity
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap
 import org.bukkit.entity.Player
@@ -32,7 +32,7 @@ class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin() {
     private val entityMap = Int2LongOpenHashMap().apply { defaultReturnValue(-1) }
 
     fun startTracking() {
-        geary.registerEvents(this)
+        geary.listeners(this)
         systems(Register(), Unregister())
     }
 
