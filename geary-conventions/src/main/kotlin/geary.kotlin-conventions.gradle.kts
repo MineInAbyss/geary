@@ -1,7 +1,6 @@
 import org.gradle.accessors.dm.LibrariesForLibs
 
 val libs = the<LibrariesForLibs>()
-val idofrontVersion: String by project
 
 plugins {
     id("com.mineinabyss.conventions.kotlin")
@@ -22,5 +21,9 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin")
     }
 
-    implementation(libs.idofront.core)
+    implementation(libs.bundles.idofront.core)
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions.freeCompilerArgs += "-opt-in=kotlinx.serialization.ExperimentalSerializationApi"
 }

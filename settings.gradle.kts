@@ -37,7 +37,7 @@ dependencyResolutionManagement {
 
     versionCatalogs {
         create("libs").from("com.mineinabyss:catalog:$idofrontVersion")
-        create("gearyLibs").from(files("gradle/gearyLibs.versions.toml"))
+        create("mylibs").from(files("gradle/mylibs.versions.toml"))
     }
 }
 

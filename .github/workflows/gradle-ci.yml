@@ -8,6 +8,10 @@ on:
       - '**.md'
   pull_request:
 
+concurrency:
+  cancel-in-progress: true
+  group: ci-${{ github.ref }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,9 +27,3 @@ jobs:
 
       - name: Build
         run: gradle build
-
-#      - name: Upload build
-#        uses: actions/upload-artifact@v1
-#        with:
-#          name: build
-#          path: build/libs

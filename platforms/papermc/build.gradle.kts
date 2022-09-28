@@ -17,7 +17,7 @@ configurations {
         excludeDep(libs.koin.core)
         excludeDep(libs.fastutil)
         excludeDep(libs.kotlin.reflect)
-        excludeDep(libs.kotlinx.coroutines)
+        excludeDep(libs.kotlinx.coroutines.asProvider())
         excludeDep(libs.reflections)
         exclude("org.jetbrains.kotlinx")
         exclude("org.jetbrains.kotlin")

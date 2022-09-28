@@ -8,7 +8,7 @@ plugins {
 repositories {
 }
 dependencies {
-    compileOnly(gearyLibs.fastutil)
+    compileOnly(libs.fastutil)
 
     compileOnly(project(":geary-core"))
 }

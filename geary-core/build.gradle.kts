@@ -10,10 +10,8 @@ plugins {
 }
 
 buildscript {
-    val atomicfuVersion = "0.17.1"
-
     dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicfuVersion")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${mylibs.versions.atomicfu.get()}")
     }
 }
 
@@ -61,19 +59,16 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
-                implementation("org.jetbrains.kotlinx:atomicfu:0.17.1")
-                implementation("com.benasher44:uuid:0.4.0")
+                implementation(mylibs.atomicfu)
+                implementation(mylibs.uuid)
                 implementation(libs.kotlin.reflect)
                 implementation(libs.kotlinx.serialization.cbor)
-//                implementation(gearylibs.bitvector)
-//                api(libs.kotlinx.coroutines)
-                api("com.squareup.okio:okio:3.0.0")
-                api(libs.koin.core)// { isTransitive = false }
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
+
+                api(mylibs.okio)
+                api(mylibs.kds)
+                api(libs.koin.core)
+                api(libs.kotlinx.coroutines)
                 api(libs.kotlinx.serialization.json)
-                api("com.soywiz.korlibs.kds:kds:2.2.1")
-//                implementation(libs.koin.test.junit5)
-//                implementation("io.kotest:kotest-runner-junit5:5.2.3")
             }
 
         }
@@ -81,26 +76,23 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.koin.core)
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.1")
-                implementation("io.kotest:kotest-assertions-core:5.2.3")
-                implementation("io.kotest:kotest-property:5.2.3")
-
-//                implementation("io.insert-koin:koin-test:3.1.5")
-//                implementation(libs.koin.test)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotest.assertions)
+                implementation(libs.kotest.property)
             }
         }
 
         val jvmMain by getting {
             dependencies {
                 implementation(libs.kotlinx.serialization.kaml)
-                implementation("org.roaringbitmap:RoaringBitmap:0.9.25")
+                implementation(mylibs.roaringbitmap)
             }
         }
         val jvmTest by getting
 
 //        val jsMain by getting {
 //            dependencies {
-//                api(gearylibs.bitvector.js)
+//                api(mylibs.bitvector.js)
 //            }
 //        }
     }

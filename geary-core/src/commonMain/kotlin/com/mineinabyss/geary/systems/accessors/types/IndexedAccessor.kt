@@ -41,5 +41,6 @@ public abstract class IndexedAccessor<out T>(
             override fun ArchetypeCacheScope.calculate(): T = operation()
         }.also { _cached += it }
 
+    @Suppress("UNCHECKED_CAST") // Internal logic ensures cast always succeeds
     override fun access(scope: ResultScope): T = scope.data[index] as T
 }
