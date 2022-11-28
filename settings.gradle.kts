@@ -45,7 +45,6 @@ include(
     "geary-addon",
     "geary-core",
     "geary-prefabs",
-//    "geary-web-console",
     "geary-papermc",
 )
 
@@ -59,5 +58,3 @@ file("./platforms/papermc")
         include(name)
         project(":$name").projectDir = it
     }
-
-includeBuild("geary-conventions")

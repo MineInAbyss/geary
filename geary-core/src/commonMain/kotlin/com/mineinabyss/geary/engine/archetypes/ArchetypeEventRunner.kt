@@ -1,12 +1,22 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.Record
+import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-public class ArchetypeEventRunner: EventRunner {
-    override fun callEvent(target: Record, event: Record, source: Record?) {
+public class ArchetypeEventRunner : EventRunner, KoinComponent {
+    private val records: TypeMap by inject()
+
+    override fun callEvent(target: Entity, event: Entity, source: Entity?) {
+        callEvent(records[target], records[event], source?.let { records[source] })
+    }
+
+    public fun callEvent(target: Record, event: Record, source: Record?) {
         val origEventArc = event.archetype
         val origTargetArc = target.archetype
         val origSourceArc = source?.archetype

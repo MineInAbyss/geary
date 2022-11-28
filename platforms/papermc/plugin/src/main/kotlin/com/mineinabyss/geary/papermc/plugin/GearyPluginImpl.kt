@@ -5,14 +5,9 @@ import com.mineinabyss.geary.addon.GearyLoadPhase.ENABLE
 import com.mineinabyss.geary.datatypes.maps.HashTypeMap
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.datatypes.maps.UUID2GearyMap
-import com.mineinabyss.geary.engine.Components
-import com.mineinabyss.geary.engine.Engine
-import com.mineinabyss.geary.engine.EntityProvider
-import com.mineinabyss.geary.engine.EventRunner
-import com.mineinabyss.geary.engine.archetypes.ArchetypeEventRunner
-import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
-import com.mineinabyss.geary.engine.archetypes.EntityByArchetypeProvider
-import com.mineinabyss.geary.engine.archetypes.SimpleArchetypeProvider
+import com.mineinabyss.geary.engine.*
+import com.mineinabyss.geary.engine.archetypes.*
+import com.mineinabyss.geary.engine.impl.UnorderedSystemProvider
 import com.mineinabyss.geary.formats.YamlFormat
 import com.mineinabyss.geary.helpers.withSerialName
 import com.mineinabyss.geary.papermc.GearyConfig
@@ -21,13 +16,12 @@ import com.mineinabyss.geary.papermc.StartupEventListener
 import com.mineinabyss.geary.papermc.access.BukkitEntity2Geary
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.dsl.GearyMCAddonManager
-import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.geary.papermc.engine.PaperMCEngine
+import com.mineinabyss.geary.papermc.engine.PaperSystemProvider
 import com.mineinabyss.geary.papermc.globalContextMC
 import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.geary.serialization.Formats
 import com.mineinabyss.geary.serialization.Serializers
-import com.mineinabyss.geary.systems.QueryManager
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.config.singleConfig
 import com.mineinabyss.idofront.platforms.Platforms
@@ -48,15 +42,17 @@ class GearyPluginImpl : GearyPlugin() {
     //    private var module: Module? = null
     @Suppress("RemoveExplicitTypeArguments")
     override fun onEnable() {
+        val plugin = this
+
         startOrAppendKoin(module {
-            single<Logger> { GearyLogger(this@GearyPluginImpl) }
-            single<GearyPlugin> { this@GearyPluginImpl }
-            single<QueryManager> { QueryManager() }
+            single<Logger> { GearyLogger(plugin) }
+            single<GearyPlugin> { plugin }
+            single<ArchetypeQueryManager> { ArchetypeQueryManager() }
             single<TypeMap> { HashTypeMap() }
             single<EventRunner> { ArchetypeEventRunner() }
             single<EntityProvider> { EntityByArchetypeProvider() }
             single<ArchetypeProvider> { SimpleArchetypeProvider() }
-            single<Engine> { PaperMCEngine(this@GearyPluginImpl) }
+            single<Engine> { PaperMCEngine(plugin) }
             single<BukkitEntity2Geary> { BukkitEntity2Geary() }
             single<UUID2GearyMap> { UUID2GearyMap() }
             single<GearyAddonManager> { GearyMCAddonManager() }
@@ -64,6 +60,12 @@ class GearyPluginImpl : GearyPlugin() {
             single<Serializers> { Serializers() }
             single<Formats> { Formats() }
             single<Components> { Components() }
+
+
+            scope<Engine> {
+                scoped<SystemProvider> { PaperSystemProvider(plugin, UnorderedSystemProvider()) }
+            }
+
             singleConfig(config<GearyConfig>("config") {
                 fromPluginPath(loadDefault = true)
             })

@@ -7,7 +7,6 @@ import com.mineinabyss.geary.components.RegenerateUUIDOnClash
 import com.mineinabyss.geary.components.events.EntityRemoved
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.family.family
-import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.EventScope
@@ -28,8 +27,8 @@ public class UUID2GearyMap : GearyListener() {
         uuid2geary.remove(uuid)?.toGeary()
 
     public fun startTracking() {
-        engine.addSystem(TrackUuidOnAdd())
-        engine.addSystem(UnTrackUuidOnRemove())
+        engine.systems.add(TrackUuidOnAdd())
+        engine.systems.add(UnTrackUuidOnRemove())
     }
 
     public inner class TrackUuidOnAdd : GearyListener() {

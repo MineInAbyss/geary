@@ -1,17 +1,15 @@
-package com.mineinabyss.geary.systems
+package com.mineinabyss.geary.engine.archetypes
 
-import com.mineinabyss.geary.context.EngineContext
-import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.maps.Family2ObjectArrayMap
-import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.engine.archetypes.ArchetypeEngine
+import com.mineinabyss.geary.engine.QueryManager
 import com.mineinabyss.geary.events.Handler
 import com.mineinabyss.geary.helpers.contains
+import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.query.GearyQuery
 
-public class QueryManager {
+public class ArchetypeQueryManager : QueryManager {
     private val queries = mutableListOf<GearyQuery>()
     private val sourceListeners = mutableListOf<Listener>()
     private val targetListeners = mutableListOf<Listener>()
@@ -23,8 +21,8 @@ public class QueryManager {
         registerArchetype(engine.archetypeProvider.rootArchetype)
     }
 
-    public fun trackEventListener(listener: Listener) {
-        trackEventListener(
+    override fun trackEventListener(listener: Listener) {
+        com.mineinabyss.geary.systems.trackEventListener(
             listener,
             sourceListeners,
             targetListeners,
@@ -33,7 +31,7 @@ public class QueryManager {
         )
     }
 
-    public fun trackQuery(query: GearyQuery) {
+    override fun trackQuery(query: GearyQuery) {
         val matched = archetypes.match(query.family)
         query.matchedArchetypes += matched
         queries.add(query)
@@ -55,7 +53,7 @@ public class QueryManager {
     }
 
     //TODO convert to Sequence
-    public fun getEntitiesMatching(family: Family): List<Entity> {
+    override fun getEntitiesMatching(family: Family): List<Entity> {
         return archetypes.match(family).flatMap { arc ->
             arc.entities
         }

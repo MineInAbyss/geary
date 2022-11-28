@@ -4,14 +4,13 @@ import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EventRunner
-import com.mineinabyss.geary.systems.QueryManager
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 public class SimpleArchetypeProvider : ArchetypeProvider, KoinComponent {
-    private val queryManager: QueryManager by inject()
+    private val queryManager: ArchetypeQueryManager by inject()
     private val typeMap: TypeMap by inject()
     private val eventRunner: EventRunner by inject()
 

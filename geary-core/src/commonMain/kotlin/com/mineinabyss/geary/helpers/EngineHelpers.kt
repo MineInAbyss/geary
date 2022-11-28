@@ -1,12 +1,10 @@
 package com.mineinabyss.geary.helpers
 
-import com.mineinabyss.geary.annotations.optin.ExperimentalAsyncGearyAPI
 import com.mineinabyss.geary.components.ComponentInfo
+import com.mineinabyss.geary.components.events.SuppressRemoveEvent
 import com.mineinabyss.geary.context.globalContext
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.systems.GearySystem
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlin.reflect.KClass
@@ -14,21 +12,22 @@ import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 /** Creates a new empty entity. May reuse recently deleted entity ids. */
-public fun entity(): Entity = globalContext.engine.newEntity()
+public fun entity(): Entity = globalContext.engine.entityProvider.newEntity()
 
 /** @see entity */
 public inline fun entity(run: Entity.() -> Unit): Entity = entity().apply(run)
 
 /** Creates a new empty entity that will get removed once [run] completes or fails. */
 public inline fun <T> temporaryEntity(
-    callRemoveEvent: Boolean = false,
     run: (Entity) -> T
 ): T {
-    val entity = entity()
+    val entity = entity {
+        add<SuppressRemoveEvent>()
+    }
     return try {
         run(entity)
     } finally {
-        entity.removeEntity(callRemoveEvent)
+        entity.removeEntity()
     }
 }
 
@@ -56,7 +55,7 @@ public fun componentId(kType: KType): ComponentId =
 
 /** Gets or registers the id of a component by its [kClass]. */
 public fun componentId(kClass: KClass<*>): ComponentId =
-    globalContext.engine.getOrRegisterComponentIdForClass(kClass)
+    globalContext.engine.componentProvider.getOrRegisterComponentIdForClass(kClass)
 
 
 @Deprecated("Should not be getting an id for an id!", ReplaceWith("componentId(component)"))
@@ -69,15 +68,15 @@ public fun ComponentId.getComponentInfo(): ComponentInfo? =
     this.toGeary().get()
 
 public fun systems(vararg systems: GearySystem): List<Deferred<Unit>> {
-    return systems.map { globalContext.engine.async { globalContext.engine.addSystem(it) } }
+    return systems.map { globalContext.engine.async { globalContext.engine.systems.add(it) } }
 }
 
-@ExperimentalAsyncGearyAPI
-public inline fun <T> runSafely(
-    scope: CoroutineScope = globalContext.engine,
-    crossinline run: suspend () -> T
-): Deferred<T> {
-    val deferred = globalContext.engine.async(start = CoroutineStart.LAZY) { run() }
-    globalContext.engine.runSafely(scope, deferred)
-    return deferred
-}
+//@ExperimentalAsyncGearyAPI
+//public inline fun <T> runSafely(
+//    scope: CoroutineScope = globalContext.engine,
+//    crossinline run: suspend () -> T
+//): Deferred<T> {
+//    val deferred = globalContext.engine.async(start = CoroutineStart.LAZY) { run() }
+//    globalContext.engine.runSafely(scope, deferred)
+//    return deferred
+//}

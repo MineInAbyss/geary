@@ -21,7 +21,7 @@ internal class GearyEngineTest : GearyTest() {
             entity().id shouldBe offset + 100uL
 
             (0 until 100).forEach {
-                engine.removeEntity((offset + it.toULong()).toGeary())
+                engine.entityProvider.removeEntity((offset + it.toULong()).toGeary())
             }
         }
     }

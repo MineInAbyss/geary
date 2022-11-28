@@ -11,7 +11,6 @@ import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.engine.EntityProvider
 import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.engine.archetypes.*
-import com.mineinabyss.geary.systems.QueryManager
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -35,14 +34,14 @@ abstract class GearyTest : KoinComponent, EngineContext {
 
     private fun startKoinWithGeary() {
         with(object : QueryContext {
-            override val queryManager = QueryManager()
+            override val queryManager = ArchetypeQueryManager()
         }) {
             @Suppress("RemoveExplicitTypeArguments")
             startKoin {
                 modules(module {
                     single<Logger> { PrintLogger() }
                     single { Components() }
-                    single<QueryManager> { queryManager }
+                    single<ArchetypeQueryManager> { queryManager }
                     single<TypeMap> { HashTypeMap() }
                     single<EventRunner> { ArchetypeEventRunner() }
                     single<EntityProvider> { EntityByArchetypeProvider() }

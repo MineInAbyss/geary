@@ -9,7 +9,6 @@ import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.Engine
-import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.events.Handler
 import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.helpers.toGeary
@@ -27,8 +26,8 @@ import kotlinx.atomicfu.locks.synchronized
  */
 public data class Archetype(
     private val archetypeProvider: ArchetypeProvider,
-    private val typeMap: TypeMap,
-    private val eventRunner: EventRunner,
+    private val records: TypeMap,
+    private val eventRunner: ArchetypeEventRunner,
     public val type: EntityType,
     public val id: Int
 ) {
@@ -177,7 +176,7 @@ public data class Archetype(
 
         if (callEvent) temporaryEntity { componentAddEvent ->
             componentAddEvent.addRelation<AddedComponent>(componentId.toGeary(), noEvent = true)
-            eventRunner.callEvent(record, typeMap[componentAddEvent], null)
+            eventRunner.callEvent(record, records[componentAddEvent], null)
         }
         return true
     }
@@ -205,7 +204,7 @@ public data class Archetype(
             componentData[addIndex][row] = data
             if (callEvent) temporaryEntity { componentAddEvent ->
                 componentAddEvent.addRelation<UpdatedComponent>(componentId.toGeary(), noEvent = true)
-                eventRunner.callEvent(record, typeMap[componentAddEvent], null)
+                eventRunner.callEvent(record, records[componentAddEvent], null)
             }
             return false
         }
@@ -224,7 +223,7 @@ public data class Archetype(
 
         if (callEvent) temporaryEntity { componentAddEvent ->
             componentAddEvent.addRelation<SetComponent>(componentId.toGeary(), noEvent = true)
-            eventRunner.callEvent(record, typeMap[componentAddEvent], null)
+            eventRunner.callEvent(record, records[componentAddEvent], null)
         }
         return true
     }
@@ -323,7 +322,7 @@ public data class Archetype(
             val replacement = ids[lastIndex]
             ids[row] = replacement
             componentData.forEach { it[row] = it.last() }
-            typeMap.get(replacement.toGeary()).apply {
+            records.get(replacement.toGeary()).apply {
                 this.archetype = this@Archetype
                 this.row = row
             }

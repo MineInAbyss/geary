@@ -54,7 +54,7 @@ internal class ArchetypeTest : GearyTest() {
         val instanceOf2 = Relation.of<InstanceOf?>(target2)
         val arc = Archetype(
             engine.archetypeProvider,
-            engine.typeMap,
+            engine.records,
             engine.eventRunner,
             EntityType(listOf(persists.id, instanceOf.id, instanceOf2.id)),
             0
