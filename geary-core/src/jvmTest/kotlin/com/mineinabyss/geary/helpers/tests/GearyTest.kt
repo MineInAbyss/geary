@@ -1,9 +1,6 @@
 package com.mineinabyss.geary.helpers.tests
 
-import com.mineinabyss.geary.context.EngineContext
-import com.mineinabyss.geary.context.GearyContextKoin
-import com.mineinabyss.geary.context.QueryContext
-import com.mineinabyss.geary.context.globalContext
+import com.mineinabyss.geary.context.*
 import com.mineinabyss.geary.datatypes.maps.HashTypeMap
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.Components
@@ -24,36 +21,37 @@ import org.koin.core.logger.PrintLogger
 import org.koin.dsl.module
 import kotlin.time.Duration.Companion.milliseconds
 
-abstract class GearyTest : KoinComponent, EngineContext {
-    override val engine get() = globalContext.engine as ArchetypeEngine
-    val queryManager get() = globalContext.queryManager
+abstract class GearyTest : EngineContext {
+    val geary: GearyArchetypeModule = GearyArchetypeModule()
+//    override val engine get() = geary.engine as ArchetypeEngine
+    val queryManager get() = geary.queryManager
 
     init {
         clearEngine()
     }
 
-    private fun startKoinWithGeary() {
-        with(object : QueryContext {
-            override val queryManager = ArchetypeQueryManager()
-        }) {
-            @Suppress("RemoveExplicitTypeArguments")
-            startKoin {
-                modules(module {
-                    single<Logger> { PrintLogger() }
-                    single { Components() }
-                    single<ArchetypeQueryManager> { queryManager }
-                    single<TypeMap> { HashTypeMap() }
-                    single<EventRunner> { ArchetypeEventRunner() }
-                    single<EntityProvider> { EntityByArchetypeProvider() }
-                    single<ArchetypeProvider> { SimpleArchetypeProvider() }
-                    single<Engine> { ArchetypeEngine(10.milliseconds) }
-                })
-            }
-            globalContext = GearyContextKoin()
-            engine.init()
-            queryManager.init(engine)
-        }
-    }
+//    private fun startKoinWithGeary() {
+//        with(object : QueryContext {
+//            override val queryManager = ArchetypeQueryManager()
+//        }) {
+//            @Suppress("RemoveExplicitTypeArguments")
+//            startKoin {
+//                modules(module {
+//                    single<Logger> { PrintLogger() }
+//                    single { Components() }
+//                    single<ArchetypeQueryManager> { queryManager }
+//                    single<TypeMap> { HashTypeMap() }
+//                    single<EventRunner> { ArchetypeEventRunner() }
+//                    single<EntityProvider> { EntityByArchetypeProvider() }
+//                    single<ArchetypeProvider> { SimpleArchetypeProvider() }
+//                    single<Engine> { ArchetypeEngine(10.milliseconds) }
+//                })
+//            }
+//            geary = GearyContextKoin()
+//            engine.init()
+//            queryManager.init(engine)
+//        }
+//    }
 
     @AfterAll
     private fun stop() {

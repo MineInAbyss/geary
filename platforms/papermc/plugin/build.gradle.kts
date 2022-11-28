@@ -11,6 +11,7 @@ repositories {
 dependencies {
     // Shaded
     api(project(":geary-papermc-core"))
+    implementation(libs.bundles.idofront.core)
 
     // Other plugins
     compileOnly(mylibs.plugman)

@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.helpers
 
-import com.mineinabyss.geary.context.globalContext
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.*
 import kotlin.reflect.KClass
 
@@ -10,7 +10,7 @@ public fun Entity.listComponents(): String {
         ${getAllNotPersisting().joinToString("\n") { "${it::class.simpleName}: $it" }}
         
         Persisting:
-        ${getAllPersisting().joinToString("\n") { "${globalContext.serializers.getSerialNameFor(it::class)}: $it" }}
+        ${getAllPersisting().joinToString("\n") { "${geary.serializers.getSerialNameFor(it::class)}: $it" }}
         """.trimIndent()
 }
 

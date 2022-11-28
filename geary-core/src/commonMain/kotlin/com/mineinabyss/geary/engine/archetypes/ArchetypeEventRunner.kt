@@ -6,12 +6,10 @@ import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-public class ArchetypeEventRunner : EventRunner, KoinComponent {
-    private val records: TypeMap by inject()
-
+public class ArchetypeEventRunner(
+    private val records: TypeMap
+) : EventRunner {
     override fun callEvent(target: Entity, event: Entity, source: Entity?) {
         callEvent(records[target], records[event], source?.let { records[source] })
     }

@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.prefabs
 
-import com.mineinabyss.geary.context.globalContext
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.prefabs.serializers.PrefabKeySerializer
 import kotlinx.serialization.Serializable
@@ -16,7 +16,7 @@ data class PrefabKey private constructor(val namespace: String, val key: String)
     fun toEntity(): Entity = toEntityOrNull()
         ?: error("Requested non null prefab entity for $this, but it does not exist.")
 
-    fun toEntityOrNull(): Entity? = globalContext.prefabManager[this]
+    fun toEntityOrNull(): Entity? = geary.prefabManager[this]
 
     val full get() = "$namespace:$key"
 

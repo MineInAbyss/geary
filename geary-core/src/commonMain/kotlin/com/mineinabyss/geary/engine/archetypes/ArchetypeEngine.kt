@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.engine.archetypes
 
 import com.mineinabyss.geary.context.QueryContext
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.*
 import com.mineinabyss.geary.systems.RepeatingSystem
@@ -20,25 +21,8 @@ import kotlin.time.Duration
  *
  * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */
-public open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine(), QueryContext {
-    override val scope: Scope by lazy { createScope<Engine>(this) }
-
-    protected val logger: Logger by inject()
-
-    override val queryManager: QueryManager by inject()
-
-    override val entityProvider: EntityProvider by inject()
-    override val systems: SystemProvider by inject()
-
-    override val read: EntityReadOperations by inject()
-    override val write: EntityMutateOperations by inject()
-    override val componentProvider: ComponentProvider by inject()
-    override val eventRunner: EventRunner by inject()
-
-    internal val archetypeProvider: ArchetypeProvider by inject()
-
-//    @PublishedApi
-//    internal val records: TypeMap by inject()
+public open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine() {
+    private val logger get() = geary.logger
 
     override val coroutineContext: CoroutineContext =
         (CoroutineScope(Dispatchers.Default) + CoroutineName("Geary Engine")).coroutineContext
@@ -61,7 +45,7 @@ public open class ArchetypeEngine(override val tickDuration: Duration) : Ticking
     override suspend fun tick(currentTick: Long): Unit = coroutineScope {
         // Create a job but don't start it
         val tickJob = launch(start = CoroutineStart.LAZY) {
-            systems.getRepeatingInExecutionOrder()
+            geary.systems.getRepeatingInExecutionOrder()
                 .filter { currentTick % (it.interval / tickDuration).toInt().coerceAtLeast(1) == 0L }
                 .forEach {
                     runCatching {

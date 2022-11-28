@@ -8,7 +8,7 @@
  */
 package com.mineinabyss.geary.context
 
-public var globalContext: GearyContextKoin =
+public var geary: GearyContext =
     GearyContextKoin()
 
 //public val koin: Koin get() = KoinPlatformTools.defaultContext().get()

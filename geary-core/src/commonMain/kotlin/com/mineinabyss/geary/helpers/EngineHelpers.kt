@@ -2,7 +2,7 @@ package com.mineinabyss.geary.helpers
 
 import com.mineinabyss.geary.components.ComponentInfo
 import com.mineinabyss.geary.components.events.SuppressRemoveEvent
-import com.mineinabyss.geary.context.globalContext
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.systems.GearySystem
 import kotlinx.coroutines.Deferred
@@ -12,7 +12,7 @@ import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 /** Creates a new empty entity. May reuse recently deleted entity ids. */
-public fun entity(): Entity = globalContext.engine.entityProvider.newEntity()
+public fun entity(): Entity = geary.engine.entityProvider.newEntity()
 
 /** @see entity */
 public inline fun entity(run: Entity.() -> Unit): Entity = entity().apply(run)
@@ -47,7 +47,7 @@ public inline fun <reified T> componentIdWithNullable(): ComponentId =
  * Throws an error if the component name does not exist.
  */
 public fun componentId(serialName: String): ComponentId =
-    componentId(globalContext.serializers.getClassFor(serialName))
+    componentId(geary.serializers.getClassFor(serialName))
 
 /** Gets or registers the id of a component by its [kType]. */
 public fun componentId(kType: KType): ComponentId =
@@ -55,7 +55,7 @@ public fun componentId(kType: KType): ComponentId =
 
 /** Gets or registers the id of a component by its [kClass]. */
 public fun componentId(kClass: KClass<*>): ComponentId =
-    globalContext.engine.componentProvider.getOrRegisterComponentIdForClass(kClass)
+    geary.engine.componentProvider.getOrRegisterComponentIdForClass(kClass)
 
 
 @Deprecated("Should not be getting an id for an id!", ReplaceWith("componentId(component)"))
@@ -68,7 +68,7 @@ public fun ComponentId.getComponentInfo(): ComponentInfo? =
     this.toGeary().get()
 
 public fun systems(vararg systems: GearySystem): List<Deferred<Unit>> {
-    return systems.map { globalContext.engine.async { globalContext.engine.systems.add(it) } }
+    return systems.map { geary.engine.async { geary.engine.systems.add(it) } }
 }
 
 //@ExperimentalAsyncGearyAPI

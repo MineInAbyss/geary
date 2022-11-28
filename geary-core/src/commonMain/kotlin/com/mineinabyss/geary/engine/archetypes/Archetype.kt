@@ -3,7 +3,7 @@ package com.mineinabyss.geary.engine.archetypes
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.SetComponent
 import com.mineinabyss.geary.components.events.UpdatedComponent
-import com.mineinabyss.geary.context.globalContext
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
@@ -289,8 +289,8 @@ public data class Archetype(
      * All other roles are ignored for the [target].
      */
     internal fun getRelations(kind: ComponentId, target: EntityId): List<Relation> {
-        val specificKind = kind and ENTITY_MASK != globalContext.components.any
-        val specificTarget = target and ENTITY_MASK != globalContext.components.any
+        val specificKind = kind and ENTITY_MASK != geary.components.any
+        val specificTarget = target and ENTITY_MASK != geary.components.any
         return when {
             specificKind && specificTarget -> listOf(Relation.of(kind, target))
             specificTarget -> relationsByTarget[target.toLong()]

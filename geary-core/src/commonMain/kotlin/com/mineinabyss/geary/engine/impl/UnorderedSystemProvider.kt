@@ -5,14 +5,13 @@ import com.mineinabyss.geary.engine.archetypes.ArchetypeQueryManager
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.RepeatingSystem
 import com.mineinabyss.geary.systems.System
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 /**
  * Runs systems in no particular order.
  */
-public class UnorderedSystemProvider : SystemProvider, KoinComponent {
-    private val queryManager: ArchetypeQueryManager by inject()
+public class UnorderedSystemProvider(
+    private val queryManager: ArchetypeQueryManager
+) : SystemProvider {
     private val registeredSystems: MutableSet<RepeatingSystem> = mutableSetOf()
     private val registeredListeners: MutableSet<Listener> = mutableSetOf()
 

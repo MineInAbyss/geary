@@ -3,7 +3,7 @@ package com.mineinabyss.geary.papermc.helpers
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.GearyConfig
 import com.mineinabyss.geary.papermc.events.GearyAttemptMinecraftSpawnEvent
-import com.mineinabyss.geary.papermc.globalContextMC
+import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.messaging.broadcast
@@ -18,7 +18,7 @@ internal fun KoinComponent.debug(message: Any?) {
 }
 
 fun Location.spawnFromPrefab(prefab: PrefabKey): Entity? {
-    val entity = globalContextMC.prefabManager[prefab] ?: return null
+    val entity = gearyPaper.prefabManager[prefab] ?: return null
     return spawnFromPrefab(entity)
 }
 

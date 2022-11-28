@@ -3,7 +3,7 @@ package com.mineinabyss.geary.datatypes.family
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.SetComponent
 import com.mineinabyss.geary.components.events.UpdatedComponent
-import com.mineinabyss.geary.context.globalContext
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.componentId
@@ -97,8 +97,8 @@ public sealed class MutableFamily : Family {
             kind: ComponentId,
             target: EntityId,
         ) {
-            val specificKind = kind and ENTITY_MASK != globalContext.components.any
-            val specificTarget = target and ENTITY_MASK != globalContext.components.any
+            val specificKind = kind and ENTITY_MASK != geary.components.any
+            val specificTarget = target and ENTITY_MASK != geary.components.any
             return when {
                 specificKind && specificTarget -> has(Relation.of(kind, target).id)
                 specificTarget -> add(Leaf.AnyToTarget(target, kind.holdsData()))

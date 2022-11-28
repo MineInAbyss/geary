@@ -9,17 +9,14 @@ import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.query.GearyQuery
 
-public class ArchetypeQueryManager : QueryManager {
+public class ArchetypeQueryManager(
+) : QueryManager {
     private val queries = mutableListOf<GearyQuery>()
     private val sourceListeners = mutableListOf<Listener>()
     private val targetListeners = mutableListOf<Listener>()
     private val eventHandlers = mutableListOf<Handler>()
 
     private val archetypes = Family2ObjectArrayMap<Archetype>()
-
-    public fun init(engine: ArchetypeEngine) {
-        registerArchetype(engine.archetypeProvider.rootArchetype)
-    }
 
     override fun trackEventListener(listener: Listener) {
         com.mineinabyss.geary.systems.trackEventListener(

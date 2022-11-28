@@ -10,7 +10,7 @@ import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.systems
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.papermc.GearyMCContext
-import com.mineinabyss.geary.papermc.GearyMCContextKoin
+import com.mineinabyss.geary.papermc.GearyPaperModule
 import com.mineinabyss.geary.papermc.store.encodeComponentsTo
 import com.mineinabyss.geary.papermc.store.hasComponentsEncoded
 import com.mineinabyss.geary.papermc.store.loadComponentsFrom
@@ -28,7 +28,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import kotlin.collections.set
 
-class BukkitEntity2Geary : Listener, GearyMCContext by GearyMCContextKoin() {
+class BukkitEntity2Geary : Listener, GearyMCContext by GearyPaperModule() {
     private val entityMap = Int2LongOpenHashMap().apply { defaultReturnValue(-1) }
 
     fun startTracking() {

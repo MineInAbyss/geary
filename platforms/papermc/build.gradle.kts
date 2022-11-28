@@ -14,7 +14,6 @@ configurations {
             val (group, module) = dep.get().module.toString().split(":")
             exclude(group, module)
         }
-        excludeDep(libs.koin.core)
         excludeDep(libs.fastutil)
         excludeDep(libs.kotlin.reflect)
         excludeDep(libs.kotlinx.coroutines.asProvider())

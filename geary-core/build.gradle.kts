@@ -66,7 +66,6 @@ kotlin {
 
                 api(mylibs.okio)
                 api(mylibs.kds)
-                api(libs.koin.core)
                 api(libs.kotlinx.coroutines)
                 api(libs.kotlinx.serialization.json)
             }
@@ -75,7 +74,6 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation(libs.koin.core)
                 implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.kotest.assertions)
                 implementation(libs.kotest.property)

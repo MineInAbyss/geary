@@ -4,12 +4,10 @@ import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityReadOperations
 import com.mineinabyss.geary.systems.accessors.RelationWithData
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-public class ArchetypeReadOperations : EntityReadOperations, KoinComponent {
-    private val records: TypeMap by inject()
-
+public class ArchetypeReadOperations(
+    private val records: TypeMap
+) : EntityReadOperations {
     override fun getComponentFor(entity: Entity, componentId: ComponentId): Component? {
         val (archetype, row) = records[entity]
         return archetype[row, componentId.let { if (it.hasRole(RELATION)) it else it.withRole(HOLDS_DATA) }]

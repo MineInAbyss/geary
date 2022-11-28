@@ -7,13 +7,11 @@ import com.mineinabyss.geary.engine.ComponentProvider
 import com.mineinabyss.geary.engine.EntityProvider
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import kotlin.reflect.KClass
 
-public class ComponentAsEntityProvider : ComponentProvider, KoinComponent {
-    private val entityProvider: EntityProvider by inject()
-
+public class ComponentAsEntityProvider(
+    private val entityProvider: EntityProvider
+) : ComponentProvider {
     private val classToComponentMap = ClassToComponentMap()
     private val classToComponentMapLock = SynchronizedObject()
 

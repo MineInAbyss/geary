@@ -3,12 +3,12 @@ package com.mineinabyss.geary.engine.archetypes.operations
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityMutateOperations
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 
-public class ArchetypeMutateOperations : EntityMutateOperations, KoinComponent {
-    private val records: TypeMap by inject()
-
+public class ArchetypeMutateOperations(
+    private val records: TypeMap,
+    private val archetypeProvider: ArchetypeProvider
+) : EntityMutateOperations {
     override fun setComponentFor(
         entity: Entity,
         componentId: ComponentId,
@@ -41,8 +41,8 @@ public class ArchetypeMutateOperations : EntityMutateOperations, KoinComponent {
         }
 
     override fun clearEntity(entity: Entity) {
-        val (archetype, row) = getRecord(entity)
-        archetype.removeEntity(row)
-        archetypeProvider.rootArchetype.addEntityWithData(getRecord(entity), arrayOf(), entity)
+        val rec = records[entity]
+        rec.archetype.removeEntity(rec.row)
+        archetypeProvider.rootArchetype.addEntityWithData(rec, arrayOf(), entity)
     }
 }

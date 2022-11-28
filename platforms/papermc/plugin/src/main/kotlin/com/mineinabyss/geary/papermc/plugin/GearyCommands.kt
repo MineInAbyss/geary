@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.papermc.plugin
 
 import com.mineinabyss.geary.papermc.GearyMCContext
-import com.mineinabyss.geary.papermc.GearyMCContextKoin
+import com.mineinabyss.geary.papermc.GearyPaperModule
 import com.mineinabyss.geary.papermc.StartupEventListener
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.commands.arguments.stringArg
@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 
-internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter, GearyMCContext by GearyMCContextKoin() {
+internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter, GearyMCContext by GearyPaperModule() {
     override val commands = commands(geary) {
         "geary" {
             "reread" {

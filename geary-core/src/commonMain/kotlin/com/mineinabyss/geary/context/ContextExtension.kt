@@ -10,9 +10,9 @@ public class ContextExtension<T : Any>(
     private var cachedValue: T? = null
 
     override fun getValue(thisRef: GearyContext, property: KProperty<*>): T {
-        if (globalContext != cachedGlobalContext) {
-            cachedGlobalContext = globalContext
-            cachedValue = globalContext.cache()
+        if (geary != cachedGlobalContext) {
+            cachedGlobalContext = geary
+            cachedValue = geary.cache()
         }
         return cachedValue!!
     }

@@ -10,7 +10,6 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.idofront.autoscan)
     api(project(":geary-addon"))
     api(project(":geary-core"))
     api(project(":geary-prefabs"))
@@ -19,4 +18,8 @@ dependencies {
     compileOnly(libs.kotlinx.coroutines)
     compileOnly(libs.kotlin.reflect) { isTransitive = false }
     compileOnly(libs.reflections)
+    compileOnly(libs.minecraft.mccoroutine)
+
+    implementation(libs.idofront.autoscan)
+    implementation(libs.bundles.idofront.core)
 }

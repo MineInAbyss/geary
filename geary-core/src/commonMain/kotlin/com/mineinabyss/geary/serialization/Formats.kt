@@ -11,8 +11,9 @@ import org.koin.core.component.inject
  *
  * Will likely be converted into a service eventually.
  */
-public class Formats: KoinComponent {
-    private val serializers: Serializers by inject()
+public class Formats(
+    private val serializers: Serializers
+): KoinComponent {
     private val formatMap = mutableMapOf<String, PrefabFormat>()
 
     /** The format to use for encoding binary data (usually not to files) */

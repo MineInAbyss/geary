@@ -14,10 +14,11 @@ import kotlinx.atomicfu.atomic
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-public class EntityByArchetypeProvider : EntityProvider, KoinComponent {
+public class EntityByArchetypeProvider(
+    private val records: TypeMap,
+    private val archetypeProvider: ArchetypeProvider
+): EntityProvider {
     private val removedEntities: EntityStack = EntityStack()
-    private val records: TypeMap by inject()
-    private val archetypeProvider: ArchetypeProvider by inject()
 
     private val currId = atomic(0L)
     override fun newEntity(initialComponents: Collection<Component>): GearyEntity {

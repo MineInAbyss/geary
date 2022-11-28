@@ -9,6 +9,7 @@ import com.mineinabyss.geary.helpers.with
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
 import com.mineinabyss.geary.serialization.EntitySerializer
+import com.mineinabyss.geary.serialization.Formats
 import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.messaging.logWarn
 import okio.Path.Companion.toOkioPath
@@ -18,7 +19,9 @@ import java.util.*
 /**
  * Manages registered prefabs and accessing them via name.
  */
-class PrefabManager : GearyContext by GearyContextKoin() {
+class PrefabManager(
+    val formats: Formats
+) {
     /** A list of registered [PrefabKey]s. */
     val keys: List<PrefabKey> get() = keyToPrefab.keys.toList()
 
