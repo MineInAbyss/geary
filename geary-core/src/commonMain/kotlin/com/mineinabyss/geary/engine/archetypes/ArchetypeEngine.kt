@@ -1,15 +1,10 @@
 package com.mineinabyss.geary.engine.archetypes
 
-import com.mineinabyss.geary.context.QueryContext
 import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.*
 import com.mineinabyss.geary.systems.RepeatingSystem
 import kotlinx.coroutines.*
-import org.koin.core.component.createScope
-import org.koin.core.component.inject
-import org.koin.core.logger.Logger
-import org.koin.core.scope.Scope
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 
@@ -22,6 +17,7 @@ import kotlin.time.Duration
  * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */
 public open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine() {
+    private val systems get() = geary.systems
     private val logger get() = geary.logger
 
     override val coroutineContext: CoroutineContext =
@@ -45,21 +41,21 @@ public open class ArchetypeEngine(override val tickDuration: Duration) : Ticking
     override suspend fun tick(currentTick: Long): Unit = coroutineScope {
         // Create a job but don't start it
         val tickJob = launch(start = CoroutineStart.LAZY) {
-            geary.systems.getRepeatingInExecutionOrder()
+            systems.getRepeatingInExecutionOrder()
                 .filter { currentTick % (it.interval / tickDuration).toInt().coerceAtLeast(1) == 0L }
                 .forEach {
                     runCatching {
                         it.runSystem()
                     }.onFailure {
-                        logger.error("Error while running system ${it::class.simpleName}")
+                        logger.severe("Error while running system ${it::class.simpleName}")
                         it.printStackTrace()
                     }
                 }
         }
 
         // Tick all systems
-        logger.debug("Started engine tick")
+        logger.fine("Started engine tick")
         tickJob.join()
-        logger.debug("Finished engine tick")
+        logger.fine("Finished engine tick")
     }
 }

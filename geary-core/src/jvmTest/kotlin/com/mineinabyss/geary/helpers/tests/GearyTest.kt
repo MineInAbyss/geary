@@ -21,7 +21,7 @@ import org.koin.core.logger.PrintLogger
 import org.koin.dsl.module
 import kotlin.time.Duration.Companion.milliseconds
 
-abstract class GearyTest : EngineContext {
+abstract class GearyTest {
     val geary: GearyArchetypeModule = GearyArchetypeModule()
 //    override val engine get() = geary.engine as ArchetypeEngine
     val queryManager get() = geary.queryManager

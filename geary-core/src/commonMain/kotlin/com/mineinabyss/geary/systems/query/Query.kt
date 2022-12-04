@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.systems.query
 
-import com.mineinabyss.geary.context.GearyContext
-import com.mineinabyss.geary.context.GearyContextKoin
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.family.Family
+import com.mineinabyss.geary.engine.QueryManager
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.AccessorHolder
@@ -18,7 +18,9 @@ import kotlin.reflect.KProperty
 /**com.mineinabyss.geary.ecs.engine.iteration.accessors
  * @property matchedArchetypes A set of archetypes which have been matched to this query.
  */
-public abstract class Query : AccessorHolder(), Iterable<TargetScope>, GearyContext by GearyContextKoin() {
+public abstract class Query : AccessorHolder(), Iterable<TargetScope> {
+    public val queryManager: QueryManager get() = geary.queryManager
+
     @PublishedApi
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
 
@@ -59,11 +61,9 @@ public abstract class Query : AccessorHolder(), Iterable<TargetScope>, GearyCont
     protected inline fun <reified T : Component> TargetScope.get(): ComponentAccessor<T> =
         error("Cannot change query at runtime")
 
-    @Suppress("UNCHECKED_CAST")
     public operator fun <T> Accessor<T>.getValue(thisRef: TargetScope, property: KProperty<*>): T =
         access(thisRef)
 
-    @Suppress("UNCHECKED_CAST")
     public operator fun Family.provideDelegate(thisRef: GearyQuery, property: KProperty<*>): DirectAccessor<Family> =
         _family.add(this).run { DirectAccessor(family) }
 }

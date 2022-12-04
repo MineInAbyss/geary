@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 
-internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter, GearyMCContext by GearyPaperModule() {
+internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(geary) {
         "geary" {
             "reread" {

@@ -1,9 +1,8 @@
 package com.mineinabyss.geary.serialization
 
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.Component
 import kotlinx.serialization.cbor.Cbor
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 /**
  * A singleton for accessing different serialization formats with all the registered serializers for [Component]s
@@ -11,24 +10,19 @@ import org.koin.core.component.inject
  *
  * Will likely be converted into a service eventually.
  */
-public class Formats(
-    private val serializers: Serializers
-): KoinComponent {
+public class Formats : IFormats {
     private val formatMap = mutableMapOf<String, PrefabFormat>()
 
-    /** The format to use for encoding binary data (usually not to files) */
-    public val binaryFormat: Cbor by lazy {
+    public override val binaryFormat: Cbor by lazy {
         Cbor {
-            serializersModule = serializers.module
+            serializersModule = geary.serializers.module
             encodeDefaults = false
         }
     }
 
-    /** Gets a registered [PrefabFormat] for a file with extension [ext]. */
-    public operator fun get(ext: String): PrefabFormat? = formatMap[ext]
+    override operator fun get(ext: String): PrefabFormat? = formatMap[ext]
 
-    /** Registers a [PrefabFormat] for a file with extension [ext]. */
-    public fun register(ext: String, format: PrefabFormat) {
+    override fun register(ext: String, format: PrefabFormat) {
         formatMap[ext] = format
     }
 }

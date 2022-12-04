@@ -4,12 +4,12 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
 public class ContextExtension<T : Any>(
-    private val cache: GearyContext.() -> T
-) : ReadOnlyProperty<GearyContext, T> {
-    private var cachedGlobalContext: GearyContext? = null
+    private val cache: GearyModule.() -> T
+) : ReadOnlyProperty<GearyModule, T> {
+    private var cachedGlobalContext: GearyModule? = null
     private var cachedValue: T? = null
 
-    override fun getValue(thisRef: GearyContext, property: KProperty<*>): T {
+    override fun getValue(thisRef: GearyModule, property: KProperty<*>): T {
         if (geary != cachedGlobalContext) {
             cachedGlobalContext = geary
             cachedValue = geary.cache()
@@ -19,5 +19,5 @@ public class ContextExtension<T : Any>(
 }
 
 @Suppress("NOTHING_TO_INLINE") // Lets us use reified type in `cache`
-public inline fun <T : Any> extend(noinline cache: GearyContext.() -> T): ContextExtension<T> =
+public inline fun <T : Any> extend(noinline cache: GearyModule.() -> T): ContextExtension<T> =
     ContextExtension(cache)

@@ -12,7 +12,7 @@ import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 /** Creates a new empty entity. May reuse recently deleted entity ids. */
-public fun entity(): Entity = geary.engine.entityProvider.newEntity()
+public fun entity(): Entity = geary.entityProvider.newEntity()
 
 /** @see entity */
 public inline fun entity(run: Entity.() -> Unit): Entity = entity().apply(run)
@@ -55,7 +55,7 @@ public fun componentId(kType: KType): ComponentId =
 
 /** Gets or registers the id of a component by its [kClass]. */
 public fun componentId(kClass: KClass<*>): ComponentId =
-    geary.engine.componentProvider.getOrRegisterComponentIdForClass(kClass)
+    geary.componentProvider.getOrRegisterComponentIdForClass(kClass)
 
 
 @Deprecated("Should not be getting an id for an id!", ReplaceWith("componentId(component)"))
@@ -68,7 +68,7 @@ public fun ComponentId.getComponentInfo(): ComponentInfo? =
     this.toGeary().get()
 
 public fun systems(vararg systems: GearySystem): List<Deferred<Unit>> {
-    return systems.map { geary.engine.async { geary.engine.systems.add(it) } }
+    return systems.map { geary.engine.async { geary.systems.add(it) } }
 }
 
 //@ExperimentalAsyncGearyAPI

@@ -1,13 +1,14 @@
 package com.mineinabyss.geary.engine.archetypes.operations
 
+import com.mineinabyss.geary.context.archetypes
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityReadOperations
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 
-public class ArchetypeReadOperations(
-    private val records: TypeMap
-) : EntityReadOperations {
+public class ArchetypeReadOperations : EntityReadOperations {
+    private val records: TypeMap get() = archetypes.records
+
     override fun getComponentFor(entity: Entity, componentId: ComponentId): Component? {
         val (archetype, row) = records[entity]
         return archetype[row, componentId.let { if (it.hasRole(RELATION)) it else it.withRole(HOLDS_DATA) }]

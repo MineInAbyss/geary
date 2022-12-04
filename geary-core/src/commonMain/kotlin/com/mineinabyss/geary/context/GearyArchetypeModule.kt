@@ -11,16 +11,18 @@ import com.mineinabyss.geary.serialization.Formats
 import com.mineinabyss.geary.serialization.Serializers
 import kotlin.time.Duration.Companion.milliseconds
 
-public open class GearyArchetypeModule : GearyContext {
+public val archetypes: GearyArchetypeModule = TODO()
+
+public class GearyArchetypeModule : GearyModule {
     override val logger: Nothing = TODO()
     public val records: TypeMap = HashTypeMap()
     override val queryManager: ArchetypeQueryManager = ArchetypeQueryManager()
 
     override val components: Components = Components()
     override val serializers: Serializers = Serializers()
-    override val formats: Formats = Formats(serializers)
+    override val formats: Formats = Formats()
 
-    override val engine: Engine = ArchetypeEngine(100.milliseconds)
+    override val engine: ArchetypeEngine = ArchetypeEngine(100.milliseconds)
     public override val eventRunner: ArchetypeEventRunner = ArchetypeEventRunner(records)
     override val systems: SystemProvider = UnorderedSystemProvider(queryManager)
 

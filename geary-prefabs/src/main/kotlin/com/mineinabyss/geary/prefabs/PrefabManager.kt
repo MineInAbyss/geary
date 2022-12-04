@@ -1,17 +1,15 @@
 package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.components.relations.DontInherit
-import com.mineinabyss.geary.context.GearyContext
-import com.mineinabyss.geary.context.GearyContextKoin
+import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.with
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
-import com.mineinabyss.geary.serialization.EntitySerializer
-import com.mineinabyss.geary.serialization.Formats
-import com.mineinabyss.idofront.messaging.logError
-import com.mineinabyss.idofront.messaging.logWarn
+import kotlinx.serialization.PolymorphicSerializer
+import kotlinx.serialization.builtins.ListSerializer
 import okio.Path.Companion.toOkioPath
 import java.io.File
 import java.util.*
@@ -19,9 +17,10 @@ import java.util.*
 /**
  * Manages registered prefabs and accessing them via name.
  */
-class PrefabManager(
-    val formats: Formats
-) {
+class PrefabManager {
+    private val formats get() = geary.formats
+    private val logger get() = geary.logger
+
     /** A list of registered [PrefabKey]s. */
     val keys: List<PrefabKey> get() = keyToPrefab.keys.toList()
 
@@ -58,7 +57,7 @@ class PrefabManager(
     fun loadFromFile(namespace: String, file: File, writeTo: Entity? = null): Entity? {
         val name = file.nameWithoutExtension
         return runCatching {
-            val serializer = EntitySerializer.componentListSerializer
+            val serializer = ListSerializer(PolymorphicSerializer(Component::class))
             val ext = file.extension
             val decoded = formats[ext]?.decodeFromFile(serializer, file.toOkioPath())
                 ?: error("Unknown file format $ext")
@@ -72,8 +71,8 @@ class PrefabManager(
             registerPrefab(key, entity)
             entity
         }.onFailure {
-            logError("Can't read prefab $name from ${file.path}:")
-            logWarn(it.toString())
+            logger.severe("Can't read prefab $name from ${file.path}:")
+            logger.warning(it.toString())
         }.getOrNull()
     }
 }

@@ -1,7 +1,8 @@
 package com.mineinabyss.geary.prefabs.configuration.components
 
-import com.mineinabyss.geary.context.GearyContext
+import com.mineinabyss.geary.context.GearyModule
 import com.mineinabyss.geary.context.GearyContextKoin
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
 import kotlinx.serialization.Polymorphic
@@ -22,11 +23,10 @@ import kotlinx.serialization.Serializable
 data class CopyToInstances(
     private val temporary: Set<@Polymorphic Component> = setOf(),
     private val persisting: Set<@Polymorphic Component> = setOf(),
-): GearyContext by GearyContextKoin() {
+) {
+    val formats get() = geary.formats
     // This is the safest and cleanest way to deep-copy, even if a little performance intense.
-    private val serializedComponents by lazy {
-        formats.binaryFormat.encodeToByteArray(serializer(), this)
-    }
+    private val serializedComponents by lazy { formats.binaryFormat.encodeToByteArray(serializer(), this) }
 
     private fun getDeepCopied() = formats.binaryFormat.decodeFromByteArray(serializer(), serializedComponents)
 

@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.addon
 
-import com.mineinabyss.geary.context.GearyContext
+import com.mineinabyss.geary.context.GearyModule
 import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.geary.prefabs.PrefabManagerContext
@@ -22,7 +22,7 @@ public annotation class GearyAddonDSL
 public class GearyAddon(
     public val namespace: String,
     public val classLoader: ClassLoader
-) : GearyContext by GearyContextKoin(), GearyAddonManagerContext, PrefabManagerContext {
+) : GearyModule by GearyContextKoin(), GearyAddonManagerContext, PrefabManagerContext {
     override val addonManager: GearyAddonManager by inject()
     override val prefabManager: PrefabManager by inject()
 

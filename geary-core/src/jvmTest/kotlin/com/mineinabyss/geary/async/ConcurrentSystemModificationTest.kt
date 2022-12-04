@@ -24,13 +24,13 @@ class ConcurrentSystemModificationTest : GearyTest() {
                 ran++
             }
         }
-        engine.addSystem(removingSystem)
+        geary.systems.add(removingSystem)
         val entities = (0 until 10).map { entity { set("Test") } }
         val total =
             queryManager.getEntitiesMatching(family {
                 hasSet<String>()
             }).count()
-        engine.tick(0)
+        geary.engine.tick(0)
         ran shouldBe total
         entities.map { it.getAll() } shouldContainExactly entities.map { setOf() }
     }
