@@ -2,15 +2,15 @@ package com.mineinabyss.geary.engine
 
 import kotlin.time.Duration
 
-public abstract class TickingEngine : Engine {
-    public abstract val tickDuration: Duration
+abstract class TickingEngine : Engine {
+    abstract val tickDuration: Duration
 
     private var started: Boolean = false
 
     /** Ticks the entire engine. Implementations may call at different speeds. */
-    public abstract suspend fun tick(currentTick: Long)
+    abstract suspend fun tick(currentTick: Long)
 
-    public open fun start(): Boolean {
+    open fun start(): Boolean {
         if (!started) {
             scheduleSystemTicking()
             started = true
@@ -19,5 +19,5 @@ public abstract class TickingEngine : Engine {
         return false
     }
 
-    public abstract fun scheduleSystemTicking()
+    abstract fun scheduleSystemTicking()
 }

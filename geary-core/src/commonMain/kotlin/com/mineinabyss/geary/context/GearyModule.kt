@@ -1,26 +1,29 @@
 package com.mineinabyss.geary.context
 
+import com.mineinabyss.ding.DI
 import com.mineinabyss.geary.engine.*
 import com.mineinabyss.geary.serialization.IFormats
 import com.mineinabyss.geary.serialization.Serializers
 import java.util.logging.Logger
 
-public interface GearyModule {
-    public val logger: Logger
-    public val entityProvider: EntityProvider
-    public val systems: SystemProvider
-    public val componentProvider: ComponentProvider
+val geary: GearyModule by DI.observe()
 
-    public val read: EntityReadOperations
-    public val write: EntityMutateOperations
+interface GearyModule {
+    val logger: Logger
+    val entityProvider: EntityProvider
+    val systems: SystemProvider
+    val componentProvider: ComponentProvider
 
-    public val queryManager: QueryManager
-    public val components: Components
-    public val serializers: Serializers
-    public val formats: IFormats
-    public val engine: Engine
+    val read: EntityReadOperations
+    val write: EntityMutateOperations
 
-    public val eventRunner: EventRunner
+    val queryManager: QueryManager
+    val components: Components
+    val serializers: Serializers
+    val formats: IFormats
+    val engine: Engine
+
+    val eventRunner: EventRunner
 }
 
 interface TransitiveModule {

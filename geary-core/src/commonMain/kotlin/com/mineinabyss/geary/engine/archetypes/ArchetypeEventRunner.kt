@@ -8,14 +8,14 @@ import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
 
-public class ArchetypeEventRunner : EventRunner {
+class ArchetypeEventRunner : EventRunner {
     private val records: TypeMap get() = archetypes.records
 
     override fun callEvent(target: Entity, event: Entity, source: Entity?) {
         callEvent(records[target], records[event], source?.let { records[source] })
     }
 
-    public fun callEvent(target: Record, event: Record, source: Record?) {
+    fun callEvent(target: Record, event: Record, source: Record?) {
         val origEventArc = event.archetype
         val origTargetArc = target.archetype
         val origSourceArc = source?.archetype

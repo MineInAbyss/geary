@@ -20,40 +20,40 @@ import kotlin.reflect.KProperty
  * [Handler]s can be defined inside by annotating a function with [Handler], these
  * are the actual functions that run when a matching event is found.
  */
-public abstract class Listener : AccessorOperations(), GearySystem, AccessorScopeSelector,
+abstract class Listener : AccessorOperations(), GearySystem, AccessorScopeSelector,
     GearyModule by GearyContextKoin() {
-    public val source: AccessorHolder = AccessorHolder()
-    public val target: AccessorHolder = AccessorHolder()
-    public val event: AccessorHolder = AccessorHolder()
+    val source: AccessorHolder = AccessorHolder()
+    val target: AccessorHolder = AccessorHolder()
+    val event: AccessorHolder = AccessorHolder()
 
-    public fun start() {
+    fun start() {
         onStart()
     }
 
-    public operator fun <T> Accessor<T>.getValue(thisRef: SourceScope, property: KProperty<*>): T = access(thisRef)
-    public operator fun <T> Accessor<T>.getValue(thisRef: TargetScope, property: KProperty<*>): T = access(thisRef)
-    public operator fun <T> Accessor<T>.getValue(thisRef: EventScope, property: KProperty<*>): T = access(thisRef)
+    operator fun <T> Accessor<T>.getValue(thisRef: SourceScope, property: KProperty<*>): T = access(thisRef)
+    operator fun <T> Accessor<T>.getValue(thisRef: TargetScope, property: KProperty<*>): T = access(thisRef)
+    operator fun <T> Accessor<T>.getValue(thisRef: EventScope, property: KProperty<*>): T = access(thisRef)
 
-    public fun <T> AccessorBuilder<ComponentAccessor<T>>.onSource(): ComponentAccessor<T> =
+    fun <T> AccessorBuilder<ComponentAccessor<T>>.onSource(): ComponentAccessor<T> =
         source.addAccessor { build(source, it) }
 
-    public fun <T> AccessorBuilder<ComponentAccessor<T>>.onTarget(): ComponentAccessor<T> =
+    fun <T> AccessorBuilder<ComponentAccessor<T>>.onTarget(): ComponentAccessor<T> =
         target.addAccessor { build(target, it) }
 
-    public fun <T> AccessorBuilder<ComponentAccessor<T>>.onEvent(): ComponentAccessor<T> =
+    fun <T> AccessorBuilder<ComponentAccessor<T>>.onEvent(): ComponentAccessor<T> =
         event.addAccessor { build(event, it) }
 
-    public fun Family.onSource(): DirectAccessor<Family> =
+    fun Family.onSource(): DirectAccessor<Family> =
         source._family.add(this).let { DirectAccessor(this) }
 
-    public fun Family.onTarget(): DirectAccessor<Family> =
+    fun Family.onTarget(): DirectAccessor<Family> =
         target._family.add(this).let { DirectAccessor(this) }
 
-    public fun Family.onEvent(): DirectAccessor<Family> =
+    fun Family.onEvent(): DirectAccessor<Family> =
         event._family.add(this).let { DirectAccessor(this) }
 
     /** Fires when an entity has a component of type [T] set or updated. */
-    public inline fun <reified T : Component> onSet(): AccessorBuilder<ComponentAccessor<T>> {
+    inline fun <reified T : Component> onSet(): AccessorBuilder<ComponentAccessor<T>> {
         return AccessorBuilder { holder, index ->
             event._family.onSet(componentId<T>())
             get<T>().build(holder, index)
@@ -61,7 +61,7 @@ public abstract class Listener : AccessorOperations(), GearySystem, AccessorScop
     }
 
     /** Fires when an entity has a component of type [T] set, only if it was not set before. */
-    public inline fun <reified T : Component> onFirstSet(): AccessorBuilder<ComponentAccessor<T>> {
+    inline fun <reified T : Component> onFirstSet(): AccessorBuilder<ComponentAccessor<T>> {
         return AccessorBuilder { holder, index ->
             event._family.onFirstSet(componentId<T>())
             get<T>().build(holder, index)
@@ -70,7 +70,7 @@ public abstract class Listener : AccessorOperations(), GearySystem, AccessorScop
 
     //TODO support onAdd for relations
     /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
-    public inline fun <reified T : Component> onAdd(): Family {
+    inline fun <reified T : Component> onAdd(): Family {
         event._family.onAdd(componentId<T>())
         return family { has<T>() }
     }

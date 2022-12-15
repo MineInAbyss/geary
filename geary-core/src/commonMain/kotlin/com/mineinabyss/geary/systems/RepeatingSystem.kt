@@ -15,8 +15,8 @@ import kotlin.time.Duration.Companion.milliseconds
  *
  * @see [ArchetypeIterator]
  */
-public abstract class RepeatingSystem(
-    public val interval: Duration = 50.milliseconds // 1 tick in Minecraft
+abstract class RepeatingSystem(
+    val interval: Duration = 50.milliseconds // 1 tick in Minecraft
 ) : GearyQuery(), GearySystem {
     protected var iteration: Int = 0
         private set
@@ -24,7 +24,7 @@ public abstract class RepeatingSystem(
     override fun onStart() {}
 
     //TODO better name differentiation between this and tick
-    public fun doTick() {
+    fun doTick() {
         iteration++
         tick()
     }

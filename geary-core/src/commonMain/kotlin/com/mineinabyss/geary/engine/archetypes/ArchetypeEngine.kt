@@ -16,7 +16,7 @@ import kotlin.time.Duration
  *
  * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */
-public open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine() {
+open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine() {
     private val systems get() = geary.systems
     private val logger get() = geary.logger
 
@@ -28,7 +28,7 @@ public open class ArchetypeEngine(override val tickDuration: Duration) : Ticking
         doTick()
     }
 
-    public override fun scheduleSystemTicking() {
+    override fun scheduleSystemTicking() {
         var tick = 0L
         launch {
             while (true) {

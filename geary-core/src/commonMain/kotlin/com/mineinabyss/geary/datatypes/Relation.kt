@@ -21,24 +21,24 @@ import kotlin.reflect.KClass
  */
 @Serializable
 @JvmInline
-public value class Relation private constructor(
-    public val id: ComponentId
+value class Relation private constructor(
+    val id: ComponentId
 ) : Comparable<Relation> {
     /*
     * Internal representation of bits:
     * [kind]   0xFFFFFFFF00000000
     * [target] 0x00000000FFFFFFFF
     */
-    public val kind: ComponentId
+    val kind: ComponentId
         get() = id and TYPE_ROLES_MASK.inv() and RELATION_KIND_MASK shr 32 or (id and TYPE_ROLES_MASK).withoutRole(RELATION)
-    public val target: EntityId get() = id and RELATION_TARGET_MASK
+    val target: EntityId get() = id and RELATION_TARGET_MASK
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
 
     override fun toString(): String = "${kind.readableString()} to ${target.readableString()}"
 
-    public companion object {
-        public fun of(
+    companion object {
+        fun of(
             kind: ComponentId, target: EntityId
         ): Relation = Relation(
             (kind shl 32 and RELATION_KIND_MASK and TYPE_ROLES_MASK.inv()) // Add kind entity id shifted left
@@ -47,21 +47,21 @@ public value class Relation private constructor(
                     or (target and RELATION_TARGET_MASK) // Add target, stripping any type roles
         )
 
-        public fun of(kind: KClass<*>, target: KClass<*>): Relation =
+        fun of(kind: KClass<*>, target: KClass<*>): Relation =
             of(componentId(kind), componentId(target))
 
-        public inline fun <reified K : Component?, reified T : Component> of(): Relation =
+        inline fun <reified K : Component?, reified T : Component> of(): Relation =
             of(componentIdWithNullable<K>(), componentId<T>())
 
-        public inline fun <reified K : Component?> of(target: Entity): Relation =
+        inline fun <reified K : Component?> of(target: Entity): Relation =
             of(componentIdWithNullable<K>(), target.id)
 
         /**
          * Creates a relation from an id that is assumed to be valid. Use this to avoid boxing Relation because of
          * the nullable type on [toRelation].
          */
-        public fun of(id: ComponentId): Relation = Relation(id)
+        fun of(id: ComponentId): Relation = Relation(id)
     }
 }
 
-public fun ComponentId.toRelation(): Relation? = Relation.of(this).takeIf { isRelation() }
+fun ComponentId.toRelation(): Relation? = Relation.of(this).takeIf { isRelation() }

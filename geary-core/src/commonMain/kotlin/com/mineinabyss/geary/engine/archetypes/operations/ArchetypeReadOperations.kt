@@ -6,7 +6,7 @@ import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityReadOperations
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 
-public class ArchetypeReadOperations : EntityReadOperations {
+class ArchetypeReadOperations : EntityReadOperations {
     private val records: TypeMap get() = archetypes.records
 
     override fun getComponentFor(entity: Entity, componentId: ComponentId): Component? {

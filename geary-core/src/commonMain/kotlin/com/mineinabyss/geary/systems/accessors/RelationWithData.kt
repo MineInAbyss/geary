@@ -5,11 +5,11 @@ import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.helpers.toGeary
 
-public data class RelationWithData<K : Component?, T : Component?>(
-    public val data: K,
-    public val targetData: T,
-    public val relation: Relation,
+data class RelationWithData<K : Component?, T : Component?>(
+    val data: K,
+    val targetData: T,
+    val relation: Relation,
 ) {
-    public val kind: Entity = relation.kind.toGeary()
-    public val target: Entity = relation.target.toGeary()
+    val kind: Entity = relation.kind.toGeary()
+    val target: Entity = relation.target.toGeary()
 }

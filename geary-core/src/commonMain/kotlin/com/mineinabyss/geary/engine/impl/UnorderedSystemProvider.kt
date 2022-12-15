@@ -9,7 +9,7 @@ import com.mineinabyss.geary.systems.System
 /**
  * Runs systems in no particular order.
  */
-public class UnorderedSystemProvider : SystemProvider {
+class UnorderedSystemProvider : SystemProvider {
     private val queryManager get() = archetypes.queryManager
 
     private val registeredSystems: MutableSet<RepeatingSystem> = mutableSetOf()

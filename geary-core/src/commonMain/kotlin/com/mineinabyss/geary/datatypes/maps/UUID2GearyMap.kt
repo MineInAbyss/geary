@@ -12,26 +12,26 @@ import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.TargetScope
 
-public class UUID2GearyMap : GearyListener() {
+class UUID2GearyMap : GearyListener() {
     private val uuid2geary = mutableMapOf<Uuid, Long>()
 
-    public operator fun get(uuid: Uuid): GearyEntity? =
+    operator fun get(uuid: Uuid): GearyEntity? =
         uuid2geary[uuid]?.toGeary()
 
-    public operator fun set(uuid: Uuid, entity: GearyEntity): GearyEntity? =
+    operator fun set(uuid: Uuid, entity: GearyEntity): GearyEntity? =
         uuid2geary.put(uuid, entity.id.toLong())?.toGeary()
 
-    public operator fun contains(uuid: Uuid): Boolean = uuid2geary.containsKey(uuid)
+    operator fun contains(uuid: Uuid): Boolean = uuid2geary.containsKey(uuid)
 
-    public fun remove(uuid: Uuid): GearyEntity? =
+    fun remove(uuid: Uuid): GearyEntity? =
         uuid2geary.remove(uuid)?.toGeary()
 
-    public fun startTracking() {
+    fun startTracking() {
         engine.systems.add(TrackUuidOnAdd())
         engine.systems.add(UnTrackUuidOnRemove())
     }
 
-    public inner class TrackUuidOnAdd : GearyListener() {
+    inner class TrackUuidOnAdd : GearyListener() {
         private val TargetScope.uuid by onSet<Uuid>().onTarget()
 
         @Handler
@@ -47,7 +47,7 @@ public class UUID2GearyMap : GearyListener() {
         }
     }
 
-    public inner class UnTrackUuidOnRemove : GearyListener() {
+    inner class UnTrackUuidOnRemove : GearyListener() {
         private val TargetScope.uuid by get<Uuid>().onTarget()
         private val EventScope.removed by family { has<EntityRemoved>() }.onEvent()
 

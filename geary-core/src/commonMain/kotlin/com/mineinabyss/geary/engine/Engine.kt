@@ -8,5 +8,5 @@ import kotlinx.coroutines.CoroutineScope
  *
  * Its companion object gets a service via Bukkit as its implementation.
  */
-public interface Engine : CoroutineScope {
+interface Engine : CoroutineScope {
 }

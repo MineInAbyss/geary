@@ -1,3 +1,3 @@
 package com.mineinabyss.geary.engine
 
-public typealias GearyEngine = Engine
+typealias GearyEngine = Engine

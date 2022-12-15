@@ -18,8 +18,8 @@ import kotlin.reflect.KProperty
 /**com.mineinabyss.geary.ecs.engine.iteration.accessors
  * @property matchedArchetypes A set of archetypes which have been matched to this query.
  */
-public abstract class Query : AccessorHolder(), Iterable<TargetScope> {
-    public val queryManager: QueryManager get() = geary.queryManager
+abstract class Query : AccessorHolder(), Iterable<TargetScope> {
+    val queryManager: QueryManager get() = geary.queryManager
 
     @PublishedApi
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
@@ -27,7 +27,7 @@ public abstract class Query : AccessorHolder(), Iterable<TargetScope> {
     @PublishedApi
     internal var registered: Boolean = false
 
-    public fun flow(): Flow<TargetScope> {
+    fun flow(): Flow<TargetScope> {
         return channelFlow {
             forEach { targetScope ->
                 send(targetScope)
@@ -41,7 +41,7 @@ public abstract class Query : AccessorHolder(), Iterable<TargetScope> {
         return items.iterator()
     }
 
-    public inline fun fastForEach(crossinline run: (TargetScope) -> Unit) {
+    inline fun fastForEach(crossinline run: (TargetScope) -> Unit) {
         if (!registered) {
             queryManager.trackQuery(this)
         }
@@ -61,9 +61,9 @@ public abstract class Query : AccessorHolder(), Iterable<TargetScope> {
     protected inline fun <reified T : Component> TargetScope.get(): ComponentAccessor<T> =
         error("Cannot change query at runtime")
 
-    public operator fun <T> Accessor<T>.getValue(thisRef: TargetScope, property: KProperty<*>): T =
+    operator fun <T> Accessor<T>.getValue(thisRef: TargetScope, property: KProperty<*>): T =
         access(thisRef)
 
-    public operator fun Family.provideDelegate(thisRef: GearyQuery, property: KProperty<*>): DirectAccessor<Family> =
+    operator fun Family.provideDelegate(thisRef: GearyQuery, property: KProperty<*>): DirectAccessor<Family> =
         _family.add(this).run { DirectAccessor(family) }
 }

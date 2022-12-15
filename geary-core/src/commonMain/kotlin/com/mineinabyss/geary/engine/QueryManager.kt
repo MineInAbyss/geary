@@ -5,9 +5,9 @@ import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.query.GearyQuery
 
-public interface QueryManager {
-    public fun trackEventListener(listener: Listener)
-    public fun trackQuery(query: GearyQuery)
+interface QueryManager {
+    fun trackEventListener(listener: Listener)
+    fun trackQuery(query: GearyQuery)
 
-    public fun getEntitiesMatching(family: Family): List<Entity>
+    fun getEntitiesMatching(family: Family): List<Entity>
 }

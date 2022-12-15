@@ -47,7 +47,6 @@ kotlin {
 //    }
     sourceSets {
         all {
-            explicitApi()
             languageSettings {
                 optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
                 optIn("kotlin.time.ExperimentalTime")

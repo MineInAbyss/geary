@@ -6,7 +6,7 @@ import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityMutateOperations
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 
-public class ArchetypeMutateOperations : EntityMutateOperations {
+class ArchetypeMutateOperations : EntityMutateOperations {
     private val records: TypeMap get() = archetypes.records
     private val archetypeProvider: ArchetypeProvider get() = archetypes.archetypeProvider
 

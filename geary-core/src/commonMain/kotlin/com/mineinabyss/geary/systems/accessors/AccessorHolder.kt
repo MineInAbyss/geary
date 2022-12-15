@@ -15,8 +15,8 @@ import kotlin.reflect.KProperty
  *
  * @property family A lazily built immutable family that represents all data this holder needs to function.
  */
-public open class AccessorHolder: AccessorOperations() {
-    public val family: Family.Selector.And get() = _family
+open class AccessorHolder: AccessorOperations() {
+    val family: Family.Selector.And get() = _family
 
     @PublishedApi
     internal val _family: MutableFamily.Selector.And = MutableFamily.Selector.And()
@@ -25,12 +25,12 @@ public open class AccessorHolder: AccessorOperations() {
     internal open val accessors: MutableList<IndexedAccessor<*>> = mutableListOf()
     private val perArchetypeCache = FastIntMap<List<List<Any?>>>()
 
-    public operator fun <T : IndexedAccessor<*>> AccessorBuilder<T>.provideDelegate(
+    operator fun <T : IndexedAccessor<*>> AccessorBuilder<T>.provideDelegate(
         thisRef: Any,
         property: KProperty<*>
     ): T = addAccessor { build(this@AccessorHolder, it) }
 
-    public inline fun <T : Accessor<*>> addAccessor(create: (index: Int) -> T): T {
+    inline fun <T : Accessor<*>> addAccessor(create: (index: Int) -> T): T {
         val accessor = create(accessors.size)
         when (accessor) {
             is IndexedAccessor<*> -> accessors += accessor
@@ -41,7 +41,7 @@ public open class AccessorHolder: AccessorOperations() {
     }
 
     /** Calculates, or gets cached values for an [archetype] */
-    public fun cacheForArchetype(archetype: Archetype): List<List<Any?>> =
+    fun cacheForArchetype(archetype: Archetype): List<List<Any?>> =
         perArchetypeCache.getOrPut(archetype.id) {
             val accessorCache: List<MutableList<Any?>> = accessors.map { it.cached.mapTo(mutableListOf()) { null } }
             val cache = ArchetypeCacheScope(archetype, accessorCache)
@@ -67,5 +67,5 @@ public open class AccessorHolder: AccessorOperations() {
     }
 
     /** Is the family of this holder not restricted in any way? */
-    public val isEmpty: Boolean get() = family.and.isEmpty()
+    val isEmpty: Boolean get() = family.and.isEmpty()
 }

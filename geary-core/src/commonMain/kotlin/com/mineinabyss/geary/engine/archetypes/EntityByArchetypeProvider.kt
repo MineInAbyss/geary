@@ -13,7 +13,7 @@ import com.mineinabyss.geary.helpers.removeParent
 import com.mineinabyss.geary.helpers.toGeary
 import kotlinx.atomicfu.atomic
 
-public class EntityByArchetypeProvider : EntityProvider {
+class EntityByArchetypeProvider : EntityProvider {
     private val records: TypeMap get() = archetypes.records
     private val archetypeProvider: ArchetypeProvider get() = archetypes.archetypeProvider
 

@@ -9,6 +9,6 @@ import kotlin.reflect.KClassifier
  */
 @Serializable
 @SerialName("geary:component_info")
-public data class ComponentInfo(
+data class ComponentInfo(
     val kClass: KClassifier
 )

@@ -7,7 +7,7 @@ import com.mineinabyss.geary.helpers.parent
 import com.mineinabyss.geary.helpers.toGeary
 
 //TODO this should be handled within a serializer of sorts for GearyEntity
-public fun Entity.parseEntity(expression: String): Entity {
+fun Entity.parseEntity(expression: String): Entity {
     return when {
         expression.startsWith("parent") -> {
             val parent = (parent ?: error("Failed to read expression, entity had no parent: $expression"))

@@ -6,7 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 
 //TODO implement safe running properly
-public class PostTickScheduler: AsyncScheduler {
+class PostTickScheduler: AsyncScheduler {
     private val queuedCleanup = mutableSetOf<Archetype>()
     private val runningAsyncJobs = mutableSetOf<Job>()
     private var iterationJob: Job? = null

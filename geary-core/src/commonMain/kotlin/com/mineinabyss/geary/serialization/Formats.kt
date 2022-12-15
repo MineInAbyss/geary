@@ -10,10 +10,10 @@ import kotlinx.serialization.cbor.Cbor
  *
  * Will likely be converted into a service eventually.
  */
-public class Formats : IFormats {
+class Formats : IFormats {
     private val formatMap = mutableMapOf<String, PrefabFormat>()
 
-    public override val binaryFormat: Cbor by lazy {
+    override val binaryFormat: Cbor by lazy {
         Cbor {
             serializersModule = geary.serializers.module
             encodeDefaults = false

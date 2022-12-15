@@ -3,37 +3,37 @@ package com.mineinabyss.geary.datatypes.family
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityId
 
-public sealed interface Family {
-    public sealed class Leaf : Family {
-        public sealed interface Component : Family {
-            public val component: ComponentId
+sealed interface Family {
+    sealed class Leaf : Family {
+        sealed interface Component : Family {
+            val component: ComponentId
         }
 
-        public sealed interface AnyToTarget : Family {
-            public val target: EntityId
-            public val kindMustHoldData: Boolean
+        sealed interface AnyToTarget : Family {
+            val target: EntityId
+            val kindMustHoldData: Boolean
         }
 
-        public sealed interface KindToAny : Family {
-            public val kind: ComponentId
-            public val targetMustHoldData: Boolean
+        sealed interface KindToAny : Family {
+            val kind: ComponentId
+            val targetMustHoldData: Boolean
         }
     }
 
-    public sealed interface Selector : Family {
-        public val components: List<ComponentId>
-        public val componentsWithData: List<ComponentId>
+    sealed interface Selector : Family {
+        val components: List<ComponentId>
+        val componentsWithData: List<ComponentId>
 
-        public sealed interface And : Selector {
-            public val and: List<Family>
+        sealed interface And : Selector {
+            val and: List<Family>
         }
 
-        public sealed interface AndNot : Selector {
-            public val andNot: List<Family>
+        sealed interface AndNot : Selector {
+            val andNot: List<Family>
         }
 
-        public sealed interface Or : Selector {
-            public val or: List<Family>
+        sealed interface Or : Selector {
+            val or: List<Family>
         }
     }
 }

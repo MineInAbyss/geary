@@ -1,3 +1,3 @@
 package com.mineinabyss.geary.components
 
-public sealed class CouldHaveChildren
+sealed class CouldHaveChildren

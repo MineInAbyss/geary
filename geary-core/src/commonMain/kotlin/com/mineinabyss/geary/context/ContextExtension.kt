@@ -3,7 +3,7 @@ package com.mineinabyss.geary.context
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-public class ContextExtension<T : Any>(
+class ContextExtension<T : Any>(
     private val cache: GearyModule.() -> T
 ) : ReadOnlyProperty<GearyModule, T> {
     private var cachedGlobalContext: GearyModule? = null
@@ -19,5 +19,5 @@ public class ContextExtension<T : Any>(
 }
 
 @Suppress("NOTHING_TO_INLINE") // Lets us use reified type in `cache`
-public inline fun <T : Any> extend(noinline cache: GearyModule.() -> T): ContextExtension<T> =
+inline fun <T : Any> extend(noinline cache: GearyModule.() -> T): ContextExtension<T> =
     ContextExtension(cache)

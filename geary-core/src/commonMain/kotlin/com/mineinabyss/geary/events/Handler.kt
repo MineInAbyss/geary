@@ -12,17 +12,17 @@ import org.koin.core.logger.Logger
 /**
  * Generated within a [Listener]. Will handle events matching specified components on source/target/event entities.
  */
-public abstract class Handler(
-    public val parentListener: Listener,
-    public val sourceNullable: Boolean,
+abstract class Handler(
+    val parentListener: Listener,
+    val sourceNullable: Boolean,
 ) : KoinComponent {
     private val logger: Logger by inject()
 
     /** Runs when a matching event is fired. */
-    public abstract fun handle(source: SourceScope?, target: TargetScope, event: EventScope)
+    abstract fun handle(source: SourceScope?, target: TargetScope, event: EventScope)
 
     /** Reads necessary data and iterates over combinations as appropriate, calling the [handle] function on each. */
-    public open fun processAndHandle(
+    open fun processAndHandle(
         sourceScope: RawAccessorDataScope?,
         targetScope: RawAccessorDataScope,
         eventScope: RawAccessorDataScope,

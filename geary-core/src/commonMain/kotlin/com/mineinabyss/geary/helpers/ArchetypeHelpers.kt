@@ -7,5 +7,5 @@ import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.engine.archetypes.ArchetypeEngine
 
 // TODO context to avoid cast
-public fun EntityType.getArchetype(): Archetype =
+fun EntityType.getArchetype(): Archetype =
     (geary as GearyArchetypeModule).archetypeProvider.getArchetype(this)

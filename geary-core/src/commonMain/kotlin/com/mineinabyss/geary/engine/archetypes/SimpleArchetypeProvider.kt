@@ -7,7 +7,7 @@ import com.mineinabyss.geary.datatypes.maps.TypeMap
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 
-public class SimpleArchetypeProvider : ArchetypeProvider {
+class SimpleArchetypeProvider : ArchetypeProvider {
     private val eventRunner: ArchetypeEventRunner get() = archetypes.eventRunner
     private val queryManager: ArchetypeQueryManager get() = archetypes.queryManager
     private val records: TypeMap get() = archetypes.records
@@ -20,7 +20,7 @@ public class SimpleArchetypeProvider : ArchetypeProvider {
     private val trackedArchetypes = mutableListOf(rootArchetype)
     override val count: Int get() = trackedArchetypes.size
 
-    public val archetypeCount: Int get() = trackedArchetypes.size
+    val archetypeCount: Int get() = trackedArchetypes.size
     private val archetypeWriteLock = SynchronizedObject()
 
     private fun createArchetype(prevNode: Archetype, componentEdge: ComponentId): Archetype {

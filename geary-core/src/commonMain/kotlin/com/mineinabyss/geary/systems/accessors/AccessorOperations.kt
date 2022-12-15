@@ -12,9 +12,9 @@ import com.mineinabyss.geary.systems.accessors.types.RelationWithDataAccessor
 /**
  * An empty interface that limits [AccessorBuilder] helper functions only to classes that use [Accessor]s.
  */
-public open class AccessorOperations {
+open class AccessorOperations {
     /** Gets a component, ensuring it is on the entity. */
-    public inline fun <reified T : Component> get(): AccessorBuilder<ComponentAccessor<T>> {
+    inline fun <reified T : Component> get(): AccessorBuilder<ComponentAccessor<T>> {
         return AccessorBuilder { holder, index ->
             val component = componentId<T>().withRole(HOLDS_DATA)
             holder._family.has(component)
@@ -23,7 +23,7 @@ public open class AccessorOperations {
     }
 
     /** Gets a component or provides a [default] if the entity doesn't have it. */
-    public inline fun <reified T : Component?> getOrDefault(
+    inline fun <reified T : Component?> getOrDefault(
         default: T
     ): AccessorBuilder<ComponentOrDefaultAccessor<T>> {
         return AccessorBuilder { _, index ->
@@ -33,7 +33,7 @@ public open class AccessorOperations {
     }
 
     /** Gets a component or `null` if the entity doesn't have it. */
-    public inline fun <reified T : Component?> getOrNull(): AccessorBuilder<ComponentOrDefaultAccessor<T?>> {
+    inline fun <reified T : Component?> getOrNull(): AccessorBuilder<ComponentOrDefaultAccessor<T?>> {
         return getOrDefault(null)
     }
 
@@ -49,7 +49,7 @@ public open class AccessorOperations {
      * - One of [K] or [T] is [Any] => gets all relations matching the other (specified) type.
      * - Note: nullability rules are still upheld with [Any].
      */
-    public inline fun <reified K : Component?, reified T : Component?> getRelations(): AccessorBuilder<RelationWithDataAccessor<K, T>> {
+    inline fun <reified K : Component?, reified T : Component?> getRelations(): AccessorBuilder<RelationWithDataAccessor<K, T>> {
         return AccessorBuilder { holder, index ->
             holder._family.hasRelation<K, T>()
             RelationWithDataAccessor(index, componentIdWithNullable<K>(), componentIdWithNullable<T>())

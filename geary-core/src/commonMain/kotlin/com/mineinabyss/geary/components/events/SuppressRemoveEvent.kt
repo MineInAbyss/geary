@@ -1,3 +1,3 @@
 package com.mineinabyss.geary.components.events
 
-public sealed class SuppressRemoveEvent
+sealed class SuppressRemoveEvent

@@ -10,7 +10,7 @@ import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlin.reflect.KClass
 
-public class ComponentAsEntityProvider : ComponentProvider {
+class ComponentAsEntityProvider : ComponentProvider {
     private val entityProvider: EntityProvider get() = geary.entityProvider
 
     private val classToComponentMap = ClassToComponentMap()

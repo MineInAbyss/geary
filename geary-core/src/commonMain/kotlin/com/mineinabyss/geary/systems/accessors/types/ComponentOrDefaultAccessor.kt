@@ -10,7 +10,7 @@ import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
  *
  * @see getOrDefault
  */
-public class ComponentOrDefaultAccessor<T : Component?>(
+class ComponentOrDefaultAccessor<T : Component?>(
     index: Int,
     componentId: ComponentId,
     private val default: T

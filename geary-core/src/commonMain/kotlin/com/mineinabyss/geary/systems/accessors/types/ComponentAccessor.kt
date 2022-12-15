@@ -11,7 +11,7 @@ import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
  * @see get
  */
 //TODO is it possible to merge with ComponentOrDefaultAccessor
-public open class ComponentAccessor<T : Component?>(
+open class ComponentAccessor<T : Component?>(
     index: Int,
     private val componentId: ComponentId,
 ) : IndexedAccessor<T>(index) {
