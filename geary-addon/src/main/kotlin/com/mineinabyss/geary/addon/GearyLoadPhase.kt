@@ -5,7 +5,7 @@ package com.mineinabyss.geary.addon
  *
  * They are executed top to bottom.
  */
-public enum class GearyLoadPhase {
+enum class GearyLoadPhase {
     /** Loading serializers via autoscan or manually. */
     REGISTER_SERIALIZERS,
 

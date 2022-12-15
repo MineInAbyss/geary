@@ -1,43 +1,41 @@
 package com.mineinabyss.geary.addon
 
-import com.mineinabyss.geary.context.GearyModule
-import com.mineinabyss.geary.context.GearyContextKoin
+import com.mineinabyss.geary.addon.modules.addons
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.prefabs.PrefabManager
-import com.mineinabyss.geary.prefabs.PrefabManagerContext
 import com.mineinabyss.geary.systems.GearySystem
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
-import org.koin.core.component.inject
 import kotlin.reflect.KClass
 
 @DslMarker
 @Retention(AnnotationRetention.SOURCE)
-public annotation class GearyAddonDSL
+annotation class GearyAddonDSL
 
 /**
  * The entry point for other plugins to hook into Geary. Allows registering serializable components, systems, actions,
  * and more.
  */
 @GearyAddonDSL
-public class GearyAddon(
-    public val namespace: String,
-    public val classLoader: ClassLoader
-) : GearyModule by GearyContextKoin(), GearyAddonManagerContext, PrefabManagerContext {
-    override val addonManager: GearyAddonManager by inject()
-    override val prefabManager: PrefabManager by inject()
+class GearyAddon(
+    val namespace: String,
+    val classLoader: ClassLoader
+) {
+    private val addonManager: GearyAddonManager get() = addons.manager
+    private val prefabManager: PrefabManager  get() = com.mineinabyss.geary.prefabs.modules.prefabs.manager
 
     /** Registers a [system]. */
-    public fun system(system: GearySystem) {
-        engine.addSystem(system)
+    fun system(system: GearySystem) {
+        geary.systems.add(system)
     }
 
     /** Registers a list of [systems]. */
-    public fun systems(vararg systems: GearySystem) {
+    fun systems(vararg systems: GearySystem) {
         systems.forEach { system(it) }
     }
 
-    public inner class PhaseCreator {
-        public operator fun GearyLoadPhase.invoke(run: () -> Unit) {
+    inner class PhaseCreator {
+        operator fun GearyLoadPhase.invoke(run: () -> Unit) {
             addonManager.add(this, run)
         }
     }
@@ -53,10 +51,10 @@ public class GearyAddon(
      * }
      * ```
      */
-    public inline fun startup(run: PhaseCreator.() -> Unit) {
+    inline fun startup(run: PhaseCreator.() -> Unit) {
         PhaseCreator().apply(run)
     }
 }
 
 /** The polymorphic builder scope that allows registering subclasses. */
-public typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>?) -> Boolean
+typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>?) -> Boolean

@@ -8,7 +8,6 @@ import com.mineinabyss.geary.systems.accessors.TargetScope
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Test
 
 class ConcurrentSystemModificationTest : GearyTest() {
     //TODO put back when we support concurrency lol
@@ -27,7 +26,7 @@ class ConcurrentSystemModificationTest : GearyTest() {
         geary.systems.add(removingSystem)
         val entities = (0 until 10).map { entity { set("Test") } }
         val total =
-            queryManager.getEntitiesMatching(family {
+            geary.queryManager.getEntitiesMatching(family {
                 hasSet<String>()
             }).count()
         geary.engine.tick(0)

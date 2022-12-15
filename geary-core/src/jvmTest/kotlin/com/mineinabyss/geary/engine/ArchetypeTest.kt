@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
 internal class ArchetypeTest : GearyTest() {
     @Nested
     inner class ArchetypeNavigation {
-        val root = engine.archetypeProvider.rootArchetype
+        val root = geary.archetypeProvider.rootArchetype
 
         @Test
         fun `archetype ids assigned correctly`() {
@@ -52,13 +52,7 @@ internal class ArchetypeTest : GearyTest() {
         val persists = Relation.of<Persists>(target)
         val instanceOf = Relation.of<InstanceOf?>(target)
         val instanceOf2 = Relation.of<InstanceOf?>(target2)
-        val arc = Archetype(
-            engine.archetypeProvider,
-            engine.records,
-            engine.eventRunner,
-            EntityType(listOf(persists.id, instanceOf.id, instanceOf2.id)),
-            0
-        )
+        val arc = Archetype(EntityType(listOf(persists.id, instanceOf.id, instanceOf2.id)), 0)
         arc.relationsByTarget[target.id.toLong()].shouldContainExactlyInAnyOrder(persists, instanceOf)
         arc.relationsByKind[componentId<InstanceOf>().toLong()].shouldContainExactlyInAnyOrder(instanceOf, instanceOf2)
     }

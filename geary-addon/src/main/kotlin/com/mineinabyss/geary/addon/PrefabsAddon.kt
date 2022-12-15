@@ -4,11 +4,11 @@ import com.mineinabyss.geary.addon.GearyLoadPhase.LOAD_PREFABS
 import java.nio.file.Path
 import kotlin.io.path.name
 
-public class PrefabsAddon(
+class PrefabsAddon(
     private val addon: GearyAddon
 ) {
     /** Loads prefab entities from all files inside a [directory][from], into a given [namespace] */
-    public fun path(
+    fun path(
         from: Path,
         namespace: String = from.name
     ): Unit = with(addon) {
@@ -22,7 +22,7 @@ public class PrefabsAddon(
     }
 }
 
-public fun GearyAddon.prefabs(init: PrefabsAddon.() -> Unit) {
+fun GearyAddon.prefabs(init: PrefabsAddon.() -> Unit) {
     startup {
         LOAD_PREFABS {
             PrefabsAddon(this@prefabs).init()

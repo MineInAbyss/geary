@@ -11,6 +11,6 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 @SerialName("geary:inherit")
-public class InheritPrefabs(
-    public val from: Set<PrefabKey>
+class InheritPrefabs(
+    val from: Set<PrefabKey>
 )

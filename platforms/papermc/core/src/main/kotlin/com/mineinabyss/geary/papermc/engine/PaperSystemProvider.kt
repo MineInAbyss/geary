@@ -7,8 +7,8 @@ import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
 
 class PaperSystemProvider(
-    val plugin: Plugin,
-    val provider: SystemProvider
+    private val plugin: Plugin,
+    private val provider: SystemProvider
 ) : SystemProvider by provider {
     override fun add(system: System) {
         provider.add(system)

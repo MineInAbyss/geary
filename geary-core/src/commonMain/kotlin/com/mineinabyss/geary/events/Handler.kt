@@ -1,13 +1,11 @@
 package com.mineinabyss.geary.events
 
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.systems.accessors.SourceScope
 import com.mineinabyss.geary.systems.accessors.TargetScope
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.logger.Logger
 
 /**
  * Generated within a [Listener]. Will handle events matching specified components on source/target/event entities.
@@ -15,8 +13,8 @@ import org.koin.core.logger.Logger
 abstract class Handler(
     val parentListener: Listener,
     val sourceNullable: Boolean,
-) : KoinComponent {
-    private val logger: Logger by inject()
+) {
+    private val logger get() = geary.logger
 
     /** Runs when a matching event is fired. */
     abstract fun handle(source: SourceScope?, target: TargetScope, event: EventScope)
@@ -43,7 +41,7 @@ abstract class Handler(
                 }
             }
         } catch (e: Exception) {
-            logger.error("Failed to run event ${parentListener::class.simpleName}")
+            logger.severe("Failed to run event ${parentListener::class.simpleName}")
             e.printStackTrace()
         }
     }

@@ -8,7 +8,7 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.SerializersModule
 import okio.Path
 
-public class YamlFormat(
+class YamlFormat(
     module: SerializersModule
 ) : PrefabFormat {
     private val yaml = Yaml(

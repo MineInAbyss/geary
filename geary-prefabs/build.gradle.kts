@@ -8,6 +8,9 @@ repositories {
 }
 dependencies {
     compileOnly(libs.fastutil)
+    compileOnly(libs.kotlinx.serialization.json)
+    compileOnly(libs.kotlinx.serialization.cbor)
 
     compileOnly(project(":geary-core"))
+    implementation("com.mineinabyss:ding:1.0.0")
 }

@@ -1,7 +1,5 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.context.GearyModule
-import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.family
@@ -20,8 +18,7 @@ import kotlin.reflect.KProperty
  * [Handler]s can be defined inside by annotating a function with [Handler], these
  * are the actual functions that run when a matching event is found.
  */
-abstract class Listener : AccessorOperations(), GearySystem, AccessorScopeSelector,
-    GearyModule by GearyContextKoin() {
+abstract class Listener : AccessorOperations(), GearySystem, AccessorScopeSelector {
     val source: AccessorHolder = AccessorHolder()
     val target: AccessorHolder = AccessorHolder()
     val event: AccessorHolder = AccessorHolder()

@@ -1,7 +1,5 @@
 package com.mineinabyss.geary.prefabs.configuration.components
 
-import com.mineinabyss.geary.context.GearyModule
-import com.mineinabyss.geary.context.GearyContextKoin
 import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity

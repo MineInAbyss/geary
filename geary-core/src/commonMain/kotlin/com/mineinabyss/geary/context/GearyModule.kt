@@ -24,8 +24,6 @@ interface GearyModule {
     val engine: Engine
 
     val eventRunner: EventRunner
-}
 
-interface TransitiveModule {
-    val submodules: List<Any>
+    fun inject()
 }

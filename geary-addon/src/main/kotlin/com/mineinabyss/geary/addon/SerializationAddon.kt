@@ -1,8 +1,7 @@
 package com.mineinabyss.geary.addon
 
 import com.mineinabyss.geary.addon.GearyLoadPhase.REGISTER_SERIALIZERS
-import com.mineinabyss.geary.context.GearyModule
-import com.mineinabyss.geary.context.GearyContextKoin
+import com.mineinabyss.geary.addon.modules.addons
 import com.mineinabyss.geary.datatypes.Component
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
@@ -14,7 +13,9 @@ import kotlin.reflect.KClass
 class SerializationAddon(
     @PublishedApi
     internal val addon: GearyAddon,
-) : GearyModule by GearyContextKoin() {
+) {
+    val serializers get() = addons.serializers
+
     /** Adds a [SerializersModule] for polymorphic serialization of [Component]s within the ECS. */
     inline fun components(crossinline init: PolymorphicModuleBuilder<Component>.() -> Unit) {
         module { polymorphic(Component::class) { init() } }

@@ -13,13 +13,11 @@ import com.mineinabyss.geary.serialization.Serializers
 import java.util.logging.Logger
 import kotlin.time.Duration
 
-val archetypes: IArchetypeModule by DI.observe()
+val archetypes: GearyArchetypeModule by DI.observe()
 
 class GearyArchetypeModule(
     tickDuration: Duration,
-) : GearyModule, TransitiveModule {
-    override val submodules = listOf(geary)
-
+) : GearyModule {
     override val logger: Logger = Logger.getLogger("geary")
     override val queryManager = ArchetypeQueryManager()
 
@@ -35,14 +33,12 @@ class GearyArchetypeModule(
     override val write: EntityMutateOperations = ArchetypeMutateOperations()
     override val entityProvider: EntityProvider = EntityByArchetypeProvider()
     override val componentProvider: ComponentProvider = ComponentAsEntityProvider()
-}
 
-interface IArchetypeModule {
-    val records: TypeMap
-    val archetypeProvider: ArchetypeProvider
-}
+    val records: TypeMap = HashTypeMap()
+    val archetypeProvider: ArchetypeProvider = SimpleArchetypeProvider()
 
-class ArchetypeModule : IArchetypeModule {
-    override val records: TypeMap = HashTypeMap()
-    override val archetypeProvider: ArchetypeProvider = SimpleArchetypeProvider()
+    override fun inject() {
+        DI.add<GearyModule>(this)
+        DI.add(this)
+    }
 }

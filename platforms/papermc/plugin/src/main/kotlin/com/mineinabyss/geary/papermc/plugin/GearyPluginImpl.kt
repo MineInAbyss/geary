@@ -3,9 +3,6 @@ package com.mineinabyss.geary.papermc.plugin
 import com.mineinabyss.geary.addon.*
 import com.mineinabyss.geary.addon.GearyLoadPhase.ENABLE
 import com.mineinabyss.geary.context.GearyArchetypeModule
-import com.mineinabyss.geary.context.GearyModule
-import com.mineinabyss.geary.engine.*
-import com.mineinabyss.geary.engine.archetypes.*
 import com.mineinabyss.geary.formats.YamlFormat
 import com.mineinabyss.geary.helpers.withSerialName
 import com.mineinabyss.geary.papermc.GearyPaperModule
@@ -13,11 +10,10 @@ import com.mineinabyss.geary.papermc.GearyPlugin
 import com.mineinabyss.geary.papermc.StartupEventListener
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
-import com.mineinabyss.geary.papermc.gearyPaper
-import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.plugin.listeners
 import com.mineinabyss.idofront.serialization.UUIDSerializer
+import com.mineinabyss.idofront.time.ticks
 import org.bukkit.Bukkit
 import java.util.*
 import kotlin.io.path.listDirectoryEntries
@@ -27,19 +23,13 @@ class GearyPluginImpl : GearyPlugin() {
         Platforms.load(this, "mineinabyss")
     }
 
-    //    private var module: Module? = null
-    @Suppress("RemoveExplicitTypeArguments")
     override fun onEnable() {
-        DI.add(GearyPaperModule(GearyArchetypeModule(), this))
-        val engine = gearyPaper.engine
-        engine.start()
-        gearyPaper.uuid2entity.startTracking()
-        gearyPaper.bukkit2Geary.startTracking()
+        val module = GearyPaperModule(GearyArchetypeModule(tickDuration = 1.ticks), this)
+        module.inject()
+        module.start()
 
         gearyAddon {
-            autoscan("com.mineinabyss") {
-                all()
-            }
+            autoscan("com.mineinabyss", AutoScanAddon::all)
             serialization {
                 components {
                     component(UUID::class, UUIDSerializer.withSerialName("geary:uuid"))

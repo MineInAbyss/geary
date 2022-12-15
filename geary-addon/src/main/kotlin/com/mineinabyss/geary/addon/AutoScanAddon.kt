@@ -3,18 +3,15 @@ package com.mineinabyss.geary.addon
 import com.mineinabyss.geary.addon.GearyLoadPhase.REGISTER_SERIALIZERS
 import com.mineinabyss.geary.annotations.AutoScan
 import com.mineinabyss.geary.annotations.ExcludeAutoScan
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.systems.GearySystem
 import com.mineinabyss.idofront.autoscan.AutoScanner
-import com.mineinabyss.idofront.messaging.logError
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.serializerOrNull
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.logger.Logger
 import org.reflections.Reflections
 import org.reflections.util.ClasspathHelper
 import org.reflections.util.ConfigurationBuilder
@@ -27,8 +24,8 @@ class AutoScanAddon(
     pkg: String,
     private val serializationAddon: SerializationAddon,
     private val gearyAddon: GearyAddon,
-) : KoinComponent {
-    private val logger: Logger by inject()
+) {
+    private val logger get() = geary.logger
 
     @PublishedApi
     internal val reflections: Reflections by lazy {
@@ -119,7 +116,7 @@ class AutoScanAddon(
                     .filter { kClass ->
                         runCatching {
                             this@polymorphic.addSubclass(kClass, kClass.serializerOrNull())
-                        }.onFailure { logError("Failed to load serializer for class ${kClass.simpleName}") }
+                        }.onFailure { logger.severe("Failed to load serializer for class ${kClass.simpleName}") }
                             .getOrThrow()
                     }
                     .map { it.simpleName }

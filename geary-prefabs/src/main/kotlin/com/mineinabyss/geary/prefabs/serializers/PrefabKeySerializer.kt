@@ -8,7 +8,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-public object PrefabKeySerializer : KSerializer<PrefabKey> {
+object PrefabKeySerializer : KSerializer<PrefabKey> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("geary:prefab_key", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): PrefabKey {

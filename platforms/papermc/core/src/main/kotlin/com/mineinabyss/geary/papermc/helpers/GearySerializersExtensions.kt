@@ -10,11 +10,11 @@ import org.bukkit.persistence.PersistentDataContainer
 import kotlin.reflect.KClass
 
 /** Gets the [NamespacedKey] for this component which should be used when encoding with a [PersistentDataContainer] */
-public inline fun <reified T : GearyComponent> GearySerializers.getNamespacedKeyFor(): NamespacedKey? =
+inline fun <reified T : GearyComponent> GearySerializers.getNamespacedKeyFor(): NamespacedKey? =
     getSerialNameFor(T::class)?.toComponentKey()
 
 /** Gets the serializer for a [NamespacedKey][key] registered for polymorphic serialization under [baseClass]. */
-public fun <T: GearyComponent> GearySerializers.getSerializerFor(
+fun <T: GearyComponent> GearySerializers.getSerializerFor(
     key: NamespacedKey,
     baseClass: KClass<in T> = GearyComponent::class
 ): DeserializationStrategy<out T>? =

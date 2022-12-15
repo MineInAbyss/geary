@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.engine.impl
 
-import com.mineinabyss.geary.context.archetypes
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.engine.SystemProvider
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.RepeatingSystem
@@ -10,7 +10,7 @@ import com.mineinabyss.geary.systems.System
  * Runs systems in no particular order.
  */
 class UnorderedSystemProvider : SystemProvider {
-    private val queryManager get() = archetypes.queryManager
+    private val queryManager get() = geary.queryManager
 
     private val registeredSystems: MutableSet<RepeatingSystem> = mutableSetOf()
     private val registeredListeners: MutableSet<Listener> = mutableSetOf()

@@ -19,8 +19,6 @@ import kotlin.reflect.KProperty
  * @property matchedArchetypes A set of archetypes which have been matched to this query.
  */
 abstract class Query : AccessorHolder(), Iterable<TargetScope> {
-    val queryManager: QueryManager get() = geary.queryManager
-
     @PublishedApi
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
 
@@ -43,7 +41,7 @@ abstract class Query : AccessorHolder(), Iterable<TargetScope> {
 
     inline fun fastForEach(crossinline run: (TargetScope) -> Unit) {
         if (!registered) {
-            queryManager.trackQuery(this)
+            geary.queryManager.trackQuery(this)
         }
         val matched = matchedArchetypes.toList()
         val sizes = matched.map { it.size - 1 }

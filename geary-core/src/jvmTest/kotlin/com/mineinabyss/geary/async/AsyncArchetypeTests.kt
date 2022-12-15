@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.async
 
-import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.helpers.componentId
@@ -10,11 +9,8 @@ import com.mineinabyss.geary.helpers.toGeary
 import io.kotest.matchers.collections.shouldBeUnique
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 class AsyncArchetypeTests : GearyTest() {
@@ -23,7 +19,7 @@ class AsyncArchetypeTests : GearyTest() {
         clearEngine()
         val arc = geary.archetypeProvider.getArchetype(EntityType(ulongArrayOf(componentId<String>() or HOLDS_DATA)))
         concurrentOperation(10000) {
-            val rec = engine.getRecord(engine.newEntity())
+            val rec = geary.records[geary.entityProvider.newEntity()]
             arc.addEntityWithData(rec, arrayOf("Test"), rec.entity)
         }.awaitAll()
         arc.entities.size shouldBe 10000

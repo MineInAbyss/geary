@@ -25,25 +25,31 @@ import kotlin.reflect.KClass
 @Serializable
 @JvmInline
 value class Entity(val id: EntityId) {
+    private val entityProvider get() = geary.entityProvider
+    private val queryManager get() = geary.queryManager
+    private val read get() = geary.read
+    private val write get() = geary.write
+    private val eventRunner get() = geary.eventRunner
+
     /**
      * Gets this entity's type (the ids of components added to it)
      * or throws an error if it is no longer active on the koinGet<Engine>().
      */
-    val type: EntityType get() = geary.engine.entityProvider.getType(this)
+    val type: EntityType get() = entityProvider.getType(this)
 
     val children: List<Entity>
-        get() = geary.queryManager.getEntitiesMatching(family {
+        get() = queryManager.getEntitiesMatching(family {
             hasRelation<ChildOf?>(this@Entity)
         })
 
     val instances: List<Entity>
-        get() = geary.queryManager.getEntitiesMatching(family {
+        get() = queryManager.getEntitiesMatching(family {
             hasRelation<InstanceOf?>(this@Entity)
         })
 
     /** Remove this entity from the ECS. */
     fun removeEntity() {
-        geary.engine.entityProvider.removeEntity(this)
+        entityProvider.removeEntity(this)
     }
 
     /**
@@ -61,7 +67,7 @@ value class Entity(val id: EntityId) {
         component: Component,
         componentId: ComponentId,
         noEvent: Boolean = false
-    ): Unit = geary.engine.write.setComponentFor(this, componentId, component, noEvent)
+    ): Unit = write.setComponentFor(this, componentId, component, noEvent)
 
     /** Sets components that hold data for this entity */
     fun setAll(components: Collection<Component>, override: Boolean = true) {
@@ -76,7 +82,7 @@ value class Entity(val id: EntityId) {
      * @param noEvent If true, will not fire an [AddedComponent] event.
      */
     fun add(component: ComponentId, noEvent: Boolean = false) {
-        geary.engine.write.addComponentFor(this, component, noEvent)
+        write.addComponentFor(this, component, noEvent)
     }
 
     /**
@@ -142,7 +148,7 @@ value class Entity(val id: EntityId) {
 
     /** Removes a component with id [component] from this entity. */
     fun remove(component: ComponentId): Boolean =
-        geary.engine.write.removeComponentFor(this, component)
+        write.removeComponentFor(this, component)
 
     /**
      * Removes a list of [components] from this entity.
@@ -154,7 +160,7 @@ value class Entity(val id: EntityId) {
 
     /** Clears all components on this entity. */
     fun clear() {
-        geary.engine.write.clearEntity(this)
+        write.clearEntity(this)
     }
 
     /** Gets a component of type [T] on this entity. */
@@ -166,7 +172,7 @@ value class Entity(val id: EntityId) {
 
     /** Gets a [component] which holds data from this entity. Use [has] if the component is not to hold data. */
     fun get(component: ComponentId): Component? =
-        geary.engine.read.getComponentFor(this, component)
+        read.getComponentFor(this, component)
 
     /** Gets a component of type [T] or sets a [default] if no component was present. */
     inline fun <reified T : Component> getOrSet(
@@ -181,7 +187,7 @@ value class Entity(val id: EntityId) {
     ): T = get(kClass) ?: default().also { setPersisting(it, kClass) }
 
     /** Gets all the components on this entity, as well as relations in the form of [RelationComponent]. */
-    fun getAll(): Set<Component> = geary.engine.read.getComponentsFor(this).toSet()
+    fun getAll(): Set<Component> = read.getComponentsFor(this).toSet()
 
     /** Gets all persisting components on this entity. */
     fun getAllPersisting(): Set<Component> =
@@ -208,7 +214,7 @@ value class Entity(val id: EntityId) {
 
     /** Checks whether this entity has a [component], regardless of it holding data. */
     fun has(component: ComponentId): Boolean =
-        geary.engine.read.hasComponentFor(this, component)
+        read.hasComponentFor(this, component)
 
     /**
      * Checks whether an entity has all of [components] set or added.
@@ -232,7 +238,7 @@ value class Entity(val id: EntityId) {
     /** Like [getRelations], but reads appropriate data as requested and puts it in a [RelationWithData] object. */
     @Suppress("UNCHECKED_CAST") // Intrnal logic ensures cast always succeeds
     inline fun <reified K : Component?, reified T : Component?> getRelationsWithData(): List<RelationWithData<K, T>> =
-        geary.engine.read.getRelationsWithDataFor(
+        geary.read.getRelationsWithDataFor(
             this,
             componentIdWithNullable<K>(),
             componentIdWithNullable<T>()
@@ -243,7 +249,7 @@ value class Entity(val id: EntityId) {
         getRelations(componentIdWithNullable<K>(), componentIdWithNullable<T>())
 
     fun getRelations(kind: ComponentId, target: EntityId): List<Relation> =
-        geary.engine.read.getRelationsFor(this, kind, target)
+        read.getRelationsFor(this, kind, target)
 
     inline fun <reified K : Component, reified T : Component> hasRelation(): Boolean =
         hasRelation<K>(component<T>())
@@ -256,7 +262,7 @@ value class Entity(val id: EntityId) {
     }
 
     inline fun <reified K : Any> setRelation(data: K, target: Entity, noEvent: Boolean = false) {
-        geary.engine.write.setComponentFor(this, Relation.of<K>(target).id, data, noEvent)
+        geary.write.setComponentFor(this, Relation.of<K>(target).id, data, noEvent)
     }
 
     inline fun <reified K : Any, reified T : Any> addRelation(noEvent: Boolean = false) {
@@ -264,7 +270,7 @@ value class Entity(val id: EntityId) {
     }
 
     inline fun <reified K : Any> addRelation(target: Entity, noEvent: Boolean = false) {
-        geary.engine.write.addComponentFor(this, Relation.of<K?>(target).id, noEvent)
+        geary.write.addComponentFor(this, Relation.of<K?>(target).id, noEvent)
     }
 
     /** Removes a relation key of type [K] and value of type [V]. */
@@ -273,7 +279,7 @@ value class Entity(val id: EntityId) {
     }
 
     inline fun <reified K : Any> removeRelation(target: Entity): Boolean {
-        return geary.engine.write.removeComponentFor(this, Relation.of<K>(target).id)
+        return geary.write.removeComponentFor(this, Relation.of<K>(target).id)
     }
 
     // Events
@@ -318,7 +324,7 @@ value class Entity(val id: EntityId) {
 
     /** Calls an event using a specific [entity][event] on this entity. */
     fun callEvent(event: Entity, source: Entity? = null) {
-        geary.engine.eventRunner.callEvent(this, event, source)
+        eventRunner.callEvent(this, event, source)
     }
 
     // Other

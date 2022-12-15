@@ -3,11 +3,11 @@ package com.mineinabyss.geary.engine.archetypes
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.SetComponent
 import com.mineinabyss.geary.components.events.UpdatedComponent
+import com.mineinabyss.geary.context.archetypes
 import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
-import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.events.Handler
 import com.mineinabyss.geary.helpers.temporaryEntity
@@ -25,12 +25,13 @@ import kotlinx.atomicfu.locks.synchronized
  * gives a large performance boost to system iteration.
  */
 data class Archetype(
-    private val archetypeProvider: ArchetypeProvider,
-    private val records: TypeMap,
-    private val eventRunner: ArchetypeEventRunner,
     val type: EntityType,
     val id: Int
 ) {
+    private val records get() = archetypes.records
+    private val archetypeProvider get() = archetypes.archetypeProvider
+    private val eventRunner get() = archetypes.eventRunner
+
     /** A mutex for anything which needs the size of ids to remain unchanged. */
     private val entityAddition = SynchronizedObject()
 

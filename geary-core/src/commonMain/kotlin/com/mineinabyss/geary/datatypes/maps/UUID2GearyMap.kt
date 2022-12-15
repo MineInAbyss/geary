@@ -5,6 +5,7 @@ import com.benasher44.uuid.uuid4
 import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.components.RegenerateUUIDOnClash
 import com.mineinabyss.geary.components.events.EntityRemoved
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.toGeary
@@ -14,6 +15,11 @@ import com.mineinabyss.geary.systems.accessors.TargetScope
 
 class UUID2GearyMap : GearyListener() {
     private val uuid2geary = mutableMapOf<Uuid, Long>()
+
+    fun startTracking() {
+        geary.systems.add(TrackUuidOnAdd())
+        geary.systems.add(UnTrackUuidOnRemove())
+    }
 
     operator fun get(uuid: Uuid): GearyEntity? =
         uuid2geary[uuid]?.toGeary()
@@ -25,11 +31,6 @@ class UUID2GearyMap : GearyListener() {
 
     fun remove(uuid: Uuid): GearyEntity? =
         uuid2geary.remove(uuid)?.toGeary()
-
-    fun startTracking() {
-        engine.systems.add(TrackUuidOnAdd())
-        engine.systems.add(UnTrackUuidOnRemove())
-    }
 
     inner class TrackUuidOnAdd : GearyListener() {
         private val TargetScope.uuid by onSet<Uuid>().onTarget()

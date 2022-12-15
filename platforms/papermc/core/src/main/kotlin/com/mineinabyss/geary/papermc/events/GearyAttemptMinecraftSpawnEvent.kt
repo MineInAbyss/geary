@@ -6,7 +6,7 @@ import org.bukkit.Location
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 
-public data class GearyAttemptMinecraftSpawnEvent(
+data class GearyAttemptMinecraftSpawnEvent(
     val location: Location,
     val prefab: GearyEntity,
 ) : Event() {

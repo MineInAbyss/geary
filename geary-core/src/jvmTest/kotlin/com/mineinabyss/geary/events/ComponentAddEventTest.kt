@@ -28,7 +28,7 @@ internal class ComponentAddEventTest : GearyTest() {
     @Test
     fun componentAddEvent() {
         val listener = OnStringAdd()
-        engine.addSystem(listener)
+        geary.systems.add(listener)
 
         entity {
             fun addedListeners() = type.getArchetype().targetListeners.count { it === listener }

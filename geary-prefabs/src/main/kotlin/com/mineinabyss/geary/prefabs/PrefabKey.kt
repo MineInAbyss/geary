@@ -1,10 +1,9 @@
 package com.mineinabyss.geary.prefabs
 
-import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.prefabs.modules.prefabs
 import com.mineinabyss.geary.prefabs.serializers.PrefabKeySerializer
 import kotlinx.serialization.Serializable
-import org.koin.core.component.KoinComponent
 
 /**
  * An inline class which represents a key build from a [namespace] and [key], separated
@@ -12,11 +11,11 @@ import org.koin.core.component.KoinComponent
  */
 @Serializable(with = PrefabKeySerializer::class)
 // We don't make this a value class since calculating substring is pretty expensive compared to one new object instantiation
-data class PrefabKey private constructor(val namespace: String, val key: String) : KoinComponent {
+data class PrefabKey private constructor(val namespace: String, val key: String) {
     fun toEntity(): Entity = toEntityOrNull()
         ?: error("Requested non null prefab entity for $this, but it does not exist.")
 
-    fun toEntityOrNull(): Entity? = geary.prefabManager[this]
+    fun toEntityOrNull(): Entity? = prefabs.manager[this]
 
     val full get() = "$namespace:$key"
 

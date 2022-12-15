@@ -10,7 +10,7 @@ import org.bukkit.event.HandlerList
  *
  * This does not get called when an existing Bukkit entity gets a representation in Geary.
  */
-public data class GearyMinecraftSpawnEvent(
+data class GearyMinecraftSpawnEvent(
     val entity: GearyEntity
 ) : Event() {
     override fun getHandlers(): HandlerList = handlerList

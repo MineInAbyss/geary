@@ -43,7 +43,6 @@ class Serializers {
     fun <T: Component> getSerializerFor(kClass: KClass<in T>): DeserializationStrategy<out T>? {
         val serialName = getSerialNameFor(kClass) ?: return null
 
-        @Suppress("UNCHECKED_CAST") // higher level logic ensures this never fails based on how we register serial names
         return getSerializerFor(serialName, Component::class)
     }
 
