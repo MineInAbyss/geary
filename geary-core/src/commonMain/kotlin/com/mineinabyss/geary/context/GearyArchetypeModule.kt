@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.context
 
+import com.mineinabyss.ding.DI
 import com.mineinabyss.geary.datatypes.maps.HashTypeMap
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.*
@@ -9,27 +10,39 @@ import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeReadOperation
 import com.mineinabyss.geary.engine.impl.UnorderedSystemProvider
 import com.mineinabyss.geary.serialization.Formats
 import com.mineinabyss.geary.serialization.Serializers
-import kotlin.time.Duration.Companion.milliseconds
+import java.util.logging.Logger
+import kotlin.time.Duration
 
-public val archetypes: GearyArchetypeModule = TODO()
+public val archetypes: IArchetypeModule by DI.observe()
 
-public class GearyArchetypeModule : GearyModule {
-    override val logger: Nothing = TODO()
-    public val records: TypeMap = HashTypeMap()
-    override val queryManager: ArchetypeQueryManager = ArchetypeQueryManager()
+public class GearyArchetypeModule(
+    tickDuration: Duration,
+) : GearyModule, TransitiveModule {
+    override val submodules = listOf(geary)
+
+    override val logger: Logger = Logger.getLogger("geary")
+    override val queryManager = ArchetypeQueryManager()
 
     override val components: Components = Components()
     override val serializers: Serializers = Serializers()
     override val formats: Formats = Formats()
 
-    override val engine: ArchetypeEngine = ArchetypeEngine(100.milliseconds)
-    public override val eventRunner: ArchetypeEventRunner = ArchetypeEventRunner(records)
-    override val systems: SystemProvider = UnorderedSystemProvider(queryManager)
+    override val engine: ArchetypeEngine = ArchetypeEngine(tickDuration)
+    override val eventRunner: ArchetypeEventRunner = ArchetypeEventRunner()
+    override val systems: SystemProvider = UnorderedSystemProvider()
 
-    public val archetypeProvider: ArchetypeProvider = SimpleArchetypeProvider(eventRunner, queryManager, records)
+    override val read: EntityReadOperations = ArchetypeReadOperations()
+    override val write: EntityMutateOperations = ArchetypeMutateOperations()
+    override val entityProvider: EntityProvider = EntityByArchetypeProvider()
+    override val componentProvider: ComponentProvider = ComponentAsEntityProvider()
+}
 
-    override val read: EntityReadOperations = ArchetypeReadOperations(records)
-    override val write: EntityMutateOperations = ArchetypeMutateOperations(records, archetypeProvider)
-    override val entityProvider: EntityProvider = EntityByArchetypeProvider(records, archetypeProvider)
-    override val componentProvider: ComponentProvider = ComponentAsEntityProvider(entityProvider)
+public interface IArchetypeModule {
+    public val records: TypeMap
+    public val archetypeProvider: ArchetypeProvider
+}
+
+public class ArchetypeModule : IArchetypeModule {
+    override val records: TypeMap = HashTypeMap()
+    override val archetypeProvider: ArchetypeProvider = SimpleArchetypeProvider()
 }

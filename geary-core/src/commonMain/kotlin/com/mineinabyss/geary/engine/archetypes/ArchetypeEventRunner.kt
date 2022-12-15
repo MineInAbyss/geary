@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import com.mineinabyss.geary.context.archetypes
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.Record
 import com.mineinabyss.geary.datatypes.maps.TypeMap
@@ -7,9 +8,9 @@ import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
 
-public class ArchetypeEventRunner(
-    private val records: TypeMap
-) : EventRunner {
+public class ArchetypeEventRunner : EventRunner {
+    private val records: TypeMap get() = archetypes.records
+
     override fun callEvent(target: Entity, event: Entity, source: Entity?) {
         callEvent(records[target], records[event], source?.let { records[source] })
     }

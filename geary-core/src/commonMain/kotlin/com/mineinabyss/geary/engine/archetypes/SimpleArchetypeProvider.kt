@@ -1,30 +1,31 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import com.mineinabyss.geary.context.archetypes
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 
-public class SimpleArchetypeProvider(
-    private val eventRunner: ArchetypeEventRunner,
-    private val queryManager: ArchetypeQueryManager,
-    private val typeMap: TypeMap
-) : ArchetypeProvider {
-    override val rootArchetype: Archetype = Archetype(this, typeMap, eventRunner, EntityType(), 0)
-    private val archetypes = mutableListOf(rootArchetype)
-    override val count: Int get() = archetypes.size
+public class SimpleArchetypeProvider : ArchetypeProvider {
+    private val eventRunner: ArchetypeEventRunner get() = archetypes.eventRunner
+    private val queryManager: ArchetypeQueryManager get() = archetypes.queryManager
+    private val records: TypeMap get() = archetypes.records
 
-    public val archetypeCount: Int get() = archetypes.size
+    override val rootArchetype: Archetype by lazy {
+        Archetype(this, records, eventRunner, EntityType(), 0).also {
+            queryManager.registerArchetype(it)
+        }
+    }
+    private val trackedArchetypes = mutableListOf(rootArchetype)
+    override val count: Int get() = trackedArchetypes.size
+
+    public val archetypeCount: Int get() = trackedArchetypes.size
     private val archetypeWriteLock = SynchronizedObject()
 
-    init {
-        queryManager.registerArchetype(rootArchetype)
-    }
-
     private fun createArchetype(prevNode: Archetype, componentEdge: ComponentId): Archetype {
-        val arc = Archetype(this, typeMap, eventRunner, prevNode.type.plus(componentEdge), archetypes.size)
-            .also { archetypes += it }
+        val arc = Archetype(this, records, eventRunner, prevNode.type.plus(componentEdge), trackedArchetypes.size)
+            .also { trackedArchetypes += it }
         arc.componentRemoveEdges[componentEdge] = prevNode
         prevNode.componentAddEdges[componentEdge] = arc
         queryManager.registerArchetype(arc)

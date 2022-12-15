@@ -3,6 +3,7 @@ package com.mineinabyss.geary.engine.archetypes
 import com.mineinabyss.geary.components.CouldHaveChildren
 import com.mineinabyss.geary.components.events.EntityRemoved
 import com.mineinabyss.geary.components.events.SuppressRemoveEvent
+import com.mineinabyss.geary.context.archetypes
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityProvider
@@ -11,13 +12,11 @@ import com.mineinabyss.geary.helpers.parents
 import com.mineinabyss.geary.helpers.removeParent
 import com.mineinabyss.geary.helpers.toGeary
 import kotlinx.atomicfu.atomic
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-public class EntityByArchetypeProvider(
-    private val records: TypeMap,
-    private val archetypeProvider: ArchetypeProvider
-): EntityProvider {
+public class EntityByArchetypeProvider : EntityProvider {
+    private val records: TypeMap get() = archetypes.records
+    private val archetypeProvider: ArchetypeProvider get() = archetypes.archetypeProvider
+
     private val removedEntities: EntityStack = EntityStack()
 
     private val currId = atomic(0L)
@@ -32,7 +31,7 @@ public class EntityByArchetypeProvider(
     }
 
     override fun removeEntity(entity: Entity) {
-        if(!entity.has<SuppressRemoveEvent>()) entity.callEvent {
+        if (!entity.has<SuppressRemoveEvent>()) entity.callEvent {
             add<EntityRemoved>()
         }
 

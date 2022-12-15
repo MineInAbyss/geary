@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.engine.archetypes
 
 import com.mineinabyss.geary.components.ComponentInfo
+import com.mineinabyss.geary.context.geary
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.maps.ClassToComponentMap
 import com.mineinabyss.geary.engine.ComponentProvider
@@ -9,9 +10,9 @@ import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlin.reflect.KClass
 
-public class ComponentAsEntityProvider(
-    private val entityProvider: EntityProvider
-) : ComponentProvider {
+public class ComponentAsEntityProvider : ComponentProvider {
+    private val entityProvider: EntityProvider get() = geary.entityProvider
+
     private val classToComponentMap = ClassToComponentMap()
     private val classToComponentMapLock = SynchronizedObject()
 

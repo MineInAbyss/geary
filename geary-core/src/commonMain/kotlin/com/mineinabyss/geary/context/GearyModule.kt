@@ -22,3 +22,7 @@ public interface GearyModule {
 
     public val eventRunner: EventRunner
 }
+
+interface TransitiveModule {
+    val submodules: List<Any>
+}

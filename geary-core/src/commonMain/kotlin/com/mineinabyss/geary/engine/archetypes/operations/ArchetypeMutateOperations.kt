@@ -1,14 +1,15 @@
 package com.mineinabyss.geary.engine.archetypes.operations
 
+import com.mineinabyss.geary.context.archetypes
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityMutateOperations
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 
-public class ArchetypeMutateOperations(
-    private val records: TypeMap,
-    private val archetypeProvider: ArchetypeProvider
-) : EntityMutateOperations {
+public class ArchetypeMutateOperations : EntityMutateOperations {
+    private val records: TypeMap get() = archetypes.records
+    private val archetypeProvider: ArchetypeProvider get() = archetypes.archetypeProvider
+
     override fun setComponentFor(
         entity: Entity,
         componentId: ComponentId,

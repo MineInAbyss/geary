@@ -63,6 +63,7 @@ kotlin {
                 implementation(mylibs.uuid)
                 implementation(libs.kotlin.reflect)
                 implementation(libs.kotlinx.serialization.cbor)
+                implementation("com.mineinabyss:ding:1.0.0")
 
                 api(mylibs.okio)
                 api(mylibs.kds)
