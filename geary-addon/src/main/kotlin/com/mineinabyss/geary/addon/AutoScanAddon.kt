@@ -1,9 +1,11 @@
 package com.mineinabyss.geary.addon
 
-import com.mineinabyss.geary.addon.GearyLoadPhase.REGISTER_SERIALIZERS
+import com.mineinabyss.geary.addons.dsl.GearyAddon
+import com.mineinabyss.geary.addons.dsl.SerializerRegistry
+import com.mineinabyss.geary.addons.dsl.serializers.SerializationAddon
 import com.mineinabyss.geary.annotations.AutoScan
 import com.mineinabyss.geary.annotations.ExcludeAutoScan
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.systems.GearySystem
@@ -123,18 +125,6 @@ class AutoScanAddon(
                     .joinToString()
                     .also { logger.info("Autoscan loaded serializers for class ${kClass.simpleName}: $it") }
             }
-        }
-    }
-}
-
-inline fun GearyAddon.autoscan(pkg: String, crossinline init: AutoScanAddon.() -> Unit) {
-    startup {
-        REGISTER_SERIALIZERS {
-            AutoScanAddon(
-                pkg = pkg,
-                serializationAddon = SerializationAddon(this@autoscan),
-                gearyAddon = this@autoscan
-            ).init()
         }
     }
 }

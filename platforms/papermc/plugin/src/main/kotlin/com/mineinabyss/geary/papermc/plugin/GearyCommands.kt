@@ -1,23 +1,25 @@
 package com.mineinabyss.geary.papermc.plugin
 
-import com.mineinabyss.geary.context.geary
-import com.mineinabyss.geary.papermc.StartupEventListener
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.prefabs.modules.prefabs
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
 import com.rylinaux.plugman.util.PluginUtil
 import kotlinx.coroutines.launch
+import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
+import org.bukkit.plugin.Plugin
 import kotlin.io.path.Path
 import kotlin.io.path.nameWithoutExtension
 
 internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
     private val plugin get() = gearyPaper.plugin
-    private val prefabManager get() = gearyPaper.prefabManager
+    private val prefabManager get() = prefabs.manager
     private val engine get() = geary.engine
 
     override val commands = commands(plugin) {
@@ -54,7 +56,7 @@ internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
             }
             "fullreload" {
                 action {
-                    val depends = StartupEventListener.getGearyDependants()
+                    val depends = getGearyDependants()
                     depends.forEach { PluginUtil.unload(it) }
                     PluginUtil.reload(plugin)
                     depends.forEach { PluginUtil.load(it.name) }
@@ -62,6 +64,9 @@ internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
             }
         }
     }
+
+    private fun getGearyDependants(): List<Plugin> =
+        Bukkit.getServer().pluginManager.plugins.filter { "Geary" in it.description.depend }
 
     override fun onTabComplete(
         sender: CommandSender,

@@ -1,8 +1,9 @@
-package com.mineinabyss.geary.context
+package com.mineinabyss.geary.modules
 
 import com.mineinabyss.ding.DI
+import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.engine.*
-import com.mineinabyss.geary.serialization.IFormats
+import com.mineinabyss.geary.serialization.Formats
 import com.mineinabyss.geary.serialization.Serializers
 import java.util.logging.Logger
 
@@ -20,10 +21,12 @@ interface GearyModule {
     val queryManager: QueryManager
     val components: Components
     val serializers: Serializers
-    val formats: IFormats
+    val formats: Formats
     val engine: Engine
 
     val eventRunner: EventRunner
 
     fun inject()
+    fun start()
+    fun configure(namespace: String, run: GearyDSL.() -> Unit)
 }

@@ -12,5 +12,6 @@ dependencies {
     compileOnly(libs.kotlinx.serialization.cbor)
 
     compileOnly(project(":geary-core"))
+    compileOnly(project(":geary-addon"))
     implementation("com.mineinabyss:ding:1.0.0")
 }

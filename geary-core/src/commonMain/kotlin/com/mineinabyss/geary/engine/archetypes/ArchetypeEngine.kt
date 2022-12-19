@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.engine.archetypes
 
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.*
 import com.mineinabyss.geary.systems.RepeatingSystem

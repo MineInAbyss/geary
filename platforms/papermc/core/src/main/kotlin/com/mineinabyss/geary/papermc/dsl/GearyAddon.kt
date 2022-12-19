@@ -1,15 +1,13 @@
 package com.mineinabyss.geary.papermc.dsl
 
-import com.mineinabyss.geary.addon.GearyAddon
-import com.mineinabyss.geary.addon.modules.addons
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.addons.dsl.GearyAddon
+import com.mineinabyss.geary.addons.dsl.GearyDSL
 import org.bukkit.plugin.Plugin
 
 /** Entry point to register a new [Plugin] with the Geary ECS. */
-inline fun Plugin.gearyAddon(crossinline init: GearyAddon.() -> Unit) {
-    addons.serializers.clearSerializerModule(name)
-    GearyAddon(
-        namespace = this@gearyAddon.name.lowercase(),
-        classLoader = this@gearyAddon::class.java.classLoader
-    ).init()
+inline fun Plugin.pluginAddon(crossinline init: GearyDSL.() -> Unit): GearyAddon {
+    return GearyAddon(
+        namespace = this.name.lowercase(),
+        classLoader = this::class.java.classLoader
+    ).apply(init)
 }

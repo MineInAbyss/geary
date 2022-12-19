@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.papermc.store
 
 import com.mineinabyss.geary.components.relations.InstanceOf
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.toGeary

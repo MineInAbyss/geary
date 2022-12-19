@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.engine.impl
 
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.engine.SystemProvider
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.RepeatingSystem

@@ -1,9 +1,8 @@
 package com.mineinabyss.geary.systems.query
 
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.engine.QueryManager
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.AccessorHolder

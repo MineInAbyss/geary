@@ -2,7 +2,7 @@ package com.mineinabyss.geary.helpers
 
 import com.mineinabyss.geary.components.ComponentInfo
 import com.mineinabyss.geary.components.events.SuppressRemoveEvent
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.systems.GearySystem
 import kotlinx.coroutines.Deferred

@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.prefabs.serializers
 
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.DescriptorWrapper

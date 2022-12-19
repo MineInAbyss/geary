@@ -5,7 +5,7 @@ import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.relations.ChildOf
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.Persists
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.component

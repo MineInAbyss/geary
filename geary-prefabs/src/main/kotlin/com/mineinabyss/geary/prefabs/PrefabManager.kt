@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.components.relations.DontInherit
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.entity

@@ -3,8 +3,8 @@ package com.mineinabyss.geary.engine.archetypes
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.SetComponent
 import com.mineinabyss.geary.components.events.UpdatedComponent
-import com.mineinabyss.geary.context.archetypes
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap

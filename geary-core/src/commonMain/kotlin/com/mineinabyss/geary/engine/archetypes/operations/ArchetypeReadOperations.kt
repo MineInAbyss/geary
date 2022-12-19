@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.engine.archetypes.operations
 
-import com.mineinabyss.geary.context.archetypes
+import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityReadOperations

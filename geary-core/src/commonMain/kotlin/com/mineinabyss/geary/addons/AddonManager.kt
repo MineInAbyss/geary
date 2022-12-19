@@ -1,13 +1,12 @@
-package com.mineinabyss.geary.addon
+package com.mineinabyss.geary.addons
 
-import com.mineinabyss.geary.context.geary
-import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.events.PrefabLoaded
 
-open class GearyAddonManager {
+open class AddonManager {
     private val logger get() = geary.logger
 
-    internal val loadingPrefabs = mutableListOf<Entity>()
+    //    internal val loadingPrefabs = mutableListOf<Entity>()
     private val actions = sortedMapOf<GearyLoadPhase, MutableList<() -> Unit>>()
 
     fun add(phase: GearyLoadPhase, action: () -> Unit) {

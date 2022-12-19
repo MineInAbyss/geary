@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.helpers.tests
 
-import com.mineinabyss.geary.context.GearyArchetypeModule
+import com.mineinabyss.geary.modules.GearyArchetypeModule
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async

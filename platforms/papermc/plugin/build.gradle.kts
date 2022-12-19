@@ -12,6 +12,8 @@ dependencies {
     // Shaded
     api(project(":geary-papermc-core"))
     implementation(libs.bundles.idofront.core)
+    implementation("io.ktor:ktor-server-core:2.2.1")
+    implementation("io.ktor:ktor-server-netty:2.2.1")
 
     // Other plugins
     compileOnly(mylibs.plugman)

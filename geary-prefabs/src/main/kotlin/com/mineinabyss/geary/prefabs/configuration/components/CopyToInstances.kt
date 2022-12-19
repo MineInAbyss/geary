@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.prefabs.configuration.components
 
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
 import kotlinx.serialization.Polymorphic

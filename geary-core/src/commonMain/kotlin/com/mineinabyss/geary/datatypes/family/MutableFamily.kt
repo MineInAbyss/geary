@@ -3,7 +3,7 @@ package com.mineinabyss.geary.datatypes.family
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.SetComponent
 import com.mineinabyss.geary.components.events.UpdatedComponent
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.componentId

@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.engine.archetypes
 
-import com.mineinabyss.geary.context.archetypes
+import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityType
 import kotlinx.atomicfu.locks.SynchronizedObject

@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.helpers
 
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
 import kotlin.reflect.KClass
 

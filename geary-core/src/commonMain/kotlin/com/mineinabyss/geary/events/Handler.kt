@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.events
 
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope

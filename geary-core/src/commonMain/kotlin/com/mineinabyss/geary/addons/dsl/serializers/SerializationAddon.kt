@@ -1,7 +1,7 @@
-package com.mineinabyss.geary.addon
+package com.mineinabyss.geary.addons.dsl.serializers
 
-import com.mineinabyss.geary.addon.GearyLoadPhase.REGISTER_SERIALIZERS
-import com.mineinabyss.geary.addon.modules.addons
+import com.mineinabyss.geary.addons.dsl.GearyAddon
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.Component
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
@@ -14,7 +14,7 @@ class SerializationAddon(
     @PublishedApi
     internal val addon: GearyAddon,
 ) {
-    val serializers get() = addons.serializers
+    val serializers get() = geary.serializers
 
     /** Adds a [SerializersModule] for polymorphic serialization of [Component]s within the ECS. */
     inline fun components(crossinline init: PolymorphicModuleBuilder<Component>.() -> Unit) {
@@ -50,13 +50,5 @@ class SerializationAddon(
     /** Adds a [SerializersModule] to be used for polymorphic serialization within the ECS. */
     inline fun module(init: SerializersModuleBuilder.() -> Unit) {
         serializers.addSerializersModule(addon.namespace, SerializersModule { init() })
-    }
-}
-
-fun GearyAddon.serialization(init: SerializationAddon.() -> Unit) {
-    startup {
-        REGISTER_SERIALIZERS {
-            SerializationAddon(this@serialization).init()
-        }
     }
 }

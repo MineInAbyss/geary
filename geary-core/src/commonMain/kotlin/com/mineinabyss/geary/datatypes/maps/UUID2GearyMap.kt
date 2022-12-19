@@ -5,7 +5,7 @@ import com.benasher44.uuid.uuid4
 import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.components.RegenerateUUIDOnClash
 import com.mineinabyss.geary.components.events.EntityRemoved
-import com.mineinabyss.geary.context.geary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.toGeary
