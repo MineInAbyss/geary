@@ -1,5 +1,8 @@
 package com.mineinabyss.geary.addons.dsl
 
+/**
+ * A marker annotations for DSLs.
+ */
 @DslMarker
-@Retention(AnnotationRetention.SOURCE)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS, AnnotationTarget.TYPE, AnnotationTarget.FUNCTION)
 annotation class GearyDSLMarker

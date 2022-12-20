@@ -2,16 +2,18 @@ package com.mineinabyss.geary.papermc.plugin
 
 import com.mineinabyss.geary.addon.*
 import com.mineinabyss.geary.addons.GearyLoadPhase.ENABLE
+import com.mineinabyss.geary.addons.dsl.AutoScan
+import com.mineinabyss.geary.addons.dsl.autoscan
+import com.mineinabyss.geary.addons.dsl.namespace
+import com.mineinabyss.geary.addons.dsl.serializers.*
 import com.mineinabyss.geary.formats.YamlFormat
 import com.mineinabyss.geary.helpers.withSerialName
 import com.mineinabyss.geary.modules.GearyArchetypeModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.papermc.GearyPlugin
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.geary.papermc.dsl.gearyAddon
-import com.mineinabyss.geary.papermc.dsl.pluginAddon
 import com.mineinabyss.geary.papermc.modules.GearyPaperModule
-import com.mineinabyss.geary.prefabs.Prefabs
+import com.mineinabyss.geary.prefabs.prefabs
 import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.serialization.UUIDSerializer
 import com.mineinabyss.idofront.time.ticks
@@ -23,7 +25,7 @@ import io.ktor.server.routing.*
 import io.ktor.util.*
 import org.bukkit.Bukkit
 import java.util.*
-import kotlin.io.path.listDirectoryEntries
+
 
 class GearyPluginImpl : GearyPlugin() {
     override fun onLoad() {
@@ -32,20 +34,22 @@ class GearyPluginImpl : GearyPlugin() {
 
     override fun onEnable() {
         val module = GearyPaperModule(
-            GearyArchetypeModule(tickDuration = 1.ticks), this
+            GearyArchetypeModule(tickDuration = 1.ticks)
         )
         module.inject()
-        geary.configure("geary") {
-            install(Prefabs) {
-                paths(dataFolder.toPath())
-            }
-            install(pluginAddon {
-
-            })
-            autoscan("com.mineinabyss", AutoScanAddon::all)
-            serialization {
-                components {
-                    component(UUID::class, UUIDSerializer.withSerialName("geary:uuid"))
+        geary {
+            namespace("geary") {
+                autoscan {
+                    autoscan("com.mineinabyss", AutoScan::all)
+                    all()
+                }
+                prefabs {
+                    paths(dataFolder.toPath())
+                }
+                serialization {
+                    components {
+                        component(UUID::class, UUIDSerializer.withSerialName("geary:uuid"))
+                    }
                 }
             }
             formats { module ->

@@ -1,8 +1,11 @@
 package com.mineinabyss.geary.addons.dsl.serializers
 
 import com.mineinabyss.geary.addons.dsl.GearyAddon
+import com.mineinabyss.geary.addons.dsl.GearyDSLMarker
+import com.mineinabyss.geary.addons.dsl.Namespaced
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.Component
+import com.mineinabyss.geary.modules.GearyModule
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import kotlinx.serialization.modules.SerializersModule
@@ -10,14 +13,11 @@ import kotlinx.serialization.modules.SerializersModuleBuilder
 import kotlinx.serialization.modules.polymorphic
 import kotlin.reflect.KClass
 
-class SerializationAddon(
-    @PublishedApi
-    internal val addon: GearyAddon,
-) {
+class SerializationAddon {
     val serializers get() = geary.serializers
 
     /** Adds a [SerializersModule] for polymorphic serialization of [Component]s within the ECS. */
-    inline fun components(crossinline init: PolymorphicModuleBuilder<Component>.() -> Unit) {
+    inline fun Namespaced.components(crossinline init: PolymorphicModuleBuilder<Component>.() -> Unit) {
         module { polymorphic(Component::class) { init() } }
     }
 
@@ -48,7 +48,19 @@ class SerializationAddon(
     }
 
     /** Adds a [SerializersModule] to be used for polymorphic serialization within the ECS. */
-    inline fun module(init: SerializersModuleBuilder.() -> Unit) {
-        serializers.addSerializersModule(addon.namespace, SerializersModule { init() })
+    inline fun Namespaced.module(init: SerializersModuleBuilder.() -> Unit) {
+        serializers.addSerializersModule(namespace, SerializersModule { init() })
     }
+
+    companion object Plugin: GearyAddon<SerializationAddon> {
+        override fun install(geary: GearyModule): SerializationAddon {
+            TODO("Not yet implemented")
+        }
+
+    }
+}
+
+@GearyDSLMarker
+fun GearyModule.serialization(configure: SerializationAddon.() -> Unit) {
+    addons.getOrNull<SerializationAddon>()?.configure() ?: install(SerializationAddon, configure)
 }

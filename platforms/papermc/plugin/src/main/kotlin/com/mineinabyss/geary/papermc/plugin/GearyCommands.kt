@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.papermc.plugin
 
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.papermc.gearyPaper
+import com.mineinabyss.geary.papermc.modules.gearyPaper
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.modules.prefabs
 import com.mineinabyss.idofront.commands.arguments.stringArg

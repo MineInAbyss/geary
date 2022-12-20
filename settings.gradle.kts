@@ -58,3 +58,5 @@ file("./platforms/papermc")
         include(name)
         project(":$name").projectDir = it
     }
+
+includeBuild("/home/offz/data/Projects/ding")

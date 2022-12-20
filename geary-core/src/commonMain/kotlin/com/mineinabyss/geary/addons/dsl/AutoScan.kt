@@ -1,12 +1,12 @@
-package com.mineinabyss.geary.addon
+package com.mineinabyss.geary.addons.dsl
 
-import com.mineinabyss.geary.addons.dsl.GearyAddon
-import com.mineinabyss.geary.addons.dsl.SerializerRegistry
+import com.mineinabyss.geary.addons.dsl.*
 import com.mineinabyss.geary.addons.dsl.serializers.SerializationAddon
 import com.mineinabyss.geary.annotations.AutoScan
 import com.mineinabyss.geary.annotations.ExcludeAutoScan
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.Component
+import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.systems.GearySystem
 import com.mineinabyss.idofront.autoscan.AutoScanner
@@ -21,11 +21,11 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubclassOf
+import com.mineinabyss.geary.addons.dsl.AutoScan as AutoScanAddon
 
-class AutoScanAddon(
+class AutoScan(
     pkg: String,
     private val serializationAddon: SerializationAddon,
-    private val gearyAddon: GearyAddon,
 ) {
     private val logger get() = geary.logger
 
@@ -44,7 +44,7 @@ class AutoScanAddon(
      * @see autoScanComponents
      * @see autoScanSystems
      */
-    fun all() {
+    fun Namespaced.all() {
         components()
         systems()
     }
@@ -54,7 +54,7 @@ class AutoScanAddon(
      *
      * @see AutoScanner
      */
-    fun components(): Unit = with(serializationAddon) {
+    fun Namespaced.components(): Unit = with(serializationAddon) {
         reflections.getTypesAnnotatedWith(Serializable::class.java)
             ?.registerSerializers(Component::class) { kClass, serializer ->
                 val serialName = serializer?.descriptor?.serialName ?: return@registerSerializers false
@@ -127,4 +127,19 @@ class AutoScanAddon(
             }
         }
     }
+    companion object Addon: GearyAddon<AutoScanAddon> {
+        override fun install(geary: GearyModule): AutoScanAddon {
+            AutoScanAddon()
+        }
+
+    }
+}
+
+class Namespaced(val namespace: String)
+
+fun GearyModule.namespace(namespace: String, configure: Namespaced.() -> Unit) = Namespaced(namespace).configure()
+
+@GearyDSLMarker
+fun GearyModule.autoscan(configure: AutoScanAddon.() -> Unit) {
+    addons.getOrNull<AutoScanAddon>()?.configure() ?: install(AutoScanAddon, configure)
 }

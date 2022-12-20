@@ -13,9 +13,9 @@ val gearyPaper: GearyPaperModule by DI.observe()
 
 class GearyPaperModule(
     private val geary: GearyModule,
-    private val addons: AddonModule,
+    private val addonsModule: AddonModule,
     val plugin: GearyPlugin,
-) : GearyModule by geary, AddonModule by addons {
+) : GearyModule by geary, AddonModule by addonsModule {
     override val engine = PaperMCEngine()
     override val systems = PaperSystemProvider(plugin, geary.systems)
 
@@ -24,11 +24,11 @@ class GearyPaperModule(
 
     override fun inject() {
         geary.inject()
-        addons.inject()
+        addonsModule.inject()
         DI.add(gearyPaper)
     }
 
-    fun start() {
+    override fun start() {
         engine.start()
         uuid2entity.startTracking()
         bukkit2Geary.startTracking()
