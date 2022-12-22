@@ -47,15 +47,15 @@ open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine(
                     runCatching {
                         it.runSystem()
                     }.onFailure {
-                        logger.severe("Error while running system ${it::class.simpleName}")
+                        logger.e("Error while running system ${it::class.simpleName}")
                         it.printStackTrace()
                     }
                 }
         }
 
         // Tick all systems
-        logger.fine("Started engine tick")
+        logger.v("Started engine tick")
         tickJob.join()
-        logger.fine("Finished engine tick")
+        logger.v("Finished engine tick")
     }
 }

@@ -8,18 +8,20 @@ import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.with
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
-import com.mineinabyss.geary.serialization.SerializableComponents
+import com.mineinabyss.geary.serialization.serialization
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.ListSerializer
 import okio.Path.Companion.toOkioPath
-import java.io.File
+import java.nio.file.Path
 import java.util.*
+import kotlin.io.path.extension
+import kotlin.io.path.nameWithoutExtension
 
 /**
  * Manages registered prefabs and accessing them via name.
  */
 class PrefabManager {
-    private val formats get() = geary.addons.get<SerializableComponents>().formats
+    private val formats get() = serialization.formats
     private val logger get() = geary.logger
 
     /** A list of registered [PrefabKey]s. */
@@ -45,35 +47,4 @@ class PrefabManager {
         keyToPrefab.clear()
     }
 
-    /** If this entity has a [Prefab] component, clears it and loads components from its file. */
-    fun reread(entity: Entity) {
-        entity.with { prefab: Prefab, key: PrefabKey ->
-            entity.clear()
-            loadFromFile(key.namespace, prefab.file ?: return, entity)
-            entity.inheritPrefabs()
-        }
-    }
-
-    /** Registers an entity with components defined in a [file], adding a [Prefab] component. */
-    fun loadFromFile(namespace: String, file: File, writeTo: Entity? = null): Entity? {
-        val name = file.nameWithoutExtension
-        return runCatching {
-            val serializer = ListSerializer(PolymorphicSerializer(Component::class))
-            val ext = file.extension
-            val decoded = formats[ext]?.decodeFromFile(serializer, file.toOkioPath())
-                ?: error("Unknown file format $ext")
-            val entity = writeTo ?: entity()
-            entity.set(Prefab(file))
-            entity.addRelation<DontInherit, Prefab>()
-            entity.addRelation<DontInherit, UUID>()
-            entity.setAll(decoded)
-
-            val key = PrefabKey.of(namespace, name)
-            registerPrefab(key, entity)
-            entity
-        }.onFailure {
-            logger.severe("Can't read prefab $name from ${file.path}:")
-            logger.warning(it.toString())
-        }.getOrNull()
-    }
 }

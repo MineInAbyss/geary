@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.addons.dsl
 
+import com.mineinabyss.geary.modules.GearyModule
+
 /**
  * The entry point for other plugins to hook into Geary. Allows registering serializable components, systems, actions,
  * and more.
@@ -41,3 +43,7 @@ package com.mineinabyss.geary.addons.dsl
 //        addons.manager.add(phase, run)
 //    }
 //}
+interface GearyAddon<Module, Conf> {
+    fun default(): Module
+    fun Module.install(geary: GearyModule)
+}

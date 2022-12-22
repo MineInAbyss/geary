@@ -16,5 +16,10 @@ kotlin {
                 implementation("com.mineinabyss:ding:1.0.0")
             }
         }
+        jvmMain {
+            dependencies {
+                compileOnly(libs.kotlinx.serialization.kaml)
+            }
+        }
     }
 }

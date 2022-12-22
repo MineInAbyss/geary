@@ -1,10 +1,10 @@
 package com.mineinabyss.geary.serialization
 
-import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.GearyAddon
 import com.mineinabyss.geary.addons.dsl.GearyDSLMarker
 import com.mineinabyss.geary.datatypes.Component
+import com.mineinabyss.geary.modules.GearyConfiguration
 import com.mineinabyss.geary.modules.GearyModule
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
@@ -19,6 +19,10 @@ class SerializableComponents {
         module { polymorphic(Component::class) { init() } }
     }
 
+
+    fun format(ext: String, format: (SerializersModule) -> PrefabFormat) {
+        serialization.formats.register(ext, format)
+    }
 
     /**
      * Adds a serializable component and registers it with Geary to allow finding the appropriate class via
@@ -59,9 +63,5 @@ class SerializableComponents {
 }
 
 @GearyDSLMarker
-fun GearyModule.serialization(configure: SerializableComponents.() -> Unit) {
-    addons.getOrNull<SerializableComponents>()?.configure() ?: install(SerializableComponents, configure)
-    pipeline.intercept(GearyPhase.INIT_COMPONENTS) {
-
-    }
-}
+fun GearyConfiguration.serialization(configure: SerializableComponents.() -> Unit) =
+    install(SerializableComponents, configure)

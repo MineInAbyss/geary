@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.prefabs.configuration.components
 
-import java.io.File
+import java.nio.file.Path
 
 /**
  * A component applied to prefabs loaded from a file that allows them to be reread.
@@ -8,5 +8,5 @@ import java.io.File
  * @param file The file this prefab was loaded from or null if it is a child in a prefab, or created some other way.
  */
 class Prefab(
-    val file: File? = null
+    val file: Path? = null
 )

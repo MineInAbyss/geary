@@ -4,6 +4,7 @@ import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.*
 import com.mineinabyss.geary.addons.SerializationAddon
 import com.mineinabyss.geary.datatypes.Component
+import com.mineinabyss.geary.modules.GearyConfiguration
 import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -135,6 +136,4 @@ class AutoScanAddon(
 }
 
 @GearyDSLMarker
-fun GearyModule.autoscan(configure: AutoScanAddon.() -> Unit) {
-    addons.getOrNull<AutoScanAddon>()?.configure() ?: install(AutoScanAddon, configure)
-}
+fun GearyConfiguration.autoscan(configure: AutoScanAddon.() -> Unit) = install(AutoScanAddon, configure)

@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.prefabs.configuration.systems
 
-import com.mineinabyss.geary.annotations.AutoScan
 import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.components.relations.DontInherit
@@ -12,7 +11,6 @@ import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.TargetScope
 
-@AutoScan
 class ParseChildOnPrefab : Listener() {
     private val TargetScope.child by onSet<ChildOnPrefab>()
 
@@ -26,7 +24,6 @@ class ParseChildOnPrefab : Listener() {
     }
 }
 
-@AutoScan
 class ParseChildrenOnPrefab : Listener() {
     private val TargetScope.children by onSet<ChildrenOnPrefab>()
 

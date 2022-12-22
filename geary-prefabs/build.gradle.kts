@@ -6,9 +6,13 @@ plugins {
 }
 
 kotlin {
+    targets {
+
+    }
     sourceSets {
         commonMain {
             dependencies {
+                compileOnly(mylibs.okio)
                 compileOnly(libs.kotlinx.serialization.json)
                 compileOnly(libs.kotlinx.serialization.cbor)
 

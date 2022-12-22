@@ -3,12 +3,10 @@ package com.mineinabyss.geary.papermc.plugin
 import com.mineinabyss.geary.addon.*
 import com.mineinabyss.geary.addons.GearyPhase.ENABLE
 import com.mineinabyss.geary.addons.dsl.AutoScan
-import com.mineinabyss.geary.addons.dsl.autoscan
-import com.mineinabyss.geary.addons.dsl.namespace
 import com.mineinabyss.geary.addons.dsl.serializers.*
 import com.mineinabyss.geary.addons.namespace
-import com.mineinabyss.geary.addons.serialization
-import com.mineinabyss.geary.formats.YamlFormat
+import com.mineinabyss.geary.autoscan.AutoScanAddon
+import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.helpers.withSerialName
 import com.mineinabyss.geary.modules.GearyArchetypeModule
 import com.mineinabyss.geary.modules.geary
@@ -16,9 +14,11 @@ import com.mineinabyss.geary.papermc.GearyPlugin
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.modules.GearyPaperModule
 import com.mineinabyss.geary.prefabs.prefabs
+import com.mineinabyss.geary.serialization.serialization
 import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.serialization.UUIDSerializer
 import com.mineinabyss.idofront.time.ticks
+import com.mineinabyss.serialization.formats.YamlFormat
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -27,6 +27,9 @@ import io.ktor.server.routing.*
 import io.ktor.util.*
 import org.bukkit.Bukkit
 import java.util.*
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
 
 
 class GearyPluginImpl : GearyPlugin() {
@@ -41,27 +44,32 @@ class GearyPluginImpl : GearyPlugin() {
         )
         module.inject()
         geary {
+            install(AutoScanAddon)
             namespace("geary") {
                 autoscan {
                     autoscan("com.mineinabyss", AutoScan::all)
                     all()
                 }
-                prefabs {
-                    paths(dataFolder.toPath())
-                }
                 serialization {
+                    format("yml", ::YamlFormat)
+
                     components {
                         component(UUID::class, UUIDSerializer.withSerialName("geary:uuid"))
                     }
                 }
             }
-            systems.add()
-            pipeline
-            formats { module ->
-                register("yml", YamlFormat(module))
+            // Load prefabs in Geary folder, each subfolder is considered its own namespace
+            prefabs {
+                dataFolder.toPath().listDirectoryEntries()
+                    .filter { it.isDirectory() }
+                    .forEach { folder ->
+                        namespace(folder.name) {
+                            glob(folder)
+                        }
+                    }
             }
-
-            on(ENABLE) {
+            systems.add()
+            pipeline.intercept(ENABLE) {
                 Bukkit.getOnlinePlayers().forEach { it.toGeary() }
             }
         }

@@ -47,7 +47,7 @@ internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
 
                         // Try to load from file
                         runCatching {
-                            prefabManager.loadFromFile(namespace, plugin.dataFolder.resolve(namespace).resolve(path))
+                            prefabManager.loadFromPathOrNull(namespace, plugin.dataFolder.resolve(namespace).resolve(path))
                         }
                             .onSuccess { sender.success("Read prefab $namespace:$path") }
                             .onFailure { sender.error("Failed to read prefab $namespace:$path:\n${it.message}") }

@@ -33,7 +33,6 @@ kotlin {
                 implementation(libs.kotlinx.serialization.cbor)
                 implementation("com.mineinabyss:ding:1.0.0")
 
-                api(mylibs.okio)
                 api(mylibs.kds)
                 api(libs.kotlinx.coroutines)
                 api(libs.kotlinx.serialization.json)

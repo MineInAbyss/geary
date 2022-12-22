@@ -40,6 +40,10 @@ allprojects {
                     useJUnitPlatform()
                 }
             }
+            js {
+                nodejs()
+                browser()
+            }
             sourceSets {
                 all {
                     languageSettings {
@@ -50,11 +54,13 @@ allprojects {
                         optIn("kotlin.RequiresOptIn")
                     }
                 }
+                commonMain {
+                    dependencies {
+                        implementation("co.touchlab:kermit:1.2.2")
+                    }
+                }
             }
-//    js(IR) {
-//        browser()
-//        nodejs()
-//    }
+
         }
 
     }

@@ -1,7 +1,9 @@
-package com.mineinabyss.geary.serialization
+package com.mineinabyss.geary.serialization.formats
 
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.Component
+import com.mineinabyss.geary.serialization.PrefabFormat
+import com.mineinabyss.geary.serialization.SerializableComponents
 import kotlinx.serialization.cbor.Cbor
 
 /**

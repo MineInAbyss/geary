@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.modules
 
+import co.touchlab.kermit.Logger
 import com.mineinabyss.ding.DI
 import com.mineinabyss.ding.DIContext
 import com.mineinabyss.geary.addons.dsl.GearyAddon
@@ -10,7 +11,6 @@ import com.mineinabyss.geary.engine.archetypes.*
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeMutateOperations
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeReadOperations
 import com.mineinabyss.geary.engine.impl.UnorderedSystemProvider
-import java.util.logging.Logger
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -19,7 +19,7 @@ val archetypes: GearyArchetypeModule by DI.observe()
 class GearyArchetypeModule(
     tickDuration: Duration = 50.milliseconds,
 ) : GearyModule {
-    override val logger: Logger = Logger.getLogger("geary")
+    override val logger: Logger = Logger.withTag("Geary")
     override val queryManager = ArchetypeQueryManager()
 
     override val components: Components = Components()
@@ -45,9 +45,5 @@ class GearyArchetypeModule(
 
     override fun start() {
         engine.start()
-    }
-
-    override fun <T : GearyAddon<A>, A> install(addon: T, run: A.() -> Unit) {
-        TODO("Not yet implemented")
     }
 }

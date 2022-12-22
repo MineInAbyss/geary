@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.formats
+package com.mineinabyss.serialization.formats
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
