@@ -1,11 +1,6 @@
 package com.mineinabyss.geary.addons.dsl
 
-import com.mineinabyss.geary.addons.dsl.serializers.SerializationAddon
-import com.mineinabyss.geary.addons.GearyLoadPhase
 import com.mineinabyss.geary.modules.GearyModule
-import com.mineinabyss.geary.serialization.Formats
-import com.mineinabyss.geary.systems.GearySystem
-import kotlinx.serialization.modules.SerializersModule
 
 interface GearyAddon<T> {
     fun install(geary: GearyModule): T

@@ -1,6 +1,5 @@
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.serialization")
 //    id("com.mineinabyss.conventions.publication")
 //    id("com.mineinabyss.conventions.testing")
 }
@@ -9,11 +8,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                compileOnly(libs.kotlinx.serialization.json)
-                compileOnly(libs.kotlinx.serialization.cbor)
-
+                implementation(mylibs.uuid)
                 compileOnly(project(":geary-core"))
-                compileOnly(project(":geary-serialization"))
                 implementation("com.mineinabyss:ding:1.0.0")
             }
         }

@@ -1,11 +1,13 @@
 package com.mineinabyss.geary.papermc.plugin
 
 import com.mineinabyss.geary.addon.*
-import com.mineinabyss.geary.addons.GearyLoadPhase.ENABLE
+import com.mineinabyss.geary.addons.GearyPhase.ENABLE
 import com.mineinabyss.geary.addons.dsl.AutoScan
 import com.mineinabyss.geary.addons.dsl.autoscan
 import com.mineinabyss.geary.addons.dsl.namespace
 import com.mineinabyss.geary.addons.dsl.serializers.*
+import com.mineinabyss.geary.addons.namespace
+import com.mineinabyss.geary.addons.serialization
 import com.mineinabyss.geary.formats.YamlFormat
 import com.mineinabyss.geary.helpers.withSerialName
 import com.mineinabyss.geary.modules.GearyArchetypeModule
@@ -34,7 +36,8 @@ class GearyPluginImpl : GearyPlugin() {
 
     override fun onEnable() {
         val module = GearyPaperModule(
-            GearyArchetypeModule(tickDuration = 1.ticks)
+            GearyArchetypeModule(tickDuration = 1.ticks),
+            this
         )
         module.inject()
         geary {
@@ -52,6 +55,8 @@ class GearyPluginImpl : GearyPlugin() {
                     }
                 }
             }
+            systems.add()
+            pipeline
             formats { module ->
                 register("yml", YamlFormat(module))
             }

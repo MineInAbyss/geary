@@ -28,6 +28,10 @@ dependencies {
     implementation(project(":geary-papermc-plugin"))
 }
 
+subprojects {
+
+}
+
 tasks {
     build {
         dependsOn(shadowJar)

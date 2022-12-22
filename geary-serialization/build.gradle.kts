@@ -13,7 +13,6 @@ kotlin {
                 compileOnly(libs.kotlinx.serialization.cbor)
 
                 compileOnly(project(":geary-core"))
-                compileOnly(project(":geary-serialization"))
                 implementation("com.mineinabyss:ding:1.0.0")
             }
         }

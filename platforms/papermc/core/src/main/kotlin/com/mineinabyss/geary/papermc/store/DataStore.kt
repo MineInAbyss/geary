@@ -5,7 +5,7 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.toGeary
-import com.mineinabyss.geary.papermc.gearyPaper
+import com.mineinabyss.geary.papermc.modules.gearyPaper
 import com.mineinabyss.geary.papermc.helpers.getNamespacedKeyFor
 import com.mineinabyss.geary.papermc.helpers.getSerializerFor
 import com.mineinabyss.geary.prefabs.PrefabKey

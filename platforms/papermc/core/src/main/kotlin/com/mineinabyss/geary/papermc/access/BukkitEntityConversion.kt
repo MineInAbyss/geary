@@ -2,12 +2,12 @@ package com.mineinabyss.geary.papermc.access
 
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.papermc.gearyPaper
+import com.mineinabyss.geary.papermc.modules.gearyPaper
 import com.mineinabyss.idofront.typealiases.BukkitEntity
 import org.bukkit.entity.Player
 
 fun BukkitEntity.toGeary(): GearyEntity {
-    if(this is Player && !isOnline) error("Tried to access Geary entity for offline player: $name")
+    if (this is Player && !isOnline) error("Tried to access Geary entity for offline player: $name")
     return gearyPaper.bukkit2Geary[entityId] ?: entity { set<BukkitEntity>(this@toGeary) }
 }
 

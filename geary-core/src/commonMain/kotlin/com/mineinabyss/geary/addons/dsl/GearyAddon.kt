@@ -1,13 +1,5 @@
 package com.mineinabyss.geary.addons.dsl
 
-import com.mineinabyss.geary.addons.dsl.serializers.SerializationAddon
-import com.mineinabyss.geary.addon.modules.addons
-import com.mineinabyss.geary.addons.GearyLoadPhase
-import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.serialization.Formats
-import com.mineinabyss.geary.systems.GearySystem
-import kotlinx.serialization.modules.SerializersModule
-
 /**
  * The entry point for other plugins to hook into Geary. Allows registering serializable components, systems, actions,
  * and more.

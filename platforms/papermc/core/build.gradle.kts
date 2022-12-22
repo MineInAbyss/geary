@@ -10,9 +10,12 @@ repositories {
 }
 
 dependencies {
-    api(project(":geary-addon"))
     api(project(":geary-core"))
+    api(project(":geary-autoscan"))
     api(project(":geary-prefabs"))
+    api(project(":geary-serialization"))
+    api(project(":geary-uuid"))
+    compileOnly(libs.fastutil)
 
     // MineInAbyss platform
     compileOnly(libs.kotlinx.coroutines)

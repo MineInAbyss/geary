@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.components
 
+import com.mineinabyss.geary.helpers.withSerialName
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClassifier

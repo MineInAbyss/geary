@@ -3,7 +3,7 @@ package com.mineinabyss.geary.papermc.engine
 import co.aikar.timings.Timings
 import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import com.mineinabyss.geary.engine.archetypes.ArchetypeEngine
-import com.mineinabyss.geary.papermc.gearyPaper
+import com.mineinabyss.geary.papermc.modules.gearyPaper
 import com.mineinabyss.geary.systems.RepeatingSystem
 import com.mineinabyss.idofront.time.ticks
 import kotlinx.coroutines.launch

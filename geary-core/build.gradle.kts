@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinMultiplatformPlugin
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    id("org.jetbrains.dokka")
     `maven-publish`
 }
 
@@ -17,11 +16,6 @@ buildscript {
 
 apply(plugin = "kotlinx-atomicfu")
 
-repositories {
-    mavenCentral()
-    google()
-}
-
 //TODO dev options to only build for one target at a time
 fun KotlinTarget.disableCompilations() {
     compilations.configureEach {
@@ -30,36 +24,11 @@ fun KotlinTarget.disableCompilations() {
 }
 
 kotlin {
-    targets.configureEach {
-        if (name == KotlinMultiplatformPlugin.METADATA_TARGET_NAME) return@configureEach
-        if (platformType != KotlinPlatformType.jvm)
-            disableCompilations()
-    }
-
-    jvm {
-        testRuns["test"].executionTask.configure {
-            useJUnitPlatform()
-        }
-    }
-//    js(IR) {
-//        browser()
-//        nodejs()
-//    }
     sourceSets {
-        all {
-            languageSettings {
-                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
-                optIn("kotlin.time.ExperimentalTime")
-                optIn("kotlin.ExperimentalUnsignedTypes")
-                optIn("kotlinx.serialization.ExperimentalSerializationApi")
-                optIn("kotlin.RequiresOptIn")
-            }
-        }
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation(kotlin("stdlib-common"))
                 implementation(mylibs.atomicfu)
-                implementation(mylibs.uuid)
                 implementation(libs.kotlin.reflect)
                 implementation(libs.kotlinx.serialization.cbor)
                 implementation("com.mineinabyss:ding:1.0.0")
@@ -71,7 +40,7 @@ kotlin {
             }
 
         }
-        val commonTest by getting {
+        commonTest {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinx.coroutines.test)
@@ -80,19 +49,12 @@ kotlin {
             }
         }
 
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 implementation(libs.kotlinx.serialization.kaml)
                 implementation(mylibs.roaringbitmap)
             }
         }
-        val jvmTest by getting
-
-//        val jsMain by getting {
-//            dependencies {
-//                api(mylibs.bitvector.js)
-//            }
-//        }
     }
 }
 

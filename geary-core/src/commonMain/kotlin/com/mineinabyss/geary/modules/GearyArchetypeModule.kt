@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.modules
 
 import com.mineinabyss.ding.DI
+import com.mineinabyss.ding.DIContext
 import com.mineinabyss.geary.addons.dsl.GearyAddon
-import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.datatypes.maps.HashTypeMap
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.*
@@ -10,8 +10,6 @@ import com.mineinabyss.geary.engine.archetypes.*
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeMutateOperations
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeReadOperations
 import com.mineinabyss.geary.engine.impl.UnorderedSystemProvider
-import com.mineinabyss.geary.serialization.SimpleFormats
-import com.mineinabyss.geary.serialization.Serializers
 import java.util.logging.Logger
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -25,11 +23,11 @@ class GearyArchetypeModule(
     override val queryManager = ArchetypeQueryManager()
 
     override val components: Components = Components()
-    override val serializers: Serializers = Serializers()
-    override val formats: SimpleFormats = SimpleFormats()
 
     override val engine: ArchetypeEngine = ArchetypeEngine(tickDuration)
     override val eventRunner: ArchetypeEventRunner = ArchetypeEventRunner()
+    override val addons: DIContext = DIContext()
+    override val pipeline: Pipeline get() = TODO("Not yet implemented")
     override val systems: SystemProvider = UnorderedSystemProvider()
 
     override val read: EntityReadOperations = ArchetypeReadOperations()
@@ -49,7 +47,7 @@ class GearyArchetypeModule(
         engine.start()
     }
 
-    override fun configure(run: GearyDSL.() -> Unit) {
-        GearyAddon().apply(run)
+    override fun <T : GearyAddon<A>, A> install(addon: T, run: A.() -> Unit) {
+        TODO("Not yet implemented")
     }
 }

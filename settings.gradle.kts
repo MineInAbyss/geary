@@ -42,9 +42,11 @@ dependencyResolutionManagement {
 }
 
 include(
-    "geary-addon",
     "geary-core",
+    "geary-autoscan",
     "geary-prefabs",
+    "geary-serialization",
+    "geary-uuid",
     "geary-papermc",
 )
 

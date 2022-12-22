@@ -5,8 +5,6 @@ import com.mineinabyss.ding.DIContext
 import com.mineinabyss.geary.addons.dsl.GearyAddon
 import com.mineinabyss.geary.addons.dsl.GearyDSLMarker
 import com.mineinabyss.geary.engine.*
-import com.mineinabyss.geary.serialization.Formats
-import com.mineinabyss.geary.serialization.Serializers
 import java.util.logging.Logger
 
 val geary: GearyModule by DI.observe()
@@ -23,8 +21,6 @@ interface GearyModule {
 
     val queryManager: QueryManager
     val components: Components
-    val serializers: Serializers
-    val formats: Formats
     val engine: Engine
 
     val eventRunner: EventRunner
