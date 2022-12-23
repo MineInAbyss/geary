@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.prefabs.modules.prefabs
 import com.mineinabyss.geary.prefabs.serializers.PrefabKeySerializer
 import kotlinx.serialization.Serializable
 

@@ -66,11 +66,6 @@ fun componentId(kClass: KClass<out ComponentId>): Nothing =
 /** Gets the [ComponentInfo] component from a component's id. */
 fun ComponentId.getComponentInfo(): ComponentInfo? =
     this.toGeary().get()
-
-fun systems(vararg systems: GearySystem): List<Deferred<Unit>> {
-    return systems.map { geary.engine.async { geary.systems.add(it) } }
-}
-
 //@ExperimentalAsyncGearyAPI
 //public inline fun <T> runSafely(
 //    scope: CoroutineScope = globalContext.engine,

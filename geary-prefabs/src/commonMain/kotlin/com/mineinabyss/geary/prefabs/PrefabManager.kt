@@ -1,29 +1,11 @@
 package com.mineinabyss.geary.prefabs
 
-import com.mineinabyss.geary.components.relations.DontInherit
-import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.with
-import com.mineinabyss.geary.prefabs.configuration.components.Prefab
-import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
-import com.mineinabyss.geary.serialization.serialization
-import kotlinx.serialization.PolymorphicSerializer
-import kotlinx.serialization.builtins.ListSerializer
-import okio.Path.Companion.toOkioPath
-import java.nio.file.Path
-import java.util.*
-import kotlin.io.path.extension
-import kotlin.io.path.nameWithoutExtension
 
 /**
  * Manages registered prefabs and accessing them via name.
  */
 class PrefabManager {
-    private val formats get() = serialization.formats
-    private val logger get() = geary.logger
-
     /** A list of registered [PrefabKey]s. */
     val keys: List<PrefabKey> get() = keyToPrefab.keys.toList()
 
@@ -46,5 +28,4 @@ class PrefabManager {
     internal fun clear() {
         keyToPrefab.clear()
     }
-
 }

@@ -11,5 +11,6 @@ dependencies {
     implementation("com.mineinabyss:ding:1.0.0")
     compileOnly(libs.idofront.autoscan)
     compileOnly(project(":geary-core"))
+    compileOnly(project(":geary-serialization"))
 //    compileOnly(project(":geary-prefabs"))
 }

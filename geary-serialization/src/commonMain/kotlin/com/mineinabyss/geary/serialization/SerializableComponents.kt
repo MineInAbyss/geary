@@ -1,67 +1,37 @@
 package com.mineinabyss.geary.serialization
 
-import com.mineinabyss.geary.addons.Namespaced
+import com.mineinabyss.ding.DI
+import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.addons.dsl.GearyAddon
-import com.mineinabyss.geary.addons.dsl.GearyDSLMarker
-import com.mineinabyss.geary.datatypes.Component
-import com.mineinabyss.geary.modules.GearyConfiguration
-import com.mineinabyss.geary.modules.GearyModule
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.modules.PolymorphicModuleBuilder
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.SerializersModuleBuilder
-import kotlinx.serialization.modules.polymorphic
-import kotlin.reflect.KClass
+import com.mineinabyss.geary.addons.dsl.GearyAddonWithDefault
+import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.serialization.formats.Formats
+import com.mineinabyss.geary.serialization.formats.SimpleFormats
+import okio.FileSystem
 
-class SerializableComponents {
-    /** Adds a [SerializersModule] for polymorphic serialization of [Component]s within the ECS. */
-    inline fun Namespaced.components(crossinline init: PolymorphicModuleBuilder<Component>.() -> Unit) {
-        module { polymorphic(Component::class) { init() } }
-    }
+val serializableComponents by DI.observe<SerializableComponents>()
 
+interface SerializableComponents {
+    val serializers: Serializers
+    val formats: Formats
+    val fileSystem: FileSystem
 
-    fun format(ext: String, format: (SerializersModule) -> PrefabFormat) {
-        serialization.formats.register(ext, format)
-    }
-
-    /**
-     * Adds a serializable component and registers it with Geary to allow finding the appropriate class via
-     * component serial name.
-     */
-    inline fun <reified T : Component> PolymorphicModuleBuilder<T>.component(serializer: KSerializer<T>) {
-        component(T::class, serializer)
-    }
-
-    /**
-     * Adds a serializable component and registers it with Geary to allow finding the appropriate class via
-     * component serial name.
-     */
-    fun <T : Component> PolymorphicModuleBuilder<T>.component(
-        kClass: KClass<T>,
-        serializer: KSerializer<T>?
-    ): Boolean {
-        val serialName = serializer?.descriptor?.serialName ?: return false
-        if (!serializers.isRegistered(serialName)) {
-            serializers.registerSerialName(serialName, kClass)
-            subclass(kClass, serializer)
-            return true
-        }
-        return false
-    }
-
-    /** Adds a [SerializersModule] to be used for polymorphic serialization within the ECS. */
-    inline fun Namespaced.module(init: SerializersModuleBuilder.() -> Unit) {
-        serializers.addSerializersModule(namespace, SerializersModule { init() })
-    }
-
-    companion object Plugin : GearyAddon<SerializableComponents> {
-        override fun install(geary: GearyModule): SerializableComponents {
-            TODO("Not yet implemented")
+    companion object Plugin : GearyAddonWithDefault<SerializableComponents> {
+        override fun default(): SerializableComponents = object : SerializableComponents {
+            override val serializers = SerializersByMap()
+            override val formats = SimpleFormats()
         }
 
+        override fun SerializableComponents.install() {
+            geary.pipeline.intercept(GearyPhase.INIT_COMPONENTS) {
+
+            }
+        }
     }
 }
 
-@GearyDSLMarker
-fun GearyConfiguration.serialization(configure: SerializableComponents.() -> Unit) =
-    install(SerializableComponents, configure)
+object FileSystemAddon : GearyAddon<FileSystem> {
+    override fun FileSystem.install() {
+        TODO("Not yet implemented")
+    }
+}

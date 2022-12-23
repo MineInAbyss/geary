@@ -5,4 +5,4 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import kotlin.reflect.KClass
 
 /** The polymorphic builder scope that allows registering subclasses. */
-typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>?) -> Boolean
+typealias SerializerRegistry<T> = PolymorphicModuleBuilder<T>.(kClass: KClass<T>, serializer: KSerializer<T>?) -> Unit

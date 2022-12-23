@@ -5,4 +5,4 @@ package com.mineinabyss.geary.addons.dsl
  */
 @DslMarker
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS, AnnotationTarget.TYPE, AnnotationTarget.FUNCTION)
-annotation class GearyDSLMarker
+annotation class GearyDSL

@@ -3,7 +3,7 @@ package com.mineinabyss.geary.serialization.formats
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.serialization.PrefabFormat
-import com.mineinabyss.geary.serialization.SerializableComponents
+import com.mineinabyss.geary.serialization.serializableComponents
 import kotlinx.serialization.cbor.Cbor
 
 /**
@@ -13,7 +13,7 @@ import kotlinx.serialization.cbor.Cbor
  * Will likely be converted into a service eventually.
  */
 class SimpleFormats : Formats {
-    private val serializers = geary.addons.get<SerializableComponents>()
+    private val serializers = serializableComponents.serializers
     private val formatMap = mutableMapOf<String, PrefabFormat>()
 
     override val binaryFormat: Cbor by lazy {

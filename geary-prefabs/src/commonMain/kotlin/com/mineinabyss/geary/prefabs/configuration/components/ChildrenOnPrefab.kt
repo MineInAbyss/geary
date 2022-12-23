@@ -5,6 +5,7 @@ import com.mineinabyss.geary.datatypes.Component
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 
 /**
  * > geary:children

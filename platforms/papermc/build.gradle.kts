@@ -48,5 +48,6 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:2.2.1")
 
     // Other plugins
+    implementation(mylibs.okio)
     compileOnly(mylibs.plugman)
 }

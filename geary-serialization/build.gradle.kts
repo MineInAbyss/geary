@@ -9,6 +9,9 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                compileOnly(mylibs.okio)
+                implementation(mylibs.uuid)
+
                 compileOnly(libs.kotlinx.serialization.json)
                 compileOnly(libs.kotlinx.serialization.cbor)
 

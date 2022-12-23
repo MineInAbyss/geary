@@ -6,6 +6,7 @@ import com.mineinabyss.geary.serialization.PrefabFormat
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.SerializersModule
+import okio.FileSystem
 import okio.Path
 
 class YamlFormat(
