@@ -7,7 +7,7 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.overwriteWith
 import kotlin.reflect.KClass
 
-class SerializersByMap : Serializers {
+class SerializersByMap : ComponentSerializers {
     private val addonToModuleMap = mutableMapOf<String, SerializersModule>()
     private val serialName2Component: MutableMap<String, KClass<out Component>> = mutableMapOf()
     private val component2serialName: MutableMap<KClass<out Component>, String> = mutableMapOf()

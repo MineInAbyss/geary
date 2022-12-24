@@ -2,16 +2,17 @@ package com.mineinabyss.serialization.formats
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
-import com.mineinabyss.geary.serialization.PrefabFormat
+import com.mineinabyss.geary.serialization.Format
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.SerializersModule
-import okio.FileSystem
 import okio.Path
 
 class YamlFormat(
     module: SerializersModule
-) : PrefabFormat {
+) : Format {
+    override val ext = "yml"
+
     private val yaml = Yaml(
         serializersModule = module,
         configuration = YamlConfiguration(

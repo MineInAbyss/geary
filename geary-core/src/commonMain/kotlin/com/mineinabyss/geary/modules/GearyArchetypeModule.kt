@@ -26,7 +26,6 @@ class GearyArchetypeModule(
 
     override val engine: ArchetypeEngine = ArchetypeEngine(tickDuration)
     override val eventRunner: ArchetypeEventRunner = ArchetypeEventRunner()
-    override val addons: DIContext = DIContext()
     override val pipeline: Pipeline get() = TODO("Not yet implemented")
     override val systems: SystemProvider = UnorderedSystemProvider()
 

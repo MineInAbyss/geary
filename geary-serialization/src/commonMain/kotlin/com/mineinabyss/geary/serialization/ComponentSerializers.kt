@@ -5,7 +5,7 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.modules.SerializersModule
 import kotlin.reflect.KClass
 
-interface Serializers {
+interface ComponentSerializers {
     //TODO allow this to work for all registered classes, not just components
     fun getClassFor(serialName: String): KClass<out Component>
     fun isRegistered(serialName: String): Boolean

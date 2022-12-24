@@ -2,7 +2,7 @@ package com.mineinabyss.geary.serialization.formats
 
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.Component
-import com.mineinabyss.geary.serialization.PrefabFormat
+import com.mineinabyss.geary.serialization.Format
 import com.mineinabyss.geary.serialization.serializableComponents
 import kotlinx.serialization.cbor.Cbor
 
@@ -14,19 +14,18 @@ import kotlinx.serialization.cbor.Cbor
  */
 class SimpleFormats : Formats {
     private val serializers = serializableComponents.serializers
-    private val formatMap = mutableMapOf<String, PrefabFormat>()
+    private val formatMap = mutableMapOf<String, Format>()
 
     override val binaryFormat: Cbor by lazy {
         Cbor {
-            serializers.serializers
-            serializersModule = geary.serializers.module
+            serializersModule = serializers.module
             encodeDefaults = false
         }
     }
 
-    override operator fun get(ext: String): PrefabFormat? = formatMap[ext]
+    override operator fun get(ext: String): Format? = formatMap[ext]
 
-    override fun register(ext: String, format: PrefabFormat) {
+    override fun register(ext: String, format: Format) {
         formatMap[ext] = format
     }
 }

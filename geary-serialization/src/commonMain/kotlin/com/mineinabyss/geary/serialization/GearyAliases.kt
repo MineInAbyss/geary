@@ -1,4 +1,4 @@
 package com.mineinabyss.geary.serialization
 
 
-typealias GearySerializers = Serializers
+typealias GearySerializers = ComponentSerializers

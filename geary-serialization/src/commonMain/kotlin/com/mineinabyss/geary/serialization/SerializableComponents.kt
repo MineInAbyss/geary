@@ -12,9 +12,8 @@ import okio.FileSystem
 val serializableComponents by DI.observe<SerializableComponents>()
 
 interface SerializableComponents {
-    val serializers: Serializers
+    val serializers: ComponentSerializers
     val formats: Formats
-    val fileSystem: FileSystem
 
     companion object Plugin : GearyAddonWithDefault<SerializableComponents> {
         override fun default(): SerializableComponents = object : SerializableComponents {
@@ -24,14 +23,17 @@ interface SerializableComponents {
 
         override fun SerializableComponents.install() {
             geary.pipeline.intercept(GearyPhase.INIT_COMPONENTS) {
-
+                serializers
             }
         }
     }
 }
 
-object FileSystemAddon : GearyAddon<FileSystem> {
-    override fun FileSystem.install() {
-        TODO("Not yet implemented")
+val fileSystem by DI.observe<FileSystem>()
+
+interface FileSystemAddon {
+    companion object: GearyAddon<FileSystem> {
+        override fun FileSystem.install() {
+        }
     }
 }

@@ -23,8 +23,11 @@ class SerializableComponentsDSL(
         module { polymorphic(Component::class) { init() } }
     }
 
+    fun format(format: (SerializersModule) -> Format) {
+        serializableComponents.formats.register(ext, format)
+    }
 
-    fun format(ext: String, format: (SerializersModule) -> PrefabFormat) {
+    fun format(ext: String, format: (SerializersModule) -> Format) {
         serializableComponents.formats.register(ext, format)
     }
 
@@ -61,4 +64,4 @@ class SerializableComponentsDSL(
 
 @GearyDSL
 fun Namespaced.serialization(configure: SerializableComponentsDSL.() -> Unit) =
-    gearyConf.install(SerializableComponents).also { SerializableComponentsDSL().configure() }
+    gearyConf.install(SerializableComponents).also { SerializableComponentsDSL(this).configure() }
