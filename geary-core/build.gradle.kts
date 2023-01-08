@@ -3,9 +3,11 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinMultiplatformPlugin
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
-    id("org.jetbrains.dokka")
+    //kotlin("multiplatform")
+    alias(libs.plugins.multiplatform)
+    alias(libs.kotlinx.serialization)
+    //kotlin("plugin.serialization")
+    alias(libs.plugins.dokka)
     `maven-publish`
 }
 

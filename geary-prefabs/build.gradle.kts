@@ -1,8 +1,11 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id("geary.kotlin-conventions")
     kotlin("plugin.serialization")
-    id("com.mineinabyss.conventions.publication")
-    id("com.mineinabyss.conventions.testing")
+    alias(libs.plugins.mia.publication)
+    alias(libs.plugins.mia.testing)
+    //id("com.mineinabyss.conventions.publication")
+    //id("com.mineinabyss.conventions.testing")
     id("org.jetbrains.dokka")
 }
 repositories {

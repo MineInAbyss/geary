@@ -1,7 +1,8 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id("geary.kotlin-conventions")
-    id("com.mineinabyss.conventions.papermc")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.mia.papermc)
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 repositories {

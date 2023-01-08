@@ -1,8 +1,8 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     java
-    kotlin("multiplatform") apply false
-    id("org.jetbrains.dokka")
-    id("com.mineinabyss.conventions.autoversion")
+    alias(libs.plugins.dokka)
+    alias(libs.plugins.mia.autoversion)
 }
 
 repositories {

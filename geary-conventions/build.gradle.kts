@@ -5,9 +5,6 @@ import java.util.*
 Properties().apply { load(rootDir.toPath().resolveSibling(GRADLE_PROPERTIES).toFile().inputStream()) }
     .forEach { (key, value) -> project.ext["$key"] = value }
 
-val idofrontVersion: String by project
-val kotlinVersion: String by project
-
 plugins {
     `kotlin-dsl`
 }
@@ -23,7 +20,7 @@ dependencies {
     //Get Kotlin plugin version via conventions plugin version
     //TODO this is terrible
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
-    implementation("com.mineinabyss.conventions.kotlin:com.mineinabyss.conventions.kotlin.gradle.plugin:$idofrontVersion")
-    implementation(kotlin("gradle-plugin", version = kotlinVersion))
-    implementation(kotlin("serialization", version = kotlinVersion))
+    //implementation("com.mineinabyss.conventions.kotlin:com.mineinabyss.conventions.kotlin.gradle.plugin:$idofrontVersion")
+    //implementation(kotlin("gradle-plugin", version = kotlinVersion))
+    //implementation(kotlin("serialization", version = kotlinVersion))
 }

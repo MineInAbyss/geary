@@ -1,9 +1,11 @@
 import org.gradle.accessors.dm.LibrariesForLibs
+import kotlin.reflect.jvm.internal.impl.resolve.scopes.receivers.ImplicitReceiver
 
 val libs = the<LibrariesForLibs>()
 
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    id("com.mineinabyss.conventions.kotlin")
+    id(libs.plugins.mia.kotlin.asProvider().get().pluginId)
 }
 
 repositories {

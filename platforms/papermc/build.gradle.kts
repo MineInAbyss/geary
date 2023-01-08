@@ -1,5 +1,6 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    id("com.mineinabyss.conventions.copyjar")
+    alias(libs.plugins.mia.copyjar)
 }
 
 repositories {

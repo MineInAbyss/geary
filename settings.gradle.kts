@@ -1,9 +1,6 @@
 rootProject.name = "geary"
 
 pluginManagement {
-    val kotlinVersion: String by settings
-    val idofrontVersion: String by settings
-    val dokkaVersion: String by settings
 
     repositories {
         gradlePluginPortal()
@@ -12,19 +9,6 @@ pluginManagement {
         google()
         maven("https://repo.mineinabyss.com/releases")
         maven("https://repo.papermc.io/repository/maven-public/")
-    }
-
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id.startsWith("com.mineinabyss.conventions"))
-                useVersion(idofrontVersion)
-        }
-    }
-    plugins {
-        kotlin("jvm") version kotlinVersion
-        kotlin("multiplatform") version kotlinVersion
-        kotlin("plugin.serialization") version kotlinVersion
-        id("org.jetbrains.dokka") version dokkaVersion
     }
 }
 
