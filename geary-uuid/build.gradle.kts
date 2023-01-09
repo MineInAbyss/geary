@@ -1,5 +1,6 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    kotlin("multiplatform")
+    id(libs.plugins.mia.kotlin.multiplatform.get().pluginId)
 //    id("com.mineinabyss.conventions.publication")
 //    id("com.mineinabyss.conventions.testing")
 }
@@ -10,7 +11,7 @@ kotlin {
             dependencies {
                 implementation(mylibs.uuid)
                 compileOnly(project(":geary-core"))
-                implementation("com.mineinabyss:ding:1.0.0")
+                implementation(libs.idofront.di)
             }
         }
     }

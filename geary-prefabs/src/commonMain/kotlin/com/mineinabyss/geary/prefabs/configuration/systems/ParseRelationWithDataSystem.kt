@@ -6,7 +6,7 @@ import com.mineinabyss.geary.systems.accessors.RelationWithData
 import com.mineinabyss.geary.systems.accessors.TargetScope
 
 class ParseRelationWithDataSystem : Listener() {
-    private val TargetScope.relationWithData by onSet<RelationWithData<*, *>>()
+    private val TargetScope.relationWithData by onSet<RelationWithData<*, *>>().onTarget()
 
     @Handler
     private fun TargetScope.convertToRelation() {

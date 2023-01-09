@@ -1,9 +1,8 @@
 package com.mineinabyss.geary.autoscan
 
-import com.mineinabyss.ding.DI
+import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.addons.Namespaced
-import com.mineinabyss.geary.addons.dsl.GearyAddon
 import com.mineinabyss.geary.addons.dsl.GearyAddonWithDefault
 import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.modules.geary
@@ -29,7 +28,7 @@ interface AutoScanner {
                 scannedSystems.asSequence()
                     .mapNotNull { it.objectInstance ?: runCatching { it.createInstance() }.getOrNull() }
                     .filterIsInstance<System>()
-                    .onEach { geary.systems.add(it) }
+                    .onEach { geary.pipeline.addSystem(it) }
                     .map { it::class.simpleName }
                     .joinToString()
                     .let { logger.i("Autoscan loaded singleton systems: $it") }
@@ -37,6 +36,7 @@ interface AutoScanner {
         }
 
         override fun AutoScanner.install() {
+            DI.add(this)
             geary.pipeline.intercept(GearyPhase.INIT_SYSTEMS) {
                 installSystems()
             }

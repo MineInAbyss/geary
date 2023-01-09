@@ -42,13 +42,6 @@ inline fun <reified T> componentId(): ComponentId = componentId(T::class)
 inline fun <reified T> componentIdWithNullable(): ComponentId =
     componentId<T>().withRole(if (typeOf<T>().isMarkedNullable) NO_ROLE else HOLDS_DATA)
 
-/**
- * Gets the id of a component by its serial name.
- * Throws an error if the component name does not exist.
- */
-fun componentId(serialName: String): ComponentId =
-    componentId(geary.serializers.getClassFor(serialName))
-
 /** Gets or registers the id of a component by its [kType]. */
 fun componentId(kType: KType): ComponentId =
     componentId(kType.classifier as KClass<*>)

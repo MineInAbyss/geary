@@ -6,6 +6,7 @@ import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.accessors.types.DirectAccessor
 import com.mineinabyss.geary.systems.accessors.types.IndexedAccessor
 import com.soywiz.kds.FastIntMap
+import com.soywiz.kds.getOrPut
 import kotlin.reflect.KProperty
 
 

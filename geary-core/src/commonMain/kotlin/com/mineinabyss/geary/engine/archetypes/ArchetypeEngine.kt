@@ -17,7 +17,7 @@ import kotlin.time.Duration
  * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */
 open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine() {
-    private val systems get() = geary.systems
+    private val systems get() = geary.pipeline
     private val logger get() = geary.logger
 
     override val coroutineContext: CoroutineContext =

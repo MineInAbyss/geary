@@ -16,7 +16,7 @@ class SimpleArchetypeProvider : ArchetypeProvider {
     }
     override val count: Int get() = trackedArchetypes.size
 
-    private val trackedArchetypes = mutableListOf(rootArchetype)
+    private val trackedArchetypes by lazy { mutableListOf(rootArchetype) }
     private val archetypeWriteLock = SynchronizedObject()
 
 

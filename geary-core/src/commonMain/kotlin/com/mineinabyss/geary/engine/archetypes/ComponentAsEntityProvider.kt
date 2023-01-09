@@ -16,7 +16,7 @@ class ComponentAsEntityProvider : ComponentProvider {
     private val classToComponentMap = ClassToComponentMap()
     private val classToComponentMapLock = SynchronizedObject()
 
-    init {
+    internal fun createComponentInfo() {
         //Register an entity for the ComponentInfo component, otherwise getComponentIdForClass does a StackOverflow
         val componentInfo = entityProvider.newEntity()
         classToComponentMap[ComponentInfo::class] = componentInfo.id

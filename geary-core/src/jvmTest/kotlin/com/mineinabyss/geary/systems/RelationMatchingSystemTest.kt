@@ -29,7 +29,7 @@ class RelationMatchingSystemTest : GearyTest() {
                 persists.data.shouldBeInstanceOf<Persists>()
             }
         }
-        geary.systems.add(systemPersists)
+        geary.pipeline.addSystem(systemPersists)
         val entity = entity {
             addRelation<Persists, String>()
             add<String>()
@@ -64,7 +64,7 @@ class RelationMatchingSystemTest : GearyTest() {
                 instanceOf.data shouldBe null
             }
         }
-        geary.systems.add(system)
+        geary.pipeline.addSystem(system)
 
         entity {
             setRelation<Persists, Int>(Persists()) // Yes

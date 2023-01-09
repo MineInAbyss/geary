@@ -7,24 +7,8 @@ pluginManagement {
 
     repositories {
         gradlePluginPortal()
-        mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-        google()
         maven("https://repo.mineinabyss.com/releases")
         maven("https://repo.papermc.io/repository/maven-public/")
-    }
-
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id.startsWith("com.mineinabyss.conventions"))
-                useVersion(idofrontVersion)
-        }
-    }
-    plugins {
-        kotlin("jvm") version kotlinVersion
-        kotlin("multiplatform") version kotlinVersion
-        kotlin("plugin.serialization") version kotlinVersion
-        id("org.jetbrains.dokka") version dokkaVersion
     }
 }
 
@@ -60,5 +44,3 @@ file("./platforms/papermc")
         include(name)
         project(":$name").projectDir = it
     }
-
-includeBuild("/home/offz/data/Projects/ding")

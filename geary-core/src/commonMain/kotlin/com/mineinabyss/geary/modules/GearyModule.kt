@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.modules
 
 import co.touchlab.kermit.Logger
-import com.mineinabyss.ding.DI
 import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.engine.*
+import com.mineinabyss.idofront.di.DI
 
 val geary: GearyModule by DI.observe()
 
@@ -11,7 +11,6 @@ val geary: GearyModule by DI.observe()
 interface GearyModule {
     val logger: Logger
     val entityProvider: EntityProvider
-    val systems: SystemProvider
     val componentProvider: ComponentProvider
 
     val read: EntityReadOperations

@@ -12,7 +12,7 @@ import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.TargetScope
 
 class ParseChildOnPrefab : Listener() {
-    private val TargetScope.child by onSet<ChildOnPrefab>()
+    private val TargetScope.child by onSet<ChildOnPrefab>().onTarget()
 
     @Handler
     private fun TargetScope.convertToRelation() {
@@ -25,7 +25,7 @@ class ParseChildOnPrefab : Listener() {
 }
 
 class ParseChildrenOnPrefab : Listener() {
-    private val TargetScope.children by onSet<ChildrenOnPrefab>()
+    private val TargetScope.children by onSet<ChildrenOnPrefab>().onTarget()
 
     @Handler
     private fun TargetScope.convertToRelation() {

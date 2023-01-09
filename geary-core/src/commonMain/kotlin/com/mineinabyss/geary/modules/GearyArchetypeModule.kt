@@ -1,41 +1,37 @@
 package com.mineinabyss.geary.modules
 
 import co.touchlab.kermit.Logger
-import com.mineinabyss.ding.DI
-import com.mineinabyss.ding.DIContext
-import com.mineinabyss.geary.addons.dsl.GearyAddon
 import com.mineinabyss.geary.datatypes.maps.HashTypeMap
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.*
 import com.mineinabyss.geary.engine.archetypes.*
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeMutateOperations
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeReadOperations
-import com.mineinabyss.geary.engine.impl.UnorderedSystemProvider
+import com.mineinabyss.idofront.di.DI
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 val archetypes: GearyArchetypeModule by DI.observe()
 
-class GearyArchetypeModule(
-    tickDuration: Duration = 50.milliseconds,
+data class GearyArchetypeModule(
+    val tickDuration: Duration = 50.milliseconds,
 ) : GearyModule {
-    override val logger: Logger = Logger.withTag("Geary")
+    override val logger = Logger.withTag("Geary")
     override val queryManager = ArchetypeQueryManager()
 
-    override val components: Components = Components()
+    override val components by lazy { Components() }
 
-    override val engine: ArchetypeEngine = ArchetypeEngine(tickDuration)
-    override val eventRunner: ArchetypeEventRunner = ArchetypeEventRunner()
-    override val pipeline: Pipeline get() = TODO("Not yet implemented")
-    override val systems: SystemProvider = UnorderedSystemProvider()
+    override val engine = ArchetypeEngine(tickDuration)
+    override val eventRunner = ArchetypeEventRunner()
+    override val pipeline get() = PipelineImpl()
 
-    override val read: EntityReadOperations = ArchetypeReadOperations()
-    override val write: EntityMutateOperations = ArchetypeMutateOperations()
-    override val entityProvider: EntityProvider = EntityByArchetypeProvider()
-    override val componentProvider: ComponentProvider = ComponentAsEntityProvider()
+    override val read = ArchetypeReadOperations()
+    override val write = ArchetypeMutateOperations()
+    override val entityProvider = EntityByArchetypeProvider()
+    override val componentProvider = ComponentAsEntityProvider()
 
-    val records: TypeMap = HashTypeMap()
-    val archetypeProvider: ArchetypeProvider = SimpleArchetypeProvider()
+    val records = HashTypeMap()
+    val archetypeProvider = SimpleArchetypeProvider()
 
     override fun inject() {
         DI.add<GearyModule>(this)
@@ -43,6 +39,7 @@ class GearyArchetypeModule(
     }
 
     override fun start() {
+        componentProvider.createComponentInfo()
         engine.start()
     }
 }

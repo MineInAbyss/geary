@@ -1,14 +1,14 @@
 package com.mineinabyss.geary.papermc.store
 
 import com.mineinabyss.geary.components.relations.InstanceOf
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.papermc.modules.gearyPaper
 import com.mineinabyss.geary.papermc.helpers.getNamespacedKeyFor
-import com.mineinabyss.geary.papermc.helpers.getSerializerFor
+import com.mineinabyss.geary.papermc.helpers.getSerializerForNamespaced
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.serialization.dsl.serializableComponents
 import com.mineinabyss.idofront.util.toMCKey
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
@@ -18,13 +18,18 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.persistence.PersistentDataType.BYTE_ARRAY
 
-/** Returns whether or not this [PersistentDataContainer] has a component [T] encoded in it. */
+@PublishedApi
+internal val serializers get() = serializableComponents.serializers
+@PublishedApi
+internal val formats get() = serializableComponents.formats
+
+/** Returns whether this [PersistentDataContainer] has a component [T] encoded in it. */
 inline fun <reified T : GearyComponent> PersistentDataContainer.has(): Boolean {
-    return has(gearyPaper.serializers.getNamespacedKeyFor<T>() ?: return false, BYTE_ARRAY)
+    return has(serializers.getNamespacedKeyFor<T>() ?: return false, BYTE_ARRAY)
 }
 
 inline fun <reified T : GearyComponent> PersistentDataContainer.remove() {
-    return remove(gearyPaper.serializers.getNamespacedKeyFor<T>() ?: return)
+    return remove(serializers.getNamespacedKeyFor<T>() ?: return)
 }
 
 /**
@@ -33,13 +38,13 @@ inline fun <reified T : GearyComponent> PersistentDataContainer.remove() {
  */
 fun <T : GearyComponent> PersistentDataContainer.encode(
     value: T,
-    serializer: SerializationStrategy<T> = ((gearyPaper.serializers.getSerializerFor(value::class)
+    serializer: SerializationStrategy<T> = ((serializableComponents.serializers.getSerializerFor(value::class)
         ?: error("Serializer not registered for ${value::class.simpleName}")) as SerializationStrategy<T>),
-    key: NamespacedKey = gearyPaper.serializers.getSerialNameFor(value::class)?.toComponentKey()
+    key: NamespacedKey = serializers.getSerialNameFor(value::class)?.toComponentKey()
         ?: error("SerialName  not registered for ${value::class.simpleName}"),
 ) {
     hasComponentsEncoded = true
-    val encoded = gearyPaper.formats.binaryFormat.encodeToByteArray(serializer, value)
+    val encoded = formats.binaryFormat.encodeToByteArray(serializer, value)
     this[key, BYTE_ARRAY] = encoded
 }
 
@@ -50,8 +55,8 @@ fun <T : GearyComponent> PersistentDataContainer.encode(
 //TODO use context when compiler fixed
 inline fun <reified T : GearyComponent> PersistentDataContainer.decode(): T? {
     return decode(
-        serializer = geary.serializers.getSerializerFor(T::class) ?: return null,
-        key = geary.serializers.getSerialNameFor(T::class)?.toComponentKey() ?: return null
+        serializer = serializers.getSerializerFor(T::class) ?: return null,
+        key = serializers.getSerialNameFor(T::class)?.toComponentKey() ?: return null
     )
 }
 
@@ -62,12 +67,12 @@ inline fun <reified T : GearyComponent> PersistentDataContainer.decode(): T? {
 inline fun <reified T : GearyComponent> PersistentDataContainer.decode(
     key: NamespacedKey,
     serializer: DeserializationStrategy<out T>? =
-        geary.serializers.getSerializerFor(key, T::class)
+        serializers.getSerializerForNamespaced(key, T::class)
 ): T? {
 
     serializer ?: return null
     val encoded = get(key, BYTE_ARRAY) ?: return null
-    return runCatching { geary.formats.binaryFormat.decodeFromByteArray(serializer, encoded) }
+    return runCatching { formats.binaryFormat.decodeFromByteArray(serializer, encoded) }
         .onFailure { it.printStackTrace() }
         .getOrNull()
 }
@@ -83,7 +88,7 @@ fun PersistentDataContainer.encodeComponents(
 ) {
     hasComponentsEncoded = true
     //remove all keys present on the PDC so we only end up with the new list of components being encoded
-    keys.filter { it.namespace == "geary" && it != gearyPaper.engine.componentsKey }
+    keys.filter { it.namespace == "geary" && it != gearyPaper.componentsKey }
         .forEach { remove(it) }
 
     for (value in components)
@@ -145,11 +150,11 @@ fun PersistentDataContainer.decodeComponents(): DecodedEntityData =
 
 /** Verifies a [PersistentDataContainer] has a tag identifying it as containing Geary components. */
 var PersistentDataContainer.hasComponentsEncoded: Boolean
-    get() = has(gearyPaper.engine.componentsKey, PersistentDataType.BYTE)
+    get() = has(gearyPaper.componentsKey, PersistentDataType.BYTE)
     set(value) {
         when {
             //TODO are there any empty marker keys?
-            value -> if (!hasComponentsEncoded) set(gearyPaper.engine.componentsKey, PersistentDataType.BYTE, 1)
-            else -> remove(gearyPaper.engine.componentsKey)
+            value -> if (!hasComponentsEncoded) set(gearyPaper.componentsKey, PersistentDataType.BYTE, 1)
+            else -> remove(gearyPaper.componentsKey)
         }
     }

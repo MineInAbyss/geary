@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.modules
 
-import com.mineinabyss.ding.DI
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.GearyAddon
@@ -9,21 +8,19 @@ import com.mineinabyss.geary.addons.dsl.GearyDSL
 
 @GearyDSL
 class GearyConfiguration {
-    inline fun <T : GearyAddonWithDefault<Module>, reified Module: Any> install(
+    fun <T : GearyAddonWithDefault<Module>, Module : Any> install(
         addon: T,
-    ) = install(addon, addon.default())
+    ): Module = install(addon, addon.default())
 
-    inline fun <T : GearyAddon<Module>, reified Module: Any> install(
+    fun <T : GearyAddon<Module>, Module : Any> install(
         addon: T,
         module: Module,
-    ) {
-        DI.add(module)
-        with(addon) { module.install() }
-    }
+    ): Module = with(addon) { module.install() }.let { module }
 
     fun namespace(namespace: String, configure: Namespaced.() -> Unit) {
         Namespaced(namespace, TODO(), this).configure()
     }
+
     /**
      * Allows defining actions that should run at a specific phase during startup
      *

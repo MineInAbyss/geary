@@ -1,28 +1,30 @@
 package com.mineinabyss.geary.papermc.plugin
 
+import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.geary.addons.GearyPhase.ENABLE
 import com.mineinabyss.geary.autoscan.autoscan
+import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.withSerialName
 import com.mineinabyss.geary.modules.GearyArchetypeModule
+import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.papermc.GearyPlugin
 import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.geary.papermc.engine.PaperMCEngine
 import com.mineinabyss.geary.papermc.modules.GearyPaperModule
 import com.mineinabyss.geary.prefabs.prefabs
 import com.mineinabyss.geary.serialization.FileSystemAddon
-import com.mineinabyss.geary.serialization.serialization
+import com.mineinabyss.geary.serialization.dsl.serialization
 import com.mineinabyss.idofront.platforms.Platforms
+import com.mineinabyss.idofront.plugin.listeners
 import com.mineinabyss.idofront.serialization.UUIDSerializer
 import com.mineinabyss.idofront.time.ticks
 import com.mineinabyss.serialization.formats.YamlFormat
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import kotlinx.coroutines.delay
 import okio.FileSystem
 import okio.Path.Companion.toOkioPath
 import org.bukkit.Bukkit
+import org.bukkit.event.Listener
 import java.util.*
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
@@ -35,16 +37,23 @@ class GearyPluginImpl : GearyPlugin() {
     }
 
     override fun onEnable() {
-        val module = GearyPaperModule(
-            GearyArchetypeModule(tickDuration = 1.ticks),
-            this
-        )
-        module.inject()
+        // Register DI
+        val gearyModule = object : GearyModule by GearyArchetypeModule(tickDuration = 1.ticks) {
+            override val engine: Engine = PaperMCEngine()
+        }
+        val paperModule = GearyPaperModule(this)
+        gearyModule.inject()
+        paperModule.inject()
 
+        // Auto register Bukkit listeners when they are added as a system
+        geary.pipeline.interceptSystemAddition { system ->
+            if (system is Listener) listeners(system)
+            system
+        }
+
+        // Configure geary and install some reasonable default addons for paper
         geary {
             install(FileSystemAddon, FileSystem.SYSTEM)
-            install(YamlFormat)
-            install(JsonFormat)
             namespace("geary") {
                 serialization {
                     format("yml", ::YamlFormat)
@@ -57,6 +66,7 @@ class GearyPluginImpl : GearyPlugin() {
                     components()
                 }
             }
+
             // Load prefabs in Geary folder, each subfolder is considered its own namespace
             dataFolder.toPath().listDirectoryEntries()
                 .filter { it.isDirectory() }
@@ -68,9 +78,18 @@ class GearyPluginImpl : GearyPlugin() {
                     }
                 }
 
+            // Start engine ticking
             on(ENABLE) {
+                gearyModule.start()
+                paperModule.start()
                 Bukkit.getOnlinePlayers().forEach { it.toGeary() }
             }
+        }
+
+        // Run startup pipeline
+        launch {
+            delay(1.ticks) // Waits until first tick has complete (all plugins loaded)
+            geary.pipeline.runStartupTasks()
         }
 
         // Register commands
@@ -82,15 +101,4 @@ class GearyPluginImpl : GearyPlugin() {
     }
 }
 
-fun main() {
-    embeddedServer(Netty, port = 8080) {
-        install(Routing) {
-            options { }
-        }
-        routing {
-            get("/") {
-                call.respondText("Hello, world!")
-            }
-        }
-    }.start(wait = true)
-}
+//TODO remove dep on ktor

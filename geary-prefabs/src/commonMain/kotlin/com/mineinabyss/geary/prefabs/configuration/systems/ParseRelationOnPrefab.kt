@@ -6,7 +6,7 @@ import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.TargetScope
 
 class ParseRelationOnPrefab : Listener() {
-    private val TargetScope.relation by onSet<RelationOnPrefab>()
+    private val TargetScope.relation by onSet<RelationOnPrefab>().onTarget()
 
     @Handler
     private fun TargetScope.convertToRelation() {

@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.papermc.engine
 
 import co.aikar.timings.Timings
+import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import com.mineinabyss.geary.engine.archetypes.ArchetypeEngine
 import com.mineinabyss.geary.papermc.modules.gearyPaper
@@ -13,8 +14,6 @@ import org.bukkit.NamespacedKey
 
 class PaperMCEngine : ArchetypeEngine(tickDuration = 1.ticks) {
     private val plugin get() = gearyPaper.plugin
-
-    val componentsKey: NamespacedKey = NamespacedKey(plugin, "components")
 
     override suspend fun RepeatingSystem.runSystem() {
         // Adds a line in timings report showing which systems take up more time.
@@ -29,7 +28,7 @@ class PaperMCEngine : ArchetypeEngine(tickDuration = 1.ticks) {
 
     override fun scheduleSystemTicking() {
         //tick all systems every interval ticks
-        launch(plugin.minecraftDispatcher) {
+        plugin.launch {
             while (true) {
                 tick(Bukkit.getServer().currentTick.toLong())
                 yield()

@@ -1,11 +1,8 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    kotlin("multiplatform")
-    id("org.jetbrains.dokka")
-    id("com.mineinabyss.conventions.autoversion")
-}
-
-repositories {
-    mavenCentral()
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.dokka)
+    alias(libs.plugins.mia.autoversion)
 }
 
 //tasks {
@@ -13,14 +10,18 @@ repositories {
 //        dependsOn(project(":geary-papermc").tasks.build)
 //    }
 //}
-
-subprojects {
+allprojects {
     repositories {
         mavenCentral()
         google()
-        mavenLocal()
+        maven("https://repo.mineinabyss.com/releases")
+        maven("https://repo.papermc.io/repository/maven-public/")
+        maven("https://raw.githubusercontent.com/TheBlackEntity/PlugMan/repository/")
+        maven("https://jitpack.io")
     }
+}
 
+subprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         kotlinOptions.freeCompilerArgs += "-opt-in=kotlinx.serialization.ExperimentalSerializationApi"
     }
@@ -29,18 +30,12 @@ subprojects {
 allprojects {
     pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
         kotlin {
-//    targets.configureEach {
-//        if (name == KotlinMultiplatformPlugin.METADATA_TARGET_NAME) return@configureEach
-//        if (platformType != KotlinPlatformType.jvm)
-//            disableCompilations()
-//    }
-
             jvm {
                 testRuns["test"].executionTask.configure {
                     useJUnitPlatform()
                 }
             }
-            js {
+            js(IR) {
                 nodejs()
                 browser()
             }
@@ -56,12 +51,10 @@ allprojects {
                 }
                 commonMain {
                     dependencies {
-                        implementation("co.touchlab:kermit:1.2.2")
+                        implementation(mylibs.kermit)
                     }
                 }
             }
-
         }
-
     }
 }

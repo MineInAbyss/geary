@@ -2,7 +2,7 @@ package com.mineinabyss.serialization.formats
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
-import com.mineinabyss.geary.serialization.Format
+import com.mineinabyss.geary.serialization.formats.Format
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.SerializersModule

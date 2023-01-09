@@ -1,8 +1,9 @@
-package com.mineinabyss.geary.serialization
+package com.mineinabyss.geary.serialization.dsl
 
 import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.datatypes.Component
+import com.mineinabyss.geary.serialization.formats.Format
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
@@ -14,21 +15,19 @@ import kotlin.reflect.KClass
 
 @GearyDSL
 class SerializableComponentsDSL(
-    val namespaced: Namespaced
+    val namespaced: Namespaced,
+    builder: SerializableComponents.Builder
 ) {
-    val serializers = serializableComponents.serializers
+    val serializers = builder.serializersBuilder
+    val formats = builder.formatsBuilder
 
     /** Adds a [SerializersModule] for polymorphic serialization of [Component]s within the ECS. */
     inline fun components(crossinline init: PolymorphicModuleBuilder<Component>.() -> Unit) {
         module { polymorphic(Component::class) { init() } }
     }
 
-    fun format(format: (SerializersModule) -> Format) {
-        serializableComponents.formats.register(ext, format)
-    }
-
     fun format(ext: String, format: (SerializersModule) -> Format) {
-        serializableComponents.formats.register(ext, format)
+        formats.register(ext, format)
     }
 
     /**
@@ -50,18 +49,19 @@ class SerializableComponentsDSL(
             ?: error("No serializer found for $subclass while registering serializable component")
     ) {
         val serialName = serializer.descriptor.serialName
-        if (!serializers.isRegistered(serialName)) {
-            serializers.registerSerialName(serialName, subclass)
-            subclass(subclass, serializer)
+        if(serializers.serialNameToClass.containsKey(serialName)) {
+            error("A component with serial name $serialName is already registered")
         }
+        serializers.serialNameToClass[serialName] = subclass
+        subclass(subclass, serializer)
     }
 
     /** Adds a [SerializersModule] to be used for polymorphic serialization within the ECS. */
     inline fun module(init: SerializersModuleBuilder.() -> Unit) {
-        serializers.addSerializersModule(namespaced.namespace, SerializersModule { init() })
+        serializers.modules += SerializersModule { init() }
     }
 }
 
 @GearyDSL
 fun Namespaced.serialization(configure: SerializableComponentsDSL.() -> Unit) =
-    gearyConf.install(SerializableComponents).also { SerializableComponentsDSL(this).configure() }
+    gearyConf.install(SerializableComponents).also { SerializableComponentsDSL(this, it).configure() }

@@ -3,7 +3,7 @@ package com.mineinabyss.geary.papermc.helpers
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.events.GearyAttemptMinecraftSpawnEvent
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.geary.prefabs.modules.prefabs
+import com.mineinabyss.geary.prefabs.prefabs
 import com.mineinabyss.idofront.events.call
 import org.bukkit.Location
 import org.bukkit.NamespacedKey

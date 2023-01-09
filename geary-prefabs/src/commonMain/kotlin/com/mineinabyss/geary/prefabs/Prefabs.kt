@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.prefabs
 
-import com.mineinabyss.ding.DI
+import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.GearyAddonWithDefault
@@ -25,7 +25,8 @@ interface Prefabs {
 
 
         override fun Prefabs.install() {
-            geary.systems.add(
+            DI.add(this)
+            geary.pipeline.addSystems(
                 ParseChildOnPrefab(),
                 ParseChildrenOnPrefab(),
                 ParseRelationOnPrefab(),

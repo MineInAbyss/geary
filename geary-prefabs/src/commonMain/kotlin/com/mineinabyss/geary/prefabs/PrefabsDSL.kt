@@ -2,7 +2,8 @@ package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.GearyDSL
-import com.mineinabyss.geary.serialization.serializableComponents
+import com.mineinabyss.geary.serialization.dsl.serializableComponents
+import com.mineinabyss.geary.serialization.fileSystem
 import okio.Path
 
 @GearyDSL
@@ -20,7 +21,7 @@ class PrefabsDSL(
 
     fun fromRecursive(folder: Path) {
         loader.addSource(PrefabPath(namespaced.namespace) {
-            serializableComponents.fileSystem
+            fileSystem
                 .listRecursively(folder, true)
                 .filter { it.name.endsWith(".yml") }
         })

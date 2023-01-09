@@ -15,9 +15,9 @@ import com.mineinabyss.geary.systems.accessors.TargetScope
 class UUID2GearyMap : GearyListener() {
     private val uuid2geary = mutableMapOf<Uuid, Long>()
 
-    fun startTracking() {
-        geary.systems.add(TrackUuidOnAdd())
-        geary.systems.add(UnTrackUuidOnRemove())
+    fun track() {
+        geary.pipeline.addSystem(TrackUuidOnAdd())
+        geary.pipeline.addSystem(UnTrackUuidOnRemove())
     }
 
     operator fun get(uuid: Uuid): GearyEntity? =

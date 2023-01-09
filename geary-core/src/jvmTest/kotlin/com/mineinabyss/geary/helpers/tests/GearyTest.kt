@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.helpers.tests
 
 import com.mineinabyss.geary.modules.GearyArchetypeModule
+import com.mineinabyss.idofront.di.DI
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -20,7 +21,7 @@ abstract class GearyTest {
         val module = GearyArchetypeModule(tickDuration = 20.milliseconds)
         geary = module
         module.inject()
-        module.engine.start()
+        module.start()
     }
 
     /** Recreates the engine. */

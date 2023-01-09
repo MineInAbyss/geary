@@ -7,8 +7,8 @@ import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.components.events.EntityRemoved
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.family.family
-import com.mineinabyss.geary.helpers.systems
 import com.mineinabyss.geary.helpers.toGeary
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.papermc.modules.gearyPaper
 import com.mineinabyss.geary.papermc.store.encodeComponentsTo
 import com.mineinabyss.geary.papermc.store.hasComponentsEncoded
@@ -28,11 +28,12 @@ import org.bukkit.event.player.PlayerQuitEvent
 import kotlin.collections.set
 
 class BukkitEntity2Geary : Listener {
+    private val pipeline get() = geary.pipeline
     private val entityMap = Int2LongOpenHashMap().apply { defaultReturnValue(-1) }
 
-    fun startTracking() {
+    fun track() {
         gearyPaper.plugin.listeners(this)
-        systems(Register(), Unregister())
+        pipeline.addSystems(Register(), Unregister())
     }
 
     operator fun get(entityId: Int): GearyEntity? {

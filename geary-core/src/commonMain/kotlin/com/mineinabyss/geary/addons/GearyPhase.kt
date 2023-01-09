@@ -6,6 +6,9 @@ package com.mineinabyss.geary.addons
  * They are executed top to bottom.
  */
 enum class GearyPhase {
+    /** All addons have been installed and configured. */
+    ADDONS_CONFIGURED,
+
     /** Initialize new components and any information related to them. */
     INIT_COMPONENTS,
 

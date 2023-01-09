@@ -1,16 +1,10 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    id("com.mineinabyss.conventions.copyjar")
-    id("com.mineinabyss.conventions.kotlin")
-    id("com.mineinabyss.conventions.publication")
-    id("com.mineinabyss.conventions.papermc")
-    kotlin("plugin.serialization")
-}
-
-repositories {
-    mavenCentral()
-    maven("https://repo.mineinabyss.com/releases")
-    maven("https://raw.githubusercontent.com/TheBlackEntity/PlugMan/repository/")
-    maven("https://jitpack.io")
+    id(libs.plugins.mia.copyjar.get().pluginId)
+    id(libs.plugins.mia.kotlin.asProvider().get().pluginId)
+    id(libs.plugins.mia.publication.get().pluginId)
+    id(libs.plugins.mia.papermc.get().pluginId)
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 configurations {
@@ -38,14 +32,14 @@ dependencies {
 
     // MineInAbyss platform
     compileOnly(libs.kotlinx.coroutines)
+    compileOnly(libs.kotlinx.serialization.json)
+    compileOnly(libs.kotlinx.serialization.cbor)
     compileOnly(libs.kotlin.reflect) { isTransitive = false }
     compileOnly(libs.reflections)
     compileOnly(libs.minecraft.mccoroutine)
 
     implementation(libs.idofront.autoscan)
     implementation(libs.bundles.idofront.core)
-    implementation("io.ktor:ktor-server-core:2.2.1")
-    implementation("io.ktor:ktor-server-netty:2.2.1")
 
     // Other plugins
     implementation(mylibs.okio)

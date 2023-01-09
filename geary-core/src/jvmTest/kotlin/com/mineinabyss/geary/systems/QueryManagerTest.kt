@@ -24,7 +24,7 @@ internal class QueryManagerTest : GearyTest() {
 
     @Test
     fun `empty event handler`() {
-        geary.systems.add(EventListener)
+        geary.pipeline.addSystem(EventListener)
         (geary.archetypeProvider.rootArchetype.type in EventListener.event.family) shouldBe true
         geary.archetypeProvider.rootArchetype.eventHandlers.map { it.parentListener } shouldContain EventListener
         entity {

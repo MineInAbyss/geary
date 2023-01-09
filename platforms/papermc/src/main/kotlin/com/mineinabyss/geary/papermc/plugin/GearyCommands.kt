@@ -3,13 +3,14 @@ package com.mineinabyss.geary.papermc.plugin
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.papermc.modules.gearyPaper
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.geary.prefabs.modules.prefabs
+import com.mineinabyss.geary.prefabs.prefabs
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
 import com.rylinaux.plugman.util.PluginUtil
 import kotlinx.coroutines.launch
+import okio.Path.Companion.toOkioPath
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
@@ -19,6 +20,7 @@ import kotlin.io.path.nameWithoutExtension
 
 internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
     private val plugin get() = gearyPaper.plugin
+    private val prefabLoader get() = prefabs.loader
     private val prefabManager get() = prefabs.manager
     private val engine get() = geary.engine
 
@@ -28,7 +30,7 @@ internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
                 val prefab by stringArg()
                 action {
                     engine.launch {
-                        runCatching { prefabManager.reread(PrefabKey.of(prefab).toEntity()) }
+                        runCatching { prefabLoader.reread(PrefabKey.of(prefab).toEntity()) }
                             .onSuccess { sender.success("Reread prefab $prefab") }
                             .onFailure { sender.error("Failed to reread prefab $prefab:\n${it.message}") }
                     }
@@ -47,9 +49,11 @@ internal class GearyCommands : IdofrontCommandExecutor(), TabCompleter {
 
                         // Try to load from file
                         runCatching {
-                            prefabManager.loadFromPathOrNull(namespace, plugin.dataFolder.resolve(namespace).resolve(path))
-                        }
-                            .onSuccess { sender.success("Read prefab $namespace:$path") }
+                            prefabLoader.loadFromPathOrNull(
+                                namespace,
+                                plugin.dataFolder.resolve(namespace).resolve(path).toOkioPath()
+                            )
+                        }.onSuccess { sender.success("Read prefab $namespace:$path") }
                             .onFailure { sender.error("Failed to read prefab $namespace:$path:\n${it.message}") }
                     }
                 }

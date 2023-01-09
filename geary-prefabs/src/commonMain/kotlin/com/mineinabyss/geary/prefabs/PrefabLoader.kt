@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.prefabs
 
 import com.benasher44.uuid.Uuid
-import com.benasher44.uuid.uuid4
 import com.mineinabyss.geary.components.relations.DontInherit
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
@@ -10,10 +9,9 @@ import com.mineinabyss.geary.helpers.with
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
-import com.mineinabyss.geary.serialization.serializableComponents
+import com.mineinabyss.geary.serialization.dsl.serializableComponents
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.ListSerializer
-import okio.FileSystem
 import okio.Path
 
 class PrefabLoader {

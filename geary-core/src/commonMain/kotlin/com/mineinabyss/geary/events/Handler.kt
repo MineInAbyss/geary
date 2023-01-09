@@ -41,7 +41,7 @@ abstract class Handler(
                 }
             }
         } catch (e: Exception) {
-            logger.severe("Failed to run event ${parentListener::class.simpleName}")
+            logger.e("Failed to run event ${parentListener::class.simpleName}")
             e.printStackTrace()
         }
     }

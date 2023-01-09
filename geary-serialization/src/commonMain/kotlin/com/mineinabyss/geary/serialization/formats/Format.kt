@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.serialization
+package com.mineinabyss.geary.serialization.formats
 
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy

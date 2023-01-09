@@ -1,6 +1,7 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
+    id(libs.plugins.mia.kotlin.multiplatform.get().pluginId)
+    alias(libs.plugins.kotlinx.serialization)
 //    id("com.mineinabyss.conventions.publication")
 //    id("com.mineinabyss.conventions.testing")
 }
@@ -16,7 +17,7 @@ kotlin {
                 compileOnly(libs.kotlinx.serialization.cbor)
 
                 compileOnly(project(":geary-core"))
-                implementation("com.mineinabyss:ding:1.0.0")
+                implementation(libs.idofront.di)
             }
         }
         jvmMain {

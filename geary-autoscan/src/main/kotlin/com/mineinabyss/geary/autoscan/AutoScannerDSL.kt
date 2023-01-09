@@ -1,19 +1,19 @@
 package com.mineinabyss.geary.autoscan
 
 import com.mineinabyss.geary.addons.Namespaced
+import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.serialization.serialization
+import com.mineinabyss.geary.serialization.dsl.serialization
 import com.mineinabyss.geary.systems.System
 import kotlinx.serialization.*
-import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import org.reflections.Reflections
 import org.reflections.util.ClasspathHelper
 import org.reflections.util.ConfigurationBuilder
-import kotlin.reflect.KClass
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubclassOf
 
+@GearyDSL
 class AutoScannerDSL(
     val namespaced: Namespaced,
     val limitTo: List<String>
@@ -56,7 +56,7 @@ class AutoScannerDSL(
             .filter { !it.hasAnnotation<ExcludeAutoScan>() }
 
         geary {
-            namespaced.serialization {
+            this@AutoScannerDSL.namespaced.serialization {
                 components {
                     scanned.forEach { component(it) }
                 }

@@ -15,6 +15,7 @@ import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
 
 /**

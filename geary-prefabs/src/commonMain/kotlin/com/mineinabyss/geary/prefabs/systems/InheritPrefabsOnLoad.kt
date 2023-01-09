@@ -9,7 +9,7 @@ import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.TargetScope
 
 class InheritPrefabsOnLoad : Listener() {
-    private val EventScope.loaded by family { has<PrefabLoaded>() }
+    private val EventScope.loaded by family { has<PrefabLoaded>() }.onEvent()
 
     @Handler
     private fun TargetScope.inheritOnLoad() {

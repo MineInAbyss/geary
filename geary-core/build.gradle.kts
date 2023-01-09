@@ -1,11 +1,10 @@
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinMultiplatformPlugin
 
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
-    `maven-publish`
+    id(libs.plugins.mia.kotlin.multiplatform.get().pluginId)
+    id(libs.plugins.mia.publication.get().pluginId)
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 buildscript {
@@ -25,13 +24,13 @@ fun KotlinTarget.disableCompilations() {
 
 kotlin {
     sourceSets {
-        commonMain {
+        val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
                 implementation(mylibs.atomicfu)
                 implementation(libs.kotlin.reflect)
                 implementation(libs.kotlinx.serialization.cbor)
-                implementation("com.mineinabyss:ding:1.0.0")
+                implementation(libs.idofront.di)
 
                 api(mylibs.kds)
                 api(libs.kotlinx.coroutines)
@@ -39,30 +38,25 @@ kotlin {
             }
 
         }
-        commonTest {
+        val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.kotest.assertions)
                 implementation(libs.kotest.property)
+                implementation(libs.idofront.di)
             }
         }
 
-        jvmMain {
+        val jvmMain by getting {
             dependencies {
                 implementation(libs.kotlinx.serialization.kaml)
                 implementation(mylibs.roaringbitmap)
             }
         }
-    }
-}
-
-publishing {
-    repositories {
-        maven("https://repo.mineinabyss.com/releases") {
-            credentials {
-                username = project.findProperty("mineinabyssMavenUsername") as String?
-                password = project.findProperty("mineinabyssMavenPassword") as String?
+        val jsMain by getting {
+            dependencies {
+                implementation(mylibs.bitvector)
             }
         }
     }
