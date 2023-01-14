@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test
 class RelationMatchingSystemTest : GearyTest() {
     @Test
     fun relations() = runTest {
-        clearEngine()
+        resetEngine()
         var ran = 0
         val systemPersists = object : RepeatingSystem() {
             val TargetScope.persists by getRelations<Persists, Any?>()
@@ -52,7 +52,7 @@ class RelationMatchingSystemTest : GearyTest() {
 
     @Test
     fun relationPermutations() = runTest {
-        clearEngine()
+        resetEngine()
         var ran = 0
         val system = object : RepeatingSystem() {
             val TargetScope.persists by getRelations<Persists, Any>()
@@ -92,7 +92,7 @@ class RelationMatchingSystemTest : GearyTest() {
 
     @Test
     fun relationsWithData() = runTest {
-        clearEngine()
+        resetEngine()
         val system = object : RepeatingSystem() {
             val TargetScope.withData by getRelations<Persists, Any>()
 

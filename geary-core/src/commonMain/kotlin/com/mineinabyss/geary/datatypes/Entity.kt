@@ -50,7 +50,7 @@ value class Entity(val id: EntityId) {
 
     /** Remove this entity from the ECS. */
     fun removeEntity() {
-        entityProvider.removeEntity(this)
+        entityProvider.remove(this)
     }
 
     /**

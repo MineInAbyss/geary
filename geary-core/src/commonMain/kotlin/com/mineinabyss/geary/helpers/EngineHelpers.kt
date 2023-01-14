@@ -4,15 +4,12 @@ import com.mineinabyss.geary.components.ComponentInfo
 import com.mineinabyss.geary.components.events.SuppressRemoveEvent
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
-import com.mineinabyss.geary.systems.GearySystem
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 /** Creates a new empty entity. May reuse recently deleted entity ids. */
-fun entity(): Entity = geary.entityProvider.newEntity()
+fun entity(): Entity = geary.entityProvider.create()
 
 /** @see entity */
 inline fun entity(run: Entity.() -> Unit): Entity = entity().apply(run)
@@ -22,7 +19,7 @@ inline fun <T> temporaryEntity(
     run: (Entity) -> T
 ): T {
     val entity = entity {
-        add<SuppressRemoveEvent>()
+        add<SuppressRemoveEvent>(noEvent = true)
     }
     return try {
         run(entity)

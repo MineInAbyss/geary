@@ -15,8 +15,9 @@ import kotlinx.serialization.builtins.ListSerializer
 import okio.Path
 
 class PrefabLoader {
-    private val manager = prefabs.manager
-    private val formats = serializableComponents.formats
+    private val manager get() = prefabs.manager
+    private val formats get() = serializableComponents.formats
+
     private val logger = geary.logger
 
     private val readFiles = mutableListOf<PrefabPath>()

@@ -56,7 +56,7 @@ kotlin {
         }
         val jsMain by getting {
             dependencies {
-                implementation(mylibs.bitvector)
+                //TODO library for js bitsets
             }
         }
     }

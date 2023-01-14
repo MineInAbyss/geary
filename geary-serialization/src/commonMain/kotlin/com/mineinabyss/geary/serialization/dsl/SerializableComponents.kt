@@ -28,7 +28,7 @@ interface SerializableComponents {
             geary.pipeline.intercept(GearyPhase.ADDONS_CONFIGURED) {
                 DI.add(object: SerializableComponents {
                     override val serializers = serializersBuilder.build()
-                    override val formats = formatsBuilder.build()
+                    override val formats = formatsBuilder.build(serializers)
                 })
             }
         }

@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.papermc.plugin
 
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.Severity
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.geary.addons.GearyPhase.ENABLE
 import com.mineinabyss.geary.autoscan.autoscan
@@ -12,6 +14,7 @@ import com.mineinabyss.geary.papermc.GearyPlugin
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.engine.PaperMCEngine
 import com.mineinabyss.geary.papermc.modules.GearyPaperModule
+import com.mineinabyss.geary.papermc.modules.gearyPaper
 import com.mineinabyss.geary.prefabs.prefabs
 import com.mineinabyss.geary.serialization.FileSystemAddon
 import com.mineinabyss.geary.serialization.dsl.serialization
@@ -51,6 +54,8 @@ class GearyPluginImpl : GearyPlugin() {
             system
         }
 
+        Logger.setMinSeverity(Severity.Info)
+
         // Configure geary and install some reasonable default addons for paper
         geary {
             install(FileSystemAddon, FileSystem.SYSTEM)
@@ -62,7 +67,7 @@ class GearyPluginImpl : GearyPlugin() {
                         component(UUID::class, UUIDSerializer.withSerialName("geary:uuid"))
                     }
                 }
-                autoscan("com.mineinabyss") {
+                autoscan(classLoader, "com.mineinabyss") {
                     components()
                 }
             }
@@ -72,6 +77,7 @@ class GearyPluginImpl : GearyPlugin() {
                 .filter { it.isDirectory() }
                 .forEach { folder ->
                     namespace(folder.name) {
+                        geary.logger.i("Loading prefabs from $folder")
                         prefabs {
                             fromRecursive(folder.toOkioPath())
                         }

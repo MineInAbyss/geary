@@ -13,7 +13,7 @@ class ConcurrentSystemModificationTest : GearyTest() {
     //TODO put back when we support concurrency lol
 //    @Test
     fun `concurrent modification`() = runTest {
-        clearEngine()
+        resetEngine()
         var ran = 0
         val removingSystem = object : RepeatingSystem() {
             val TargetScope.string by get<String>()

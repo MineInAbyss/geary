@@ -6,5 +6,5 @@ import com.mineinabyss.geary.modules.GearyModule
 import kotlin.reflect.KClass
 
 @GearyDSL
-class Namespaced(val namespace: String, val currentClass: KClass<*>, val gearyConf: GearyConfiguration)
+class Namespaced(val namespace: String, val gearyConf: GearyConfiguration)
 

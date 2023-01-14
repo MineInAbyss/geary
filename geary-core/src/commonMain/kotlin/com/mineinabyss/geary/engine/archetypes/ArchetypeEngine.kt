@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.engine.archetypes
 
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.*
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.RepeatingSystem
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
@@ -17,7 +17,7 @@ import kotlin.time.Duration
  * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */
 open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine() {
-    private val systems get() = geary.pipeline
+    private val pipeline get() = geary.pipeline
     private val logger get() = geary.logger
 
     override val coroutineContext: CoroutineContext =
@@ -41,8 +41,9 @@ open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine(
     override suspend fun tick(currentTick: Long): Unit = coroutineScope {
         // Create a job but don't start it
         val tickJob = launch(start = CoroutineStart.LAZY) {
-            systems.getRepeatingInExecutionOrder()
+            pipeline.getRepeatingInExecutionOrder()
                 .filter { currentTick % (it.interval / tickDuration).toInt().coerceAtLeast(1) == 0L }
+                .also { logger.v("Ticking engine with systems $it") }
                 .forEach {
                     runCatching {
                         it.runSystem()
@@ -54,8 +55,6 @@ open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine(
         }
 
         // Tick all systems
-        logger.v("Started engine tick")
         tickJob.join()
-        logger.v("Finished engine tick")
     }
 }

@@ -40,6 +40,7 @@ dependencies {
 
     implementation(libs.idofront.autoscan)
     implementation(libs.bundles.idofront.core)
+    implementation(mylibs.kermit)
 
     // Other plugins
     implementation(mylibs.okio)

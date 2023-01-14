@@ -14,19 +14,24 @@ import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubclassOf
 
 @GearyDSL
+fun Namespaced.autoscan(classLoader: ClassLoader, vararg limitToPackages: String, configure: AutoScannerDSL.() -> Unit) =
+    gearyConf.install(AutoScanner).also { AutoScannerDSL(this, classLoader, limitToPackages.toList()).configure() }
+
+@GearyDSL
 class AutoScannerDSL(
-    val namespaced: Namespaced,
-    val limitTo: List<String>
+    private val namespaced: Namespaced,
+    private val classLoader: ClassLoader,
+    private val limitTo: List<String>
 ) {
-    val logger = geary.logger
+    private val logger = geary.logger
 
     private val reflections: Reflections by lazy {
         Reflections(
             ConfigurationBuilder()
-                .addClassLoader(namespaced.currentClass.java.classLoader)
+                .addClassLoader(classLoader)
                 .apply {
                     limitTo.forEach { pkg ->
-                        addUrls(ClasspathHelper.forPackage(pkg, namespaced.currentClass.java.classLoader))
+                        addUrls(ClasspathHelper.forPackage(pkg, classLoader))
                     }
                 }
         )

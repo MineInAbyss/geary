@@ -14,24 +14,24 @@ abstract class GearyTest {
         private set
 
     init {
-        clearEngine()
+        startEngine()
     }
 
     fun startEngine() {
         val module = GearyArchetypeModule(tickDuration = 20.milliseconds)
-        geary = module
         module.inject()
-        module.start()
-    }
-
-    /** Recreates the engine. */
-    fun clearEngine() {
-        startEngine()
+        geary = module
     }
 
     @AfterAll
-    private fun stop() {
+    fun clearEngine() {
+        DI.clear()
+    }
+
+    /** Recreates the engine. */
+    fun resetEngine() {
         clearEngine()
+        startEngine()
     }
 
     suspend inline fun concurrentOperation(

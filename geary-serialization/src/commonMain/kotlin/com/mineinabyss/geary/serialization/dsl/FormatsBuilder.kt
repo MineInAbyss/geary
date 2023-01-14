@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.serialization.dsl
 
+import com.mineinabyss.geary.serialization.ComponentSerializers
 import com.mineinabyss.geary.serialization.formats.Format
 import com.mineinabyss.geary.serialization.formats.Formats
 import com.mineinabyss.geary.serialization.formats.SimpleFormats
@@ -14,8 +15,7 @@ class FormatsBuilder {
         formats[ext] = makeFromat
     }
 
-    fun build(): Formats {
-        val serializers = serializableComponents.serializers
+    fun build(serializers: ComponentSerializers): Formats {
 
         return SimpleFormats(
             binaryFormat = Cbor {

@@ -1,12 +1,10 @@
 package com.mineinabyss.geary.autoscan
 
-import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.geary.addons.GearyPhase
-import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.GearyAddonWithDefault
-import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.System
+import com.mineinabyss.idofront.di.DI
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
@@ -43,7 +41,3 @@ interface AutoScanner {
         }
     }
 }
-
-@GearyDSL
-fun Namespaced.autoscan(vararg limitToPackages: String, configure: AutoScannerDSL.() -> Unit) =
-    gearyConf.install(AutoScanner).also { AutoScannerDSL(this, limitToPackages.toList()).configure() }

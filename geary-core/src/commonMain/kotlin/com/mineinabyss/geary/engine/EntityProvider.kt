@@ -6,10 +6,10 @@ import com.mineinabyss.geary.datatypes.EntityType
 
 interface EntityProvider {
     /** Creates a new entity. */
-    fun newEntity(initialComponents: Collection<Component> = emptyList()): Entity
+    fun create(initialComponents: Collection<Component> = emptyList()): Entity
 
     /** Removes an entity, freeing up its entity id for later reuse. */
-    fun removeEntity(entity: Entity)
+    fun remove(entity: Entity)
 
     /** Gets an [entity]'s type */
     fun getType(entity: Entity): EntityType

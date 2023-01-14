@@ -16,10 +16,9 @@ import kotlin.time.measureTime
 class AsyncArchetypeTests : GearyTest() {
     @Test
     fun `add entities concurrently`() = runTest {
-        clearEngine()
         val arc = geary.archetypeProvider.getArchetype(EntityType(ulongArrayOf(componentId<String>() or HOLDS_DATA)))
         concurrentOperation(10000) {
-            val rec = geary.records[geary.entityProvider.newEntity()]
+            val rec = geary.records[geary.entityProvider.create()]
             arc.addEntityWithData(rec, arrayOf("Test"), rec.entity)
         }.awaitAll()
         arc.entities.size shouldBe 10000

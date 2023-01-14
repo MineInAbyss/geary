@@ -18,7 +18,7 @@ class GearyConfiguration {
     ): Module = with(addon) { module.install() }.let { module }
 
     fun namespace(namespace: String, configure: Namespaced.() -> Unit) {
-        Namespaced(namespace, TODO(), this).configure()
+        Namespaced(namespace, this).configure()
     }
 
     /**
