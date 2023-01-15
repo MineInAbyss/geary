@@ -44,7 +44,7 @@ jobs:
         shell: bash
         id: extract_version
         run: |
-          version=`gradle :geary-papermc-core:properties --console=plain -q | grep "^version:" | awk '{printf $2}'`
+          version=`gradle properties --console=plain -q | grep "^version:" | awk '{printf $2}'`
           echo "::set-output name=version::$version"
 
       - name: Create GitHub Release
