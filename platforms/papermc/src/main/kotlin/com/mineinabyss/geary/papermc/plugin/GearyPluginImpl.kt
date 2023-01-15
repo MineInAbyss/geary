@@ -40,6 +40,7 @@ class GearyPluginImpl : GearyPlugin() {
     }
 
     override fun onEnable() {
+        saveDefaultConfig()
         // Register DI
         val gearyModule = object : GearyModule by GearyArchetypeModule(tickDuration = 1.ticks) {
             override val engine: Engine = PaperMCEngine()
