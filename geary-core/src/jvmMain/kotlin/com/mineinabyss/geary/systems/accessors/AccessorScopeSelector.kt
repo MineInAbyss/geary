@@ -7,9 +7,9 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.full.extensionReceiverParameter
 import kotlin.reflect.typeOf
 
-public actual interface AccessorScopeSelector {
+actual interface AccessorScopeSelector {
     /** Automatically finds which [ResultScope] to select based on the receiver used on this [property]. */
-    public operator fun <T : Accessor<*>> AccessorBuilder<T>.provideDelegate(
+    operator fun <T : Accessor<*>> AccessorBuilder<T>.provideDelegate(
         thisRef: Listener,
         property: KProperty<*>
     ): T {
@@ -18,7 +18,7 @@ public actual interface AccessorScopeSelector {
     }
 
     /** Ensures the [ResultScope] at the receiver of this [property] matches this family. */
-    public operator fun Family.provideDelegate(thisRef: Listener, property: KProperty<*>): Accessor<Family> {
+    operator fun Family.provideDelegate(thisRef: Listener, property: KProperty<*>): Accessor<Family> {
         val holder = property.getHolder(thisRef)
         holder._family.add(this)
         return holder.addAccessor {
@@ -26,7 +26,7 @@ public actual interface AccessorScopeSelector {
         }
     }
 
-    public companion object {
+    companion object {
         private fun KProperty<*>.getHolder(thisRef: Listener) = when (extensionReceiverParameter?.type) {
             typeOf<SourceScope>() -> thisRef.source
             typeOf<TargetScope>() -> thisRef.target

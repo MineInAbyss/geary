@@ -15,8 +15,8 @@ import com.mineinabyss.geary.systems.Listener
  * @see TargetScope
  * @see EventScope
  */
-public open class ResultScope(
-    public val entity: Entity,
+open class ResultScope(
+    val entity: Entity,
     internal val data: List<*>,
 )
 
@@ -28,7 +28,7 @@ public open class ResultScope(
  * @see TargetScope
  * @see EventScope
  */
-public open class SourceScope(
+open class SourceScope(
     entity: Entity,
     data: List<*>,
 ) : ResultScope(entity, data)
@@ -41,7 +41,7 @@ public open class SourceScope(
  * @see SourceScope
  * @see EventScope
  */
-public open class TargetScope(
+open class TargetScope(
     entity: Entity,
     data: List<*>,
 ) : ResultScope(entity, data)
@@ -54,7 +54,7 @@ public open class TargetScope(
  * @see SourceScope
  * @see TargetScope
  */
-public class EventScope(
+class EventScope(
     entity: Entity,
     data: List<*>,
 ) : ResultScope(entity, data)

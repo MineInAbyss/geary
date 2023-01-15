@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test
 class RelationMatchingSystemTest : GearyTest() {
     @Test
     fun relations() = runTest {
-        clearEngine()
+        resetEngine()
         var ran = 0
         val systemPersists = object : RepeatingSystem() {
             val TargetScope.persists by getRelations<Persists, Any?>()
@@ -29,7 +29,7 @@ class RelationMatchingSystemTest : GearyTest() {
                 persists.data.shouldBeInstanceOf<Persists>()
             }
         }
-        engine.addSystem(systemPersists)
+        geary.pipeline.addSystem(systemPersists)
         val entity = entity {
             addRelation<Persists, String>()
             add<String>()
@@ -46,13 +46,13 @@ class RelationMatchingSystemTest : GearyTest() {
         systemPersists.matchedArchetypes.shouldNotContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
         systemPersists.matchedArchetypes.shouldContain(entity3.type.getArchetype())
 
-        engine.tick(0)
+        geary.engine.tick(0)
         ran shouldBe 1
     }
 
     @Test
     fun relationPermutations() = runTest {
-        clearEngine()
+        resetEngine()
         var ran = 0
         val system = object : RepeatingSystem() {
             val TargetScope.persists by getRelations<Persists, Any>()
@@ -64,7 +64,7 @@ class RelationMatchingSystemTest : GearyTest() {
                 instanceOf.data shouldBe null
             }
         }
-        engine.addSystem(system)
+        geary.pipeline.addSystem(system)
 
         entity {
             setRelation<Persists, Int>(Persists()) // Yes
@@ -84,7 +84,7 @@ class RelationMatchingSystemTest : GearyTest() {
             addRelation<Persists, String>() // No
         }
 
-        engine.tick(0)
+        geary.engine.tick(0)
 
         // Only two of the Persists relations are valid, times both InstanceOf are valid
         ran shouldBe 2 * 2
@@ -92,7 +92,7 @@ class RelationMatchingSystemTest : GearyTest() {
 
     @Test
     fun relationsWithData() = runTest {
-        clearEngine()
+        resetEngine()
         val system = object : RepeatingSystem() {
             val TargetScope.withData by getRelations<Persists, Any>()
 
@@ -112,11 +112,11 @@ class RelationMatchingSystemTest : GearyTest() {
             set("Test")
         }
 
-        queryManager.trackQuery(system)
+        geary.queryManager.trackQuery(system)
 
         system.matchedArchetypes.shouldNotContain(entity.type.getArchetype())
         system.matchedArchetypes.shouldContain(entityWithData.type.getArchetype())
 
-        engine.tick(0)
+        geary.engine.tick(0)
     }
 }

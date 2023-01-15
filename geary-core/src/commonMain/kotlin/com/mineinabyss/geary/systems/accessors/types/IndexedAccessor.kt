@@ -16,8 +16,8 @@ import com.mineinabyss.geary.systems.accessors.*
  * - The consumer creates [ResultScope]s, for each iteration.
  * - The scope allows appropriate accessors to read parsed data without recalculating it each time.
  */
-public abstract class IndexedAccessor<out T>(
-    public val index: Int
+abstract class IndexedAccessor<out T>(
+    val index: Int
 ) : Accessor<T> {
     /**
      * Processes a [RawAccessorDataScope] with an entity.

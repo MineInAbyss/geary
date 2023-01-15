@@ -5,14 +5,14 @@ import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
 
 @JvmInline
-public value class ClassToComponentMap(
-    public val map: MutableMap<KClass<*>, Long> = mutableMapOf()
+value class ClassToComponentMap(
+    val map: MutableMap<KClass<*>, Long> = mutableMapOf()
 ) {
-    public operator fun get(kClass: KClass<*>): ComponentId {
+    operator fun get(kClass: KClass<*>): ComponentId {
         return (map[kClass] ?: -1).toULong()
     }
 
-    public operator fun set(kClass: KClass<*>, id: ComponentId) {
+    operator fun set(kClass: KClass<*>, id: ComponentId) {
         map[kClass] = id.toLong()
     }
 }

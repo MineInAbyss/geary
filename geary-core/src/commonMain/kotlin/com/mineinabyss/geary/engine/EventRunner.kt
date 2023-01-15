@@ -1,7 +1,8 @@
 package com.mineinabyss.geary.engine
 
-import com.mineinabyss.geary.datatypes.Record
+import com.mineinabyss.geary.datatypes.Entity
 
-public interface EventRunner {
-    public fun callEvent(target: Record, event: Record, source: Record?)
+interface EventRunner {
+    /** Calls an event on [target] with data in an [event] entity, optionally with a [source] entity. */
+    fun callEvent(target: Entity, event: Entity, source: Entity?)
 }

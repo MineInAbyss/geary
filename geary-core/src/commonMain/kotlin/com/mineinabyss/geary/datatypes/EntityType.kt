@@ -11,27 +11,27 @@ import kotlin.jvm.JvmInline
  * It provides fast (no boxing) functions backed by FastUtil sorted sets to do operations with [ComponentId]s.
  */
 @JvmInline
-public value class EntityType private constructor(
+value class EntityType private constructor(
     @PublishedApi
     internal val inner: ULongArray
 ) {
-    public constructor() : this(ULongArray(0))
+    constructor() : this(ULongArray(0))
 
-    public constructor(ids: Collection<ComponentId>) : this(inner = ids.toULongArray().apply { sort() })
+    constructor(ids: Collection<ComponentId>) : this(inner = ids.toULongArray().apply { sort() })
 
-    public val size: Int get() = inner.size
+    val size: Int get() = inner.size
 
-    public val prefabs: EntityType
+    val prefabs: EntityType
         get() = EntityType(filter { contains(Relation.of(componentId<InstanceOf>(), it).id) }
             .map { Relation.of(it).target })
 
-    public operator fun contains(id: ComponentId): Boolean = indexOf(id) != -1
+    operator fun contains(id: ComponentId): Boolean = indexOf(id) != -1
 
-    public fun indexOf(id: ComponentId): Int {
+    fun indexOf(id: ComponentId): Int {
         return binarySearch(id).coerceAtLeast(-1)
     }
 
-    public tailrec fun binarySearch(id: ComponentId, fromIndex: Int = 0, toIndex: Int = inner.lastIndex): Int {
+    tailrec fun binarySearch(id: ComponentId, fromIndex: Int = 0, toIndex: Int = inner.lastIndex): Int {
         if (fromIndex > toIndex) return -fromIndex - 1
         val mid = (fromIndex + toIndex) / 2
         val found = inner[mid]
@@ -42,10 +42,10 @@ public value class EntityType private constructor(
         }
     }
 
-    public fun first(): ComponentId = inner.first()
-    public fun last(): ComponentId = inner.last()
+    fun first(): ComponentId = inner.first()
+    fun last(): ComponentId = inner.last()
 
-    public inline fun forEach(run: (ComponentId) -> Unit) {
+    inline fun forEach(run: (ComponentId) -> Unit) {
         inner.forEach(run)
 //        val iterator = inner.iterator()
 //        while (iterator.hasNext()) {
@@ -53,30 +53,30 @@ public value class EntityType private constructor(
 //        }
     }
 
-    public inline fun any(predicate: (ComponentId) -> Boolean): Boolean {
+    inline fun any(predicate: (ComponentId) -> Boolean): Boolean {
         forEach { if (predicate(it)) return true }
         return false
     }
 
-    public inline fun forEachIndexed(run: (Int, ComponentId) -> Unit) {
+    inline fun forEachIndexed(run: (Int, ComponentId) -> Unit) {
         inner.forEachIndexed(run)
 //        val iterator = inner.iterator()
 //        var i = 0
 //        forEach { run(i++, iterator.nextLong().toULong()) }
     }
 
-    public inline fun filter(predicate: (ComponentId) -> Boolean): EntityType {
+    inline fun filter(predicate: (ComponentId) -> Boolean): EntityType {
         return EntityType(inner.filter(predicate))
 //        val type = LongAVLTreeSet()
 //        forEach { if (predicate(it)) type.add(it.toLong()) }
 //        return GearyType(type)
     }
 
-    public inline fun <T> map(transform: (ULong) -> T): List<T> {
+    inline fun <T> map(transform: (ULong) -> T): List<T> {
         return inner.map(transform)
     }
 
-    public operator fun plus(id: ComponentId): EntityType {
+    operator fun plus(id: ComponentId): EntityType {
         val search = binarySearch(id)
         if (search >= 0) return this
         val insertAt = -(search + 1)
@@ -87,11 +87,11 @@ public value class EntityType private constructor(
         return EntityType(arr)
     }
 
-    public operator fun plus(other: EntityType): EntityType {
+    operator fun plus(other: EntityType): EntityType {
         return EntityType(inner.plus(other.inner))
     }
 
-    public operator fun minus(id: ComponentId): EntityType {
+    operator fun minus(id: ComponentId): EntityType {
         val removeAt = binarySearch(id)
         if (removeAt < 0) return this
         val arr = ULongArray(inner.size - 1)

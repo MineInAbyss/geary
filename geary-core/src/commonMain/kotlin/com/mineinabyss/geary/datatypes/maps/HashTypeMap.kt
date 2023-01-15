@@ -6,7 +6,7 @@ import com.soywiz.kds.*
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 
-public class HashTypeMap : TypeMap {
+class HashTypeMap : TypeMap {
     private val lock = SynchronizedObject()
     private val map: FastIntMap<Record> = FastIntMap()
 

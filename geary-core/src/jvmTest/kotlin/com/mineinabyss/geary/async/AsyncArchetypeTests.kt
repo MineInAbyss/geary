@@ -9,20 +9,16 @@ import com.mineinabyss.geary.helpers.toGeary
 import io.kotest.matchers.collections.shouldBeUnique
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 class AsyncArchetypeTests : GearyTest() {
     @Test
     fun `add entities concurrently`() = runTest {
-        clearEngine()
-        val arc = engine.archetypeProvider.getArchetype(EntityType(ulongArrayOf(componentId<String>() or HOLDS_DATA)))
+        val arc = geary.archetypeProvider.getArchetype(EntityType(ulongArrayOf(componentId<String>() or HOLDS_DATA)))
         concurrentOperation(10000) {
-            val rec = engine.getRecord(engine.newEntity())
+            val rec = geary.records[geary.entityProvider.create()]
             arc.addEntityWithData(rec, arrayOf("Test"), rec.entity)
         }.awaitAll()
         arc.entities.size shouldBe 10000
@@ -65,11 +61,11 @@ class AsyncArchetypeTests : GearyTest() {
         println(measureTime {
             for (i in 0 until iters) {
 //            concurrentOperation(iters) { i ->
-                engine.archetypeProvider.getArchetype(EntityType((0uL..i.toULong()).toList()))
-                println("Creating arc $i, total: ${engine.archetypeProvider.count}")
+                geary.archetypeProvider.getArchetype(EntityType((0uL..i.toULong()).toList()))
+                println("Creating arc $i, total: ${geary.archetypeProvider.count}")
 //            }.awaitAll()
             }
         })
-        engine.archetypeProvider.count shouldBe iters + 1
+        geary.archetypeProvider.count shouldBe iters + 1
     }
 }

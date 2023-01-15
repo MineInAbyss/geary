@@ -3,13 +3,12 @@ package com.mineinabyss.geary.engine.archetypes
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.SetComponent
 import com.mineinabyss.geary.components.events.UpdatedComponent
-import com.mineinabyss.geary.context.globalContext
+import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
-import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.Engine
-import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.events.Handler
 import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.helpers.toGeary
@@ -25,17 +24,18 @@ import kotlinx.atomicfu.locks.synchronized
  * An example use case: If a query matches an archetype, it will also match all entities inside which
  * gives a large performance boost to system iteration.
  */
-public data class Archetype(
-    private val archetypeProvider: ArchetypeProvider,
-    private val typeMap: TypeMap,
-    private val eventRunner: EventRunner,
-    public val type: EntityType,
-    public val id: Int
+data class Archetype(
+    val type: EntityType,
+    val id: Int
 ) {
+    private val records get() = archetypes.records
+    private val archetypeProvider get() = archetypes.archetypeProvider
+    private val eventRunner get() = archetypes.eventRunner
+
     /** A mutex for anything which needs the size of ids to remain unchanged. */
     private val entityAddition = SynchronizedObject()
 
-    public val entities: List<Entity> get() = ids.map { it.toGeary() }
+    val entities: List<Entity> get() = ids.map { it.toGeary() }
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     private val ids: IdList = IdList()
@@ -76,22 +76,22 @@ public data class Archetype(
     }
 
     /** The amount of entities stored in this archetype. */
-    public val size: Int get() = ids.size
+    val size: Int get() = ids.size
 
     private val _sourceListeners = mutableSetOf<Listener>()
-    public val sourceListeners: Set<Listener> = _sourceListeners
+    val sourceListeners: Set<Listener> = _sourceListeners
 
     private val _targetListeners = mutableSetOf<Listener>()
-    public val targetListeners: Set<Listener> = _targetListeners
+    val targetListeners: Set<Listener> = _targetListeners
 
     private val _eventHandlers = mutableSetOf<Handler>()
 
     //TODO update doc
     /** A map of event class type to a set of event handlers which fire on that event. */
-    public val eventHandlers: Set<Handler> = _eventHandlers
+    val eventHandlers: Set<Handler> = _eventHandlers
 
     // ==== Helper functions ====
-    public fun getEntity(row: Int): Entity = synchronized(entityAddition) {
+    fun getEntity(row: Int): Entity = synchronized(entityAddition) {
         return ids[row].toGeary()
     }
 
@@ -107,21 +107,21 @@ public data class Archetype(
      *
      * @see Record
      */
-    public operator fun get(row: Int, componentId: ComponentId): Component? {
+    operator fun get(row: Int, componentId: ComponentId): Component? {
         val compIndex = indexOf(componentId)
         if (compIndex == -1) return null
         return componentData[compIndex][row]
     }
 
     /** @return Whether this archetype has a [componentId] in its type. */
-    public operator fun contains(componentId: ComponentId): Boolean = componentId in type
+    operator fun contains(componentId: ComponentId): Boolean = componentId in type
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
-    public operator fun plus(componentId: ComponentId): Archetype =
+    operator fun plus(componentId: ComponentId): Archetype =
         componentAddEdges[componentId] ?: archetypeProvider.getArchetype(type.plus(componentId))
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
-    public operator fun minus(componentId: ComponentId): Archetype =
+    operator fun minus(componentId: ComponentId): Archetype =
         componentRemoveEdges[componentId] ?: archetypeProvider.getArchetype(type.minus(componentId)).also {
             componentRemoveEdges[componentId] = it
         }
@@ -177,7 +177,7 @@ public data class Archetype(
 
         if (callEvent) temporaryEntity { componentAddEvent ->
             componentAddEvent.addRelation<AddedComponent>(componentId.toGeary(), noEvent = true)
-            eventRunner.callEvent(record, typeMap[componentAddEvent], null)
+            eventRunner.callEvent(record, records[componentAddEvent], null)
         }
         return true
     }
@@ -205,7 +205,7 @@ public data class Archetype(
             componentData[addIndex][row] = data
             if (callEvent) temporaryEntity { componentAddEvent ->
                 componentAddEvent.addRelation<UpdatedComponent>(componentId.toGeary(), noEvent = true)
-                eventRunner.callEvent(record, typeMap[componentAddEvent], null)
+                eventRunner.callEvent(record, records[componentAddEvent], null)
             }
             return false
         }
@@ -224,7 +224,7 @@ public data class Archetype(
 
         if (callEvent) temporaryEntity { componentAddEvent ->
             componentAddEvent.addRelation<SetComponent>(componentId.toGeary(), noEvent = true)
-            eventRunner.callEvent(record, typeMap[componentAddEvent], null)
+            eventRunner.callEvent(record, records[componentAddEvent], null)
         }
         return true
     }
@@ -290,8 +290,8 @@ public data class Archetype(
      * All other roles are ignored for the [target].
      */
     internal fun getRelations(kind: ComponentId, target: EntityId): List<Relation> {
-        val specificKind = kind and ENTITY_MASK != globalContext.components.any
-        val specificTarget = target and ENTITY_MASK != globalContext.components.any
+        val specificKind = kind and ENTITY_MASK != geary.components.any
+        val specificTarget = target and ENTITY_MASK != geary.components.any
         return when {
             specificKind && specificTarget -> listOf(Relation.of(kind, target))
             specificTarget -> relationsByTarget[target.toLong()]
@@ -315,7 +315,7 @@ public data class Archetype(
      *
      * Must be run synchronously.
      */
-    public fun removeEntity(row: Int) {
+    fun removeEntity(row: Int) {
         val lastIndex = ids.lastIndex
 
         // Move entity in last row to deleted row
@@ -323,7 +323,7 @@ public data class Archetype(
             val replacement = ids[lastIndex]
             ids[row] = replacement
             componentData.forEach { it[row] = it.last() }
-            typeMap.get(replacement.toGeary()).apply {
+            records.get(replacement.toGeary()).apply {
                 this.archetype = this@Archetype
                 this.row = row
             }
@@ -337,15 +337,15 @@ public data class Archetype(
     // ==== Event listeners ====
 
     /** Adds an event [handler] that listens to certain events relating to entities in this archetype. */
-    public fun addEventHandler(handler: Handler) {
+    fun addEventHandler(handler: Handler) {
         _eventHandlers += handler
     }
 
-    public fun addSourceListener(handler: Listener) {
+    fun addSourceListener(handler: Listener) {
         _sourceListeners += handler
     }
 
-    public fun addTargetListener(handler: Listener) {
+    fun addTargetListener(handler: Listener) {
         _targetListeners += handler
     }
 

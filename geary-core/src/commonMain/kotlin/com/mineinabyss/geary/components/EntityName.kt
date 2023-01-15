@@ -10,4 +10,4 @@ import kotlin.jvm.JvmInline
 @JvmInline
 @Serializable
 @SerialName("geary:name")
-public value class EntityName(public val name: String)
+value class EntityName(val name: String)

@@ -6,9 +6,9 @@ import com.mineinabyss.geary.engine.archetypes.Archetype
 /**
  * A scope provided to [Accessor]s to cache data per archetype.
  */
-public open class ArchetypeCacheScope(
-    public val archetype: Archetype,
-    public val perArchetypeData: List<List<Any?>>,
+open class ArchetypeCacheScope(
+    val archetype: Archetype,
+    val perArchetypeData: List<List<Any?>>,
 )
 
 /**
@@ -19,10 +19,10 @@ public open class ArchetypeCacheScope(
  *
  * @see Accessor
  */
-public class RawAccessorDataScope(
+class RawAccessorDataScope(
     archetype: Archetype,
     perArchetypeData: List<List<Any?>>,
-    public val row: Int,
+    val row: Int,
 ) : ArchetypeCacheScope(archetype, perArchetypeData) {
-    public val entity: Entity = archetype.getEntity(row)
+    val entity: Entity = archetype.getEntity(row)
 }

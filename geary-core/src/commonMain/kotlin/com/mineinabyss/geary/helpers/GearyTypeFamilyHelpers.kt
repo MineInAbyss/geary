@@ -3,7 +3,7 @@ package com.mineinabyss.geary.helpers
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.family.Family
 
-public fun EntityType.hasRelationTarget(
+fun EntityType.hasRelationTarget(
     target: EntityId,
     kindMustHoldData: Boolean = false
 ): Boolean = any {
@@ -12,7 +12,7 @@ public fun EntityType.hasRelationTarget(
     }
 }
 
-public fun EntityType.hasRelationKind(
+fun EntityType.hasRelationKind(
     kind: ComponentId,
     targetMustHoldData: Boolean = false
 ): Boolean = any {
@@ -21,9 +21,9 @@ public fun EntityType.hasRelationKind(
     }
 }
 
-public operator fun Family.contains(type: EntityType): Boolean = has(type)
+operator fun Family.contains(type: EntityType): Boolean = has(type)
 
-public fun Family.has(type: EntityType): Boolean = when (this) {
+fun Family.has(type: EntityType): Boolean = when (this) {
     is Family.Selector.And -> and.all { type in it }
     is Family.Selector.AndNot -> andNot.none { type in it }
     is Family.Selector.Or -> or.any { type in it }

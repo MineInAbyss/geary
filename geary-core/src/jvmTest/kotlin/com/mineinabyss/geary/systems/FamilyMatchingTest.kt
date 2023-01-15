@@ -13,7 +13,7 @@ import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-class FamilyMatchingTest: GearyTest() {
+class FamilyMatchingTest : GearyTest() {
     val stringId = componentId<String>() or HOLDS_DATA
     val intId = componentId<Int>()
 
@@ -27,11 +27,11 @@ class FamilyMatchingTest: GearyTest() {
         }
     }
 
-    val root = engine.archetypeProvider.rootArchetype
+    val root = geary.archetypeProvider.rootArchetype
     val correctArchetype = root + stringId + intId
 
     init {
-        queryManager.trackQuery(system)
+        geary.queryManager.trackQuery(system)
     }
 
     @Test
@@ -54,7 +54,7 @@ class FamilyMatchingTest: GearyTest() {
             set("Test")
             set(1)
         }
-        queryManager.getEntitiesMatching(system.family).shouldContainAll(entity, entity2)
+        geary.queryManager.getEntitiesMatching(system.family).shouldContainAll(entity, entity2)
     }
 
     @Test

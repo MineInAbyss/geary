@@ -6,22 +6,22 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
 /** A class that holds only one value that we want to delegate serialization to. */
-public interface FlatWrap<A> {
-    public val wrapped: A
+interface FlatWrap<A> {
+    val wrapped: A
 }
 
 /** A wrapper around [SerialDescriptor] that only overrides the [serialName]. */
-public class DescriptorWrapper(override val serialName: String, wrapped: SerialDescriptor) :
+class DescriptorWrapper(override val serialName: String, wrapped: SerialDescriptor) :
     SerialDescriptor by wrapped
 
 /**
  * A wrapper around [KSerializer] that only overrides the [descriptor].
  * Not technically needed but doing this just in case.
  */
-public class SerializerWrapper<T>(override val descriptor: SerialDescriptor, wrapped: KSerializer<T>) :
+class SerializerWrapper<T>(override val descriptor: SerialDescriptor, wrapped: KSerializer<T>) :
     KSerializer<T> by wrapped
 
-public fun <T> KSerializer<T>.withSerialName(name: String): SerializerWrapper<T> =
+fun <T> KSerializer<T>.withSerialName(name: String): SerializerWrapper<T> =
     SerializerWrapper(DescriptorWrapper(name, this.descriptor), this)
 
 /**
@@ -31,7 +31,7 @@ public fun <T> KSerializer<T>.withSerialName(name: String): SerializerWrapper<T>
  * @param serializer The wrapped class' serializer, type can be inferenced from just `serializer()`
  * @param create How to create the [FlatWrap] class given the wrapped value
  */
-public abstract class FlatSerializer<T : FlatWrap<A>, A : Any>(
+abstract class FlatSerializer<T : FlatWrap<A>, A : Any>(
     serialName: String,
     serializer: KSerializer<A>,
     private val create: (A) -> T

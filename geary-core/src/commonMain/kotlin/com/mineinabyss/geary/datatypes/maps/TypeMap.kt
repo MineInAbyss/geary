@@ -3,13 +3,18 @@ package com.mineinabyss.geary.datatypes.maps
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.Record
 
-public interface TypeMap {
+interface TypeMap {
     // We don't return nullable record to avoid boxing.
     // Accessing an entity that doesn't exist is indicative of a problem elsewhere and should be made obvious.
-    public operator fun get(entity: Entity): Record
+    /** Gets the record of a given entity, or throws an error if the entity id is not active in the engine. */
+    operator fun get(entity: Entity): Record
 
-    public operator fun set(entity: Entity, record: Record)
-    public fun remove(entity: Entity)
+    /** Updates the record of a given entity */
+    operator fun set(entity: Entity, record: Record)
 
-    public operator fun contains(entity: Entity): Boolean
+    /** Removes a record associated with an entity. */
+    fun remove(entity: Entity)
+
+    /** Checks if an entity has a record associated with it. */
+    operator fun contains(entity: Entity): Boolean
 }

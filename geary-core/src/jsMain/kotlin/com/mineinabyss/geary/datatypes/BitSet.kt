@@ -1,56 +1,51 @@
 package com.mineinabyss.geary.datatypes
 
-import net.onedaybeard.bitvector.BitVector
-
-public actual class BitSet {
-    @PublishedApi
-    internal val inner: BitVector
-
-    public actual constructor() {
-        inner = BitVector()
+actual class BitSet {
+    actual constructor() {
     }
 
-    public constructor(from: BitVector) {
-        inner = from
+    actual fun isEmpty(): Boolean {
+        TODO("Not yet implemented")
     }
 
-    public actual operator fun get(index: Int): Boolean = inner[index]
-
-    public actual fun set(index: Int) {
-        inner.set(index)
+    actual operator fun get(index: Int): Boolean {
+        TODO("Not yet implemented")
     }
 
-    public actual fun set(from: Int, to: Int) {
-        for(i in from..to) inner.set(i)
+    actual fun set(index: Int) {
     }
 
-    public actual fun clear(index: Int) {
-        inner.clear(index)
+    actual fun set(from: Int, to: Int) {
     }
 
-    public actual fun flip(index: Int) {
-        inner.flip(index)
+    actual fun clear(index: Int) {
     }
 
-    public actual fun and(other: BitSet) {
-        inner.and(other.inner)
+    actual fun clear() {
     }
 
-    public actual fun andNot(other: BitSet) {
-        inner.andNot(other.inner)
+    actual fun flip(index: Int) {
     }
 
-    public actual fun or(other: BitSet) {
-        inner.or(other.inner)
+    actual fun and(other: BitSet) {
     }
 
-    public actual fun xor(other: BitSet) {
-        inner.xor(other.inner)
+    actual fun andNot(other: BitSet) {
     }
 
-    public actual inline fun forEachBit(crossinline loop: (Int) -> Unit) {
-        inner.forEachBit(loop)
+    actual fun or(other: BitSet) {
     }
 
-    public actual fun copy(): BitSet = BitSet(inner.copy())
+    actual fun xor(other: BitSet) {
+    }
+
+    actual val cardinality: Int
+        get() = TODO("Not yet implemented")
+
+    actual inline fun forEachBit(crossinline loop: (Int) -> Unit) {
+    }
+
+    actual fun copy(): BitSet {
+        TODO("Not yet implemented")
+    }
 }

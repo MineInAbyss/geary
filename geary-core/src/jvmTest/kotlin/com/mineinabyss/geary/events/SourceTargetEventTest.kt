@@ -29,7 +29,7 @@ class SourceTargetEventTest : GearyTest() {
 
     @Test
     fun interactions() {
-        engine.addSystem(Interaction())
+        geary.pipeline.addSystem(Interaction())
         val source = entity {
             set(Strength(10))
         }

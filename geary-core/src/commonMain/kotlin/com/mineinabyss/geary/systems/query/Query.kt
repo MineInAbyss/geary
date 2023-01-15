@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.systems.query
 
-import com.mineinabyss.geary.context.GearyContext
-import com.mineinabyss.geary.context.GearyContextKoin
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.engine.archetypes.Archetype
@@ -18,14 +17,14 @@ import kotlin.reflect.KProperty
 /**com.mineinabyss.geary.ecs.engine.iteration.accessors
  * @property matchedArchetypes A set of archetypes which have been matched to this query.
  */
-public abstract class Query : AccessorHolder(), Iterable<TargetScope>, GearyContext by GearyContextKoin() {
+abstract class Query : AccessorHolder(), Iterable<TargetScope> {
     @PublishedApi
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
 
     @PublishedApi
     internal var registered: Boolean = false
 
-    public fun flow(): Flow<TargetScope> {
+    fun flow(): Flow<TargetScope> {
         return channelFlow {
             forEach { targetScope ->
                 send(targetScope)
@@ -39,9 +38,9 @@ public abstract class Query : AccessorHolder(), Iterable<TargetScope>, GearyCont
         return items.iterator()
     }
 
-    public inline fun fastForEach(crossinline run: (TargetScope) -> Unit) {
+    inline fun fastForEach(crossinline run: (TargetScope) -> Unit) {
         if (!registered) {
-            queryManager.trackQuery(this)
+            geary.queryManager.trackQuery(this)
         }
         val matched = matchedArchetypes.toList()
         val sizes = matched.map { it.size - 1 }
@@ -59,11 +58,9 @@ public abstract class Query : AccessorHolder(), Iterable<TargetScope>, GearyCont
     protected inline fun <reified T : Component> TargetScope.get(): ComponentAccessor<T> =
         error("Cannot change query at runtime")
 
-    @Suppress("UNCHECKED_CAST")
-    public operator fun <T> Accessor<T>.getValue(thisRef: TargetScope, property: KProperty<*>): T =
+    operator fun <T> Accessor<T>.getValue(thisRef: TargetScope, property: KProperty<*>): T =
         access(thisRef)
 
-    @Suppress("UNCHECKED_CAST")
-    public operator fun Family.provideDelegate(thisRef: GearyQuery, property: KProperty<*>): DirectAccessor<Family> =
+    operator fun Family.provideDelegate(thisRef: GearyQuery, property: KProperty<*>): DirectAccessor<Family> =
         _family.add(this).run { DirectAccessor(family) }
 }

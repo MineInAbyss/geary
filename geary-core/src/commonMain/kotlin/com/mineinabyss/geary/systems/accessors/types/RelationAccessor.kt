@@ -5,7 +5,7 @@ import com.mineinabyss.geary.systems.accessors.ArchetypeCacheScope
 import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 
-public open class RelationWithDataAccessor<K : Component?, T : Component?>(
+open class RelationWithDataAccessor<K : Component?, T : Component?>(
     index: Int,
     private val kind: ComponentId,
     private val target: EntityId,

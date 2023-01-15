@@ -10,7 +10,7 @@ import com.mineinabyss.geary.systems.accessors.types.IndexedAccessor
  *
  * @see flatten
  */
-public open class FlatAccessor<T, A : IndexedAccessor<T>>(
+open class FlatAccessor<T, A : IndexedAccessor<T>>(
     private val wrapped: A
 ) : IndexedAccessor<List<T>>(wrapped.index) {
     init {
@@ -24,7 +24,7 @@ public open class FlatAccessor<T, A : IndexedAccessor<T>>(
  * If several combinations are possible (ex several relations present on an entity), will process them as one list
  * instead of handling each individually.
  */
-public fun <T, A : IndexedAccessor<T>> AccessorBuilder<A>.flatten(): AccessorBuilder<FlatAccessor<T, A>> =
+fun <T, A : IndexedAccessor<T>> AccessorBuilder<A>.flatten(): AccessorBuilder<FlatAccessor<T, A>> =
     AccessorBuilder { holder, index ->
         FlatAccessor(this.build(holder, index))
     }

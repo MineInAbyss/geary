@@ -9,7 +9,7 @@ import com.mineinabyss.geary.systems.accessors.RawAccessorDataScope
  *
  * @see map
  */
-public class TransformingAccessor<T, R>(
+class TransformingAccessor<T, R>(
     private val transform: (T) -> R,
     private val wrapped: IndexedAccessor<T>
 ) : IndexedAccessor<R>(wrapped.index) {
@@ -23,7 +23,7 @@ public class TransformingAccessor<T, R>(
 }
 
 /** Takes the result of another accessor and [transform]s it. */
-public fun <T, R, A : IndexedAccessor<T>> AccessorBuilder<A>.map(
+fun <T, R, A : IndexedAccessor<T>> AccessorBuilder<A>.map(
     transform: (T) -> R
 ): AccessorBuilder<IndexedAccessor<R>> = AccessorBuilder { holder, index ->
     TransformingAccessor(transform, this.build(holder, index))

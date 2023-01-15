@@ -24,5 +24,5 @@ import com.mineinabyss.geary.systems.accessors.TargetScope
  * ```
  */
 @Target(AnnotationTarget.FUNCTION)
-public annotation class Handler
+annotation class Handler
 

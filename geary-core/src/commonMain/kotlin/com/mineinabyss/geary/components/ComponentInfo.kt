@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.components
 
+import com.mineinabyss.geary.helpers.withSerialName
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClassifier
@@ -9,6 +10,6 @@ import kotlin.reflect.KClassifier
  */
 @Serializable
 @SerialName("geary:component_info")
-public data class ComponentInfo(
+data class ComponentInfo(
     val kClass: KClassifier
 )
