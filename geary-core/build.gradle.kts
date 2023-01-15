@@ -33,6 +33,7 @@ kotlin {
                 implementation(libs.idofront.di)
 
                 api(mylibs.kds)
+                api(mylibs.kermit)
                 api(libs.kotlinx.coroutines)
                 api(libs.kotlinx.serialization.json)
             }

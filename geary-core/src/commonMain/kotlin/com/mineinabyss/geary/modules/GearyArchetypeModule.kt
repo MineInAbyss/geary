@@ -38,6 +38,7 @@ data class GearyArchetypeModule(
         DI.add(this)
         componentProvider.createComponentInfo()
     }
+
     override fun start() {
         engine.start()
     }

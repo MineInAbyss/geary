@@ -1,10 +1,6 @@
 rootProject.name = "geary"
 
 pluginManagement {
-    val kotlinVersion: String by settings
-    val idofrontVersion: String by settings
-    val dokkaVersion: String by settings
-
     repositories {
         gradlePluginPortal()
         maven("https://repo.mineinabyss.com/releases")
@@ -27,20 +23,12 @@ dependencyResolutionManagement {
 
 include(
     "geary-core",
-    "geary-autoscan",
-    "geary-prefabs",
-    "geary-serialization",
-    "geary-uuid",
-    "geary-papermc",
 )
 
-project(":geary-papermc").projectDir = file("./platforms/papermc")
-
-file("./platforms/papermc")
-    .listFiles()!!
-    .filter { it.isDirectory && it.name !in setOf("src", "build") }
-    .forEach {
-        val name = "geary-papermc-${it.name}"
-        include(name)
-        project(":$name").projectDir = it
+// Go through addons directory and load all projects based on file name
+for (addon in file("addons").listFiles()) {
+    if (addon.isDirectory) {
+        include(addon.name)
+        project(":${addon.name}").projectDir = file(addon)
     }
+}

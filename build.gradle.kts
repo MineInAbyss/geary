@@ -5,18 +5,12 @@ plugins {
     alias(libs.plugins.mia.autoversion)
 }
 
-//tasks {
-//    build {
-//        dependsOn(project(":geary-papermc").tasks.build)
-//    }
-//}
 allprojects {
     repositories {
         mavenCentral()
         google()
         maven("https://repo.mineinabyss.com/releases")
         maven("https://repo.papermc.io/repository/maven-public/")
-        maven("https://raw.githubusercontent.com/TheBlackEntity/PlugMan/repository/")
         maven("https://jitpack.io")
     }
 }
@@ -51,7 +45,7 @@ allprojects {
                 }
                 commonMain {
                     dependencies {
-                        implementation(mylibs.kermit)
+//                        implementation(mylibs.kermit)
                     }
                 }
             }
