@@ -22,6 +22,8 @@ subprojects {
 }
 
 allprojects {
+    apply(plugin = "org.jetbrains.dokka")
+
     pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
         kotlin {
             jvm {
