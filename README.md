@@ -7,14 +7,18 @@
 [![Contribute](https://shields.io/badge/Contribute-e57be5?logo=github%20sponsors&style=flat&logoColor=white)](https://wiki.mineinabyss.com/contribute)
 </div>
 
-> **:warning: Notice: Looking for a new maintainer :)**\
+## Overview
+
+<details>
+<summary> :warning: Notice: Looking for a new maintainer </summary>
+
 > This project was built from the ground up by myself, but its scope has finally caught up and I wish to move on and leave it in the hands of a bigger team that can get Geary to a state where others outside of Mine in Abyss can use it.\
 > \
 > If you're interested in building an ECS and find Geary's syntax interesting, I'm currently working on some major cleanup, and documenting usage + backend decisions that will hopefully make it easier to take over or build your own. If you just want a working engine (not using Kotlin), I recommend looking at [flecs](https://github.com/SanderMertens/flecs), otherwise browse through some established Java engines! \
 > \
 > \- Offz
 
-## Overview
+</details>
 
 Geary is an Entity Component System (ECS) written in Kotlin. The engine design is inspired by [flecs](https://github.com/SanderMertens/flecs). It is currently NOT optimized for performance. We use Geary internally for our Minecraft plugins, see [geary-papermc](https://github.com/MineInAbyss/geary-papermc) for more info.
 
