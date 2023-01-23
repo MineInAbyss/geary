@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: MineInAbyss/publish-action@latest
+      - uses: MineInAbyss/publish-action@v2
         with:
           maven-metadata-url: https://repo.mineinabyss.com/releases/com/mineinabyss/geary-core/maven-metadata.xml
           pages-path: build/dokka/htmlMultiModule/
