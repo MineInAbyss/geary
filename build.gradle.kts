@@ -10,7 +10,6 @@ allprojects {
         mavenCentral()
         google()
         maven("https://repo.mineinabyss.com/releases")
-        maven("https://repo.papermc.io/repository/maven-public/")
         maven("https://jitpack.io")
     }
 }

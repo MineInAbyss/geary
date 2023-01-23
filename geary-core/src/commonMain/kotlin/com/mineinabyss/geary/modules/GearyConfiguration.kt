@@ -12,6 +12,7 @@ class GearyConfiguration {
         addon: T,
     ): Module = install(addon, addon.default())
 
+    //TODO this should get or install if not present
     fun <T : GearyAddon<Module>, Module : Any> install(
         addon: T,
         module: Module,
