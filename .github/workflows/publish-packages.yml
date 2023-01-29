@@ -18,7 +18,7 @@ jobs:
         with:
           maven-metadata-url: https://repo.mineinabyss.com/releases/com/mineinabyss/geary-core/maven-metadata.xml
           pages-path: build/dokka/htmlMultiModule/
-          dokka: htmlMultiModule
+          dokka: dokkaHtmlMultiModule
           maven-username: ${{ secrets.MAVEN_PUBLISH_USERNAME }}
           maven-password: ${{ secrets.MAVEN_PUBLISH_PASSWORD }}
 
