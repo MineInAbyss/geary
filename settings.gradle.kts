@@ -23,6 +23,7 @@ dependencyResolutionManagement {
 
 include(
     "geary-core",
+    "geary-catalog",
 )
 
 // Go through addons directory and load all projects based on file name
