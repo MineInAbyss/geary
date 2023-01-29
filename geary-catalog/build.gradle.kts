@@ -9,7 +9,7 @@ catalog {
         rootProject.file("addons").list()
             ?.plus(rootProject.file(".").list()?.filter { it.startsWith("geary") } ?: emptyList())
             ?.forEach { name ->
-                library(name, "com.mineinabyss:$name:$version")
+                library(name.removePrefix("geary-"), "com.mineinabyss:$name:$version")
             }
     }
 }
