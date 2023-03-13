@@ -7,9 +7,11 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.dsl.serialization
 import com.mineinabyss.geary.systems.System
 import kotlinx.serialization.*
+import kotlinx.serialization.modules.polymorphic
 import org.reflections.Reflections
 import org.reflections.util.ClasspathHelper
 import org.reflections.util.ConfigurationBuilder
+import kotlin.reflect.KClass
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubclassOf
 
@@ -70,6 +72,7 @@ class AutoScannerDSL(
                 }
             }
         }
+
         logger.i("Autoscan found components: ${scanned.joinToString { it.simpleName!! }}")
 
         autoScanner.scannedComponents += scanned
@@ -90,4 +93,28 @@ class AutoScannerDSL(
 
         autoScanner.scannedSystems += scanned
     }
+
+
+    /** Registers a polymorphic serializer for this [kClass], scanning for any subclasses. */
+    fun <T: Any> subClassesOf(kClass: KClass<T>) {
+        val scanned = reflections.getSubTypesOf(kClass.java)
+            .asSequence()
+            .map { it.kotlin }
+            .filter { !it.hasAnnotation<ExcludeAutoScan>() }
+
+        geary {
+            serialization {
+                module {
+                    polymorphic(kClass) {
+                        scanned.forEach { component(it) }
+                    }
+                }
+            }
+        }
+
+        logger.i("Autoscan found subclasses for ${kClass.simpleName}: ${scanned.joinToString { it.simpleName!! }}")
+    }
+
+    /** @see subClassesOf */
+    inline fun  <reified T : Any> subClassesOf() = subClassesOf(T::class)
 }
