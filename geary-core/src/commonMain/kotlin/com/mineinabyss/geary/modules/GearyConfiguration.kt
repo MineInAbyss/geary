@@ -5,18 +5,27 @@ import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.GearyAddon
 import com.mineinabyss.geary.addons.dsl.GearyAddonWithDefault
 import com.mineinabyss.geary.addons.dsl.GearyDSL
+import com.mineinabyss.idofront.di.DI
+import kotlin.reflect.KClass
 
 @GearyDSL
 class GearyConfiguration {
-    fun <T : GearyAddonWithDefault<Module>, Module : Any> install(
+    val installedAddons = mutableMapOf<KClass<out GearyAddon<*>>, Any>()
+    inline fun <T : GearyAddonWithDefault<Module>, reified Module : Any> install(
         addon: T,
-    ): Module = install(addon, addon.default())
+    ): Module {
+        val module = DI.getOrNull<Module>()
+        if(module != null) return module
+        return install(addon, addon.default())
+    }
 
-    //TODO this should get or install if not present
-    fun <T : GearyAddon<Module>, Module : Any> install(
+    inline fun <T : GearyAddon<Module>, reified Module : Any> install(
         addon: T,
         module: Module,
-    ): Module = with(addon) { module.install() }.let { module }
+    ): Module = with(addon) {
+        DI.add(module)
+        module.install()
+    }.let { module }
 
     fun namespace(namespace: String, configure: Namespaced.() -> Unit) {
         Namespaced(namespace, this).configure()

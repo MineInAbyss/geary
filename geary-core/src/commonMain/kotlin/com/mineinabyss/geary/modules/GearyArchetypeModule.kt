@@ -13,7 +13,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 val archetypes: GearyArchetypeModule by DI.observe()
 
-data class GearyArchetypeModule(
+open class GearyArchetypeModule(
     val tickDuration: Duration = 50.milliseconds,
 ) : GearyModule {
     override val logger = Logger.withTag("Geary")
@@ -34,8 +34,6 @@ data class GearyArchetypeModule(
     override val components by lazy { Components() }
 
     override fun inject() {
-        DI.add<GearyModule>(this)
-        DI.add(this)
         componentProvider.createComponentInfo()
     }
 
