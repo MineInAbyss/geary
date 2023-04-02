@@ -11,7 +11,7 @@ dependencies {
 
     //TODO remove from platform and move into mylibs
 //    implementation(libs.reflections)
-    implementation("org.reflections:reflections:0.10.2")
+    implementation(libs.reflections)
     implementation(libs.kotlin.reflect)
     implementation(libs.idofront.di)
     implementation(libs.idofront.autoscan)
