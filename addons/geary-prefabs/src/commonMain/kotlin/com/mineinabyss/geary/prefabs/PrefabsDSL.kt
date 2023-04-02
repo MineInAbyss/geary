@@ -22,7 +22,7 @@ class PrefabsDSL(
         loader.addSource(PrefabPath(namespaced.namespace) {
             fileSystem
                 .listRecursively(folder, true)
-                .filter { it.name.endsWith(".yml") }
+                .filter { it.name.contains('.') }
         })
     }
 }

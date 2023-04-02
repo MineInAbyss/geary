@@ -1,12 +1,14 @@
 package com.mineinabyss.geary.helpers.tests
 
 import com.mineinabyss.geary.modules.GearyArchetypeModule
+import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.idofront.di.DI
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import kotlin.time.Duration.Companion.milliseconds
 
 abstract class GearyTest {
@@ -19,6 +21,8 @@ abstract class GearyTest {
 
     fun startEngine() {
         val module = GearyArchetypeModule(tickDuration = 20.milliseconds)
+        DI.add<GearyArchetypeModule>(module)
+        DI.add<GearyModule>(module)
         module.inject()
         geary = module
     }

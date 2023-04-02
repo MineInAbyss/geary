@@ -18,7 +18,7 @@ class PrefabLoader {
     private val manager get() = prefabs.manager
     private val formats get() = serializableComponents.formats
 
-    private val logger = geary.logger
+    private val logger get() = geary.logger
 
     private val readFiles = mutableListOf<PrefabPath>()
 
@@ -28,43 +28,41 @@ class PrefabLoader {
 
     internal fun loadPrefabs() {
         val loaded = readFiles.flatMap { read ->
-            read.get().mapNotNull { file ->
-                loadFromPathOrNull(read.namespace, file)
+            read.get().map { path ->
+                loadFromPath(read.namespace, path).onFailure {
+                    logger.e("Could not read prefab $path:\n\u001B[37m${it.message}")
+                }
             }
         }
-        logger.i("Loaded ${loaded.size} prefabs")
+        logger.i("Loaded ${loaded.count { it.isSuccess }}/${loaded.count()} prefabs")
     }
 
     /** If this entity has a [Prefab] component, clears it and loads components from its file. */
     fun reread(entity: Entity) {
         entity.with { prefab: Prefab, key: PrefabKey ->
             entity.clear()
-            loadFromPathOrNull(key.namespace, prefab.file ?: return, entity)
+            loadFromPath(key.namespace, prefab.file ?: return, entity)
             entity.inheritPrefabs()
         }
     }
 
     /** Registers an entity with components defined in a [path], adding a [Prefab] component. */
-    fun loadFromPathOrNull(namespace: String, path: Path, writeTo: Entity? = null): Entity? {
-        val name = path.name
+    fun loadFromPath(namespace: String, path: Path, writeTo: Entity? = null): Result<Entity> {
         return runCatching {
             val serializer = ListSerializer(PolymorphicSerializer(Component::class))
             val ext = path.name.substringAfterLast('.')
 
             val decoded = formats[ext]?.decodeFromFile(serializer, path)
-                ?: error("Unknown file format $ext")
+                ?: throw IllegalArgumentException("Unknown file format $ext")
             val entity = writeTo ?: entity()
             entity.set(Prefab(path))
             entity.addRelation<DontInherit, Prefab>()
             entity.addRelation<DontInherit, Uuid>()
             entity.setAll(decoded)
 
-            val key = PrefabKey.of(namespace, name)
+            val key = PrefabKey.of(namespace, path.name.substringBeforeLast('.'))
             manager.registerPrefab(key, entity)
             entity
-        }.onFailure {
-            logger.e("Can't read prefab $name from ${path}:")
-            logger.w(it.toString())
-        }.getOrNull()
+        }
     }
 }

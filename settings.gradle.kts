@@ -4,7 +4,7 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         maven("https://repo.mineinabyss.com/releases")
-        maven("https://repo.papermc.io/repository/maven-public/")
+//        maven("https://repo.papermc.io/repository/maven-public/")
     }
 }
 
@@ -16,7 +16,12 @@ dependencyResolutionManagement {
     }
 
     versionCatalogs {
-        create("libs").from("com.mineinabyss:catalog:$idofrontVersion")
+        create("libs") {
+            from("com.mineinabyss:catalog:$idofrontVersion")
+            // Version overrides
+            version("kotlin", "1.8.10")
+            version("reflections", "0.10.2")
+        }
         create("mylibs").from(files("gradle/mylibs.versions.toml"))
     }
 }

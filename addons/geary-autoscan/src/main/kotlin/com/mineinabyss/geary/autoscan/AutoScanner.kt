@@ -18,7 +18,7 @@ interface AutoScanner {
 
     companion object Addon : GearyAddonWithDefault<AutoScanner> {
         override fun default() = object : AutoScanner {
-            private val logger = geary.logger
+            private val logger get() = geary.logger
             override val scannedComponents = mutableSetOf<KClass<*>>()
             override val scannedSystems = mutableSetOf<KClass<*>>()
 
