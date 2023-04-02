@@ -22,6 +22,7 @@ class PrefabsDSL(
         loader.addSource(PrefabPath(namespaced.namespace) {
             fileSystem
                 .listRecursively(folder, true)
+                .filter { it.name.contains('.') }
         })
     }
 }

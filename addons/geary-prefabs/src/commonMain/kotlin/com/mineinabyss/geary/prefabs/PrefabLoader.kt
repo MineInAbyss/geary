@@ -28,13 +28,13 @@ class PrefabLoader {
 
     internal fun loadPrefabs() {
         val loaded = readFiles.flatMap { read ->
-            read.get().mapNotNull { path ->
+            read.get().map { path ->
                 loadFromPath(read.namespace, path).onFailure {
-                    logger.e("Can't read prefab ${path.name} from ${path}:\n${it.cause?.stackTraceToString()}")
-                }.getOrNull()
+                    logger.e("Could not read prefab $path:\n\u001B[37m${it.message}")
+                }
             }
         }
-        logger.i("Loaded ${loaded.size} prefabs")
+        logger.i("Loaded ${loaded.count { it.isSuccess }}/${loaded.count()} prefabs")
     }
 
     /** If this entity has a [Prefab] component, clears it and loads components from its file. */
