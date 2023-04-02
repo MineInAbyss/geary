@@ -16,7 +16,10 @@ dependencyResolutionManagement {
     }
 
     versionCatalogs {
-        create("libs").from("com.mineinabyss:catalog:$idofrontVersion")
+        create("libs") {
+            from("com.mineinabyss:catalog:$idofrontVersion")
+            version("kotlin", "1.8.10")
+        }
         create("mylibs").from(files("gradle/mylibs.versions.toml"))
     }
 }
