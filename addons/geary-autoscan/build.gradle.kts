@@ -9,10 +9,7 @@ dependencies {
     compileOnly(project(":geary-core"))
     compileOnly(project(":geary-serialization"))
 
-    //TODO remove from platform and move into mylibs
-//    implementation(libs.reflections)
     implementation(libs.reflections)
     implementation(libs.kotlin.reflect)
     implementation(libs.idofront.di)
-    implementation(libs.idofront.autoscan)
 }
