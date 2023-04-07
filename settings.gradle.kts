@@ -18,10 +18,6 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             from("com.mineinabyss:catalog:$idofrontVersion")
-            // Version overrides
-            version("kotlin", "1.8.10")
-            version("dokka", "1.8.10")
-            version("reflections", "0.10.2")
         }
         create("mylibs").from(files("gradle/mylibs.versions.toml"))
     }
