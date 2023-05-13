@@ -57,7 +57,7 @@ class AutoScannerDSL(
      */
     fun components() {
         val scanned = reflections
-            .get(Scanners.TypesAnnotated.with(Serializable::class.java).asClass<Class<*>>())
+            .get(Scanners.TypesAnnotated.with(Serializable::class.java).asClass<Class<*>>(classLoader))
             .asSequence()
             .map { it.kotlin }
             .filter { !it.hasAnnotation<ExcludeAutoScan>() }
@@ -83,7 +83,8 @@ class AutoScannerDSL(
      * @see AutoScanner
      */
     fun systems() {
-        val scanned = reflections.getTypesAnnotatedWith(AutoScan::class.java)
+        val scanned = reflections
+            .get(Scanners.TypesAnnotated.with(AutoScan::class.java).asClass<Class<*>>(classLoader))
             .asSequence()
             .map { it.kotlin }
             .filter { !it.hasAnnotation<ExcludeAutoScan>() && it.isSubclassOf(System::class) }
@@ -95,12 +96,12 @@ class AutoScannerDSL(
     /** Registers a polymorphic serializer for this [kClass], scanning for any subclasses. */
     @OptIn(InternalSerializationApi::class)
     fun <T : Any> subClassesOf(kClass: KClass<T>) {
-
         geary {
             serialization {
                 module {
                     polymorphic(kClass) {
-                        val scanned = this@AutoScannerDSL.reflections.getSubTypesOf(kClass.java)
+                        val scanned = this@AutoScannerDSL.reflections
+                            .get(Scanners.SubTypes.of(kClass.java).asClass<Class<*>>(this@AutoScannerDSL.classLoader))
                             .asSequence()
                             .map { it.kotlin }
                             .filter { !it.hasAnnotation<ExcludeAutoScan>() }

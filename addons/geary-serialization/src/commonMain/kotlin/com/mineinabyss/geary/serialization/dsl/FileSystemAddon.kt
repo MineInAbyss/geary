@@ -9,7 +9,6 @@ val fileSystem by DI.observe<FileSystem>()
 interface FileSystemAddon {
     companion object : GearyAddon<FileSystem> {
         override fun FileSystem.install() {
-            DI.add(this)
         }
     }
 }

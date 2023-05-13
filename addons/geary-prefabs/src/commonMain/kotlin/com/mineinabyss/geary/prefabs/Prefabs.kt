@@ -26,7 +26,6 @@ interface Prefabs {
 
 
         override fun Prefabs.install() {
-            DI.add(this)
             geary.pipeline.addSystems(
                 ParseChildOnPrefab(),
                 ParseChildrenOnPrefab(),

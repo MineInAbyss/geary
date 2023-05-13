@@ -12,7 +12,6 @@ object UUIDTracking : GearyAddonWithDefault<UUID2GearyMap> {
     override fun default() = UUID2GearyMap()
 
     override fun UUID2GearyMap.install() {
-        DI.add(this)
         geary.pipeline.addSystems(
             TrackUuidOnAdd(),
             UnTrackUuidOnRemove()
