@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.helpers
 
 import com.mineinabyss.geary.helpers.tests.GearyTest
+import com.mineinabyss.geary.modules.geary
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
 

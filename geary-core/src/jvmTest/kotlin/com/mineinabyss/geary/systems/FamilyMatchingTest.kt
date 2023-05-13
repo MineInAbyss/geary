@@ -7,6 +7,8 @@ import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
+import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.accessors.TargetScope
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
@@ -27,7 +29,7 @@ class FamilyMatchingTest : GearyTest() {
         }
     }
 
-    val root = geary.archetypeProvider.rootArchetype
+    val root = archetypes.archetypeProvider.rootArchetype
     val correctArchetype = root + stringId + intId
 
     init {

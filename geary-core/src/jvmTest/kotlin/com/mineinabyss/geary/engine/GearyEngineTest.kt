@@ -3,6 +3,7 @@ package com.mineinabyss.geary.engine
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.helpers.toGeary
+import com.mineinabyss.geary.modules.geary
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

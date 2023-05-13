@@ -9,6 +9,7 @@ import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
+import com.mineinabyss.geary.modules.archetypes
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
@@ -17,7 +18,7 @@ import org.junit.jupiter.api.Test
 internal class ArchetypeTest : GearyTest() {
     @Nested
     inner class ArchetypeNavigation {
-        val root = geary.archetypeProvider.rootArchetype
+        val root = archetypes.archetypeProvider.rootArchetype
 
         @Test
         fun `archetype ids assigned correctly`() {

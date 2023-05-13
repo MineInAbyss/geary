@@ -4,6 +4,8 @@ import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
+import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.accessors.TargetScope
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -25,8 +27,8 @@ internal class QueryManagerTest : GearyTest() {
     @Test
     fun `empty event handler`() {
         geary.pipeline.addSystem(EventListener)
-        (geary.archetypeProvider.rootArchetype.type in EventListener.event.family) shouldBe true
-        geary.archetypeProvider.rootArchetype.eventHandlers.map { it.parentListener } shouldContain EventListener
+        (archetypes.archetypeProvider.rootArchetype.type in EventListener.event.family) shouldBe true
+        archetypes.archetypeProvider.rootArchetype.eventHandlers.map { it.parentListener } shouldContain EventListener
         entity {
             set(TestComponent())
         }.callEvent()

@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.modules
 
 import co.touchlab.kermit.Logger
+import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.datatypes.maps.HashTypeMap
 import com.mineinabyss.geary.engine.Components
 import com.mineinabyss.geary.engine.PipelineImpl
@@ -11,9 +12,9 @@ import com.mineinabyss.idofront.di.DI
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-val archetypes: GearyArchetypeModule by DI.observe()
+val archetypes: ArchetypeEngineModule by DI.observe()
 
-open class GearyArchetypeModule(
+open class ArchetypeEngineModule(
     val tickDuration: Duration = 50.milliseconds,
 ) : GearyModule {
     override val logger = Logger.withTag("Geary")
@@ -33,11 +34,24 @@ open class GearyArchetypeModule(
 
     override val components by lazy { Components() }
 
-    override fun inject() {
-        componentProvider.createComponentInfo()
-    }
+    companion object: GearyModuleProviderWithDefault<ArchetypeEngineModule> {
+        override fun default(): ArchetypeEngineModule {
+            return ArchetypeEngineModule()
+        }
 
-    override fun start() {
-        engine.start()
+        override fun init(module: ArchetypeEngineModule) {
+            DI.add<ArchetypeEngineModule>(module)
+            DI.add<GearyModule>(module)
+            module.componentProvider.createComponentInfo()
+        }
+
+        override fun start(module: ArchetypeEngineModule) {
+            module {
+                on(GearyPhase.ENABLE) {
+                    module.engine.start()
+                }
+            }
+            geary.pipeline.runStartupTasks()
+        }
     }
 }

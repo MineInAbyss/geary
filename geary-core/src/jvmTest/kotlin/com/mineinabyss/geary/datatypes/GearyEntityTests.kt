@@ -6,6 +6,7 @@ import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
+import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -36,7 +37,7 @@ internal class GearyEntityTests : GearyTest() {
         entity {
             add<String>()
             set(1)
-        }.type.getArchetype() shouldBe geary.archetypeProvider.rootArchetype + componentId<String>() + componentId<Int>() + (HOLDS_DATA or componentId<Int>())
+        }.type.getArchetype() shouldBe archetypes.archetypeProvider.rootArchetype + componentId<String>() + componentId<Int>() + (HOLDS_DATA or componentId<Int>())
     }
 
     @Test
@@ -44,7 +45,7 @@ internal class GearyEntityTests : GearyTest() {
         entity {
             set("Test")
             remove<String>()
-        }.type.getArchetype() shouldBe geary.archetypeProvider.rootArchetype
+        }.type.getArchetype() shouldBe archetypes.archetypeProvider.rootArchetype
     }
 
     @Test
@@ -52,7 +53,7 @@ internal class GearyEntityTests : GearyTest() {
         entity {
             add<String>()
             set("Test")
-        }.type.getArchetype() shouldBe geary.archetypeProvider.rootArchetype + componentId<String>() + (componentId<String>() or HOLDS_DATA)
+        }.type.getArchetype() shouldBe archetypes.archetypeProvider.rootArchetype + componentId<String>() + (componentId<String>() or HOLDS_DATA)
     }
 
     @Test

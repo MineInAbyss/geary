@@ -61,7 +61,7 @@ class PrefabLoader {
             entity.setAll(decoded)
 
             val key = PrefabKey.of(namespace, path.name.substringBeforeLast('.'))
-            manager.registerPrefab(key, entity)
+            entity.set(key)
             entity
         }
     }

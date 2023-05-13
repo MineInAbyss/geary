@@ -6,6 +6,8 @@ import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.helpers.toGeary
+import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.modules.geary
 import io.kotest.matchers.collections.shouldBeUnique
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.awaitAll
@@ -14,14 +16,16 @@ import org.junit.jupiter.api.Test
 import kotlin.time.measureTime
 
 class AsyncArchetypeTests : GearyTest() {
+    private val concurrentEntityAmount = 10000
+
     @Test
     fun `add entities concurrently`() = runTest {
-        val arc = geary.archetypeProvider.getArchetype(EntityType(ulongArrayOf(componentId<String>() or HOLDS_DATA)))
-        concurrentOperation(10000) {
-            val rec = geary.records[geary.entityProvider.create()]
+        val arc = archetypes.archetypeProvider.getArchetype(EntityType(ulongArrayOf(componentId<String>() or HOLDS_DATA)))
+        concurrentOperation(concurrentEntityAmount) {
+            val rec = archetypes.records[geary.entityProvider.create()]
             arc.addEntityWithData(rec, arrayOf("Test"), rec.entity)
         }.awaitAll()
-        arc.entities.size shouldBe 10000
+        arc.entities.size shouldBe concurrentEntityAmount
         arc.entities.shouldBeUnique()
     }
 
@@ -61,11 +65,11 @@ class AsyncArchetypeTests : GearyTest() {
         println(measureTime {
             for (i in 0 until iters) {
 //            concurrentOperation(iters) { i ->
-                geary.archetypeProvider.getArchetype(EntityType((0uL..i.toULong()).toList()))
-                println("Creating arc $i, total: ${geary.archetypeProvider.count}")
+                archetypes.archetypeProvider.getArchetype(EntityType((0uL..i.toULong()).toList()))
+                println("Creating arc $i, total: ${archetypes.archetypeProvider.count}")
 //            }.awaitAll()
             }
         })
-        geary.archetypeProvider.count shouldBe iters + 1
+        archetypes.archetypeProvider.count shouldBe iters + 1
     }
 }
