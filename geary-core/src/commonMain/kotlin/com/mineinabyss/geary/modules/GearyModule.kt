@@ -7,6 +7,24 @@ import com.mineinabyss.idofront.di.DI
 
 val geary: GearyModule by DI.observe()
 
+fun <T : GearyModule> geary(
+    moduleProvider: GearyModuleProviderWithDefault<T>,
+    configuration: GearyConfiguration.() -> Unit = {}
+) {
+    val module = moduleProvider.default()
+    geary(moduleProvider, module, configuration)
+}
+
+fun <T : GearyModule> geary(
+    moduleProvider: GearyModuleProvider<T>,
+    module: T,
+    configuration: GearyConfiguration.() -> Unit = {}
+) {
+    moduleProvider.init(module)
+    module.invoke(configuration)
+    moduleProvider.start(module)
+}
+
 @GearyDSL
 interface GearyModule {
     val logger: Logger
@@ -23,11 +41,10 @@ interface GearyModule {
     val eventRunner: EventRunner
     val pipeline: Pipeline
 
-    fun inject()
-    fun start()
-
     operator fun invoke(configure: GearyConfiguration.() -> Unit) {
         GearyConfiguration().apply(configure)
     }
+
+    companion object
 }
 

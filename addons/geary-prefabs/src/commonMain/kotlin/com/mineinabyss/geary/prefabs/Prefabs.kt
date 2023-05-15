@@ -9,6 +9,7 @@ import com.mineinabyss.geary.prefabs.configuration.systems.ParseChildOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.systems.ParseChildrenOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.systems.ParseRelationOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.systems.ParseRelationWithDataSystem
+import com.mineinabyss.geary.prefabs.systems.TrackPrefabsByKeySystem
 import com.mineinabyss.idofront.di.DI
 
 val prefabs by DI.observe<Prefabs>()
@@ -25,12 +26,12 @@ interface Prefabs {
 
 
         override fun Prefabs.install() {
-            DI.add(this)
             geary.pipeline.addSystems(
                 ParseChildOnPrefab(),
                 ParseChildrenOnPrefab(),
                 ParseRelationOnPrefab(),
                 ParseRelationWithDataSystem(),
+                TrackPrefabsByKeySystem(),
             )
             geary.pipeline.intercept(GearyPhase.INIT_ENTITIES) {
                 loader.loadPrefabs()

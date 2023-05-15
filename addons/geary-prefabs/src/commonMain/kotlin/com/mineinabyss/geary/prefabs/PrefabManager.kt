@@ -17,7 +17,6 @@ class PrefabManager {
     /** Registers a prefab with Geary. */
     fun registerPrefab(key: PrefabKey, prefab: Entity) {
         keyToPrefab[key] = prefab
-        prefab.set(key)
     }
 
     /** Gets all prefabs registered under a certain [namespace]. */

@@ -4,6 +4,7 @@ import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.EventScope
 import com.mineinabyss.geary.systems.accessors.SourceScope

@@ -7,9 +7,6 @@ abstract class TickingEngine : Engine {
 
     private var started: Boolean = false
 
-    /** Ticks the entire engine. Implementations may call at different speeds. */
-    abstract suspend fun tick(currentTick: Long)
-
     open fun start(): Boolean {
         if (!started) {
             scheduleSystemTicking()
