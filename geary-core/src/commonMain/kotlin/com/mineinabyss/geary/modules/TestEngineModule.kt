@@ -1,19 +1,27 @@
 package com.mineinabyss.geary.modules
 
+import com.mineinabyss.geary.engine.archetypes.EntityByArchetypeProvider
+
 /**
  * An engine module that does initializes the engine but does not start it.
  *
  * No pipeline tasks are run, and the engine won't be scheduled for ticking.
  * Engine ticks may still be called manually.
  */
-object TestEngineModule: GearyModuleProviderWithDefault<ArchetypeEngineModule> {
-    override fun init(module: ArchetypeEngineModule) {
-        ArchetypeEngineModule.init(module)
-    }
+class TestEngineModule(
+    reuseIDsAfterRemoval: Boolean = true,
+): ArchetypeEngineModule() {
+    override val entityProvider = EntityByArchetypeProvider(reuseIDsAfterRemoval)
 
-    override fun start(module: ArchetypeEngineModule) = Unit
+    companion object: GearyModuleProviderWithDefault<TestEngineModule> {
+        override fun init(module: TestEngineModule) {
+            ArchetypeEngineModule.init(module)
+        }
 
-    override fun default(): ArchetypeEngineModule {
-        return ArchetypeEngineModule()
+        override fun start(module: TestEngineModule) = Unit
+
+        override fun default(): TestEngineModule {
+            return TestEngineModule()
+        }
     }
 }

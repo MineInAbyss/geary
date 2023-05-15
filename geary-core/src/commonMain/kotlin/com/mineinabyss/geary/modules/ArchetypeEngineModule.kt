@@ -34,7 +34,7 @@ open class ArchetypeEngineModule(
 
     override val components by lazy { Components() }
 
-    companion object: GearyModuleProviderWithDefault<ArchetypeEngineModule> {
+    companion object : GearyModuleProviderWithDefault<ArchetypeEngineModule> {
         override fun default(): ArchetypeEngineModule {
             return ArchetypeEngineModule()
         }

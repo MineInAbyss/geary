@@ -13,7 +13,9 @@ import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.modules.archetypes
 import kotlinx.atomicfu.atomic
 
-class EntityByArchetypeProvider : EntityProvider {
+class EntityByArchetypeProvider(
+    private val reuseIDsAfterRemoval: Boolean = true,
+) : EntityProvider {
     private val records: TypeMap get() = archetypes.records
     private val archetypeProvider: ArchetypeProvider get() = archetypes.archetypeProvider
 
@@ -21,11 +23,11 @@ class EntityByArchetypeProvider : EntityProvider {
     private val currId = atomic(0L)
 
     override fun create(initialComponents: Collection<Component>): GearyEntity {
-        val entity = try {
-            removedEntities.pop()
-        } catch (e: Exception) {
-            currId.getAndIncrement().toGeary()
-        }
+        val entity: GearyEntity = if (reuseIDsAfterRemoval) {
+            runCatching { removedEntities.pop() }
+                .getOrElse { currId.getAndIncrement().toGeary() }
+        } else currId.getAndIncrement().toGeary()
+
         createRecord(entity, initialComponents)
         return entity
     }
