@@ -92,7 +92,6 @@ A WIP wiki can be found at [wiki.mineinabyss.com](https://wiki.mineinabyss.com/g
 
 As the project matures, our primary goal is to make it useful to more people. Here are a handful of features we hope to achieve:
 - (Ongoing) Multiplatform support, with js, jvm, and native targets
-- (Ongoing) Monitoring tools, such as a web GUI
 - Optimize key bottlenecks and benchmark the engine
 - Component data migrations
 - Complex queries (including relations like parent/child)

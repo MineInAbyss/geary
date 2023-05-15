@@ -12,7 +12,7 @@ import kotlin.time.Duration
  * The default implementation of Geary's Engine.
  *
  * This engine uses [Archetype]s. Each component is an entity itself with an id associated with it.
- * We keep track of each entity's components in the form of it's [EntityType] stored in the [records].
+ * We keep track of each entity's components in the form of its [EntityType] stored in the [records].
  *
  * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */

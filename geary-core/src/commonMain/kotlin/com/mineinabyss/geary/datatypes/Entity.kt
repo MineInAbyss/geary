@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
 /**
  * A wrapper around [EntityId] that gets inlined to just a long (no performance degradation since no boxing occurs).
  *
- * Provides some useful functions so we aren't forced to go through [Engine] every time we want to do some things.
+ * Provides some useful functions, so we aren't forced to go through [Engine] every time we want to do some things.
  */
 @Serializable
 @JvmInline
