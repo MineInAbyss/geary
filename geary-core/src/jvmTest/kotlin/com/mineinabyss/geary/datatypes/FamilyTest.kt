@@ -1,5 +1,3 @@
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
-
 package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.components.relations.Persists

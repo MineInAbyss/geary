@@ -1,9 +1,6 @@
 package com.mineinabyss.geary.datatypes
 
-actual class BitSet {
-    actual constructor() {
-    }
-
+actual class BitSet actual constructor() {
     actual fun isEmpty(): Boolean {
         TODO("Not yet implemented")
     }

@@ -15,7 +15,7 @@ import kotlin.time.Duration.Companion.milliseconds
 val archetypes: ArchetypeEngineModule by DI.observe()
 
 open class ArchetypeEngineModule(
-    val tickDuration: Duration = 50.milliseconds,
+    tickDuration: Duration = 50.milliseconds,
 ) : GearyModule {
     override val logger = Logger.withTag("Geary")
     override val queryManager = ArchetypeQueryManager()

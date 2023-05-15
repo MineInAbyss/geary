@@ -157,15 +157,13 @@ data class Archetype(
      * Add a [componentId] to an entity represented by [record], moving it to the appropriate archetype.
      *
      * @return Whether the record has changed.
-     *
-     * @see Engine.addComponentFor
      */
     internal fun addComponent(
         record: Record,
         componentId: ComponentId,
         callEvent: Boolean,
     ): Boolean {
-        // if already present in this archetype, stop here since we dont need to update any data
+        // if already present in this archetype, stop here since we don't need to update any data
         if (contains(componentId)) return false
 
         val moveTo = this + (componentId.withoutRole(HOLDS_DATA))
@@ -187,8 +185,6 @@ data class Archetype(
      * Will ensure this component without [HOLDS_DATA] is always present.
      *
      * @return Whether the record has changed.
-     *
-     * @see Engine.setComponentFor
      */
     internal fun setComponent(
         record: Record,
@@ -233,8 +229,6 @@ data class Archetype(
      * Removes a [component] from an [record], moving it to the appropriate archetype.
      *
      * @return Whether the record has changed.
-     *
-     * @see Engine.removeComponentFor
      */
     internal fun removeComponent(
         record: Record,
@@ -323,7 +317,7 @@ data class Archetype(
             val replacement = ids[lastIndex]
             ids[row] = replacement
             componentData.forEach { it[row] = it.last() }
-            records.get(replacement.toGeary()).apply {
+            records[replacement.toGeary()].apply {
                 this.archetype = this@Archetype
                 this.row = row
             }

@@ -31,7 +31,7 @@ class PipelineImpl : Pipeline {
     }
     override fun addSystem(system: System) {
         val resultSystem = onSystemRegister.fold(system) { acc, func -> func(acc) ?: return }
-        // Track systems right at startup since they are likely going to tick very soon anyway and we don't care about
+        // Track systems right at startup since they are likely going to tick very soon anyway, and we don't care about
         // any hiccups at that point.
         when (resultSystem) {
             is RepeatingSystem -> {

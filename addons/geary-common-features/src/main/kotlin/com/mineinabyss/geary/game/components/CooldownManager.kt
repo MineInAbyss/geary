@@ -8,7 +8,7 @@ import kotlin.time.Duration
  * > geary:cooldowns
  *
  * A component that manages cooldowns for an entity. Each cooldown has a unique key, but may be used to keep track of
- * anything. Typically a good idea to persist this component.
+ * anything. Typically, a good idea to persist this component.
  *
  * @property completionTime A map of cooldown keys to the value of [System.currentTimeMillis] when they are complete.
  * @property incompleteCooldowns Calculated map of incomplete cooldowns.
@@ -53,7 +53,7 @@ data class CooldownManager(
      *
      * @param key The key for this cooldown.
      * @param length The length of this cooldown in milliseconds.
-     * @param run What to run if this cooldown is complete. Returns whether or not to start the cooldown.
+     * @param run What to run if this cooldown is complete. Returns whether to start the cooldown.
      *
      * @return whether [run] was executed.
      */

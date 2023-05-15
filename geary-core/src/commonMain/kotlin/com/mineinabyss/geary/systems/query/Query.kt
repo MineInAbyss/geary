@@ -53,7 +53,6 @@ abstract class Query : AccessorHolder(), Iterable<TargetScope> {
         }
     }
 
-    @Suppress("unused") // Specifically
     @Deprecated("Likely trying to access component off entity", ReplaceWith("entity.get()"))
     protected inline fun <reified T : Component> TargetScope.get(): ComponentAccessor<T> =
         error("Cannot change query at runtime")

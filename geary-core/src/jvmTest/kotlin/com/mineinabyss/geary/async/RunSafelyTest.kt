@@ -1,12 +1,8 @@
 package com.mineinabyss.geary.async
 
-import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.systems.RepeatingSystem
 import com.mineinabyss.geary.systems.accessors.TargetScope
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.runTest
 
 class RunSafelyTest: GearyTest() {
     class CheckAsyncSystem : RepeatingSystem() {

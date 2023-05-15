@@ -20,7 +20,7 @@ class TypeRolesTest {
 
     @Test
     fun withRoleTest() {
-        var actual = 1uL
+        val actual = 1uL
         actual.withRole(HOLDS_DATA) shouldBe (actual or HOLDS_DATA)
     }
 
