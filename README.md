@@ -50,8 +50,9 @@ class UpdatePositionSystem : TickingSystem(interval = 20.milliseconds) {
 
 fun main() {
     // Set up geary
-    geary {
-        //coming soon!
+    geary(ArchetypeEngineModule) {
+        // configure engine here
+        install(Prefabs)
     }
 
     geary.pipeline.addSystem(UpdatePositionSystem())
