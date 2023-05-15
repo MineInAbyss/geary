@@ -44,11 +44,11 @@ open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine(
             pipeline.getRepeatingInExecutionOrder()
                 .filter { currentTick % (it.interval / tickDuration).toInt().coerceAtLeast(1) == 0L }
                 .also { logger.v("Ticking engine with systems $it") }
-                .forEach {
+                .forEach { system ->
                     runCatching {
-                        it.runSystem()
+                        system.runSystem()
                     }.onFailure {
-                        logger.e("Error while running system ${it::class.simpleName}")
+                        logger.e("Error while running system ${system::class.simpleName}")
                         it.printStackTrace()
                     }
                 }
