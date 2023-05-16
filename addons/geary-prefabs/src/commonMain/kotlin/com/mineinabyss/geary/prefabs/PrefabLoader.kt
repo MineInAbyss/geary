@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.prefabs
 
 import com.benasher44.uuid.Uuid
-import com.mineinabyss.geary.components.relations.DontInherit
+import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.entity
@@ -56,8 +56,8 @@ class PrefabLoader {
                 ?: throw IllegalArgumentException("Unknown file format $ext")
             val entity = writeTo ?: entity()
             entity.set(Prefab(path))
-            entity.addRelation<DontInherit, Prefab>()
-            entity.addRelation<DontInherit, Uuid>()
+            entity.addRelation<NoInherit, Prefab>()
+            entity.addRelation<NoInherit, Uuid>()
             entity.setAll(decoded)
 
             val key = PrefabKey.of(namespace, path.name.substringBeforeLast('.'))
