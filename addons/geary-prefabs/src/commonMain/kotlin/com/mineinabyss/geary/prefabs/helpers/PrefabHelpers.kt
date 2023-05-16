@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.prefabs.helpers
 
-import com.mineinabyss.geary.components.relations.DontInherit
+import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.addParent
@@ -16,7 +16,7 @@ fun Entity.addPrefab(prefab: Entity) {
     addRelation<InstanceOf>(prefab)
     //TODO this isn't copying over any relations
     val comp = prefab.getAll().toMutableSet()
-    prefab.getRelationsWithData<DontInherit?, Any>().forEach {
+    prefab.getRelationsWithData<NoInherit?, Any>().forEach {
         comp -= it.targetData
     }
     prefab.children.forEach { it.addParent(this) }

@@ -10,7 +10,7 @@ kotlin {
 
     }
     sourceSets {
-        commonMain {
+        val commonMain by getting {
             dependencies {
                 compileOnly(mylibs.okio)
                 compileOnly(mylibs.uuid)
@@ -20,6 +20,18 @@ kotlin {
                 compileOnly(project(":geary-core"))
                 compileOnly(project(":geary-serialization"))
                 implementation(libs.idofront.di)
+            }
+        }
+
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotest.assertions)
+                implementation(libs.kotest.property)
+                implementation(libs.idofront.di)
+                implementation(project(":geary-core"))
+                implementation(project(":geary-serialization"))
             }
         }
     }
