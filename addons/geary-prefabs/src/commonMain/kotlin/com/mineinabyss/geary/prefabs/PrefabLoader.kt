@@ -34,6 +34,7 @@ class PrefabLoader {
                 }
             }
         }
+        loaded.forEach { it.getOrNull()?.inheritPrefabs() }
         logger.i("Loaded ${loaded.count { it.isSuccess }}/${loaded.count()} prefabs")
     }
 
