@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.prefabs
 
+import co.touchlab.kermit.Severity
 import com.benasher44.uuid.Uuid
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.Component
@@ -30,7 +31,10 @@ class PrefabLoader {
         val loaded = readFiles.flatMap { read ->
             read.get().map { path ->
                 loadFromPath(read.namespace, path).onFailure {
-                    logger.e("Could not read prefab $path:\n\u001B[37m${it.message}")
+                    if (logger.config.minSeverity <= Severity.Debug)
+                        logger.e("Could not read prefab $path:\n\u001B[37m${it.stackTraceToString()}")
+                    else
+                        logger.e("Could not read prefab $path:\n\u001B[37m${it.message}")
                 }
             }
         }
