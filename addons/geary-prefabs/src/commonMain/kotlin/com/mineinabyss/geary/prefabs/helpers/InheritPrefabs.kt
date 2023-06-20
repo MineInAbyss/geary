@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.prefabs.helpers
 
 import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 
@@ -13,9 +14,12 @@ fun Entity.inheritPrefabs(instances: Set<Entity> = setOf()) {
         error("Circular dependency found while loading prefabs for ${get<PrefabKey>()}, chain was: $instances")
     val add = get<InheritPrefabs>() ?: return
     remove<InheritPrefabs>()
-    add.from.mapNotNull { it.toEntityOrNull() }
-        .forEach { parent ->
-            parent.inheritPrefabs(instances + this)
-            addPrefab(parent)
+    add.from.mapNotNull { key ->
+        key.toEntityOrNull().also {
+            if (it == null) geary.logger.w("Prefab ${get<PrefabKey>()} could not inherit prefab $key, it does not exist")
         }
+    }.forEach { parent ->
+        parent.inheritPrefabs(instances + this)
+        addPrefab(parent)
+    }
 }

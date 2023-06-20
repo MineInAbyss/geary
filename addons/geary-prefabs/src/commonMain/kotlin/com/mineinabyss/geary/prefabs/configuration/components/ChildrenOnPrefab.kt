@@ -14,9 +14,8 @@ import kotlin.jvm.JvmInline
  *
  * The keys will be used to set an extra [EntityName] component.
  */
-@JvmInline
 @Serializable
 @SerialName("geary:children")
-value class ChildrenOnPrefab(
-    val nameToComponents: Map<String, List<@Polymorphic Component>> //GearyEntity//? = null
+class ChildrenOnPrefab(
+    val nameToComponents: Map<String, List<@Polymorphic Component>>
 )
