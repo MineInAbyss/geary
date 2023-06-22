@@ -10,5 +10,5 @@ import kotlinx.coroutines.CoroutineScope
 interface Engine : CoroutineScope {
 
     /** Ticks the entire engine. Implementations may call at different speeds. */
-    suspend fun tick(currentTick: Long)
+    fun tick(currentTick: Long)
 }

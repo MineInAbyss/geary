@@ -24,7 +24,7 @@ open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine(
         (CoroutineScope(Dispatchers.Default) + CoroutineName("Geary Engine")).coroutineContext
 
     /** Describes how to individually tick each system */
-    protected open suspend fun RepeatingSystem.runSystem() {
+    protected open fun RepeatingSystem.runSystem() {
         doTick()
     }
 
@@ -38,23 +38,18 @@ open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine(
         }
     }
 
-    override suspend fun tick(currentTick: Long): Unit = coroutineScope {
+    override fun tick(currentTick: Long) {
         // Create a job but don't start it
-        val tickJob = launch(start = CoroutineStart.LAZY) {
-            pipeline.getRepeatingInExecutionOrder()
-                .filter { currentTick % (it.interval / tickDuration).toInt().coerceAtLeast(1) == 0L }
-                .also { logger.v("Ticking engine with systems $it") }
-                .forEach { system ->
-                    runCatching {
-                        system.runSystem()
-                    }.onFailure {
-                        logger.e("Error while running system ${system::class.simpleName}")
-                        it.printStackTrace()
-                    }
+        pipeline.getRepeatingInExecutionOrder()
+            .filter { currentTick % (it.interval / tickDuration).toInt().coerceAtLeast(1) == 0L }
+            .also { logger.v("Ticking engine with systems $it") }
+            .forEach { system ->
+                runCatching {
+                    system.runSystem()
+                }.onFailure {
+                    logger.e("Error while running system ${system::class.simpleName}")
+                    it.printStackTrace()
                 }
-        }
-
-        // Tick all systems
-        tickJob.join()
+            }
     }
 }
