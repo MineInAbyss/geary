@@ -8,10 +8,7 @@ import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Engine
-import com.mineinabyss.geary.helpers.component
-import com.mineinabyss.geary.helpers.componentId
-import com.mineinabyss.geary.helpers.componentIdWithNullable
-import com.mineinabyss.geary.helpers.temporaryEntity
+import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import kotlinx.serialization.Serializable
@@ -211,7 +208,6 @@ value class Entity(val id: EntityId) {
     /** @see has */
     inline fun <reified T : Component> has(kClass: KClass<out T>): Boolean =
         has(componentId(kClass))
-
 
     /** Checks whether this entity has a [component], regardless of it holding data. */
     fun has(component: ComponentId): Boolean =

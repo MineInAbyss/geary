@@ -39,8 +39,6 @@ data class Archetype(
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     private val ids: IdList = IdList()
-    private val queuedRemoval = mutableListOf<Int>()
-    private val queueRemoval = SynchronizedObject()
 
     @PublishedApi
     internal var isIterating: Boolean = false
@@ -298,12 +296,6 @@ data class Archetype(
         } ?: emptyList()
     }
 
-//    internal fun scheduleRemoveRow(row: Int) {
-//        synchronized(queueRemoval) {
-//            queuedRemoval.add(row)
-//        }
-//    }
-
     /**
      * Removes the entity at a [row] in this archetype, notifying running archetype iterators.
      *
@@ -344,30 +336,9 @@ data class Archetype(
     }
 
     // ==== Iterators ====
-
-//    /** Stops tracking a running [iterator]. */
-//    internal fun finalizeIterator(iterator: ArchetypeIterator) {
-//        runningIterators.remove(iterator)
-//    }
-
     /** Creates and tracks an [ArchetypeIterator] for a query. */
     @PublishedApi
     internal fun iteratorFor(query: GearyQuery): ArchetypeIterator {
         return ArchetypeIterator(this, query)
     }
-
-//    /** Removes any queued up entity deletions. */
-//    @PublishedApi
-//    internal fun cleanup() {
-//        synchronized(queueRemoval) {
-//            if (!isIterating)
-//                queuedRemoval.sort()
-//            // Since the rows were added in order while iterating, the list is always sorted,
-//            // so we don't worry about moving rows
-//            while (queuedRemoval.isNotEmpty()) {
-//                val last = queuedRemoval.removeLast()
-//                removeEntity(last)
-//            }
-//        }
-//    }
 }
