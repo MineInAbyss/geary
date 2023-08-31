@@ -30,8 +30,8 @@ kotlin {
                 implementation(mylibs.atomicfu)
                 implementation(libs.kotlin.reflect)
                 implementation(libs.kotlinx.serialization.cbor)
-                implementation(libs.idofront.di)
 
+                api(libs.idofront.di)
                 api(mylibs.kds)
                 api(mylibs.kermit)
                 api(libs.kotlinx.coroutines)

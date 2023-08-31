@@ -1,4 +1,4 @@
-package test
+package com.mineinabyss.geary.benchmarks
 
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit

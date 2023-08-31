@@ -2,7 +2,7 @@ package com.mineinabyss.geary.modules
 
 import co.touchlab.kermit.Logger
 import com.mineinabyss.geary.addons.GearyPhase
-import com.mineinabyss.geary.datatypes.maps.HashTypeMap
+import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.engine.Components
 import com.mineinabyss.geary.engine.PipelineImpl
 import com.mineinabyss.geary.engine.archetypes.*
@@ -29,7 +29,7 @@ open class ArchetypeEngineModule(
     override val entityProvider = EntityByArchetypeProvider()
     override val componentProvider = ComponentAsEntityProvider()
 
-    val records = HashTypeMap()
+    val records = ArrayTypeMap()
     val archetypeProvider = SimpleArchetypeProvider()
 
     override val components by lazy { Components() }

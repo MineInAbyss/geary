@@ -1,10 +1,10 @@
 package com.mineinabyss.geary.engine.archetypes.operations
 
-import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityMutateOperations
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
+import com.mineinabyss.geary.modules.archetypes
 
 class ArchetypeMutateOperations : EntityMutateOperations {
     private val records: TypeMap get() = archetypes.records
@@ -42,8 +42,8 @@ class ArchetypeMutateOperations : EntityMutateOperations {
         }
 
     override fun clearEntity(entity: Entity) {
-        val rec = records[entity]
-        rec.archetype.removeEntity(rec.row)
-        archetypeProvider.rootArchetype.addEntityWithData(rec, arrayOf(), entity)
+        val record = records[entity]
+        record.archetype.removeEntity(record.row)
+        archetypeProvider.rootArchetype.createWithoutData(entity, record)
     }
 }

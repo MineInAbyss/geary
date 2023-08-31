@@ -7,11 +7,15 @@ import com.mineinabyss.geary.engine.archetypes.Archetype
  * Inlined class that acts as a map of components to archetypes. Uses archetype ids for better performance.
  */
 class CompId2ArchetypeMap {
-    val inner: MutableMap<Long, Archetype> = mutableMapOf()
-    operator fun get(id: GearyComponentId): Archetype? = inner[id.toLong()]
+    val inner: MutableMap<ULong, Archetype> = mutableMapOf()
+    operator fun get(id: GearyComponentId): Archetype? = inner[id]
     operator fun set(id: GearyComponentId, archetype: Archetype) {
-        inner[id.toLong()] = archetype
+        inner[id] = archetype
     }
 
-    operator fun contains(id: GearyComponentId): Boolean = inner.containsKey(id.toLong())
+    operator fun contains(id: GearyComponentId): Boolean = inner.containsKey(id)
+
+    inline fun getOrPut(id: GearyComponentId, default: () -> Archetype): Archetype {
+        return inner.getOrPut(id, default)
+    }
 }

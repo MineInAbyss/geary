@@ -2,9 +2,6 @@ package com.mineinabyss.geary.systems.accessors.type
 
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.Record
-import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.datatypes.family.family
-import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 

@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.engine.archetypes
 
-import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityType
+import com.mineinabyss.geary.modules.archetypes
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 
@@ -16,7 +16,7 @@ class SimpleArchetypeProvider : ArchetypeProvider {
     }
     override val count: Int get() = trackedArchetypes.size
 
-    private val trackedArchetypes by lazy { mutableListOf(rootArchetype) }
+    private val trackedArchetypes by lazy { mutableListOf<Archetype>(rootArchetype) }
     private val archetypeWriteLock = SynchronizedObject()
 
 
@@ -30,7 +30,7 @@ class SimpleArchetypeProvider : ArchetypeProvider {
     }
 
     override fun getArchetype(entityType: EntityType): Archetype = synchronized(archetypeWriteLock) {
-        var node = rootArchetype
+        var node: Archetype = rootArchetype
         entityType.forEach { compId ->
             node = node.componentAddEdges[compId] ?: createArchetype(node, compId)
         }

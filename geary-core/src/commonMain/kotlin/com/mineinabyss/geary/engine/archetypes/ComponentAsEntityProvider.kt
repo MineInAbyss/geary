@@ -1,10 +1,10 @@
 package com.mineinabyss.geary.engine.archetypes
 
 import com.mineinabyss.geary.components.ComponentInfo
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.maps.ClassToComponentMap
 import com.mineinabyss.geary.engine.ComponentProvider
+import com.mineinabyss.geary.modules.geary
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlin.reflect.KClass
@@ -33,7 +33,8 @@ class ComponentAsEntityProvider : ComponentProvider {
 
     private fun registerComponentIdForClass(kClass: KClass<*>): ComponentId {
         logger.v("Registering new component: ${kClass.simpleName}")
-        val compEntity = entityProvider.create(initialComponents = listOf(ComponentInfo(kClass)))
+        val compEntity = entityProvider.create()
+        compEntity.set(ComponentInfo(kClass), noEvent = true)
         classToComponentMap[kClass] = compEntity.id
         return compEntity.id
     }

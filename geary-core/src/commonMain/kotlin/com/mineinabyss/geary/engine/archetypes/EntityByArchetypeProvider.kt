@@ -3,10 +3,12 @@ package com.mineinabyss.geary.engine.archetypes
 import com.mineinabyss.geary.components.CouldHaveChildren
 import com.mineinabyss.geary.components.events.EntityRemoved
 import com.mineinabyss.geary.components.events.SuppressRemoveEvent
-import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.datatypes.EntityStack
+import com.mineinabyss.geary.datatypes.EntityType
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityProvider
-import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.parents
 import com.mineinabyss.geary.helpers.removeParent
 import com.mineinabyss.geary.helpers.toGeary
@@ -16,19 +18,18 @@ import kotlinx.atomicfu.atomic
 class EntityByArchetypeProvider(
     private val reuseIDsAfterRemoval: Boolean = true,
 ) : EntityProvider {
-    private val records: TypeMap get() = archetypes.records
-    private val archetypeProvider: ArchetypeProvider get() = archetypes.archetypeProvider
+    private val records: TypeMap by lazy { archetypes.records }
+    private val archetypeProvider: ArchetypeProvider by lazy { archetypes.archetypeProvider }
 
     private val removedEntities: EntityStack = EntityStack()
     private val currId = atomic(0L)
 
-    override fun create(initialComponents: Collection<Component>): GearyEntity {
+    override fun create(): GearyEntity {
         val entity: GearyEntity = if (reuseIDsAfterRemoval) {
-            runCatching { removedEntities.pop() }
-                .getOrElse { currId.getAndIncrement().toGeary() }
+            removedEntities.pop() ?: currId.getAndIncrement().toGeary()
         } else currId.getAndIncrement().toGeary()
 
-        createRecord(entity, initialComponents)
+        createRecord(entity)
         return entity
     }
 
@@ -55,18 +56,25 @@ class EntityByArchetypeProvider(
 
     override fun getType(entity: Entity): EntityType = records[entity].archetype.type
 
-    private fun createRecord(entity: Entity, initialComponents: Collection<Component>) {
-        val ids =
-            initialComponents.map { componentId(it::class) } +
-                    initialComponents.map { componentId(it::class) or HOLDS_DATA }
+    private fun createRecord(entity: Entity) {
+//        val initialComponentsSize = initialComponents.size
+//        val ids = ULongArray(initialComponentsSize * 2)
+//        if (initialComponentsSize != 0) {
+//            initialComponents.forEachIndexed { index, component ->
+//                ids[index] = componentId(component::class)
+//                ids[index + initialComponents.size] = componentId(component::class) or HOLDS_DATA
+//            }
+//        }
 
-        val addTo = archetypeProvider.getArchetype(EntityType(ids))
-        val record = Record(archetypeProvider.rootArchetype, -1)
-        addTo.addEntityWithData(
-            record,
-            initialComponents.toTypedArray().apply { sortBy { addTo.indexOf(componentId(it::class)) } },
-            entity,
-        )
-        records[entity] = record
+//        val addTo = archetypeProvider.getArchetype(EntityType.fromMutableArray(ids))
+        val root = archetypeProvider.rootArchetype
+        val createdRecord = root.createWithoutData(entity)
+//        addTo.moveWithNewComponent(
+//            record,
+//            if (initialComponentsSize == 0) emptyArray()
+//            else initialComponents.toTypedArray().apply { sortBy { addTo.indexOf(componentId(it::class)) } },
+//            entity,
+//        )
+        records[entity] = createdRecord
     }
 }

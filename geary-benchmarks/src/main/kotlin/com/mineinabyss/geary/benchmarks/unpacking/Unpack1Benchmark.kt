@@ -1,5 +1,6 @@
-package test.unpacking
+package com.mineinabyss.geary.benchmarks.unpacking
 
+import com.mineinabyss.geary.benchmarks.helpers.tenMil
 import com.mineinabyss.geary.datatypes.GearyRecord
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
@@ -17,9 +18,6 @@ class Unpack1Benchmark {
     object SystemOf1 : GearyQuery() {
         val GearyRecord.int by get<Int>()
     }
-
-    val oneMil = 1000000
-    val tenMil = 10000000
 
     @Setup
     fun setUp() {

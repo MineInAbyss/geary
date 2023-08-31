@@ -20,7 +20,7 @@ import com.soywiz.kds.IntIntMap
  * An example use case: If a query matches an archetype, it will also match all entities inside which
  * gives a large performance boost to system iteration.
  */
-data class Archetype(
+open class Archetype(
     val type: EntityType,
     val id: Int
 ) {
@@ -31,7 +31,7 @@ data class Archetype(
     val entities: List<Entity> get() = ids.map { it.toGeary() }
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
-    private val ids: IdList = IdList()
+    protected val ids: IdList = IdList()
 
     @PublishedApi
     internal var isIterating: Boolean = false
@@ -64,7 +64,7 @@ data class Archetype(
     /** A map of component ids to index used internally in this archetype (ex. in [componentData])*/
     //TODO assuming no more than 32bit worth of data holding components
     private val comp2indices: IntIntMap = IntIntMap().apply {
-        dataHoldingType.forEachIndexed { i, compId -> set(compId.toInt(), i) }
+        dataHoldingType.forEachIndexed { i, compId -> set(compId.toInt(), i + 1) }
     }
 
 
@@ -88,10 +88,9 @@ data class Archetype(
     /**
      * Used to pack data closer together and avoid having hashmaps throughout the archetype.
      *
-     * @return The internally used index for this component [id].
+     * @return The internally used index for this component [id], or 0 if not present. Use contains to check for presence.
      */
-    internal fun indexOf(id: ComponentId): Int =
-        if(comp2indices.contains(id.toInt())) comp2indices[id.toInt()] else -1
+    fun indexOf(id: ComponentId): Int = comp2indices[id.toInt()] - 1
 
     /**
      * @return The data under a [componentId] for an entity at [row].
@@ -109,7 +108,7 @@ data class Archetype(
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
     operator fun plus(componentId: ComponentId): Archetype =
-        componentAddEdges[componentId] ?: archetypeProvider.getArchetype(type.plus(componentId))
+        componentAddEdges.getOrPut(componentId) { archetypeProvider.getArchetype(type.plus(componentId)) }
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
     operator fun minus(componentId: ComponentId): Archetype =
@@ -125,19 +124,82 @@ data class Archetype(
      *
      * @return The new [Record] to be associated with this entity from now on.
      */
-    internal fun addEntityWithData(
+    private fun moveWithNewComponent(
         record: Record,
-        data: Array<Component>,
+        newComponent: Component,
+        newComponentId: ComponentId,
         entity: Entity,
-    ) {
-        ids.add(entity.id.toLong())
-        componentData.forEachIndexed { i, compArray ->
-            compArray.add(data[i])
+    ) = move(record, entity) {
+        val (oldArc, oldRow) = record
+        val newCompIndex = indexOf(newComponentId)
+
+        // Add before new comp
+        for (i in 0 until newCompIndex) {
+            componentData[i].add(oldArc.componentData[i][oldRow])
         }
+
+        // Add new comp
+        componentData[newCompIndex].add(newComponent)
+
+        // Add after new comp
+        for (i in newCompIndex + 1..componentData.lastIndex) {
+            // Offset by one since this new comp didn't exist
+            componentData[i].add(oldArc.componentData[i - 1][oldRow])
+        }
+    }
+
+    private fun moveOnlyAdding(
+        record: Record,
+        entity: Entity
+    ) = move(record, entity) {
+        val (oldArc, oldRow) = record
+        for (i in 0..componentData.lastIndex) {
+            componentData[i].add(oldArc.componentData[i][oldRow])
+        }
+    }
+
+    private fun moveWithoutComponent(
+        record: Record,
+        withoutComponentId: ComponentId,
+        entity: Entity,
+    ) = move(record, entity) {
+        val (oldArc, oldRow) = record
+        val withoutCompIndex = indexOf(withoutComponentId)
+
+        // Add before without comp
+        for (i in 0 until withoutCompIndex) {
+            componentData[i].add(oldArc.componentData[i][oldRow])
+        }
+
+        // Add after without comp
+        for (i in withoutCompIndex + 1..componentData.lastIndex) {
+            componentData[i - 1].add(oldArc.componentData[i][oldRow])
+        }
+    }
+
+    internal fun createWithoutData(entity: Entity, existingRecord: Record) {
+        move(existingRecord, entity) {}
+    }
+
+    internal fun createWithoutData(entity: Entity): Record {
+        ids.add(entity.id)
+        return Record(this, ids.lastIndex)
+    }
+
+    internal inline fun move(
+        record: Record,
+        entity: Entity,
+        copyData: () -> Unit
+    ) {
+        ids.add(entity.id)
+
+        copyData()
+
         record.row = -1
         record.archetype = this
         record.row = ids.lastIndex
     }
+
 
     // For the following few functions, both entity and row are passed to avoid doing several array look-ups
     //  (ex when set calls remove).
@@ -157,10 +219,10 @@ data class Archetype(
 
         val moveTo = this + (componentId.withoutRole(HOLDS_DATA))
 
-        val componentData = getComponents(record.row)
         val entity = record.entity
-        removeEntity(record.row)
-        moveTo.addEntityWithData(record, componentData, entity)
+        val row = record.row
+        moveTo.moveOnlyAdding(record, entity)
+        removeEntity(row)
 
         if (callEvent) temporaryEntity { componentAddEvent ->
             componentAddEvent.addRelation<AddedComponent>(componentId.toGeary(), noEvent = true)
@@ -185,8 +247,8 @@ data class Archetype(
         val dataComponent = componentId.withRole(HOLDS_DATA)
 
         //If component already in this type, just update the data
-        val addIndex = indexOf(dataComponent)
-        if (addIndex != -1) {
+        if (contains(dataComponent)) {
+            val addIndex = indexOf(dataComponent)
             componentData[addIndex][row] = data
             if (callEvent) temporaryEntity { componentAddEvent ->
                 componentAddEvent.addRelation<UpdatedComponent>(componentId.toGeary(), noEvent = true)
@@ -200,12 +262,10 @@ data class Archetype(
             if (contains(dataComponent.withoutRole(HOLDS_DATA)))
                 this + dataComponent
             else this + dataComponent.withoutRole(HOLDS_DATA) + dataComponent
-        val newCompIndex = moveTo.dataHoldingType.indexOf(dataComponent)
-        val componentData = getComponents(row, add = data to newCompIndex)
 
         val entity = record.entity
+        moveTo.moveWithNewComponent(record, data, dataComponent, entity)
         removeEntity(row)
-        moveTo.addEntityWithData(record, componentData, entity)
 
         if (callEvent) temporaryEntity { componentAddEvent ->
             componentAddEvent.addRelation<SetComponent>(componentId.toGeary(), noEvent = true)
@@ -230,19 +290,9 @@ data class Archetype(
 
             val moveTo = this - component
 
-            val skipData = indexOf(component)
-            val copiedData =
-                if (component.holdsData())
-                    (Array<Any>((componentData.size - 1).coerceAtLeast(0)) {}).also { data ->
-                        for (i in 0 until skipData) data[i] = componentData[i][row]
-                        for (i in (skipData + 1)..componentData.lastIndex) data[i - 1] = componentData[i][row]
-                    }
-                else (Array<Any>(componentData.size) {}).also { data ->
-                    for (i in 0..componentData.lastIndex) data[i] = componentData[i][row]
-                }
             val entity = record.entity
+            moveTo.moveWithoutComponent(record, component, entity)
             removeEntity(row)
-            moveTo.addEntityWithData(record, copiedData, entity)
         }
         return true
     }

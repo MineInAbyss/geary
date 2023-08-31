@@ -17,6 +17,7 @@ value class EntityType private constructor(
 ) {
     constructor() : this(ULongArray(0))
 
+
     constructor(ids: Collection<ComponentId>) : this(inner = ids.toULongArray().apply { sort() })
 
     val size: Int get() = inner.size
@@ -46,7 +47,9 @@ value class EntityType private constructor(
     fun last(): ComponentId = inner.last()
 
     inline fun forEach(run: (ComponentId) -> Unit) {
-        inner.forEach(run)
+        for(i in 0..inner.lastIndex) {
+            run(inner[i])
+        }
 //        val iterator = inner.iterator()
 //        while (iterator.hasNext()) {
 //            run(iterator.nextLong().toULong())
@@ -104,4 +107,11 @@ value class EntityType private constructor(
 
     override fun toString(): String =
         inner.joinToString(", ", prefix = "[", postfix = "]") { it.readableString() }
+
+    companion object {
+        internal fun fromMutableArray(array: ULongArray): EntityType {
+            array.sort()
+            return EntityType(array)
+        }
+    }
 }

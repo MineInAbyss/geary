@@ -13,7 +13,8 @@ class EntityStack(private val stack: DoubleQueue = DoubleQueue()) {
         }
     }
 
-    fun pop(): Entity = synchronized(removedEntitiesLock) {
-        stack.dequeue().toRawBits().toGeary()
+    fun pop(): Entity? = synchronized(removedEntitiesLock) {
+        if (stack.isEmpty()) null
+        else stack.dequeue().toRawBits().toGeary()
     }
 }
