@@ -11,6 +11,7 @@ import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
+import com.soywiz.kds.IntIntMap
 
 /**
  * Archetypes store a list of entities with the same [EntityType], and provide functions to
@@ -61,9 +62,11 @@ data class Archetype(
         .groupBy { it.kind.toLong() }
 
     /** A map of component ids to index used internally in this archetype (ex. in [componentData])*/
-    private val comp2indices: Map<Long, Int> = buildMap {
-        dataHoldingType.forEachIndexed { i, compId -> put(compId.toLong(), i) }
+    //TODO assuming no more than 32bit worth of data holding components
+    private val comp2indices: IntIntMap = IntIntMap().apply {
+        dataHoldingType.forEachIndexed { i, compId -> set(compId.toInt(), i) }
     }
+
 
     /** The amount of entities stored in this archetype. */
     val size: Int get() = ids.size
@@ -87,7 +90,8 @@ data class Archetype(
      *
      * @return The internally used index for this component [id].
      */
-    internal fun indexOf(id: ComponentId): Int = comp2indices[id.toLong()] ?: -1
+    internal fun indexOf(id: ComponentId): Int =
+        if(comp2indices.contains(id.toInt())) comp2indices[id.toInt()] else -1
 
     /**
      * @return The data under a [componentId] for an entity at [row].

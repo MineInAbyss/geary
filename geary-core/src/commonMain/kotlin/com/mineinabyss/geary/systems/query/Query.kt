@@ -33,7 +33,7 @@ abstract class Query : AccessorHolder() {
 //        val sizes = matched.map { it.size - 1 }
         matched.fastForEachWithIndex { i, archetype ->
             archetype.isIterating = true
-            val upTo = archetype.entities.size
+            val upTo = archetype.size
             for(entityIndex in 0 until upTo) {
                 run(Record(archetype, entityIndex))
             }
