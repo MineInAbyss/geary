@@ -5,7 +5,7 @@ import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.prefabs
 import com.mineinabyss.geary.systems.Listener
-import com.mineinabyss.geary.systems.accessors.TargetScope
+
 
 class TrackPrefabsByKeySystem : Listener() {
     private val TargetScope.key by onSet<PrefabKey>().onTarget()

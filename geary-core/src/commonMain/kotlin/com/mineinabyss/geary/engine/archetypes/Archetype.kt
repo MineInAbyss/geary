@@ -3,19 +3,14 @@ package com.mineinabyss.geary.engine.archetypes
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.SetComponent
 import com.mineinabyss.geary.components.events.UpdatedComponent
-import com.mineinabyss.geary.modules.archetypes
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
-import com.mineinabyss.geary.engine.Engine
-import com.mineinabyss.geary.events.Handler
 import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.helpers.toGeary
+import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
-import com.mineinabyss.geary.systems.query.GearyQuery
-import kotlinx.atomicfu.locks.SynchronizedObject
-import kotlinx.atomicfu.locks.synchronized
 
 /**
  * Archetypes store a list of entities with the same [EntityType], and provide functions to
@@ -31,9 +26,6 @@ data class Archetype(
     private val records get() = archetypes.records
     private val archetypeProvider get() = archetypes.archetypeProvider
     private val eventRunner get() = archetypes.eventRunner
-
-    /** A mutex for anything which needs the size of ids to remain unchanged. */
-    private val entityAddition = SynchronizedObject()
 
     val entities: List<Entity> get() = ids.map { it.toGeary() }
 
@@ -82,14 +74,11 @@ data class Archetype(
     private val _targetListeners = mutableSetOf<Listener>()
     val targetListeners: Set<Listener> = _targetListeners
 
-    private val _eventHandlers = mutableSetOf<Handler>()
-
-    //TODO update doc
-    /** A map of event class type to a set of event handlers which fire on that event. */
-    val eventHandlers: Set<Handler> = _eventHandlers
+    private val _eventListeners = mutableSetOf<Listener>()
+    val eventListeners: Set<Listener> = _eventListeners
 
     // ==== Helper functions ====
-    fun getEntity(row: Int): Entity = synchronized(entityAddition) {
+    fun getEntity(row: Int): Entity {
         return ids[row].toGeary()
     }
 
@@ -136,16 +125,14 @@ data class Archetype(
         record: Record,
         data: Array<Component>,
         entity: Entity,
-    ) = synchronized(entityAddition) {
-        synchronized(record) {
-            ids.add(entity.id.toLong())
-            componentData.forEachIndexed { i, compArray ->
-                compArray.add(data[i])
-            }
-            record.row = -1
-            record.archetype = this
-            record.row = ids.lastIndex
+    ) {
+        ids.add(entity.id.toLong())
+        componentData.forEachIndexed { i, compArray ->
+            compArray.add(data[i])
         }
+        record.row = -1
+        record.archetype = this
+        record.row = ids.lastIndex
     }
 
     // For the following few functions, both entity and row are passed to avoid doing several array look-ups
@@ -231,11 +218,11 @@ data class Archetype(
     internal fun removeComponent(
         record: Record,
         component: ComponentId
-    ): Boolean = synchronized(record) {
+    ): Boolean {
         with(record.archetype) {
             val row = record.row
 
-            if (component !in type) return@synchronized false
+            if (component !in type) return false
 
             val moveTo = this - component
 
@@ -253,23 +240,22 @@ data class Archetype(
             removeEntity(row)
             moveTo.addEntityWithData(record, copiedData, entity)
         }
-        return@synchronized true
+        return true
     }
 
     /** Gets all the components associated with an entity at a [row]. */
-    internal fun getComponents(row: Int, add: Pair<Component, Int>? = null): Array<Component> =
-        synchronized(entityAddition) {
-            if (add != null) {
-                val arr = Array<Any?>(componentData.size + 1) { null }
-                val (addElement, addIndex) = add
-                for (i in 0 until addIndex) arr[i] = componentData[i][row]
-                arr[addIndex] = addElement
-                for (i in addIndex..componentData.lastIndex) arr[i + 1] = componentData[i][row]
-                @Suppress("UNCHECKED_CAST") // For loop above ensures no nulls
-                return arr as Array<Component>
-            } else
-                return Array(componentData.size) { i: Int -> componentData[i][row] }
-        }
+    internal fun getComponents(row: Int, add: Pair<Component, Int>? = null): Array<Component> {
+        if (add != null) {
+            val arr = Array<Any?>(componentData.size + 1) { null }
+            val (addElement, addIndex) = add
+            for (i in 0 until addIndex) arr[i] = componentData[i][row]
+            arr[addIndex] = addElement
+            for (i in addIndex..componentData.lastIndex) arr[i + 1] = componentData[i][row]
+            @Suppress("UNCHECKED_CAST") // For loop above ensures no nulls
+            return arr as Array<Component>
+        } else
+            return Array(componentData.size) { i: Int -> componentData[i][row] }
+    }
 
     /**
      * Queries for specific relations or by kind/target.
@@ -323,8 +309,8 @@ data class Archetype(
     // ==== Event listeners ====
 
     /** Adds an event [handler] that listens to certain events relating to entities in this archetype. */
-    fun addEventHandler(handler: Handler) {
-        _eventHandlers += handler
+    fun addEventHandler(handler: Listener) {
+        _eventListeners += handler
     }
 
     fun addSourceListener(handler: Listener) {
@@ -335,10 +321,12 @@ data class Archetype(
         _targetListeners += handler
     }
 
-    // ==== Iterators ====
-    /** Creates and tracks an [ArchetypeIterator] for a query. */
-    @PublishedApi
-    internal fun iteratorFor(query: GearyQuery): ArchetypeIterator {
-        return ArchetypeIterator(this, query)
+    // TODO upto is a bad approach if a system both adds and removes entities?
+    inline fun forEach(upTo: Int, crossinline run: (EntityId) -> Unit) {
+        var row = 0
+        while (row < size && row <= upTo) {
+            run(getEntity(row).id)
+            row++
+        }
     }
 }

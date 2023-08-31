@@ -12,13 +12,13 @@ import io.kotest.matchers.collections.shouldBeUnique
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Test
 import kotlin.time.measureTime
 
+// TODO we're going to drop general async support in favor of async systems, rewrite tests to reflect that
 class AsyncArchetypeTests : GearyTest() {
     private val concurrentEntityAmount = 10000
 
-    @Test
+//    @Test
     fun `add entities concurrently`() = runTest {
         val arc = archetypes.archetypeProvider.getArchetype(EntityType(ulongArrayOf(componentId<String>() or HOLDS_DATA)))
         concurrentOperation(concurrentEntityAmount) {

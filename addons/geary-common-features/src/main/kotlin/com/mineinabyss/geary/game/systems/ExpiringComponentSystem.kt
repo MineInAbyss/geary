@@ -2,7 +2,7 @@ package com.mineinabyss.geary.game.systems
 
 import com.mineinabyss.geary.game.components.Expiry
 import com.mineinabyss.geary.systems.RepeatingSystem
-import com.mineinabyss.geary.systems.accessors.TargetScope
+
 
 /**
  * Handles removing components when an [Expiry] relation exists with another component.

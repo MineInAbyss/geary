@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.engine.archetypes.ArchetypeIterator
-import com.mineinabyss.geary.systems.accessors.TargetScope
+import com.mineinabyss.geary.datatypes.Record
 import com.mineinabyss.geary.systems.query.GearyQuery
+import com.mineinabyss.geary.systems.query.Query
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -17,7 +17,7 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 abstract class RepeatingSystem(
     val interval: Duration = 50.milliseconds // 1 tick in Minecraft
-) : GearyQuery(), GearySystem {
+) : Query(), System {
     protected var iteration: Int = 0
         private set
 
@@ -33,7 +33,7 @@ abstract class RepeatingSystem(
         fastForEach(run = { it.tick() })
     }
 
-    protected open fun TargetScope.tick() {}
+    protected open fun Record.tick() {}
 
     protected fun every(iterations: Int): Boolean =
         iteration.mod(iterations) == 0

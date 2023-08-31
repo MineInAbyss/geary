@@ -1,13 +1,14 @@
 package com.mineinabyss.geary.async
 
+import com.mineinabyss.geary.datatypes.GearyRecord
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.systems.RepeatingSystem
-import com.mineinabyss.geary.systems.accessors.TargetScope
 
-class RunSafelyTest: GearyTest() {
+
+class RunSafelyTest : GearyTest() {
     class CheckAsyncSystem : RepeatingSystem() {
-        val TargetScope.string by get<String>()
-        override fun TargetScope.tick() {
+        val GearyRecord.string by get<String>()
+        override fun GearyRecord.tick() {
             error("Found entity with string when it should have been removed before iteration")
         }
     }

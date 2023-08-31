@@ -1,16 +1,16 @@
 package com.mineinabyss.geary.systems.accessors
 
+import com.mineinabyss.geary.datatypes.GearyRecord
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.systems.accessors.building.map
 import com.mineinabyss.geary.systems.query.GearyQuery
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.Test
 
 internal class AccessorHolderTest : GearyTest() {
     object FancyQuery : GearyQuery() {
-        val TargetScope.default by getOrDefault<String>("empty!")
-        val TargetScope.mapped by get<Int>().map { it.toString() }
+        val GearyRecord.default by getOrDefault<String> { "empty!" }
+        val GearyRecord.mapped by get<Int>().map { it.toString() }
     }
 
     @ExperimentalCoroutinesApi

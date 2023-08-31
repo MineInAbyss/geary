@@ -11,13 +11,14 @@ data class TestData(val int: Int, val double: Double)
 @State(Scope.Benchmark)
 @Fork(1)
 @Warmup(iterations = 0)
-@Measurement(iterations = 1, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 0, time = 1, timeUnit = TimeUnit.SECONDS)
 
 class MemoryAccessBenchmarks {
     private final val oneMil = 1000000
     var intArr = intArrayOf()
     var byteArr = byteArrayOf()
     var objArr = arrayOf<TestData>()
+    var anyArr = mutableListOf<Any>()
     var accessorWithScope = AccessorWithScope(intArrayOf())
 
     var nDimensionalArr = Array(8) { IntArray(oneMil) { it } }
@@ -27,6 +28,7 @@ class MemoryAccessBenchmarks {
         intArr = IntArray(oneMil) { it }
         byteArr = ByteArray(oneMil) { it.toByte() }
         objArr = Array(oneMil) { TestData(it, it.toDouble()) }
+        anyArr = MutableList(oneMil) { TestData(it, it.toDouble()) }
         accessorWithScope = AccessorWithScope(intArr)
     }
 
@@ -50,6 +52,13 @@ class MemoryAccessBenchmarks {
     fun readObjArrDirectly() {
         for (i in 0 until oneMil) {
             objArr[i]
+        }
+    }
+
+    @Benchmark
+    fun readObjArrWithAny() {
+        for (i in 0 until oneMil) {
+            anyArr[i]
         }
     }
 

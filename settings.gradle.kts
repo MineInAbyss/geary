@@ -30,9 +30,9 @@ include(
 )
 
 // Go through addons directory and load all projects based on file name
-for (addon in file("addons").listFiles()) {
-    if (addon.isDirectory) {
-        include(addon.name)
-        project(":${addon.name}").projectDir = file(addon)
-    }
-}
+//for (addon in file("addons").listFiles()) {
+//    if (addon.isDirectory) {
+//        include(addon.name)
+//        project(":${addon.name}").projectDir = file(addon)
+//    }
+//}

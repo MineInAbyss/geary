@@ -1,12 +1,11 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.accessors.TargetScope
+import com.mineinabyss.geary.systems.accessors.Records
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -16,10 +15,9 @@ internal class QueryManagerTest : GearyTest() {
     private class TestComponent
     private object EventListener : Listener() {
         var ran = 0
-        private val TargetScope.testComponent by get<TestComponent>()
+        private val Records.testComponent by get<TestComponent>().onTarget()
 
-        @Handler
-        fun handle() {
+        override fun Records.handle() {
             ran++
         }
     }
@@ -28,7 +26,7 @@ internal class QueryManagerTest : GearyTest() {
     fun `empty event handler`() {
         geary.pipeline.addSystem(EventListener)
         (archetypes.archetypeProvider.rootArchetype.type in EventListener.event.family) shouldBe true
-        archetypes.archetypeProvider.rootArchetype.eventHandlers.map { it.parentListener } shouldContain EventListener
+        archetypes.archetypeProvider.rootArchetype.eventListeners shouldContain EventListener
         entity {
             set(TestComponent())
         }.callEvent()

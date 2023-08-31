@@ -9,7 +9,7 @@ import com.mineinabyss.geary.prefabs.configuration.components.ChildOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.ChildrenOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.systems.Listener
-import com.mineinabyss.geary.systems.accessors.TargetScope
+
 
 class ParseChildOnPrefab : Listener() {
     private val TargetScope.child by onSet<ChildOnPrefab>().onTarget()

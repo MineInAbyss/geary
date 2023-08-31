@@ -6,7 +6,7 @@ import com.mineinabyss.geary.components.events.EntityRemoved
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.EventScope
-import com.mineinabyss.geary.systems.accessors.TargetScope
+
 import com.mineinabyss.geary.uuid.uuid2Geary
 
 class UnTrackUuidOnRemove : GearyListener() {

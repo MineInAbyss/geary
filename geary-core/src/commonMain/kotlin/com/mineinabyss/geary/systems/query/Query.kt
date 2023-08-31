@@ -1,65 +1,55 @@
 package com.mineinabyss.geary.systems.query
 
-import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.datatypes.Component
+import com.mineinabyss.geary.datatypes.Record
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.systems.accessors.Accessor
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.accessors.AccessorHolder
-import com.mineinabyss.geary.systems.accessors.TargetScope
-import com.mineinabyss.geary.systems.accessors.types.ComponentAccessor
-import com.mineinabyss.geary.systems.accessors.types.DirectAccessor
+import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import com.soywiz.kds.iterators.fastForEachWithIndex
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
 import kotlin.reflect.KProperty
 
 /**com.mineinabyss.geary.ecs.engine.iteration.accessors
  * @property matchedArchetypes A set of archetypes which have been matched to this query.
  */
-abstract class Query : AccessorHolder(), Iterable<TargetScope> {
+abstract class Query : AccessorHolder() {
     @PublishedApi
     internal val matchedArchetypes: MutableSet<Archetype> = mutableSetOf()
 
     @PublishedApi
     internal var registered: Boolean = false
 
-    fun flow(): Flow<TargetScope> {
-        return channelFlow {
-            forEach { targetScope ->
-                send(targetScope)
-            }
-        }
-    }
+//    override fun iterator(): Iterator<TargetScope> {
+//        val items = mutableListOf<TargetScope>()
+//        fastForEach { items += it }
+//        return items.iterator()
+//    }
 
-    override fun iterator(): Iterator<TargetScope> {
-        val items = mutableListOf<TargetScope>()
-        fastForEach { items += it }
-        return items.iterator()
-    }
-
-    inline fun fastForEach(crossinline run: (TargetScope) -> Unit) {
+    inline fun fastForEach(crossinline run: (Record) -> Unit) {
         if (!registered) {
             geary.queryManager.trackQuery(this)
         }
         val matched = matchedArchetypes.toList()
-        val sizes = matched.map { it.size - 1 }
+//        val sizes = matched.map { it.size - 1 }
         matched.fastForEachWithIndex { i, archetype ->
             archetype.isIterating = true
-            archetype.iteratorFor(this@Query).forEach(upTo = sizes[i]) { targetScope ->
-                run(targetScope)
+            val upTo = archetype.entities.size
+            for(entityIndex in 0 until upTo) {
+                run(Record(archetype, entityIndex))
             }
             archetype.isIterating = false
         }
     }
 
-    @Deprecated("Likely trying to access component off entity", ReplaceWith("entity.get()"))
-    protected inline fun <reified T : Component> TargetScope.get(): ComponentAccessor<T> =
-        error("Cannot change query at runtime")
+    // FamilyMatching automatically constructs the family
+    operator fun Family.provideDelegate(thisRef: GearyQuery, property: KProperty<*>) =
+        mutableFamily.add(this)
 
-    operator fun <T> Accessor<T>.getValue(thisRef: TargetScope, property: KProperty<*>): T =
-        access(thisRef)
-
-    operator fun Family.provideDelegate(thisRef: GearyQuery, property: KProperty<*>): DirectAccessor<Family> =
-        _family.add(this).run { DirectAccessor(family) }
+    operator fun <T : FamilyMatching> T.provideDelegate(
+        thisRef: Any,
+        prop: KProperty<*>
+    ): T {
+        mutableFamily.add(family)
+        return this
+    }
 }
