@@ -1,8 +1,5 @@
 package com.mineinabyss.geary.engine.archetypes
 
-import com.mineinabyss.geary.components.events.AddedComponent
-import com.mineinabyss.geary.components.events.SetComponent
-import com.mineinabyss.geary.components.events.UpdatedComponent
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
@@ -27,6 +24,7 @@ open class Archetype(
     private val records get() = archetypes.records
     private val archetypeProvider get() = archetypes.archetypeProvider
     private val eventRunner get() = archetypes.eventRunner
+
 
     val entities: List<Entity> get() = ids.map { it.toGeary() }
 
@@ -200,7 +198,6 @@ open class Archetype(
         record.row = ids.lastIndex
     }
 
-
     // For the following few functions, both entity and row are passed to avoid doing several array look-ups
     //  (ex when set calls remove).
 
@@ -225,7 +222,7 @@ open class Archetype(
         removeEntity(row)
 
         if (callEvent) temporaryEntity { componentAddEvent ->
-            componentAddEvent.addRelation<AddedComponent>(componentId.toGeary(), noEvent = true)
+            componentAddEvent.addRelation(geary.components.addedComponent, componentId, noEvent = true)
             eventRunner.callEvent(record, records[componentAddEvent], null)
         }
         return true
@@ -251,7 +248,7 @@ open class Archetype(
             val addIndex = indexOf(dataComponent)
             componentData[addIndex][row] = data
             if (callEvent) temporaryEntity { componentAddEvent ->
-                componentAddEvent.addRelation<UpdatedComponent>(componentId.toGeary(), noEvent = true)
+                componentAddEvent.addRelation(geary.components.updatedComponent, componentId, noEvent = true)
                 eventRunner.callEvent(record, records[componentAddEvent], null)
             }
             return false
@@ -267,9 +264,15 @@ open class Archetype(
         moveTo.moveWithNewComponent(record, data, dataComponent, entity)
         removeEntity(row)
 
-        if (callEvent) temporaryEntity { componentAddEvent ->
-            componentAddEvent.addRelation<SetComponent>(componentId.toGeary(), noEvent = true)
-            eventRunner.callEvent(record, records[componentAddEvent], null)
+        if (callEvent && targetListeners.isNotEmpty()) {
+            // Archetype for the set event
+            val eventArc = archetypeProvider.getArchetype(GearyEntityType(ulongArrayOf(Relation.of(geary.components.setComponent, componentId).id)))
+            if(eventArc.eventListeners.isNotEmpty()) {
+                temporaryEntity { componentAddEvent ->
+                    componentAddEvent.addRelation(geary.components.setComponent, componentId, noEvent = true)
+                    eventRunner.callEvent(record, records[componentAddEvent], null)
+                }
+            }
         }
         return true
     }

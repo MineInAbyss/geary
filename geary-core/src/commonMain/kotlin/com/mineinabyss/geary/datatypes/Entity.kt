@@ -5,10 +5,10 @@ import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.relations.ChildOf
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.Persists
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.*
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import kotlinx.serialization.Serializable
@@ -268,6 +268,10 @@ value class Entity(val id: EntityId) {
 
     inline fun <reified K : Any> addRelation(target: Entity, noEvent: Boolean = false) {
         geary.write.addComponentFor(this, Relation.of<K?>(target).id, noEvent)
+    }
+
+    fun addRelation(kind: ComponentId, target: EntityId, noEvent: Boolean = false) {
+        geary.write.addComponentFor(this, Relation.of(kind, target).id, noEvent)
     }
 
     /** Removes a relation key of type [K] and value of type [V]. */

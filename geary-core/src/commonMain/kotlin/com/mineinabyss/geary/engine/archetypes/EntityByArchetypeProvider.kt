@@ -1,8 +1,5 @@
 package com.mineinabyss.geary.engine.archetypes
 
-import com.mineinabyss.geary.components.CouldHaveChildren
-import com.mineinabyss.geary.components.events.EntityRemoved
-import com.mineinabyss.geary.components.events.SuppressRemoveEvent
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.EntityStack
 import com.mineinabyss.geary.datatypes.EntityType
@@ -13,6 +10,7 @@ import com.mineinabyss.geary.helpers.parents
 import com.mineinabyss.geary.helpers.removeParent
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.modules.geary
 import kotlinx.atomicfu.atomic
 
 class EntityByArchetypeProvider(
@@ -34,12 +32,12 @@ class EntityByArchetypeProvider(
     }
 
     override fun remove(entity: Entity) {
-        if (!entity.has<SuppressRemoveEvent>()) entity.callEvent {
-            add<EntityRemoved>()
+        if (!entity.has(geary.components.suppressRemoveEvent)) entity.callEvent {
+            add(geary.components.entityRemoved)
         }
 
         // remove all children of this entity from the ECS as well
-        if (entity.has<CouldHaveChildren>()) entity.apply {
+        if (entity.has(geary.components.couldHaveChildren)) entity.apply {
             children.forEach {
                 // Remove self from the child's parents or remove the child if it no longer has parents
                 if (it.parents == setOf(this)) it.removeEntity()

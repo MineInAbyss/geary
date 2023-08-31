@@ -73,5 +73,5 @@ class NewEntityBenchmark {
 
 fun main() {
     geary(TestEngineModule)
-    NewEntityBenchmark().create10MilEntitiesWith0Components()
+    NewEntityBenchmark().create1MilEntitiesWith1ComponentYesEvent()
 }

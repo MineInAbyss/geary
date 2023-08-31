@@ -1,9 +1,8 @@
 package com.mineinabyss.geary.helpers
 
 import com.mineinabyss.geary.components.ComponentInfo
-import com.mineinabyss.geary.components.events.SuppressRemoveEvent
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.modules.geary
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
@@ -19,7 +18,7 @@ inline fun <T> temporaryEntity(
     run: (Entity) -> T
 ): T {
     val entity = entity {
-        add<SuppressRemoveEvent>(noEvent = true)
+        add(geary.components.suppressRemoveEvent, noEvent = true)
     }
     return try {
         run(entity)
