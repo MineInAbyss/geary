@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.benchmarks.unpacking
 
+import com.mineinabyss.geary.benchmarks.helpers.ITERATIONS
+import com.mineinabyss.geary.benchmarks.helpers.WARMUP_ITERATIONS
 import com.mineinabyss.geary.benchmarks.helpers.tenMil
 import com.mineinabyss.geary.datatypes.GearyRecord
 import com.mineinabyss.geary.helpers.entity
@@ -12,8 +14,8 @@ import java.util.concurrent.TimeUnit
 
 @State(Scope.Benchmark)
 @Fork(1)
-@Warmup(iterations = 0)
-@Measurement(iterations = 0, time = 1, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = WARMUP_ITERATIONS)
+@Measurement(iterations = ITERATIONS, time = 1, timeUnit = TimeUnit.SECONDS)
 class Unpack6Benchmark {
     object SystemOf6 : GearyQuery() {
         val GearyRecord.comp1 by get<Comp1>()

@@ -13,7 +13,7 @@ import kotlin.properties.ReadOnlyProperty
  */
 open class AccessorOperations {
 
-    inline fun <reified T> get(): ComponentAccessor<T> {
+    inline fun <reified T: Any> get(): ComponentAccessor<T> {
         return ComponentAccessor(componentId<T>().withRole(HOLDS_DATA))
     }
 

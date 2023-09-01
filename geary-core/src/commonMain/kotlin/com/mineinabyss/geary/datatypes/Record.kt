@@ -17,7 +17,7 @@ class Record @PublishedApi internal constructor(
         this.row = row
     }
 
-    internal val entity: Entity get() = archetype.getEntity(row)
+    val entity: Entity get() = archetype.getEntity(row)
 
     operator fun component1(): Archetype = archetype
     operator fun component2(): Int = row

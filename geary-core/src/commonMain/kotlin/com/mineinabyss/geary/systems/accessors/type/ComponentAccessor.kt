@@ -6,12 +6,12 @@ import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
-import kotlin.properties.ReadOnlyProperty
+import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-class ComponentAccessor<T>(
+class ComponentAccessor<T : Any>(
     val id: ComponentId,
-) : ReadOnlyProperty<Record, T>, FamilyMatching {
+) : ReadWriteProperty<Record, T>, FamilyMatching {
     override val family: Family = family { hasSet(id) }
 
     var cachedIndex = -1
@@ -24,5 +24,14 @@ class ComponentAccessor<T>(
             cachedIndex = archetype.indexOf(id)
         }
         return archetype.componentData[cachedIndex][thisRef.row] as T
+    }
+
+    override fun setValue(thisRef: Record, property: KProperty<*>, value: T) {
+        val archetype = thisRef.archetype
+        if (archetype != cachedArchetype) {
+            cachedArchetype = archetype
+            cachedIndex = archetype.indexOf(id)
+        }
+        archetype.componentData[cachedIndex][thisRef.row] = value
     }
 }
