@@ -5,7 +5,7 @@ import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
-import com.mineinabyss.geary.systems.accessors.Records
+import com.mineinabyss.geary.datatypes.Records
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 

@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.systems.accessors
 
 import com.mineinabyss.geary.datatypes.Record
+import com.mineinabyss.geary.datatypes.Records
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 

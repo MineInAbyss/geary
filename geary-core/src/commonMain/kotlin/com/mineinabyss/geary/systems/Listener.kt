@@ -2,6 +2,7 @@ package com.mineinabyss.geary.systems
 
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Record
+import com.mineinabyss.geary.datatypes.Records
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.componentId

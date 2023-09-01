@@ -1,8 +1,10 @@
-package com.mineinabyss.geary.systems.accessors
+package com.mineinabyss.geary.datatypes
 
-import com.mineinabyss.geary.datatypes.Record
-import kotlin.jvm.JvmInline
-
+/**
+ * A collection of records used for queries involving multiple entities.
+ *
+ * Currently built for our event system but will support arbitrary entities once we improve the query system.
+ */
 class Records(
     val target: Record,
     val event: Record,

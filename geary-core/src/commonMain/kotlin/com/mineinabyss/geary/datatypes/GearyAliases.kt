@@ -5,6 +5,7 @@ import kotlinx.serialization.Polymorphic
 typealias GearyEntity = Entity
 typealias GearyEntityType = EntityType
 typealias GearyRecord = Record
+typealias GearyRecords = Records
 typealias GearyRelation = Relation
 
 /**

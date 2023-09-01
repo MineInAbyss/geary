@@ -258,7 +258,7 @@ open class Archetype(
         moveTo.moveWithNewComponent(record, data, dataComponent, entity)
         removeEntity(row)
 
-        if (callEvent && targetListeners.isNotEmpty()) {
+        if (callEvent && moveTo.targetListeners.isNotEmpty()) {
             // Archetype for the set event
             val eventArc = archetypeProvider.getArchetype(GearyEntityType(ulongArrayOf(Relation.of(geary.components.setComponent, componentId).id)))
             if(eventArc.eventListeners.isNotEmpty()) {
@@ -360,7 +360,7 @@ open class Archetype(
     // ==== Event listeners ====
 
     /** Adds an event [handler] that listens to certain events relating to entities in this archetype. */
-    fun addEventHandler(handler: Listener) {
+    fun addEventListener(handler: Listener) {
         _eventListeners += handler
     }
 

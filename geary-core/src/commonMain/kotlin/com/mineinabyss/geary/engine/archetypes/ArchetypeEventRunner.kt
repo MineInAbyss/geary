@@ -2,11 +2,11 @@ package com.mineinabyss.geary.engine.archetypes
 
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.Record
+import com.mineinabyss.geary.datatypes.Records
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.systems.Listener
-import com.mineinabyss.geary.systems.accessors.Records
 
 class ArchetypeEventRunner : EventRunner {
     private val records: TypeMap get() = archetypes.records
@@ -24,7 +24,7 @@ class ArchetypeEventRunner : EventRunner {
 
         val listeners: Set<Listener> = origTargetArc.targetListeners.toMutableSet().apply {
             retainAll(origEventArc.eventListeners)
-            if (origSourceArc != null) retainAll(origSourceArc.sourceListeners)
+            retainAll { it.source.isEmpty || (origSourceArc != null && it in origSourceArc.sourceListeners) }
         }
         for (listener in listeners) {
             val pointers: Records = when (source) {

@@ -18,7 +18,7 @@ class ArchetypeQueryManager : QueryManager {
 
     override fun trackEventListener(listener: Listener) {
         val eventFamilyMatch = archetypes.match(listener.event.family)
-        for (archetype in eventFamilyMatch) archetype.addEventHandler(listener)
+        for (archetype in eventFamilyMatch) archetype.addEventListener(listener)
         eventListeners.add(listener)
 
         // Only start tracking a listener for the parts it actually cares for
@@ -29,7 +29,7 @@ class ArchetypeQueryManager : QueryManager {
         }
         if (!listener.target.isEmpty) {
             val targetsMatched = archetypes.match(listener.target.family)
-            for (archetype in targetsMatched) archetype.addSourceListener(listener)
+            for (archetype in targetsMatched) archetype.addTargetListener(listener)
             targetListeners.add(listener)
         }
     }
@@ -51,7 +51,7 @@ class ArchetypeQueryManager : QueryManager {
 
         matchedSources.forEach { archetype.addSourceListener(it) }
         matchedTargets.forEach { archetype.addTargetListener(it) }
-        matchedEvents.forEach { archetype.addEventHandler(it) }
+        matchedEvents.forEach { archetype.addEventListener(it) }
         matched.forEach { it.matchedArchetypes += archetype }
     }
 
