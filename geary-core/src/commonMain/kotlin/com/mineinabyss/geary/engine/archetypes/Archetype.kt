@@ -8,7 +8,6 @@ import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
-import com.soywiz.kds.IntIntMap
 
 /**
  * Archetypes store a list of entities with the same [EntityType], and provide functions to
@@ -59,13 +58,6 @@ open class Archetype(
     internal val relationsByKind: Long2ObjectMap<List<Relation>> = relations
         .groupBy { it.kind.toLong() }
 
-    /** A map of component ids to index used internally in this archetype (ex. in [componentData])*/
-    //TODO assuming no more than 32bit worth of data holding components
-    private val comp2indices: IntIntMap = IntIntMap().apply {
-        dataHoldingType.forEachIndexed { i, compId -> set(compId.toInt(), i + 1) }
-    }
-
-
     /** The amount of entities stored in this archetype. */
     val size: Int get() = ids.size
 
@@ -88,7 +80,7 @@ open class Archetype(
      *
      * @return The internally used index for this component [id], or 0 if not present. Use contains to check for presence.
      */
-    fun indexOf(id: ComponentId): Int = comp2indices[id.toInt()] - 1
+    fun indexOf(id: ComponentId): Int = dataHoldingType.indexOf(id)
 
     /**
      * @return The data under a [componentId] for an entity at [row].
@@ -106,7 +98,9 @@ open class Archetype(
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
     operator fun plus(componentId: ComponentId): Archetype =
-        componentAddEdges.getOrPut(componentId) { archetypeProvider.getArchetype(type.plus(componentId)) }
+        componentAddEdges[componentId] ?: archetypeProvider.getArchetype(type.plus(componentId)).also {
+            componentAddEdges[componentId] = it
+        }
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
     operator fun minus(componentId: ComponentId): Archetype =

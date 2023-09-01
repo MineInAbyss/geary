@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.benchmarks.unpacking
+package com.mineinabyss.geary.benchmarks.helpers
 
 data class Comp1(val id: Int)
 data class Comp2(val id: Int)

@@ -2,21 +2,14 @@ package com.mineinabyss.geary.benchmarks.instantiation
 
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.Severity
-import com.mineinabyss.geary.benchmarks.helpers.ITERATIONS
-import com.mineinabyss.geary.benchmarks.helpers.WARMUP_ITERATIONS
-import com.mineinabyss.geary.benchmarks.helpers.oneMil
-import com.mineinabyss.geary.benchmarks.unpacking.*
+import com.mineinabyss.geary.benchmarks.helpers.*
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.idofront.di.DI
 import org.openjdk.jmh.annotations.*
-import java.util.concurrent.TimeUnit
 
 @State(Scope.Benchmark)
-@Fork(1)
-@Warmup(iterations = WARMUP_ITERATIONS)
-@Measurement(iterations = ITERATIONS, time = 1, timeUnit = TimeUnit.SECONDS)
 class NewEntityBenchmark {
     @Setup
     fun setLoggingLevel() {
@@ -75,5 +68,5 @@ class NewEntityBenchmark {
 
 fun main() {
     geary(TestEngineModule)
-    NewEntityBenchmark().create1MilEntitiesWith1ComponentYesEvent()
+    NewEntityBenchmark().create1MilEntitiesWith6Components()
 }

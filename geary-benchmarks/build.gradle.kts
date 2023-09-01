@@ -22,9 +22,18 @@ dependencies {
 benchmark {
     configurations {
         named("main") {
+            warmups = 1
+            iterations = 1
             iterationTime = 5
             iterationTimeUnit = "sec"
+        }
 
+        create("fast") {
+            include("NewEntity")
+            warmups = 1
+            iterations = 1
+            iterationTime = 3
+            iterationTimeUnit = "sec"
         }
     }
     targets {

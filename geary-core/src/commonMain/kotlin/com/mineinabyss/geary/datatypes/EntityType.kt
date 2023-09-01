@@ -1,9 +1,8 @@
 package com.mineinabyss.geary.datatypes
 
-import com.mineinabyss.geary.components.relations.InstanceOf
-import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.readableString
 import kotlin.jvm.JvmInline
+
 
 /**
  * An inlined class used for tracking the components an entity/archetype has.
@@ -22,9 +21,9 @@ value class EntityType private constructor(
 
     val size: Int get() = inner.size
 
-    val prefabs: EntityType
-        get() = EntityType(filter { contains(Relation.of(componentId<InstanceOf>(), it).id) }
-            .map { Relation.of(it).target })
+//    val prefabs: EntityType
+//        get() = EntityType(filter { contains(Relation.of(componentId<InstanceOf>(), it).id) }
+//            .map { Relation.of(it).target })
 
     operator fun contains(id: ComponentId): Boolean = indexOf(id) != -1
 

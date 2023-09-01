@@ -1,7 +1,5 @@
 package com.mineinabyss.geary.benchmarks
 
-import com.mineinabyss.geary.benchmarks.helpers.ITERATIONS
-import com.mineinabyss.geary.benchmarks.helpers.WARMUP_ITERATIONS
 import com.mineinabyss.geary.benchmarks.helpers.oneMil
 import com.mineinabyss.geary.benchmarks.helpers.tenMil
 import com.mineinabyss.geary.datatypes.GearyRecord
@@ -10,13 +8,12 @@ import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.RepeatingSystem
-import org.openjdk.jmh.annotations.*
-import java.util.concurrent.TimeUnit
+import org.openjdk.jmh.annotations.Benchmark
+import org.openjdk.jmh.annotations.Scope
+import org.openjdk.jmh.annotations.Setup
+import org.openjdk.jmh.annotations.State
 
 @State(Scope.Benchmark)
-@Fork(1)
-@Warmup(iterations = WARMUP_ITERATIONS)
-@Measurement(iterations = ITERATIONS, time = 1, timeUnit = TimeUnit.SECONDS)
 class VelocitySystemBenchmark {
     data class Velocity(val x: Float, val y: Float)
     data class Position(val x: Float, val y: Float)

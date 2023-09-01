@@ -1,7 +1,9 @@
 package com.mineinabyss.geary.benchmarks
 
-import org.openjdk.jmh.annotations.*
-import java.util.concurrent.TimeUnit
+import org.openjdk.jmh.annotations.Benchmark
+import org.openjdk.jmh.annotations.Scope
+import org.openjdk.jmh.annotations.Setup
+import org.openjdk.jmh.annotations.State
 import kotlin.experimental.or
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -9,10 +11,6 @@ import kotlin.reflect.KProperty
 data class TestData(val int: Int, val double: Double)
 
 @State(Scope.Benchmark)
-@Fork(1)
-@Warmup(iterations = 0)
-@Measurement(iterations = 0, time = 1, timeUnit = TimeUnit.SECONDS)
-
 class MemoryAccessBenchmarks {
     private final val oneMil = 1000000
     var intArr = intArrayOf()

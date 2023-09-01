@@ -4,7 +4,7 @@ import com.mineinabyss.geary.helpers.tests.GearyTest
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-internal class GearyTypeTest : GearyTest() {
+internal class EntityTypeTest : GearyTest() {
     @Test
     fun typeSorting() {
         val type = EntityType(listOf(3u, 1u, 2u))

@@ -1,28 +1,27 @@
 package com.mineinabyss.geary.benchmarks.unpacking
 
-import com.mineinabyss.geary.benchmarks.helpers.ITERATIONS
-import com.mineinabyss.geary.benchmarks.helpers.WARMUP_ITERATIONS
+import com.mineinabyss.geary.benchmarks.helpers.Comp1
+import com.mineinabyss.geary.benchmarks.helpers.Comp2
 import com.mineinabyss.geary.benchmarks.helpers.tenMil
 import com.mineinabyss.geary.datatypes.GearyRecord
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.query.GearyQuery
-import org.openjdk.jmh.annotations.*
-import java.util.concurrent.TimeUnit
+import org.openjdk.jmh.annotations.Benchmark
+import org.openjdk.jmh.annotations.Scope
+import org.openjdk.jmh.annotations.Setup
+import org.openjdk.jmh.annotations.State
 
 @State(Scope.Benchmark)
-@Fork(1)
-@Warmup(iterations = WARMUP_ITERATIONS)
-@Measurement(iterations = ITERATIONS, time = 1, timeUnit = TimeUnit.SECONDS)
 class Unpack2Benchmark {
-    object BothSystem : GearyQuery() {
-        val GearyRecord.int by get<Int>()
-        val GearyRecord.double by get<Double>()
+    object SystemOf2 : GearyQuery() {
+        val GearyRecord.comp1 by get<Comp1>()
+        val GearyRecord.comp2 by get<Comp2>()
     }
 
-    object OneSystem : GearyQuery() {
-        val GearyRecord.int by get<Int>()
+    object SystemOf1 : GearyQuery() {
+        val GearyRecord.comp1 by get<Comp1>()
     }
 
     @Setup
@@ -32,8 +31,8 @@ class Unpack2Benchmark {
 
         repeat(tenMil) {
             entity {
-                set(1)
-                set(1.0)
+                set(Comp1(1))
+                set(Comp2(1))
             }
         }
     }
@@ -41,9 +40,9 @@ class Unpack2Benchmark {
     // 4.993 ops/s
     @Benchmark
     fun unpack1of2Comp() {
-        OneSystem.run {
+        SystemOf1.run {
             fastForEach {
-                it.int
+                it.comp1
             }
         }
     }
@@ -51,10 +50,10 @@ class Unpack2Benchmark {
     // 3.576 ops/s
     @Benchmark
     fun unpack2of2Comp() {
-        BothSystem.run {
+        SystemOf2.run {
             fastForEach {
-                it.int
-                it.double
+                it.comp1
+                it.comp2
             }
         }
     }
