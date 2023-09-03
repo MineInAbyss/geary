@@ -17,7 +17,7 @@ class ConcurrentSystemModificationTest : GearyTest() {
         resetEngine()
         var ran = 0
         val removingSystem = object : RepeatingSystem() {
-            var Pointer.string by getRemovable<String>()
+            var Pointer.string by get<String>().allowRemoval()
 
             override fun Pointer.tick() {
                 string = null

@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.systems.query
 
-import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.modules.geary
@@ -47,11 +46,12 @@ abstract class Query : AccessorHolder() {
     operator fun Family.provideDelegate(thisRef: GearyQuery, property: KProperty<*>) =
         mutableFamily.add(this)
 
+    /** Automatically matches families for any accessor that's supposed to match a family. */
     operator fun <T : FamilyMatching> T.provideDelegate(
         thisRef: Any,
         prop: KProperty<*>
     ): T {
-        mutableFamily.add(family)
+        family?.let { mutableFamily.add(it) }
         return this
     }
 }

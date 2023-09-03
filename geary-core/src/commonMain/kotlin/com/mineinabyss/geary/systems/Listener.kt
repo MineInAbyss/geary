@@ -31,13 +31,13 @@ abstract class Listener : AccessorOperations(), System {
 
     fun <T : ReadOnlyAccessor<A>, A> T.on(holder: AccessorHolder): ReadOnlyEntitySelectingAccessor<T, A> {
         val index = getIndexForHolder(holder)
-        if (this is FamilyMatching) holder.mutableFamily.add(this.family)
+        if (this is FamilyMatching) this.family?.let { holder.mutableFamily.add(it) }
         return ReadOnlyEntitySelectingAccessor(this, index)
     }
 
     fun <T : ReadWriteAccessor<A>, A> T.on(holder: AccessorHolder): ReadWriteEntitySelectingAccessor<T, A> {
         val index = getIndexForHolder(holder)
-        if (this is FamilyMatching) holder.mutableFamily.add(this.family)
+        if (this is FamilyMatching) this.family?.let { holder.mutableFamily.add(it) }
         return ReadWriteEntitySelectingAccessor(this, index)
     }
 

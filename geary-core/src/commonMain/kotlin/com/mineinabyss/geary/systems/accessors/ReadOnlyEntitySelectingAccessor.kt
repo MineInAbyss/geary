@@ -4,6 +4,7 @@ import com.mineinabyss.geary.datatypes.Records
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
+/** Wrapper for a [ReadOnlyAccessor] that selects a specific entity when multiple can be chosen from. */
 open class ReadOnlyEntitySelectingAccessor<T : ReadOnlyAccessor<A>, A>(
     protected val accessor: T,
     protected val pointerIndex: Int,

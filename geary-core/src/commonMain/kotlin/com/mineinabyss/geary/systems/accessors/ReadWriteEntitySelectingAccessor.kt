@@ -4,6 +4,7 @@ import com.mineinabyss.geary.datatypes.Records
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
+/** Wrapper for a [ReadWriteAccessor] that selects a specific entity when multiple can be chosen from. */
 class ReadWriteEntitySelectingAccessor<T : ReadWriteAccessor<A>, A>(
     accessor: T,
     pointerIndex: Int

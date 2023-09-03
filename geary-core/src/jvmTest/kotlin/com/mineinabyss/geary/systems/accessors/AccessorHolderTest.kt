@@ -7,8 +7,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.Test
 
 internal class AccessorHolderTest : GearyTest() {
-    object FancyQuery : GearyQuery() {
-        val Pointer.default by getOrDefault<String> { "empty!" }
+    class FancyQuery : GearyQuery() {
+        val Pointer.default by get<String>().orDefault { "empty!" }
         val Pointer.mapped by get<Int>().map { it.toString() }
     }
 
