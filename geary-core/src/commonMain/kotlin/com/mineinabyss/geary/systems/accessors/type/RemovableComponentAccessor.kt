@@ -25,7 +25,8 @@ open class RemovableComponentAccessor<T>(
             cachedArchetype = archetype
             cachedIndex = archetype.indexOf(id)
         }
-        if(cachedIndex == -1) return null
+
+        if (cachedIndex == -1) return null
         return archetype.componentData[cachedIndex][thisRef.row] as T
     }
 
@@ -34,14 +35,15 @@ open class RemovableComponentAccessor<T>(
         if (archetype !== cachedArchetype) {
             cachedArchetype = archetype
             cachedIndex = archetype.indexOf(id)
-            if (cachedIndex == -1) {
-                if(value == null) return
-                else thisRef.entity.set(value, id)
-                return
-            }
         }
 
-        if(value == null) thisRef.entity.remove(id)
+        if (cachedIndex == -1) {
+            if (value == null) return
+            else thisRef.entity.set(value, id)
+            return
+        }
+
+        if (value == null) thisRef.entity.remove(id)
         else archetype.componentData[cachedIndex][thisRef.row] = value
     }
 }

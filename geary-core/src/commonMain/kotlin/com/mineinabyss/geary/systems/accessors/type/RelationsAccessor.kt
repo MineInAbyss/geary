@@ -31,13 +31,4 @@ class RelationsAccessor(
 
         return cachedRelations
     }
-
-//    override fun setValue(thisRef: Record, property: KProperty<*>, value: T) {
-//        val archetype = thisRef.archetype
-//        if (archetype != cachedArchetype) {
-//            cachedArchetype = archetype
-//            cachedIndex = archetype.indexOf(id)
-//        }
-//        archetype.componentData[cachedIndex][thisRef.row] = value
-//    }
 }
