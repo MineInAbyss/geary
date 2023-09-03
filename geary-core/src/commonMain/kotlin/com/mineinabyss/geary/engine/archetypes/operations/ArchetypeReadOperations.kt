@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.engine.archetypes.operations
 
-import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityReadOperations
+import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 
 class ArchetypeReadOperations : EntityReadOperations {
@@ -30,13 +30,8 @@ class ArchetypeReadOperations : EntityReadOperations {
         target: EntityId,
     ): List<RelationWithData<*, *>> {
         val (arc, row) = records[entity]
-        return arc.getRelations(kind, target).map { relation ->
-            RelationWithData(
-                data = if (kind.hasRole(HOLDS_DATA)) arc[row, relation.id] else null,
-                targetData = if (target.hasRole(HOLDS_DATA)) arc[row, relation.target.withRole(HOLDS_DATA)] else null,
-                relation = relation
-            )
-        }
+
+        return arc.readRelationDataFor(row, kind, target, arc.getRelations(kind, target))
     }
 
     override fun getRelationsFor(entity: Entity, kind: ComponentId, target: EntityId): List<Relation> =

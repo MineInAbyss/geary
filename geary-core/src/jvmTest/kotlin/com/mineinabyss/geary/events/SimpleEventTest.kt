@@ -14,8 +14,8 @@ class SimpleEventTest : GearyTest() {
     class MyListener : Listener() {
         var called = 0
 
-        val Records.data by get<Int>().onTarget()
-        val Records.event by get<MyEvent>().onEvent()
+        val Records.data by get<Int>().on(target)
+        val Records.event by get<MyEvent>().on(event)
 
         override fun Records.handle() {
             called += 1

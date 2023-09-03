@@ -3,6 +3,7 @@ package com.mineinabyss.geary.datatypes
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import kotlinx.atomicfu.locks.SynchronizedObject
 
+
 class Record @PublishedApi internal constructor(
     archetype: Archetype,
     row: Int

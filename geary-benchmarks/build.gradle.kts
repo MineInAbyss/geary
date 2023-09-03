@@ -22,19 +22,30 @@ dependencies {
 benchmark {
     configurations {
         named("main") {
-            warmups = 1
-            iterations = 1
+            exclude("jvmTesting")
+            warmups = 3
+            iterations = 3
             iterationTime = 5
             iterationTimeUnit = "sec"
         }
 
         create("fast") {
-            include("NewEntity")
+            exclude("jvmTesting")
             warmups = 1
             iterations = 1
             iterationTime = 3
             iterationTimeUnit = "sec"
         }
+
+        create("fastest") {
+            exclude("jvmTesting")
+            warmups = 1
+            iterations = 1
+            iterationTime = 3
+            iterationTimeUnit = "sec"
+        }
+
+        create("unpacking")
     }
     targets {
         register("main") {

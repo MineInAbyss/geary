@@ -8,6 +8,7 @@ import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
+import com.mineinabyss.geary.systems.accessors.RelationWithData
 
 /**
  * Archetypes store a list of entities with the same [EntityType], and provide functions to
@@ -260,8 +261,17 @@ open class Archetype(
 
         if (callEvent && moveTo.targetListeners.isNotEmpty()) {
             // Archetype for the set event
-            val eventArc = archetypeProvider.getArchetype(GearyEntityType(ulongArrayOf(Relation.of(geary.components.setComponent, componentId).id)))
-            if(eventArc.eventListeners.isNotEmpty()) {
+            val eventArc = archetypeProvider.getArchetype(
+                GearyEntityType(
+                    ulongArrayOf(
+                        Relation.of(
+                            geary.components.setComponent,
+                            componentId
+                        ).id
+                    )
+                )
+            )
+            if (eventArc.eventListeners.isNotEmpty()) {
                 temporaryEntity { componentAddEvent ->
                     componentAddEvent.addRelation(geary.components.setComponent, componentId, noEvent = true)
                     eventRunner.callEvent(record, records[componentAddEvent], null)
@@ -331,6 +341,21 @@ open class Archetype(
         }?.run {
             if (target.holdsData()) filter { it.target.withRole(HOLDS_DATA) in type } else this
         } ?: emptyList()
+    }
+
+    internal fun readRelationDataFor(
+        row: Int,
+        kind: ComponentId,
+        target: EntityId,
+        relations: List<Relation>
+    ): List<RelationWithData<*, *>> {
+        return relations.map { relation ->
+            RelationWithData(
+                data = if (kind.hasRole(HOLDS_DATA)) this[row, relation.id] else null,
+                targetData = if (target.hasRole(HOLDS_DATA)) this[row, relation.target.withRole(HOLDS_DATA)] else null,
+                relation = relation
+            )
+        }
     }
 
     /**

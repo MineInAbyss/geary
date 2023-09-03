@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.systems.accessors
 
-import com.mineinabyss.geary.datatypes.GearyRecord
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.systems.query.GearyQuery
@@ -9,8 +8,8 @@ import org.junit.jupiter.api.Test
 
 internal class AccessorHolderTest : GearyTest() {
     object FancyQuery : GearyQuery() {
-        val GearyRecord.default by getOrDefault<String> { "empty!" }
-        val GearyRecord.mapped by get<Int>().map { it.toString() }
+        val Pointer.default by getOrDefault<String> { "empty!" }
+        val Pointer.mapped by get<Int>().map { it.toString() }
     }
 
     @ExperimentalCoroutinesApi

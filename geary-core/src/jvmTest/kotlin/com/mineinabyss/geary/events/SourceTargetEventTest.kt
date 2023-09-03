@@ -15,15 +15,15 @@ class SourceTargetEventTest : GearyTest() {
     data class Health(val amount: Int)
 
     inner class Interaction : Listener() {
-        val Records.strength by get<Strength>().onSource()
-        val Records.health by get<Health>().onTarget()
+        val Records.strength by get<Strength>().on(source)
+        var Records.health by get<Health>().on(target)
 
         init {
             event.mutableFamily.add(family { has<Attack>() })
         }
 
         override fun Records.handle() {
-            target.entity.set(Health(health.amount - strength.amount))
+            health = Health(health.amount - strength.amount)
         }
     }
 

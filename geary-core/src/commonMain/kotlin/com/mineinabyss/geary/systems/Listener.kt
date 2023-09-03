@@ -1,14 +1,9 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.datatypes.Component
-import com.mineinabyss.geary.datatypes.Record
 import com.mineinabyss.geary.datatypes.Records
-import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.systems.accessors.*
 import com.mineinabyss.geary.systems.accessors.type.ComponentAccessor
-import kotlin.properties.ReadOnlyProperty
 
 /**
  * #### [Guide: Listeners](https://wiki.mineinabyss.com/geary/guide/listeners)
@@ -19,48 +14,49 @@ import kotlin.properties.ReadOnlyProperty
  * are the actual functions that run when a matching event is found.
  */
 abstract class Listener : AccessorOperations(), System {
-    val source: AccessorHolder = AccessorHolder()
     val target: AccessorHolder = AccessorHolder()
     val event: AccessorHolder = AccessorHolder()
+    val source: AccessorHolder = AccessorHolder()
 
     fun start() {
         onStart()
     }
 
-    fun <T : ReadOnlyProperty<Record, A>, A> T.onTarget(): EntitySelectingAccessor<T, A> {
-        if (this is FamilyMatching) target.mutableFamily.add(this.family)
-        return EntitySelectingAccessor(this, 0)
+    private fun getIndexForHolder(holder: AccessorHolder): Int= when(holder) {
+        target -> 0
+        event -> 1
+        source -> 2
+        else -> error("Holder is not a part of this listener: $holder")
     }
 
-    fun <T : ReadOnlyProperty<Record, A>, A> T.onEvent(): EntitySelectingAccessor<T, A> {
-        if (this is FamilyMatching) event.mutableFamily.add(this.family)
-        return EntitySelectingAccessor(this, 1)
+    fun <T : ReadOnlyAccessor<A>, A> T.on(holder: AccessorHolder): ReadOnlyEntitySelectingAccessor<T, A> {
+        val index = getIndexForHolder(holder)
+        if (this is FamilyMatching) holder.mutableFamily.add(this.family)
+        return ReadOnlyEntitySelectingAccessor(this, index)
     }
 
-    fun <T : ReadOnlyProperty<Record, A>, A> T.onSource(): EntitySelectingAccessor<T, A> {
-        if (this is FamilyMatching) source.mutableFamily.add(this.family)
-        return EntitySelectingAccessor(this, 2)
+    fun <T : ReadWriteAccessor<A>, A> T.on(holder: AccessorHolder): ReadWriteEntitySelectingAccessor<T, A> {
+        val index = getIndexForHolder(holder)
+        if (this is FamilyMatching) holder.mutableFamily.add(this.family)
+        return ReadWriteEntitySelectingAccessor(this, index)
     }
 
     /** Fires when an entity has a component of type [T] set or updated. */
-    inline fun <reified T : Component> onSet(): EntitySelectingAccessor<ComponentAccessor<T>, T> {
-        event.mutableFamily.onSet(componentId<T>())
-        return get<T>().onTarget()
+    inline fun <reified T: ComponentAccessor<A>, reified A> T.whenSetOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
+        event.mutableFamily.onSet(componentId<A>())
+        return this.on(target)
     }
 
-//    /** Fires when an entity has a component of type [T] set, only if it was not set before. */
-//    inline fun <reified T : Component> onFirstSet(): AccessorBuilder<ComponentAccessor<T>> {
-//        return AccessorBuilder { holder, index ->
-//            event.mutableFamily.onFirstSet(componentId<T>())
-//            get<T>().build(holder, index)
-//        }
-//    }
+    /** Fires when an entity has a component of type [T] set, only if it was not set before. */
+    inline fun <reified T: ComponentAccessor<A>, reified A> T.whenFirstSetOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
+        event.mutableFamily.onFirstSet(componentId<A>())
+        return this.on(target)
+    }
 
-    //TODO support onAdd for relations
     /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
-    inline fun <reified T : Component> onAdd(): Family {
-        event.mutableFamily.onAdd(componentId<T>())
-        return family { has<T>() }
+    inline fun <reified T: ComponentAccessor<A>, reified A> T.whenAddedOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
+        event.mutableFamily.onAdd(componentId<A>())
+        return this.on(event)
     }
 
     abstract fun Records.handle()

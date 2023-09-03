@@ -1,11 +1,13 @@
 package com.mineinabyss.geary.systems.query
 
-import com.mineinabyss.geary.datatypes.Record
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.accessors.AccessorHolder
+import com.mineinabyss.geary.systems.accessors.AccessorThisRef
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
+import com.mineinabyss.geary.systems.accessors.Pointer
 import com.soywiz.kds.iterators.fastForEachWithIndex
 import kotlin.reflect.KProperty
 
@@ -25,7 +27,7 @@ abstract class Query : AccessorHolder() {
 //        return items.iterator()
 //    }
 
-    inline fun fastForEach(crossinline run: (Record) -> Unit) {
+    inline fun fastForEach(crossinline run: (AccessorThisRef) -> Unit) {
         if (!registered) {
             geary.queryManager.trackQuery(this)
         }
@@ -35,7 +37,7 @@ abstract class Query : AccessorHolder() {
             archetype.isIterating = true
             val upTo = archetype.size
             for(entityIndex in 0 until upTo) {
-                run(Record(archetype, entityIndex))
+                run(Pointer(archetype, entityIndex))
             }
             archetype.isIterating = false
         }

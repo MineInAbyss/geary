@@ -12,7 +12,7 @@ class SimpleComponentAddListenerTest : GearyTest() {
     class MyListener : Listener() {
         var called = 0
 
-        val Records.data by onSet<Int>()
+        val Records.data by get<Int>().whenSetOnTarget()
 
         override fun Records.handle() {
             called += 1

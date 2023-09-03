@@ -11,33 +11,37 @@ import com.mineinabyss.geary.systems.accessors.ReadWriteAccessor
 import kotlin.reflect.KProperty
 
 @OptIn(UnsafeAccessors::class)
-open class ComponentAccessor<T : Any>(
+open class RemovableComponentAccessor<T>(
     val id: ComponentId,
-) : ReadWriteAccessor<T>, FamilyMatching {
+) : ReadWriteAccessor<T?>, FamilyMatching {
     override val family: Family = family { hasSet(id) }
 
     private var cachedIndex = -1
     private var cachedArchetype: Archetype? = null
 
-    override fun getValue(thisRef: AccessorThisRef, property: KProperty<*>): T {
+    override fun getValue(thisRef: AccessorThisRef, property: KProperty<*>): T? {
         val archetype = thisRef.archetype
         if (archetype !== cachedArchetype) {
             cachedArchetype = archetype
             cachedIndex = archetype.indexOf(id)
         }
+        if(cachedIndex == -1) return null
         return archetype.componentData[cachedIndex][thisRef.row] as T
     }
 
-    override fun setValue(thisRef: AccessorThisRef, property: KProperty<*>, value: T) {
+    override fun setValue(thisRef: AccessorThisRef, property: KProperty<*>, value: T?) {
         val archetype = thisRef.archetype
         if (archetype !== cachedArchetype) {
             cachedArchetype = archetype
             cachedIndex = archetype.indexOf(id)
             if (cachedIndex == -1) {
-                thisRef.entity.set(value, id)
+                if(value == null) return
+                else thisRef.entity.set(value, id)
                 return
             }
         }
-        archetype.componentData[cachedIndex][thisRef.row] = value
+
+        if(value == null) thisRef.entity.remove(id)
+        else archetype.componentData[cachedIndex][thisRef.row] = value
     }
 }

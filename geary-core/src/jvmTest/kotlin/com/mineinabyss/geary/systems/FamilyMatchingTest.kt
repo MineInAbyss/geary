@@ -1,12 +1,13 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.datatypes.GearyRecord
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
+import com.mineinabyss.geary.datatypes.UnsafeAccessors
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.systems.accessors.Pointer
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
@@ -17,14 +18,15 @@ class FamilyMatchingTest : GearyTest() {
     val intId = componentId<Int>()
 
     val system = object : RepeatingSystem() {
-        val GearyRecord.string by get<String>()
+        val Pointer.string by get<String>()
 
         //        val GearyRecord.int by family { has<Int>() }
         init {
             mutableFamily.has<Int>()
         }
 
-        override fun GearyRecord.tick() {
+        @OptIn(UnsafeAccessors::class)
+        override fun Pointer.tick() {
             string shouldBe entity.get<String>()
             entity.has<Int>() shouldBe true
         }

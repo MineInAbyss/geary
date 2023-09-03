@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.datatypes.Record
-import com.mineinabyss.geary.systems.query.GearyQuery
+import com.mineinabyss.geary.systems.accessors.AccessorThisRef
 import com.mineinabyss.geary.systems.query.Query
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -33,7 +32,7 @@ abstract class RepeatingSystem(
         fastForEach(run = { it.tick() })
     }
 
-    protected open fun Record.tick() {}
+    protected open fun AccessorThisRef.tick() {}
 
     protected fun every(iterations: Int): Boolean =
         iteration.mod(iterations) == 0

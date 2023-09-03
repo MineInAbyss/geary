@@ -2,6 +2,7 @@ package com.mineinabyss.geary.engine.archetypes
 
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.Record
+import com.mineinabyss.geary.datatypes.RecordPointer
 import com.mineinabyss.geary.datatypes.Records
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EventRunner
@@ -28,8 +29,10 @@ class ArchetypeEventRunner : EventRunner {
         }
         for (listener in listeners) {
             val pointers: Records = when (source) {
-                null -> Records(target, event, null)
-                else -> Records(target, event, source)
+//                null -> Records(target, event, null)
+//                else -> Records(target, event, source)
+                null -> Records(RecordPointer(target), RecordPointer(event), null)
+                else -> Records(RecordPointer(target), RecordPointer(event), RecordPointer(source))
             }
             with(listener) {
                 pointers.handle()

@@ -1,15 +1,15 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.datatypes.GearyRecord
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
+import com.mineinabyss.geary.systems.accessors.Pointer
 import com.mineinabyss.geary.systems.query.Query
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class SimpleQueryTest : GearyTest() {
-    object MyQuery : Query() {
-        val GearyRecord.int by get<Int>()
+    class MyQuery : Query() {
+        val Pointer.int by get<Int>()
     }
 
     @Test
@@ -24,7 +24,7 @@ class SimpleQueryTest : GearyTest() {
         }
 
         var count = 0
-        MyQuery.run {
+        MyQuery().run {
             fastForEach {
                 it.int shouldBe 1
                 count++

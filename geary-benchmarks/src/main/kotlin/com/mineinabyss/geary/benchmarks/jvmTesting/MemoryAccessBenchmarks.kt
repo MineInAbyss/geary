@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.benchmarks
+package com.mineinabyss.geary.benchmarks.jvmTesting
 
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Scope

@@ -2,10 +2,10 @@ package com.mineinabyss.geary.benchmarks.unpacking
 
 import com.mineinabyss.geary.benchmarks.helpers.Comp1
 import com.mineinabyss.geary.benchmarks.helpers.tenMil
-import com.mineinabyss.geary.datatypes.GearyRecord
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.systems.accessors.Pointer
 import com.mineinabyss.geary.systems.query.GearyQuery
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Scope
@@ -15,7 +15,7 @@ import org.openjdk.jmh.annotations.State
 @State(Scope.Benchmark)
 class Unpack1Benchmark {
     object SystemOf1 : GearyQuery() {
-        val GearyRecord.comp1 by get<Comp1>()
+        val Pointer.comp1 by get<Comp1>()
     }
 
     @Setup
