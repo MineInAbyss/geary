@@ -52,6 +52,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(libs.kotlinx.serialization.kaml)
+                implementation("it.unimi.dsi:fastutil:8.5.12")
                 implementation(mylibs.roaringbitmap)
             }
         }

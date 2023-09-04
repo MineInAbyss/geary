@@ -3,6 +3,7 @@ package com.mineinabyss.geary.benchmarks.instantiation
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.Severity
 import com.mineinabyss.geary.benchmarks.helpers.*
+import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
@@ -61,6 +62,27 @@ class NewEntityBenchmark {
                 set(Comp4(0), noEvent = true)
                 set(Comp5(0), noEvent = true)
                 set(Comp6(0), noEvent = true)
+            }
+        }
+    }
+
+    @Benchmark
+    fun create1MilEntitiesWith6ComponentsWithoutComponentIdCalls() {
+        val comp1Id = componentId<Comp1>()
+        val comp2Id = componentId<Comp2>()
+        val comp3Id = componentId<Comp3>()
+        val comp4Id = componentId<Comp4>()
+        val comp5Id = componentId<Comp5>()
+        val comp6Id = componentId<Comp6>()
+
+        repeat(oneMil) {
+            entity {
+                set(Comp1(0), comp1Id)
+                set(Comp2(0), comp2Id)
+                set(Comp3(0), comp3Id)
+                set(Comp4(0), comp4Id)
+                set(Comp5(0), comp5Id)
+                set(Comp6(0), comp6Id)
             }
         }
     }

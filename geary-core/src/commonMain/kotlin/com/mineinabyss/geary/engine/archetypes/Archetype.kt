@@ -99,8 +99,12 @@ open class Archetype(
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
     operator fun plus(componentId: ComponentId): Archetype =
-        componentAddEdges[componentId] ?: archetypeProvider.getArchetype(type.plus(componentId)).also {
-            componentAddEdges[componentId] = it
+        componentAddEdges.getOrSet(componentId) {
+            archetypeProvider.getArchetype(
+                if (componentId.hasRole(HOLDS_DATA))
+                    type + componentId.withoutRole(HOLDS_DATA) + componentId
+                else type + componentId
+            )
         }
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
@@ -239,8 +243,8 @@ open class Archetype(
         val dataComponent = componentId.withRole(HOLDS_DATA)
 
         //If component already in this type, just update the data
-        if (contains(dataComponent)) {
-            val addIndex = indexOf(dataComponent)
+        val addIndex = indexOf(dataComponent)
+        if (addIndex != -1) {
             componentData[addIndex][row] = data
             if (callEvent) temporaryEntity { componentAddEvent ->
                 componentAddEvent.addRelation(geary.components.updatedComponent, componentId, noEvent = true)
@@ -250,10 +254,7 @@ open class Archetype(
         }
 
         //if component is not already added, add it, then set
-        val moveTo =
-            if (contains(dataComponent.withoutRole(HOLDS_DATA)))
-                this + dataComponent
-            else this + dataComponent.withoutRole(HOLDS_DATA) + dataComponent
+        val moveTo = this + dataComponent
 
         val entity = record.entity
         moveTo.moveWithNewComponent(record, data, dataComponent, entity)

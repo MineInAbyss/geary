@@ -45,7 +45,13 @@ benchmark {
             iterationTimeUnit = "sec"
         }
 
-        create("unpacking")
+        create("specific") {
+            include("ComponentIdTest")
+            warmups = 1
+            iterations = 1
+            iterationTime = 3
+            iterationTimeUnit = "sec"
+        }
     }
     targets {
         register("main") {

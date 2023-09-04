@@ -28,6 +28,7 @@ open class ArchetypeEngineModule(
     override val write = ArchetypeMutateOperations()
     override val entityProvider = EntityByArchetypeProvider()
     override val componentProvider = ComponentAsEntityProvider()
+    override val defaults: Defaults = Defaults()
 
     val records = ArrayTypeMap()
     val archetypeProvider = SimpleArchetypeProvider()

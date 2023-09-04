@@ -74,8 +74,8 @@ class Unpack6Benchmark {
 fun main() {
     Unpack6Benchmark().apply {
         setUp()
-        repeat(100) {
+//        repeat(100) {
             unpack6of6Comp()
-        }
+//        }
     }
 }

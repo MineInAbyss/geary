@@ -9,9 +9,6 @@ import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.systems.accessors.type.*
 import kotlin.reflect.KProperty
 
-/**
- * An empty interface that limits [AccessorBuilder] helper functions only to classes that use [Accessor]s.
- */
 open class AccessorOperations {
     /** Accesses a component, ensuring it is on the entity. */
     inline fun <reified T : Any> get(): ComponentAccessor<T> {
@@ -27,7 +24,7 @@ open class AccessorOperations {
      * Accesses a component, allows removing it by setting to null.
      * As a result, the type is nullable since it may be removed during system runtime.
      */
-    fun <T: Any> ComponentAccessor<T>.allowRemoval(): RemovableComponentAccessor<T> {
+    fun <T: Any> ComponentAccessor<T>.removable(): RemovableComponentAccessor<T> {
         return RemovableComponentAccessor(id)
     }
 
@@ -72,6 +69,7 @@ open class AccessorOperations {
         return RelationsAccessor(componentIdWithNullable<K>(), componentIdWithNullable<T>())
     }
 
+    /** @see getRelations */
     inline fun <reified K : Component?, reified T : Component?> getRelationsWithData(): RelationsWithDataAccessor<K, T> {
         return RelationsWithDataAccessor(componentIdWithNullable<K>(), componentIdWithNullable<T>())
     }

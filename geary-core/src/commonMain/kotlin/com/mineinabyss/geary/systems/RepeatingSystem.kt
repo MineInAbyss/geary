@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.systems
 
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.accessors.AccessorThisRef
 import com.mineinabyss.geary.systems.query.Query
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * #### [Guide: Ticking systems](https://wiki.mineinabyss.com/geary/guide/ticking-systems)
@@ -15,30 +15,13 @@ import kotlin.time.Duration.Companion.milliseconds
  * @see [ArchetypeIterator]
  */
 abstract class RepeatingSystem(
-    val interval: Duration = 50.milliseconds // 1 tick in Minecraft
+    val interval: Duration = geary.defaults.repeatingSystemInterval
 ) : Query(), System {
-    protected var iteration: Int = 0
-        private set
-
     override fun onStart() {}
 
-    //TODO better name differentiation between this and tick
-    fun doTick() {
-        iteration++
-        tick()
-    }
-
-    protected open fun tick() {
+    open fun tickAll() {
         fastForEach(run = { it.tick() })
     }
 
     protected open fun AccessorThisRef.tick() {}
-
-    protected fun every(iterations: Int): Boolean =
-        iteration.mod(iterations) == 0
-
-    protected inline fun <T> every(iterations: Int, run: () -> T): T? {
-        if (every(iterations)) return run()
-        return null
-    }
 }

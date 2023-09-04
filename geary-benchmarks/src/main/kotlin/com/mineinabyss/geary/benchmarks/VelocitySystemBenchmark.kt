@@ -41,7 +41,7 @@ class VelocitySystemBenchmark {
     // 0.606 ops/s
     @Benchmark
     fun velocitySystem() {
-        VelocitySystem.doTick()
+        VelocitySystem.tickAll()
     }
 }
 

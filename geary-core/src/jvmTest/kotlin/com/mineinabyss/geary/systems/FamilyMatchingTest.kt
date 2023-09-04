@@ -65,6 +65,6 @@ class FamilyMatchingTest : GearyTest() {
 
     @Test
     fun `accessors in system correctly read data`() {
-        system.doTick()
+        system.tickAll()
     }
 }

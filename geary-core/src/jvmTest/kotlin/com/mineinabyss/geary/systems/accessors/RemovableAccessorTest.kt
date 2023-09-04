@@ -10,7 +10,7 @@ import kotlin.test.Test
 
 class RemovableAccessorTest: GearyTest() {
     class MyQueryRemovable : Query() {
-        var Pointer.data by get<Comp1>().allowRemoval()
+        var Pointer.data by get<Comp1>().removable()
     }
 
     @OptIn(UnsafeAccessors::class)

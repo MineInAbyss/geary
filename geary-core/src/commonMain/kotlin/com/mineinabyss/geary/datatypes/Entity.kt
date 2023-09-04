@@ -2,7 +2,6 @@ package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.annotations.optin.DangerousComponentOperation
 import com.mineinabyss.geary.components.events.AddedComponent
-import com.mineinabyss.geary.components.relations.ChildOf
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.datatypes.family.family
@@ -37,12 +36,12 @@ value class Entity(val id: EntityId) {
 
     val children: List<Entity>
         get() = queryManager.getEntitiesMatching(family {
-            hasRelation<ChildOf?>(this@Entity)
+            hasRelation(geary.components.childOf, this@Entity.id)
         })
 
     val instances: List<Entity>
         get() = queryManager.getEntitiesMatching(family {
-            hasRelation<InstanceOf?>(this@Entity)
+            hasRelation(geary.components.instanceOf, this@Entity.id)
         })
 
     /** Remove this entity from the ECS. */
