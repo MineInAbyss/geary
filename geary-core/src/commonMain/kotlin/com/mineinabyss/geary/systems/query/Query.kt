@@ -8,6 +8,7 @@ import com.mineinabyss.geary.systems.accessors.AccessorHolder
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import com.mineinabyss.geary.systems.accessors.Pointer
 import com.soywiz.kds.iterators.fastForEachWithIndex
+import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
 /**com.mineinabyss.geary.ecs.engine.iteration.accessors
@@ -45,8 +46,12 @@ abstract class Query : AccessorHolder() {
         }
     }
 
-    operator fun Family.provideDelegate(thisRef: GearyQuery, property: KProperty<*>) =
+    operator fun Family.provideDelegate(thisRef: GearyQuery, property: KProperty<*>): ReadOnlyProperty<Any, Family> {
         mutableFamily.add(this)
+        return ReadOnlyProperty { thisRef, prop ->
+            this@provideDelegate
+        }
+    }
 
     /** Automatically matches families for any accessor that's supposed to match a family. */
     operator fun <T : FamilyMatching> T.provideDelegate(

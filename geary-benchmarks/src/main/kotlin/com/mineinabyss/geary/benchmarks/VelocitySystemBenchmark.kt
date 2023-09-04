@@ -15,14 +15,15 @@ import org.openjdk.jmh.annotations.State
 @State(Scope.Benchmark)
 class VelocitySystemBenchmark {
     data class Velocity(val x: Float, val y: Float)
-    data class Position(val x: Float, val y: Float)
+    data class Position(var x: Float, var y: Float)
 
     object VelocitySystem : RepeatingSystem() {
         private val Pointer.velocity by get<Velocity>()
         private var Pointer.position by get<Position>()
 
         override fun Pointer.tick() {
-            position = Position(position.x + velocity.x, position.y + velocity.y)
+            position.x += velocity.x
+            position.y += velocity.y
         }
     }
 
@@ -48,6 +49,9 @@ class VelocitySystemBenchmark {
 fun main() {
     VelocitySystemBenchmark().apply {
         setUp()
-        velocitySystem()
+
+        repeat(400) {
+            velocitySystem()
+        }
     }
 }

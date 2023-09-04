@@ -13,22 +13,24 @@ import kotlin.reflect.KProperty
 @OptIn(UnsafeAccessors::class)
 open class ComponentAccessor<T : Any>(
     val id: ComponentId,
-) : ReadWriteAccessor<T>, FamilyMatching {
+): ReadWriteAccessor<T>, FamilyMatching {
     override val family: Family = family { hasSet(id) }
 
     private var cachedIndex = -1
+    private var cachedDataArray: MutableList<T> = mutableListOf()
     private var cachedArchetype: Archetype? = null
 
-    override fun getValue(thisRef: AccessorThisRef, property: KProperty<*>): T {
+    operator fun get(thisRef: AccessorThisRef): T {
         val archetype = thisRef.archetype
         if (archetype !== cachedArchetype) {
             cachedArchetype = archetype
             cachedIndex = archetype.indexOf(id)
+            cachedDataArray = archetype.componentData[cachedIndex] as MutableList<T>
         }
-        return archetype.componentData[cachedIndex][thisRef.row] as T
+        return cachedDataArray[thisRef.row]
     }
 
-    override fun setValue(thisRef: AccessorThisRef, property: KProperty<*>, value: T) {
+    operator fun set(thisRef: AccessorThisRef, value: T) {
         val archetype = thisRef.archetype
         if (archetype !== cachedArchetype) {
             cachedArchetype = archetype
@@ -37,7 +39,16 @@ open class ComponentAccessor<T : Any>(
                 thisRef.entity.set(value, id)
                 return
             }
+            cachedDataArray = archetype.componentData[cachedIndex] as MutableList<T>
         }
-        archetype.componentData[cachedIndex][thisRef.row] = value
+        cachedDataArray[thisRef.row] = value
+    }
+
+    override fun getValue(thisRef: AccessorThisRef, property: KProperty<*>): T {
+        return get(thisRef)
+    }
+
+    override fun setValue(thisRef: AccessorThisRef, property: KProperty<*>, value: T) {
+        return set(thisRef, value)
     }
 }

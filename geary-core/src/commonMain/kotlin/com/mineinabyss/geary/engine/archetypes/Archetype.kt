@@ -125,7 +125,7 @@ open class Archetype(
         record: Record,
         newComponent: Component,
         newComponentId: ComponentId,
-        entity: Entity,
+        entity: EntityId,
     ) = move(record, entity) {
         val (oldArc, oldRow) = record
         val newCompIndex = indexOf(newComponentId)
@@ -147,7 +147,7 @@ open class Archetype(
 
     private fun moveOnlyAdding(
         record: Record,
-        entity: Entity
+        entity: EntityId
     ) = move(record, entity) {
         val (oldArc, oldRow) = record
         for (i in 0..componentData.lastIndex) {
@@ -158,7 +158,7 @@ open class Archetype(
     private fun moveWithoutComponent(
         record: Record,
         withoutComponentId: ComponentId,
-        entity: Entity,
+        entity: EntityId,
     ) = move(record, entity) {
         val (oldArc, oldRow) = record
         val withoutCompIndex = indexOf(withoutComponentId)
@@ -175,7 +175,7 @@ open class Archetype(
     }
 
     internal fun createWithoutData(entity: Entity, existingRecord: Record) {
-        move(existingRecord, entity) {}
+        move(existingRecord, entity.id) {}
     }
 
     internal fun createWithoutData(entity: Entity): Record {
@@ -185,10 +185,10 @@ open class Archetype(
 
     internal inline fun move(
         record: Record,
-        entity: Entity,
+        entity: EntityId,
         copyData: () -> Unit
     ) {
-        ids.add(entity.id)
+        ids.add(entity)
 
         copyData()
 
@@ -215,9 +215,9 @@ open class Archetype(
 
         val moveTo = this + (componentId.withoutRole(HOLDS_DATA))
 
-        val entity = record.entity
         val row = record.row
-        moveTo.moveOnlyAdding(record, entity)
+        val entityId = ids[row]
+        moveTo.moveOnlyAdding(record, entityId)
         removeEntity(row)
 
         if (callEvent) temporaryEntity { componentAddEvent ->
@@ -254,10 +254,9 @@ open class Archetype(
         }
 
         //if component is not already added, add it, then set
+        val entityId = ids[row]
         val moveTo = this + dataComponent
-
-        val entity = record.entity
-        moveTo.moveWithNewComponent(record, data, dataComponent, entity)
+        moveTo.moveWithNewComponent(record, data, dataComponent, entityId)
         removeEntity(row)
 
         if (callEvent && moveTo.targetListeners.isNotEmpty()) {
@@ -293,13 +292,13 @@ open class Archetype(
     ): Boolean {
         with(record.archetype) {
             val row = record.row
+            val entityId = ids[row]
 
             if (component !in type) return false
 
             val moveTo = this - component
 
-            val entity = record.entity
-            moveTo.moveWithoutComponent(record, component, entity)
+            moveTo.moveWithoutComponent(record, component, entityId)
             removeEntity(row)
         }
         return true

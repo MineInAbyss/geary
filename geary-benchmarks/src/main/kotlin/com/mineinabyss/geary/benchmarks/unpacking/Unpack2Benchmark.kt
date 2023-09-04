@@ -15,12 +15,12 @@ import org.openjdk.jmh.annotations.State
 
 @State(Scope.Benchmark)
 class Unpack2Benchmark {
-    object SystemOf2 : GearyQuery() {
+    private object SystemOf2 : GearyQuery() {
         val Pointer.comp1 by get<Comp1>()
         val Pointer.comp2 by get<Comp2>()
     }
 
-    object SystemOf1 : GearyQuery() {
+    private object SystemOf1 : GearyQuery() {
         val Pointer.comp1 by get<Comp1>()
     }
 

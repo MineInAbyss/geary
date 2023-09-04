@@ -1,8 +1,9 @@
 package com.mineinabyss.geary.datatypes
 
-//typealias IdList = ArrayList<ULong>
-// TODO more efficient type, no boxing
-class IdList(initialSize: Int = 16, val growFactor: Int = 2) : Iterable<ULong> {
+private const val initialSize: Int = 16
+private const val growFactor: Int = 2
+
+class IdList : Iterable<ULong> {
     var backingArr = ULongArray(initialSize)
     var size = 0
     val lastIndex get() = size - 1
