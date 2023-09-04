@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.helpers.readableString
-import kotlin.jvm.JvmInline
 
 
 /**
@@ -9,8 +8,7 @@ import kotlin.jvm.JvmInline
  *
  * It provides fast (no boxing) functions backed by FastUtil sorted sets to do operations with [ComponentId]s.
  */
-@JvmInline
-value class EntityType private constructor(
+class EntityType private constructor(
     @PublishedApi
     internal val inner: ULongArray
 ) {
@@ -19,19 +17,20 @@ value class EntityType private constructor(
 
     constructor(ids: Collection<ComponentId>) : this(inner = ids.toULongArray().apply { sort() })
 
-    val size: Int get() = inner.size
-
-//    val prefabs: EntityType
-//        get() = EntityType(filter { contains(Relation.of(componentId<InstanceOf>(), it).id) }
-//            .map { Relation.of(it).target })
+    val size: Int = inner.size
 
     operator fun contains(id: ComponentId): Boolean = indexOf(id) != -1
 
     fun indexOf(id: ComponentId): Int {
-        return binarySearch(id).coerceAtLeast(-1)
+        return inner.indexOf(id)
+//        for (i in 0 until size) {
+//            if (inner[i] == id) return i
+//        }
+//        return -1
+//        return binarySearch(id).coerceAtLeast(-1)
     }
 
-    tailrec fun binarySearch(id: ComponentId, fromIndex: Int = 0, toIndex: Int = inner.lastIndex): Int {
+    tailrec fun binarySearch(id: ComponentId, fromIndex: Int = 0, toIndex: Int = size - 1): Int {
         if (fromIndex > toIndex) return -fromIndex - 1
         val mid = (fromIndex + toIndex) / 2
         val found = inner[mid]
@@ -49,10 +48,6 @@ value class EntityType private constructor(
         for(i in 0..inner.lastIndex) {
             run(inner[i])
         }
-//        val iterator = inner.iterator()
-//        while (iterator.hasNext()) {
-//            run(iterator.nextLong().toULong())
-//        }
     }
 
     inline fun any(predicate: (ComponentId) -> Boolean): Boolean {
@@ -62,16 +57,10 @@ value class EntityType private constructor(
 
     inline fun forEachIndexed(run: (Int, ComponentId) -> Unit) {
         inner.forEachIndexed(run)
-//        val iterator = inner.iterator()
-//        var i = 0
-//        forEach { run(i++, iterator.nextLong().toULong()) }
     }
 
     inline fun filter(predicate: (ComponentId) -> Boolean): EntityType {
         return EntityType(inner.filter(predicate))
-//        val type = LongAVLTreeSet()
-//        forEach { if (predicate(it)) type.add(it.toLong()) }
-//        return GearyType(type)
     }
 
     inline fun <T> map(transform: (ULong) -> T): List<T> {
