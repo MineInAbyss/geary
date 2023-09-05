@@ -2,7 +2,6 @@ package com.mineinabyss.geary.benchmarks.unpacking
 
 import com.mineinabyss.geary.benchmarks.helpers.Comp1
 import com.mineinabyss.geary.benchmarks.helpers.tenMil
-import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
@@ -30,7 +29,6 @@ class Unpack1Benchmark {
         }
     }
 
-    // 5.149 ops/s
     @Benchmark
     fun unpack1of1Comp() {
         SystemOf1.run {

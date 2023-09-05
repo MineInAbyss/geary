@@ -2,7 +2,6 @@ package com.mineinabyss.geary.prefabs.configuration.systems
 
 import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.components.relations.NoInherit
-import com.mineinabyss.geary.datatypes.Records
 import com.mineinabyss.geary.datatypes.UnsafeAccessors
 import com.mineinabyss.geary.helpers.addParent
 import com.mineinabyss.geary.helpers.entity
@@ -17,7 +16,7 @@ class ParseChildOnPrefab : Listener() {
     private var Pointers.child by get<ChildOnPrefab>().removable().whenSetOnTarget()
 
     @OptIn(UnsafeAccessors::class)
-    override fun Records.handle() {
+    override fun Pointers.handle() {
         entity {
             addParent(target.entity)
             setAll(child!!.components)
@@ -30,7 +29,7 @@ class ParseChildrenOnPrefab : Listener() {
     private var Pointers.children by get<ChildrenOnPrefab>().removable().whenSetOnTarget()
 
     @OptIn(UnsafeAccessors::class)
-    override fun Records.handle() {
+    override fun Pointers.handle() {
         children!!.nameToComponents.forEach { (name, components) ->
             entity {
                 set(EntityName(name))

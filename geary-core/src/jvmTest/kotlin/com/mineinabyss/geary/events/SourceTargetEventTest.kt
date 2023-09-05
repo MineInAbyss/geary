@@ -6,6 +6,7 @@ import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
+import com.mineinabyss.geary.systems.accessors.Pointers
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
@@ -22,7 +23,7 @@ class SourceTargetEventTest : GearyTest() {
             event.mutableFamily.add(family { has<Attack>() })
         }
 
-        override fun Records.handle() {
+        override fun Pointers.handle() {
             health = Health(health.amount - strength.amount)
         }
     }

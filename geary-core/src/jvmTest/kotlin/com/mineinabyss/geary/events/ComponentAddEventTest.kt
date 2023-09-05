@@ -6,6 +6,7 @@ import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
+import com.mineinabyss.geary.systems.accessors.Pointers
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
@@ -19,7 +20,7 @@ internal class ComponentAddEventTest : GearyTest() {
         val Records.int by get<Int>().whenSetOnTarget()
         val Records.double by get<Double>().whenSetOnTarget()
 
-        override fun Records.handle() {
+        override fun Pointers.handle() {
             inc++
         }
     }

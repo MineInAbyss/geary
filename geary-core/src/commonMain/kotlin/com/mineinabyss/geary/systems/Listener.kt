@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.datatypes.Records
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.systems.accessors.*
 import com.mineinabyss.geary.systems.accessors.type.ComponentAccessor
@@ -59,6 +58,6 @@ abstract class Listener : AccessorOperations(), System {
         return this.on(event)
     }
 
-    abstract fun Records.handle()
+    abstract fun Pointers.handle()
 }
 

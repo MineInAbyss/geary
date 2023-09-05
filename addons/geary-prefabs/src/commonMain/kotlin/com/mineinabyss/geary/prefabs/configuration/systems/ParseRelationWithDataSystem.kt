@@ -3,6 +3,7 @@ package com.mineinabyss.geary.prefabs.configuration.systems
 import com.mineinabyss.geary.datatypes.Records
 import com.mineinabyss.geary.datatypes.UnsafeAccessors
 import com.mineinabyss.geary.systems.Listener
+import com.mineinabyss.geary.systems.accessors.Pointers
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 
 
@@ -10,7 +11,7 @@ class ParseRelationWithDataSystem : Listener() {
     private val Records.relationWithData by get<RelationWithData<*, *>>().whenSetOnTarget()
 
     @OptIn(UnsafeAccessors::class)
-    override fun Records.handle() {
+    override fun Pointers.handle() {
         val entity = target.entity
         val data = relationWithData.data
         val targetData = relationWithData.targetData

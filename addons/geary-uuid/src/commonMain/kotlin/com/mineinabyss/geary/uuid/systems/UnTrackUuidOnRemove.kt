@@ -13,7 +13,7 @@ class UnTrackUuidOnRemove : GearyListener() {
     private val Pointers.uuid by get<Uuid>().on(target)
     private val Pointers.removed by family { has<EntityRemoved>() }.on(event)
 
-    override fun Records.handle() {
+    override fun Pointers.handle() {
         uuid2Geary.remove(uuid)
     }
 }

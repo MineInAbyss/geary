@@ -1,14 +1,14 @@
 package com.mineinabyss.geary.prefabs.configuration.systems
 
-import com.mineinabyss.geary.datatypes.Records
 import com.mineinabyss.geary.prefabs.configuration.components.RelationOnPrefab
 import com.mineinabyss.geary.systems.Listener
+import com.mineinabyss.geary.systems.accessors.Pointers
 
 
 class ParseRelationOnPrefab : Listener() {
-    private var Records.relation by get<RelationOnPrefab>().removable().whenSetOnTarget()
+    private var Pointers.relation by get<RelationOnPrefab>().removable().whenSetOnTarget()
 
-    override fun Records.handle() {
+    override fun Pointers.handle() {
         try {
             val rel: RelationOnPrefab = relation!!
 //            entity.setRelation(relation.value, entity.parseEntity(relation.key).id)

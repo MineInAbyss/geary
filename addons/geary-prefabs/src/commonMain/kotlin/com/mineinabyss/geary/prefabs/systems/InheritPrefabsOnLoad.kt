@@ -13,7 +13,7 @@ class InheritPrefabsOnLoad : Listener() {
     private val Pointers.loaded by family { has<PrefabLoaded>() }.on(event)
 
     @OptIn(UnsafeAccessors::class)
-    override fun Records.handle() {
+    override fun Pointers.handle() {
         target.entity.inheritPrefabs()
     }
 }

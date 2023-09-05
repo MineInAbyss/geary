@@ -5,6 +5,7 @@ import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
+import com.mineinabyss.geary.systems.accessors.Pointers
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
@@ -14,7 +15,7 @@ class SimpleComponentAddListenerTest : GearyTest() {
 
         val Records.data by get<Int>().whenSetOnTarget()
 
-        override fun Records.handle() {
+        override fun Pointers.handle() {
             called += 1
         }
     }

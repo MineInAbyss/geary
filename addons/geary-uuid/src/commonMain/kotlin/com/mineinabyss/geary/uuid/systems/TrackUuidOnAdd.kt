@@ -15,7 +15,7 @@ class TrackUuidOnAdd : GearyListener() {
     val Pointers.regenerateUUIDOnClash by get<RegenerateUUIDOnClash>().orNull().on(target)
 
     @OptIn(UnsafeAccessors::class)
-    override fun Records.handle() {
+    override fun Pointers.handle() {
         if (uuid in uuid2Geary)
             if (regenerateUUIDOnClash != null) {
                 val newUuid = uuid4()

@@ -10,6 +10,7 @@ import com.mineinabyss.geary.modules.archetypes
 )
 annotation class UnsafeAccessors
 
+/** A record created in place that delegates to the real entity pointer the first time [entity] gets accessed. */
 class RecordPointer @PublishedApi internal constructor(
     archetype: Archetype,
     row: Int
@@ -40,8 +41,8 @@ class RecordPointer @PublishedApi internal constructor(
             return entity
         }
 
-    operator fun component1(): Archetype =
-        @OptIn(UnsafeAccessors::class) archetype
+    @UnsafeAccessors
+    operator fun component1(): Archetype = archetype
 
     operator fun component2(): Int = row
 }

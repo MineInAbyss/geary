@@ -30,14 +30,12 @@ class MemoryAccessBenchmarks {
         accessorWithScope = AccessorWithScope(intArr)
     }
 
-    // >2bil ops/s
-//    @Benchmark
+    @Benchmark
     fun emptyLoop() {
         for (i in 0 until oneMil) {
         }
     }
 
-    // 1.8bil ops/s
     @Benchmark
     fun readIntArrDirectly() {
         for (i in 0 until oneMil) {
@@ -45,7 +43,6 @@ class MemoryAccessBenchmarks {
         }
     }
 
-    // 1.7bil ops/s
     @Benchmark
     fun readObjArrDirectly() {
         for (i in 0 until oneMil) {
@@ -60,7 +57,6 @@ class MemoryAccessBenchmarks {
         }
     }
 
-    // 1.3bil ops/s
     @Benchmark
     fun read2ArrDirectly() {
         for (i in 0 until oneMil) {
@@ -83,8 +79,6 @@ class MemoryAccessBenchmarks {
         }
     }
 
-
-    // 23470 ops/s
     @Benchmark
     fun readWriteSingleIntArrDirectly() {
         for (i in 0 until oneMil) {
@@ -93,7 +87,6 @@ class MemoryAccessBenchmarks {
     }
 
 
-    // 15503 ops/s
     @Benchmark
     fun readWriteTwoArrDirectly() {
         for (i in 0 until oneMil) {
@@ -116,7 +109,6 @@ class MemoryAccessBenchmarks {
         }
     }
 
-    // 1907 ops/s
     @Benchmark
     fun readPackToSeparateArr() {
         val arr = IntArray(oneMil)
@@ -125,8 +117,6 @@ class MemoryAccessBenchmarks {
         }
     }
 
-    // 1.5bil ops/s
-    // Even with a full object instantiation, we don't lose much!
     @Benchmark
     fun readIntArrWithIndirection() {
         for (i in 0 until oneMil) {

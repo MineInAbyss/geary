@@ -37,7 +37,6 @@ class Unpack2Benchmark {
         }
     }
 
-    // 4.993 ops/s
     @Benchmark
     fun unpack1of2Comp() {
         SystemOf1.run {
@@ -47,7 +46,6 @@ class Unpack2Benchmark {
         }
     }
 
-    // 3.576 ops/s
     @Benchmark
     fun unpack2of2Comp() {
         SystemOf2.run {
