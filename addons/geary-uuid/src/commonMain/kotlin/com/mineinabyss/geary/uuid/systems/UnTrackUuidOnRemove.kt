@@ -1,20 +1,19 @@
 package com.mineinabyss.geary.uuid.systems
 
 import com.benasher44.uuid.Uuid
-import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.components.events.EntityRemoved
+import com.mineinabyss.geary.datatypes.Records
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.systems.GearyListener
-import com.mineinabyss.geary.systems.accessors.EventScope
+import com.mineinabyss.geary.systems.accessors.Pointers
 
 import com.mineinabyss.geary.uuid.uuid2Geary
 
 class UnTrackUuidOnRemove : GearyListener() {
-    private val TargetScope.uuid by get<Uuid>().onTarget()
-    private val EventScope.removed by family { has<EntityRemoved>() }.onEvent()
+    private val Pointers.uuid by get<Uuid>().on(target)
+    private val Pointers.removed by family { has<EntityRemoved>() }.on(event)
 
-    @Handler
-    private fun TargetScope.untrack() {
+    override fun Records.handle() {
         uuid2Geary.remove(uuid)
     }
 }

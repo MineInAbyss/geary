@@ -20,7 +20,7 @@ class SimpleComponentAddListenerTest : GearyTest() {
     }
 
     @Test
-    fun `simple query`() {
+    fun `simple event listener`() {
         val listener = MyListener()
         geary.pipeline.addSystem(listener)
 

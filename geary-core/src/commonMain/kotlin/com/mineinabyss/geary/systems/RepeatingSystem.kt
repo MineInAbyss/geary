@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.systems
 
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.accessors.AccessorThisRef
+import com.mineinabyss.geary.systems.accessors.Pointer
 import com.mineinabyss.geary.systems.query.Query
 import kotlin.time.Duration
 
@@ -23,5 +23,5 @@ abstract class RepeatingSystem(
         fastForEach(run = { it.tick() })
     }
 
-    protected open fun AccessorThisRef.tick() {}
+    protected open fun Pointer.tick() {}
 }

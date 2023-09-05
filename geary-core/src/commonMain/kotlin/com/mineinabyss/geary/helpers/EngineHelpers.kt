@@ -55,12 +55,3 @@ fun componentId(kClass: KClass<out ComponentId>): Nothing =
 /** Gets the [ComponentInfo] component from a component's id. */
 fun ComponentId.getComponentInfo(): ComponentInfo? =
     this.toGeary().get()
-//@ExperimentalAsyncGearyAPI
-//public inline fun <T> runSafely(
-//    scope: CoroutineScope = globalContext.engine,
-//    crossinline run: suspend () -> T
-//): Deferred<T> {
-//    val deferred = globalContext.engine.async(start = CoroutineStart.LAZY) { run() }
-//    globalContext.engine.runSafely(scope, deferred)
-//    return deferred
-//}

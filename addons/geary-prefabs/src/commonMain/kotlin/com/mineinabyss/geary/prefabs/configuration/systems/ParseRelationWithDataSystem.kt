@@ -1,15 +1,17 @@
 package com.mineinabyss.geary.prefabs.configuration.systems
 
-import com.mineinabyss.geary.annotations.Handler
+import com.mineinabyss.geary.datatypes.Records
+import com.mineinabyss.geary.datatypes.UnsafeAccessors
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 
 
 class ParseRelationWithDataSystem : Listener() {
-    private val TargetScope.relationWithData by onSet<RelationWithData<*, *>>().onTarget()
+    private val Records.relationWithData by get<RelationWithData<*, *>>().whenSetOnTarget()
 
-    @Handler
-    private fun TargetScope.convertToRelation() {
+    @OptIn(UnsafeAccessors::class)
+    override fun Records.handle() {
+        val entity = target.entity
         val data = relationWithData.data
         val targetData = relationWithData.targetData
         if (data != null) entity.set(data, relationWithData.relation.id)

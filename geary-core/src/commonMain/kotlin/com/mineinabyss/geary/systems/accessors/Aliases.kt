@@ -6,13 +6,11 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 
 
-typealias ReadOnlyAccessor<T> = ReadOnlyProperty<AccessorThisRef, T>
-typealias ReadWriteAccessor<T> = ReadWriteProperty<AccessorThisRef, T>
-
-internal typealias AccessorThisRef = RecordPointer
+typealias ReadOnlyAccessor<T> = ReadOnlyProperty<Pointer, T>
+typealias ReadWriteAccessor<T> = ReadWriteProperty<Pointer, T>
 
 /** A pointer to where a specific entity's data is stored for use by accessors. */
-typealias Pointer = AccessorThisRef
+typealias Pointer = RecordPointer
 
 /** A list of [Pointer]s, currently used to select between the target, source, and event entity in listeners. */
 typealias Pointers = Records

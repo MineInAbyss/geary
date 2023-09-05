@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.datatypes
 
-import com.mineinabyss.geary.systems.accessors.AccessorThisRef
+import com.mineinabyss.geary.systems.accessors.Pointer
 
 /**
  * A collection of records used for queries involving multiple entities.
@@ -8,11 +8,11 @@ import com.mineinabyss.geary.systems.accessors.AccessorThisRef
  * Currently built for our event system but will support arbitrary entities once we improve the query system.
  */
 class Records(
-    val target: AccessorThisRef,
-    val event: AccessorThisRef,
-    val source: AccessorThisRef?,
+    val target: Pointer,
+    val event: Pointer,
+    val source: Pointer?,
 ) {
-    fun getByIndex(index: Int): AccessorThisRef {
+    fun getByIndex(index: Int): Pointer {
         return when (index) {
             0 -> target
             1 -> event

@@ -2,25 +2,28 @@ package com.mineinabyss.geary.uuid.systems
 
 import com.benasher44.uuid.Uuid
 import com.benasher44.uuid.uuid4
-import com.mineinabyss.geary.annotations.Handler
+import com.mineinabyss.geary.datatypes.Records
+import com.mineinabyss.geary.datatypes.UnsafeAccessors
 import com.mineinabyss.geary.systems.GearyListener
+import com.mineinabyss.geary.systems.accessors.Pointers
 
 import com.mineinabyss.geary.uuid.components.RegenerateUUIDOnClash
 import com.mineinabyss.geary.uuid.uuid2Geary
 
 class TrackUuidOnAdd : GearyListener() {
-    private val TargetScope.uuid by onSet<Uuid>().onTarget()
+    var Pointers.uuid by get<Uuid>().whenSetOnTarget()
+    val Pointers.regenerateUUIDOnClash by get<RegenerateUUIDOnClash>().orNull().on(target)
 
-    @Handler
-    private fun TargetScope.track() {
+    @OptIn(UnsafeAccessors::class)
+    override fun Records.handle() {
         if (uuid in uuid2Geary)
-            if (entity.has<RegenerateUUIDOnClash>()) {
+            if (regenerateUUIDOnClash != null) {
                 val newUuid = uuid4()
-                entity.set(newUuid)
-                uuid2Geary[newUuid] = entity
-            } else error("Tried tracking entity $entity with already existing uuid $uuid")
+                uuid = newUuid
+                uuid2Geary[newUuid] = target.entity
+            } else error("Tried tracking entity $target.entity with already existing uuid $uuid")
         else
-            uuid2Geary[uuid] = entity
+            uuid2Geary[uuid] = target.entity
     }
 }
 

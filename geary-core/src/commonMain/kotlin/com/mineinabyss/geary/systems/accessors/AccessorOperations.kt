@@ -12,12 +12,12 @@ import kotlin.reflect.KProperty
 open class AccessorOperations {
     /** Accesses a component, ensuring it is on the entity. */
     inline fun <reified T : Any> get(): ComponentAccessor<T> {
-        return ComponentAccessor(componentId<T>().withRole(HOLDS_DATA))
+        return NonNullComponentAccessor(componentId<T>().withRole(HOLDS_DATA))
     }
 
     /** Accesses a data stored in a relation with kind [K] and target type [T], ensuring it is on the entity. */
     inline fun <reified K: Any, reified T : Any> getRelation(): ComponentAccessor<T> {
-        return ComponentAccessor(Relation.of<K, T>().id)
+        return NonNullComponentAccessor(Relation.of<K, T>().id)
     }
 
     /**
@@ -41,7 +41,7 @@ open class AccessorOperations {
         return object : ReadOnlyAccessor<U>, FamilyMatching {
             override val family = (this@map as? FamilyMatching)?.family
 
-            override fun getValue(thisRef: AccessorThisRef, property: KProperty<*>): U {
+            override fun getValue(thisRef: Pointer, property: KProperty<*>): U {
                 val value = this@map.getValue(thisRef, property)
                 return mapping(value)
             }

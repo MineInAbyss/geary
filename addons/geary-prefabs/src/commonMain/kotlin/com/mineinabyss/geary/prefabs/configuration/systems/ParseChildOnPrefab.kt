@@ -1,43 +1,45 @@
 package com.mineinabyss.geary.prefabs.configuration.systems
 
-import com.mineinabyss.geary.annotations.Handler
 import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.components.relations.NoInherit
+import com.mineinabyss.geary.datatypes.Records
+import com.mineinabyss.geary.datatypes.UnsafeAccessors
 import com.mineinabyss.geary.helpers.addParent
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.prefabs.configuration.components.ChildOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.ChildrenOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.systems.Listener
+import com.mineinabyss.geary.systems.accessors.Pointers
 
 
 class ParseChildOnPrefab : Listener() {
-    private val TargetScope.child by onSet<ChildOnPrefab>().onTarget()
+    private var Pointers.child by get<ChildOnPrefab>().removable().whenSetOnTarget()
 
-    @Handler
-    private fun TargetScope.convertToRelation() {
+    @OptIn(UnsafeAccessors::class)
+    override fun Records.handle() {
         entity {
-            addParent(entity)
-            setAll(child.components)
+            addParent(target.entity)
+            setAll(child!!.components)
         }
-        entity.remove<ChildOnPrefab>()
+        child = null
     }
 }
 
 class ParseChildrenOnPrefab : Listener() {
-    private val TargetScope.children by onSet<ChildrenOnPrefab>().onTarget()
+    private var Pointers.children by get<ChildrenOnPrefab>().removable().whenSetOnTarget()
 
-    @Handler
-    private fun TargetScope.convertToRelation() {
-        children.nameToComponents.forEach { (name, components) ->
+    @OptIn(UnsafeAccessors::class)
+    override fun Records.handle() {
+        children!!.nameToComponents.forEach { (name, components) ->
             entity {
                 set(EntityName(name))
                 set(Prefab())
-                addParent(entity)
+                addParent(target.entity)
                 addRelation<NoInherit, Prefab>()
                 setAll(components)
             }
         }
-        entity.remove<ChildrenOnPrefab>()
+        children = null
     }
 }
