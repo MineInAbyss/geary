@@ -2,8 +2,7 @@ package com.mineinabyss.geary.uuid.systems
 
 import com.benasher44.uuid.Uuid
 import com.benasher44.uuid.uuid4
-import com.mineinabyss.geary.datatypes.Records
-import com.mineinabyss.geary.datatypes.UnsafeAccessors
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.Pointers
 

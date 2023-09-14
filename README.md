@@ -38,10 +38,10 @@ data class Velocity(var x: Double, var y: Double)
 
 class UpdatePositionSystem : TickingSystem(interval = 20.milliseconds) {
     // Specify all components we want (Geary also supports branched AND/OR/NOT statements for selection)
-    val TargetScope.position by get<Position>()
-    val TargetScope.velocity by get<Velocity>()
+    val Pointer.position by get<Position>()
+    val Pointer.velocity by get<Velocity>()
 
-    override fun TargetScope.tick() {
+    override fun Pointer.tick() {
         // We can access our components like regular variables!
         position.x += velocity.x
         position.y += velocity.y

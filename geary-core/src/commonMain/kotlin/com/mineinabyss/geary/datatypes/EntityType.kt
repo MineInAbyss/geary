@@ -23,11 +23,6 @@ class EntityType private constructor(
 
     fun indexOf(id: ComponentId): Int {
         return inner.indexOf(id)
-//        for (i in 0 until size) {
-//            if (inner[i] == id) return i
-//        }
-//        return -1
-//        return binarySearch(id).coerceAtLeast(-1)
     }
 
     tailrec fun binarySearch(id: ComponentId, fromIndex: Int = 0, toIndex: Int = size - 1): Int {
@@ -95,11 +90,4 @@ class EntityType private constructor(
 
     override fun toString(): String =
         inner.joinToString(", ", prefix = "[", postfix = "]") { it.readableString() }
-
-    companion object {
-        internal fun fromMutableArray(array: ULongArray): EntityType {
-            array.sort()
-            return EntityType(array)
-        }
-    }
 }

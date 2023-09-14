@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.systems.accessors
 
-import com.mineinabyss.geary.datatypes.UnsafeAccessors
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.helpers.Comp1
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest

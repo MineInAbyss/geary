@@ -90,5 +90,5 @@ class NewEntityBenchmark {
 
 fun main() {
     geary(TestEngineModule)
-    NewEntityBenchmark().create1MilEntitiesWith6Components()
+    NewEntityBenchmark().create1MilEntitiesWith0Components()
 }

@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.prefabs.systems
 
-import com.mineinabyss.geary.datatypes.Records
-import com.mineinabyss.geary.datatypes.UnsafeAccessors
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.prefabs.events.PrefabLoaded
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs

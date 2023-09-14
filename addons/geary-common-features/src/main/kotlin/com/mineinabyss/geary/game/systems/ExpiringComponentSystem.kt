@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.game.systems
 
-import com.mineinabyss.geary.datatypes.UnsafeAccessors
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.game.components.Expiry
 import com.mineinabyss.geary.systems.RepeatingSystem
 import com.mineinabyss.geary.systems.accessors.Pointer

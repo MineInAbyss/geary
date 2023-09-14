@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.systems
 
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
-import com.mineinabyss.geary.datatypes.UnsafeAccessors
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest

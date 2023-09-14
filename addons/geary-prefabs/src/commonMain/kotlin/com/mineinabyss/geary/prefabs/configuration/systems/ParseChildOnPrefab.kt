@@ -2,7 +2,7 @@ package com.mineinabyss.geary.prefabs.configuration.systems
 
 import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.components.relations.NoInherit
-import com.mineinabyss.geary.datatypes.UnsafeAccessors
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.helpers.addParent
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.prefabs.configuration.components.ChildOnPrefab

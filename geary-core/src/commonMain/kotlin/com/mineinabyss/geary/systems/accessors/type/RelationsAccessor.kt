@@ -3,7 +3,7 @@ package com.mineinabyss.geary.systems.accessors.type
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityId
 import com.mineinabyss.geary.datatypes.Relation
-import com.mineinabyss.geary.datatypes.UnsafeAccessors
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.archetypes.Archetype

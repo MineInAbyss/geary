@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.prefabs.configuration.systems
 
 import com.mineinabyss.geary.datatypes.Records
-import com.mineinabyss.geary.datatypes.UnsafeAccessors
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.Pointers
 import com.mineinabyss.geary.systems.accessors.RelationWithData
