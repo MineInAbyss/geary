@@ -41,6 +41,8 @@ interface GearyModule {
     val eventRunner: EventRunner
     val pipeline: Pipeline
 
+    val defaults: Defaults
+
     operator fun invoke(configure: GearyConfiguration.() -> Unit) {
         GearyConfiguration().apply(configure)
     }

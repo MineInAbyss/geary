@@ -30,8 +30,8 @@ kotlin {
                 implementation(mylibs.atomicfu)
                 implementation(libs.kotlin.reflect)
                 implementation(libs.kotlinx.serialization.cbor)
-                implementation(libs.idofront.di)
 
+                api(libs.idofront.di)
                 api(mylibs.kds)
                 api(mylibs.kermit)
                 api(libs.kotlinx.coroutines)
@@ -52,6 +52,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(libs.kotlinx.serialization.kaml)
+                implementation(libs.fastutil)
                 implementation(mylibs.roaringbitmap)
             }
         }

@@ -25,7 +25,7 @@ open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine(
 
     /** Describes how to individually tick each system */
     protected open fun RepeatingSystem.runSystem() {
-        doTick()
+        tickAll()
     }
 
     override fun scheduleSystemTicking() {

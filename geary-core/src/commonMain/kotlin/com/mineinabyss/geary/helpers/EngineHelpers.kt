@@ -1,9 +1,8 @@
 package com.mineinabyss.geary.helpers
 
 import com.mineinabyss.geary.components.ComponentInfo
-import com.mineinabyss.geary.components.events.SuppressRemoveEvent
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.modules.geary
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
@@ -19,7 +18,7 @@ inline fun <T> temporaryEntity(
     run: (Entity) -> T
 ): T {
     val entity = entity {
-        add<SuppressRemoveEvent>(noEvent = true)
+        add(geary.components.suppressRemoveEvent, noEvent = true)
     }
     return try {
         run(entity)
@@ -56,12 +55,3 @@ fun componentId(kClass: KClass<out ComponentId>): Nothing =
 /** Gets the [ComponentInfo] component from a component's id. */
 fun ComponentId.getComponentInfo(): ComponentInfo? =
     this.toGeary().get()
-//@ExperimentalAsyncGearyAPI
-//public inline fun <T> runSafely(
-//    scope: CoroutineScope = globalContext.engine,
-//    crossinline run: suspend () -> T
-//): Deferred<T> {
-//    val deferred = globalContext.engine.async(start = CoroutineStart.LAZY) { run() }
-//    globalContext.engine.runSafely(scope, deferred)
-//    return deferred
-//}
