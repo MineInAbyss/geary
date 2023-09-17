@@ -17,7 +17,7 @@ import com.mineinabyss.geary.systems.accessors.RelationWithData
  * An example use case: If a query matches an archetype, it will also match all entities inside which
  * gives a large performance boost to system iteration.
  */
-open class Archetype(
+data class Archetype(
     val type: EntityType,
     val id: Int
 ) {
@@ -29,7 +29,7 @@ open class Archetype(
     val entities: List<Entity> get() = ids.map { it.toGeary() }
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
-    protected val ids: IdList = IdList()
+    private val ids: IdList = IdList()
 
     @PublishedApi
     internal var isIterating: Boolean = false
