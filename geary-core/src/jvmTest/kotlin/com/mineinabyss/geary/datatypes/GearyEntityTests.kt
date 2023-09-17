@@ -49,6 +49,15 @@ internal class GearyEntityTests : GearyTest() {
     }
 
     @Test
+    fun `component removal with two components`() {
+        entity {
+            set(1)
+            set("Test")
+            remove<String>()
+        }.type.getArchetype() shouldBe archetypes.archetypeProvider.rootArchetype + componentId<Int>() + (HOLDS_DATA or componentId<Int>())
+    }
+
+    @Test
     fun `add then set`() {
         entity {
             add<String>()

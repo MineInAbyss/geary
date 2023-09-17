@@ -163,6 +163,14 @@ data class Archetype(
         val (oldArc, oldRow) = record
         val withoutCompIndex = indexOf(withoutComponentId)
 
+        // If removing an added component, we still copy all data
+        if (withoutCompIndex == -1) {
+            for (i in 0..componentData.lastIndex) {
+                componentData[i].add(oldArc.componentData[i][oldRow])
+            }
+            return@move
+        }
+
         // Add before without comp
         for (i in 0 until withoutCompIndex) {
             componentData[i].add(oldArc.componentData[i][oldRow])
