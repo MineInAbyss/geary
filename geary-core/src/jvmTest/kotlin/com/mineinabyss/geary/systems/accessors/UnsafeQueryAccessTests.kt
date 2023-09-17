@@ -23,7 +23,7 @@ class UnsafeQueryAccessTests : GearyTest() {
 
         var count = 0
         MyQuery().run {
-            fastForEach {
+            forEach {
                 it.data shouldBe Comp1(1)
                 it.data = Comp1(10)
                 it.data shouldBe Comp1(10)
@@ -43,7 +43,7 @@ class UnsafeQueryAccessTests : GearyTest() {
 
         var count = 0
         MyQuery().run {
-            fastForEach {
+            forEach {
                 it.data shouldBe Comp1(1)
                 it.data = Comp1(10)
                 it.entity.set("Other comp")
@@ -65,7 +65,7 @@ class UnsafeQueryAccessTests : GearyTest() {
 
         var count = 0
         MyQuery().run {
-            fastForEach {
+            forEach {
                 it.data shouldBe Comp1(1)
                 it.entity.remove<Comp1>()
                 it.data = Comp1(10)

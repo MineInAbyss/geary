@@ -7,7 +7,6 @@ import kotlinx.atomicfu.locks.synchronized
 
 class ArrayTypeMap : TypeMap {
     private val lock = SynchronizedObject()
-    // TODO Long indices!!
     private val map: ArrayList<Record?> = arrayListOf()
 
     // We don't return nullable record to avoid boxing.

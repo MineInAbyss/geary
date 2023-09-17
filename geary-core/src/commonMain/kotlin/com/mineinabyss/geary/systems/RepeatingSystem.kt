@@ -11,8 +11,6 @@ import kotlin.time.Duration
  * A system for the ECS that will run every [interval] ticks.
  *
  * @param interval How often to run this system in ticks.
- *
- * @see [ArchetypeIterator]
  */
 abstract class RepeatingSystem(
     val interval: Duration = geary.defaults.repeatingSystemInterval
@@ -20,7 +18,7 @@ abstract class RepeatingSystem(
     override fun onStart() {}
 
     open fun tickAll() {
-        fastForEach(run = { it.tick() })
+        forEach(run = { it.tick() })
     }
 
     protected open fun Pointer.tick() {}

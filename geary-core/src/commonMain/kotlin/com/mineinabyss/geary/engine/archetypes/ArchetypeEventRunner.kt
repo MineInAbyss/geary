@@ -22,15 +22,13 @@ class ArchetypeEventRunner : EventRunner {
         val origSourceArc = source?.archetype
 
         // triple intersection of listeners
-
         val listeners: Set<Listener> = origTargetArc.targetListeners.toMutableSet().apply {
             retainAll(origEventArc.eventListeners)
             retainAll { it.source.isEmpty || (origSourceArc != null && it in origSourceArc.sourceListeners) }
         }
+
         for (listener in listeners) {
             val pointers: Records = when (source) {
-//                null -> Records(target, event, null)
-//                else -> Records(target, event, source)
                 null -> Records(RecordPointer(target), RecordPointer(event), null)
                 else -> Records(RecordPointer(target), RecordPointer(event), RecordPointer(source))
             }

@@ -40,7 +40,7 @@ class Unpack2Benchmark {
     @Benchmark
     fun unpack1of2Comp() {
         SystemOf1.run {
-            fastForEach {
+            forEach {
                 it.comp1
             }
         }
@@ -49,7 +49,7 @@ class Unpack2Benchmark {
     @Benchmark
     fun unpack2of2Comp() {
         SystemOf2.run {
-            fastForEach {
+            forEach {
                 it.comp1
                 it.comp2
             }

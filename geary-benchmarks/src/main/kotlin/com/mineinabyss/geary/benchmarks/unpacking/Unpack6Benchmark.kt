@@ -66,7 +66,7 @@ class Unpack6Benchmark {
     @Benchmark
     fun unpack1of6Comp() {
         SystemOf1.run {
-            fastForEach {
+            forEach {
                 it.comp1
             }
         }
@@ -75,7 +75,7 @@ class Unpack6Benchmark {
     @Benchmark
     fun unpack6of6Comp() {
         SystemOf6.run {
-            fastForEach {
+            forEach {
                 it.comp1
                 it.comp2
                 it.comp3
@@ -89,7 +89,7 @@ class Unpack6Benchmark {
     @Benchmark
     fun unpack6of6CompNoDelegate() {
         SystemOf6WithoutDelegate.run {
-            fastForEach {
+            forEach {
                 comp1[it]
                 comp2[it]
                 comp3[it]

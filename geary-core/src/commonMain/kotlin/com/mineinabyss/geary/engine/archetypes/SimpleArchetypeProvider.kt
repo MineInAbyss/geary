@@ -16,7 +16,7 @@ class SimpleArchetypeProvider : ArchetypeProvider {
     }
     override val count: Int get() = trackedArchetypes.size
 
-    private val trackedArchetypes by lazy { mutableListOf<Archetype>(rootArchetype) }
+    private val trackedArchetypes by lazy { mutableListOf(rootArchetype) }
     private val archetypeWriteLock = SynchronizedObject()
 
 
@@ -30,7 +30,7 @@ class SimpleArchetypeProvider : ArchetypeProvider {
     }
 
     override fun getArchetype(entityType: EntityType): Archetype = synchronized(archetypeWriteLock) {
-        var node: Archetype = rootArchetype
+        var node = rootArchetype
         entityType.forEach { compId ->
             node = node.componentAddEdges[compId] ?: createArchetype(node, compId)
         }

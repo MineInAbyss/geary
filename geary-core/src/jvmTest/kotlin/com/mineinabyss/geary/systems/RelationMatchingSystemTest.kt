@@ -18,7 +18,6 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.test.Test
 
-//TODO reimplement relations matching
 class RelationMatchingSystemTest : GearyTest() {
     @Test
     fun relations() {

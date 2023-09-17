@@ -23,7 +23,7 @@ class RemovableAccessorTest: GearyTest() {
         var count = 0
 
         MyQueryRemovable().run {
-            fastForEach {
+            forEach {
                 it.data shouldBe Comp1(1)
                 it.data = null
                 it.data shouldBe null

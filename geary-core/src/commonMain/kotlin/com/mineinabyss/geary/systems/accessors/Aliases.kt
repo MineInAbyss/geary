@@ -14,3 +14,6 @@ typealias Pointer = RecordPointer
 
 /** A list of [Pointer]s, currently used to select between the target, source, and event entity in listeners. */
 typealias Pointers = Records
+
+typealias GearyPointer = RecordPointer
+typealias GearyPointers = Records

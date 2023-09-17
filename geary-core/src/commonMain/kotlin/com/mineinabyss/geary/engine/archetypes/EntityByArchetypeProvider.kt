@@ -55,24 +55,8 @@ class EntityByArchetypeProvider(
     override fun getType(entity: Entity): EntityType = records[entity].archetype.type
 
     private fun createRecord(entity: Entity) {
-//        val initialComponentsSize = initialComponents.size
-//        val ids = ULongArray(initialComponentsSize * 2)
-//        if (initialComponentsSize != 0) {
-//            initialComponents.forEachIndexed { index, component ->
-//                ids[index] = componentId(component::class)
-//                ids[index + initialComponents.size] = componentId(component::class) or HOLDS_DATA
-//            }
-//        }
-
-//        val addTo = archetypeProvider.getArchetype(EntityType.fromMutableArray(ids))
         val root = archetypeProvider.rootArchetype
         val createdRecord = root.createWithoutData(entity)
-//        addTo.moveWithNewComponent(
-//            record,
-//            if (initialComponentsSize == 0) emptyArray()
-//            else initialComponents.toTypedArray().apply { sortBy { addTo.indexOf(componentId(it::class)) } },
-//            entity,
-//        )
         records[entity] = createdRecord
     }
 }

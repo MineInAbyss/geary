@@ -396,13 +396,4 @@ open class Archetype(
     fun addTargetListener(handler: Listener) {
         _targetListeners += handler
     }
-
-    // TODO upto is a bad approach if a system both adds and removes entities?
-    inline fun forEach(upTo: Int, crossinline run: (EntityId) -> Unit) {
-        var row = 0
-        while (row < size && row <= upTo) {
-            run(getEntity(row).id)
-            row++
-        }
-    }
 }

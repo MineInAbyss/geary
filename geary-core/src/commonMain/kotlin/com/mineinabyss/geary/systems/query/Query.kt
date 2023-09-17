@@ -23,22 +23,34 @@ abstract class Query : AccessorHolder() {
 
     val matchedEntities
         get(): List<GearyEntity> {
-            registerIfUnregistered()
+            registerIfNotRegistered()
             return matchedArchetypes.flatMap { it.entities }
         }
 
-    fun registerIfUnregistered() {
+    fun registerIfNotRegistered() {
         if (!registered) {
             geary.queryManager.trackQuery(this)
         }
     }
 
-    inline fun fastForEach(crossinline run: (Pointer) -> Unit) {
-        registerIfUnregistered()
+    inline fun <T> toList(crossinline map: (Pointer) -> T): List<T> {
+        val list = mutableListOf<T>()
+        forEach { list.add(map(it)) }
+        return list
+    }
+
+    /**
+     * Quickly iterates over all matched entities, running [run] for each.
+     *
+     * Use [apply] on the query to use its accessors.
+     * */
+    inline fun forEach(crossinline run: (Pointer) -> Unit) {
+        registerIfNotRegistered()
         val matched = matchedArchetypes.toList()
         matched.fastForEachWithIndex { i, archetype ->
             archetype.isIterating = true
             val upTo = archetype.size
+            // TODO upTo isn't perfect for cases where entities may be added or removed in the same iteration
             for (entityIndex in 0 until upTo) {
                 run(Pointer(archetype, entityIndex))
             }

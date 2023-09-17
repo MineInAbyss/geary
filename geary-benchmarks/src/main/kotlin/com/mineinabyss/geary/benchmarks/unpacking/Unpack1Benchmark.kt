@@ -32,7 +32,7 @@ class Unpack1Benchmark {
     @Benchmark
     fun unpack1of1Comp() {
         SystemOf1.run {
-            fastForEach {
+            forEach {
                 it.comp1
             }
         }

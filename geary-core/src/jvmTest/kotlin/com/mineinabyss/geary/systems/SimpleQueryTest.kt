@@ -25,7 +25,7 @@ class SimpleQueryTest : GearyTest() {
 
         var count = 0
         MyQuery().run {
-            fastForEach {
+            forEach {
                 it.int shouldBe 1
                 count++
             }
