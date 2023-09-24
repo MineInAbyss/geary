@@ -26,7 +26,7 @@ data class Archetype(
     private val eventRunner get() = archetypes.eventRunner
 
 
-    val entities: List<Entity> get() = ids.map { it.toGeary() }
+    val entities: Sequence<Entity> get() = ids.getEntities()
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     private val ids: IdList = IdList()
