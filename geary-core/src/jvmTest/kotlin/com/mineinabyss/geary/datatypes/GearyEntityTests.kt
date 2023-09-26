@@ -56,6 +56,29 @@ internal class GearyEntityTests : GearyTest() {
     }
 
     @Test
+    fun `should remove correct component when components with higher component id are also set on entity`() {
+        // Arrange
+        data class Data1(val id: Int)
+        data class Data2(val id: Int)
+
+        // Ensure component order
+        componentId<Data1>()
+        componentId<Data2>()
+
+        val entity = entity {
+            set(Data1(0))
+            set(Data2(0))
+        }
+
+        // Act
+        entity.remove<Data1>()
+
+        // Assert
+        entity.getAll() shouldBe setOf(Data2(0))
+
+    }
+
+    @Test
     fun `add then set`() {
         entity {
             add<String>()

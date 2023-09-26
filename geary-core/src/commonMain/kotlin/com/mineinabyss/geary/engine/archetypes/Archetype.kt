@@ -109,8 +109,8 @@ data class Archetype(
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
     operator fun minus(componentId: ComponentId): Archetype =
-        componentRemoveEdges[componentId] ?: archetypeProvider.getArchetype(type.minus(componentId)).also {
-            componentRemoveEdges[componentId] = it
+        componentRemoveEdges.getOrSet(componentId) {
+            archetypeProvider.getArchetype(type.minus(componentId))
         }
 
     // ==== Entity mutation ====
@@ -161,9 +161,9 @@ data class Archetype(
         entity: EntityId,
     ) = move(record, entity) {
         val (oldArc, oldRow) = record
-        val withoutCompIndex = indexOf(withoutComponentId)
+        val withoutCompIndex = oldArc.indexOf(withoutComponentId)
 
-        // If removing an added component, we still copy all data
+        // If removing a component that's added and not set, we just copy all data
         if (withoutCompIndex == -1) {
             for (i in 0..componentData.lastIndex) {
                 componentData[i].add(oldArc.componentData[i][oldRow])
@@ -177,7 +177,7 @@ data class Archetype(
         }
 
         // Add after without comp
-        for (i in withoutCompIndex + 1..componentData.lastIndex) {
+        for (i in withoutCompIndex + 1..oldArc.componentData.lastIndex) {
             componentData[i - 1].add(oldArc.componentData[i][oldRow])
         }
     }
