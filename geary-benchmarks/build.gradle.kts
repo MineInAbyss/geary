@@ -7,7 +7,7 @@ plugins {
 //    id(libs.plugins.mia.publication.get().pluginId)
 //    alias(libs.plugins.kotlinx.serialization)
     id("org.jetbrains.kotlinx.benchmark") version "0.4.9"
-    kotlin("plugin.allopen") version "1.8.20"
+    kotlin("plugin.allopen") version "1.9.10"
 }
 
 configure<AllOpenExtension> {

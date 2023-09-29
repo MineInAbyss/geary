@@ -7,7 +7,7 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.accessors.AccessorHolder
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import com.mineinabyss.geary.systems.accessors.Pointer
-import com.soywiz.kds.iterators.fastForEachWithIndex
+import korlibs.datastructure.iterators.fastForEachWithIndex
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 

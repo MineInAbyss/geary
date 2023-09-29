@@ -5,7 +5,7 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.RepeatingSystem
 import com.mineinabyss.geary.systems.System
-import com.soywiz.kds.sortedMapOf
+import korlibs.datastructure.sortedMapOf
 
 class PipelineImpl : Pipeline {
     private val queryManager get() = geary.queryManager

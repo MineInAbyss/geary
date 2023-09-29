@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.helpers.toGeary
-import com.soywiz.kds.DoubleQueue
+import korlibs.datastructure.DoubleQueue
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 
