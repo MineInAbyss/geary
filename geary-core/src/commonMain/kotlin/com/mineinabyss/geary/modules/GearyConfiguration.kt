@@ -43,6 +43,6 @@ class GearyConfiguration {
      * ```
      */
     fun on(phase: GearyPhase, run: () -> Unit) {
-        geary.pipeline.intercept(phase, run)
+        geary.pipeline.runOnOrAfter(phase, run)
     }
 }

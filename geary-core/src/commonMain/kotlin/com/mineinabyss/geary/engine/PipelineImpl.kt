@@ -14,10 +14,12 @@ class PipelineImpl : Pipeline {
     private val registeredSystems: MutableSet<RepeatingSystem> = mutableSetOf()
     private val registeredListeners: MutableSet<Listener> = mutableSetOf()
 
-    private val actions = sortedMapOf<GearyPhase, MutableList<() -> Unit>>()
+    private val scheduled = sortedMapOf<GearyPhase, MutableList<() -> Unit>>()
+    private var currentPhase = GearyPhase.entries.first()
 
-    override fun intercept(phase: GearyPhase, block: () -> Unit) {
-        actions.getOrPut(phase) { mutableListOf() }.add(block)
+    override fun runOnOrAfter(phase: GearyPhase, block: () -> Unit) {
+        if (currentPhase > phase) block()
+        else scheduled.getOrPut(phase) { mutableListOf() }.add(block)
     }
 
     override fun interceptSystemAddition(run: (System) -> System?) {
@@ -25,10 +27,11 @@ class PipelineImpl : Pipeline {
     }
 
     override fun runStartupTasks() {
-        actions.values.forEach { actions ->
+        scheduled.values.forEach { actions ->
             actions.forEach { it() }
         }
     }
+
     override fun addSystem(system: System) {
         val resultSystem = onSystemRegister.fold(system) { acc, func -> func(acc) ?: return }
         // Track systems right at startup since they are likely going to tick very soon anyway, and we don't care about

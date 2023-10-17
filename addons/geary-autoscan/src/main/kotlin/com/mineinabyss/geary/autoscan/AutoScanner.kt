@@ -34,7 +34,7 @@ interface AutoScanner {
         }
 
         override fun AutoScanner.install() {
-            geary.pipeline.intercept(GearyPhase.INIT_SYSTEMS) {
+            geary.pipeline.runOnOrAfter(GearyPhase.INIT_SYSTEMS) {
                 installSystems()
             }
         }

@@ -33,7 +33,7 @@ interface Prefabs {
                 ParseRelationWithDataSystem(),
                 TrackPrefabsByKeySystem(),
             )
-            geary.pipeline.intercept(GearyPhase.INIT_ENTITIES) {
+            geary.pipeline.runOnOrAfter(GearyPhase.INIT_ENTITIES) {
                 loader.loadPrefabs()
             }
         }
