@@ -17,9 +17,9 @@ class ArchetypeReadOperations : EntityReadOperations {
     override fun getComponentsFor(entity: Entity): Array<Component> {
         val (archetype, row) = records[entity]
         return archetype.getComponents(row).also { array ->
-            for (relation in archetype.relationsWithData) {
-                val i = archetype.indexOf(relation.id)
-                array[i] = RelationWithData(array[i], null, relation)
+            archetype.relationsWithData.forEach { relation ->
+                val i = archetype.indexOf(relation)
+                array[i] = RelationWithData(array[i], null, Relation.of(relation))
             }
         }
     }

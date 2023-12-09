@@ -1,10 +1,10 @@
 package com.mineinabyss.geary.datatypes.maps
 
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.helpers.hasRelationKind
 import com.mineinabyss.geary.helpers.hasRelationTarget
+import com.mineinabyss.geary.modules.geary
 
 /**
  * A map of [ComponentId]s to Arrays of objects with the ability to make fast queries based on component IDs.
@@ -32,7 +32,7 @@ internal class Family2ObjectArrayMap<T> {
 
             // See componentMap definition for relations
             if (id.isRelation()) {
-                val relation = id.toRelation()!!
+                val relation = Relation.of(id)
                 set(Relation.of(relation.kind, geary.components.any).id)
                 set(Relation.of(geary.components.any, relation.target).id)
             }

@@ -16,14 +16,13 @@ import com.mineinabyss.geary.systems.accessors.RelationWithData
  * An example use case: If a query matches an archetype, it will also match all entities inside which
  * gives a large performance boost to system iteration.
  */
-data class Archetype(
+data class Archetype internal constructor(
     val type: EntityType,
     val id: Int
 ) {
     private val records get() = archetypes.records
     private val archetypeProvider get() = archetypes.archetypeProvider
     private val eventRunner get() = archetypes.eventRunner
-
 
     val entities: Sequence<Entity> get() = ids.getEntities()
 
@@ -47,15 +46,15 @@ data class Archetype(
     /** Edges to other archetypes where a single component has been removed. */
     internal val componentRemoveEdges = CompId2ArchetypeMap()
 
-    internal val relations = type.inner.mapNotNull { it.toRelation() }
-    internal val relationsWithData = relations.filter { it.id.holdsData() }
+    internal val relations: EntityType = type.filter { it.isRelation() }
+    internal val relationsWithData: EntityType = relations.filter { it.holdsData() }
 
     fun getRelationsByTarget(target: EntityId): List<Relation> {
-        return relations.filter { it.target.toLong() == target.toLong() }
+        return relations.filter { Relation.of(it).target.toLong() == target.toLong() }.map { Relation.of(it) }
     }
 
     fun getRelationsByKind(kind: ComponentId): List<Relation> {
-        return relations.filter { it.kind.toLong() == kind.toLong() }
+        return relations.filter { Relation.of(it).kind.toLong() == kind.toLong() }.map { Relation.of(it) }
     }
 
     /** The amount of entities stored in this archetype. */
@@ -342,7 +341,7 @@ data class Archetype(
             specificKind && specificTarget -> listOf(Relation.of(kind, target))
             specificTarget -> getRelationsByTarget(target)
             specificKind -> getRelationsByKind(kind)
-            else -> relations
+            else -> relations.map { Relation.of(it) }
         }.run { //TODO this technically doesnt need to run when specificKind is set
             if (kind.hasRole(HOLDS_DATA)) filter { it.hasRole(HOLDS_DATA) } else this
         }.run {
