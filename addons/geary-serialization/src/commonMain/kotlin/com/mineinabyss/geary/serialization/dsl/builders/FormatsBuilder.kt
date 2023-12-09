@@ -21,6 +21,7 @@ class FormatsBuilder {
             binaryFormat = Cbor {
                 serializersModule = serializers.module
                 encodeDefaults = false
+                ignoreUnknownKeys = true
             },
             formats = formats.mapValues { it.value(serializers.module) },
         )

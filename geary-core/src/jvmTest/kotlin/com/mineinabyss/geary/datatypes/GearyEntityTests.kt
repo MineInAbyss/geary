@@ -2,9 +2,7 @@ package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.Persists
-import com.mineinabyss.geary.helpers.componentId
-import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.getArchetype
+import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.systems.accessors.RelationWithData
@@ -46,6 +44,38 @@ internal class GearyEntityTests : GearyTest() {
             set("Test")
             remove<String>()
         }.type.getArchetype() shouldBe archetypes.archetypeProvider.rootArchetype
+    }
+
+    @Test
+    fun `component removal with two components`() {
+        entity {
+            set(1)
+            set("Test")
+            remove<String>()
+        }.type.getArchetype() shouldBe archetypes.archetypeProvider.rootArchetype + componentId<Int>() + (HOLDS_DATA or componentId<Int>())
+    }
+
+    @Test
+    fun `should remove correct component when components with higher component id are also set on entity`() {
+        // Arrange
+        data class Data1(val id: Int)
+        data class Data2(val id: Int)
+
+        // Ensure component order
+        componentId<Data1>()
+        componentId<Data2>()
+
+        val entity = entity {
+            set(Data1(0))
+            set(Data2(0))
+        }
+
+        // Act
+        entity.remove<Data1>()
+
+        // Assert
+        entity.getAll() shouldBe setOf(Data2(0))
+
     }
 
     @Test
@@ -120,11 +150,25 @@ internal class GearyEntityTests : GearyTest() {
             setPersisting("Test")
         }
         val relations = entity.type.getArchetype()
-            .relationsByKind[componentId<Persists>().toLong()]!!
+            .getRelationsByKind(componentId<Persists>())
 
         relations.size shouldBe 1 // one for persisting
         relations.first().target shouldBe componentId<String>()
         entity.getAllPersisting().shouldContainExactly("Test")
+    }
+
+    @Nested
+    inner class ChildTest {
+        @Test
+        fun `should handle single parent child relation correctly when using addParent`() {
+            val parent = entity()
+            val child = entity {
+                addParent(parent)
+            }
+
+            parent.children.shouldContainExactly(child)
+            child.parents.shouldContainExactly(parent)
+        }
     }
 
     @Nested

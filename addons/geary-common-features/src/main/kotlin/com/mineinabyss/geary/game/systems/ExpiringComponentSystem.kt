@@ -1,19 +1,24 @@
 package com.mineinabyss.geary.game.systems
 
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.game.components.Expiry
 import com.mineinabyss.geary.systems.RepeatingSystem
-import com.mineinabyss.geary.systems.accessors.TargetScope
+import com.mineinabyss.geary.systems.accessors.Pointer
+
 
 /**
  * Handles removing components when an [Expiry] relation exists with another component.
  */
 class ExpiringComponentSystem : RepeatingSystem() {
-    private val TargetScope.expiry by getRelations<Expiry, Any?>()
+    private val Pointer.expiry by getRelationsWithData<Expiry, Any?>()
 
-    override fun TargetScope.tick() {
-        if (expiry.data.timeOver()) {
-            entity.remove(expiry.kind.id)
-            entity.remove(expiry.relation.id)
+    @OptIn(UnsafeAccessors::class)
+    override fun Pointer.tick() {
+        expiry.forEach {
+            if (it.data.timeOver()) {
+                entity.remove(it.kind.id)
+                entity.remove(it.relation.id)
+            }
         }
     }
 }

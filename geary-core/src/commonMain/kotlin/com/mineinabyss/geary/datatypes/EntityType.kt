@@ -1,37 +1,31 @@
 package com.mineinabyss.geary.datatypes
 
-import com.mineinabyss.geary.components.relations.InstanceOf
-import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.readableString
-import kotlin.jvm.JvmInline
+
 
 /**
  * An inlined class used for tracking the components an entity/archetype has.
  *
  * It provides fast (no boxing) functions backed by FastUtil sorted sets to do operations with [ComponentId]s.
  */
-@JvmInline
-value class EntityType private constructor(
+class EntityType private constructor(
     @PublishedApi
     internal val inner: ULongArray
 ) {
     constructor() : this(ULongArray(0))
 
+
     constructor(ids: Collection<ComponentId>) : this(inner = ids.toULongArray().apply { sort() })
 
-    val size: Int get() = inner.size
-
-    val prefabs: EntityType
-        get() = EntityType(filter { contains(Relation.of(componentId<InstanceOf>(), it).id) }
-            .map { Relation.of(it).target })
+    val size: Int = inner.size
 
     operator fun contains(id: ComponentId): Boolean = indexOf(id) != -1
 
     fun indexOf(id: ComponentId): Int {
-        return binarySearch(id).coerceAtLeast(-1)
+        return inner.indexOf(id)
     }
 
-    tailrec fun binarySearch(id: ComponentId, fromIndex: Int = 0, toIndex: Int = inner.lastIndex): Int {
+    tailrec fun binarySearch(id: ComponentId, fromIndex: Int = 0, toIndex: Int = size - 1): Int {
         if (fromIndex > toIndex) return -fromIndex - 1
         val mid = (fromIndex + toIndex) / 2
         val found = inner[mid]
@@ -46,11 +40,9 @@ value class EntityType private constructor(
     fun last(): ComponentId = inner.last()
 
     inline fun forEach(run: (ComponentId) -> Unit) {
-        inner.forEach(run)
-//        val iterator = inner.iterator()
-//        while (iterator.hasNext()) {
-//            run(iterator.nextLong().toULong())
-//        }
+        for(i in 0..inner.lastIndex) {
+            run(inner[i])
+        }
     }
 
     inline fun any(predicate: (ComponentId) -> Boolean): Boolean {
@@ -60,16 +52,10 @@ value class EntityType private constructor(
 
     inline fun forEachIndexed(run: (Int, ComponentId) -> Unit) {
         inner.forEachIndexed(run)
-//        val iterator = inner.iterator()
-//        var i = 0
-//        forEach { run(i++, iterator.nextLong().toULong()) }
     }
 
     inline fun filter(predicate: (ComponentId) -> Boolean): EntityType {
         return EntityType(inner.filter(predicate))
-//        val type = LongAVLTreeSet()
-//        forEach { if (predicate(it)) type.add(it.toLong()) }
-//        return GearyType(type)
     }
 
     inline fun <T> map(transform: (ULong) -> T): List<T> {

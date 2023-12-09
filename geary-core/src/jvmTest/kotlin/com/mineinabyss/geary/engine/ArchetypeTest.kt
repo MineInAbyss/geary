@@ -54,7 +54,7 @@ internal class ArchetypeTest : GearyTest() {
         val instanceOf = Relation.of<InstanceOf?>(target)
         val instanceOf2 = Relation.of<InstanceOf?>(target2)
         val arc = Archetype(EntityType(listOf(persists.id, instanceOf.id, instanceOf2.id)), 0)
-        arc.relationsByTarget[target.id.toLong()].shouldContainExactlyInAnyOrder(persists, instanceOf)
-        arc.relationsByKind[componentId<InstanceOf>().toLong()].shouldContainExactlyInAnyOrder(instanceOf, instanceOf2)
+        arc.getRelationsByTarget(target.id).shouldContainExactlyInAnyOrder(persists, instanceOf)
+        arc.getRelationsByKind(componentId<InstanceOf>()).shouldContainExactlyInAnyOrder(instanceOf, instanceOf2)
     }
 }

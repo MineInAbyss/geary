@@ -2,39 +2,55 @@ package com.mineinabyss.geary.systems.accessors
 
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
+import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
-import com.mineinabyss.geary.systems.accessors.types.ComponentAccessor
-import com.mineinabyss.geary.systems.accessors.types.ComponentOrDefaultAccessor
-import com.mineinabyss.geary.systems.accessors.types.RelationWithDataAccessor
+import com.mineinabyss.geary.systems.accessors.type.*
+import kotlin.reflect.KProperty
 
-/**
- * An empty interface that limits [AccessorBuilder] helper functions only to classes that use [Accessor]s.
- */
 open class AccessorOperations {
-    /** Gets a component, ensuring it is on the entity. */
-    inline fun <reified T : Component> get(): AccessorBuilder<ComponentAccessor<T>> {
-        return AccessorBuilder { holder, index ->
-            val component = componentId<T>().withRole(HOLDS_DATA)
-            holder._family.has(component)
-            ComponentAccessor(index, component)
+    /** Accesses a component, ensuring it is on the entity. */
+    inline fun <reified T : Any> get(): ComponentAccessor<T> {
+        return NonNullComponentAccessor(componentId<T>().withRole(HOLDS_DATA))
+    }
+
+    /** Accesses a data stored in a relation with kind [K] and target type [T], ensuring it is on the entity. */
+    inline fun <reified K: Any, reified T : Any> getRelation(): ComponentAccessor<T> {
+        return NonNullComponentAccessor(Relation.of<K, T>().id)
+    }
+
+    /**
+     * Accesses a component, allows removing it by setting to null.
+     * As a result, the type is nullable since it may be removed during system runtime.
+     */
+    fun <T: Any> ComponentAccessor<T>.removable(): RemovableComponentAccessor<T> {
+        return RemovableComponentAccessor(id)
+    }
+
+    /**
+     * Accesses a component or provides a [default] if the entity doesn't have it.
+     * Default gets recalculated on every call to the accessor.
+     */
+    fun <T> ComponentAccessor<T & Any>.orDefault(default: () -> T): ComponentOrDefaultAccessor<T> {
+        return ComponentOrDefaultAccessor(id, default)
+    }
+
+    /** Maps an accessor, will recalculate on every call. */
+    fun <T, U, A : ReadOnlyAccessor<T>> A.map(mapping: (T) -> U): ReadOnlyAccessor<U> {
+        return object : ReadOnlyAccessor<U>, FamilyMatching {
+            override val family = (this@map as? FamilyMatching)?.family
+
+            override fun getValue(thisRef: Pointer, property: KProperty<*>): U {
+                val value = this@map.getValue(thisRef, property)
+                return mapping(value)
+            }
         }
     }
 
-    /** Gets a component or provides a [default] if the entity doesn't have it. */
-    inline fun <reified T : Component?> getOrDefault(
-        default: T
-    ): AccessorBuilder<ComponentOrDefaultAccessor<T>> {
-        return AccessorBuilder { _, index ->
-            val component = componentId<T>().withRole(HOLDS_DATA)
-            ComponentOrDefaultAccessor(index, component, default)
-        }
-    }
-
-    /** Gets a component or `null` if the entity doesn't have it. */
-    inline fun <reified T : Component?> getOrNull(): AccessorBuilder<ComponentOrDefaultAccessor<T?>> {
-        return getOrDefault(null)
+    /** Accesses a component or `null` if the entity doesn't have it. */
+    fun <T: Any> ComponentAccessor<T>.orNull(): ComponentOrDefaultAccessor<T?> {
+        return orDefault { null }
     }
 
     /**
@@ -49,10 +65,12 @@ open class AccessorOperations {
      * - One of [K] or [T] is [Any] => gets all relations matching the other (specified) type.
      * - Note: nullability rules are still upheld with [Any].
      */
-    inline fun <reified K : Component?, reified T : Component?> getRelations(): AccessorBuilder<RelationWithDataAccessor<K, T>> {
-        return AccessorBuilder { holder, index ->
-            holder._family.hasRelation<K, T>()
-            RelationWithDataAccessor(index, componentIdWithNullable<K>(), componentIdWithNullable<T>())
-        }
+    inline fun <reified K : Component?, reified T : Component?> getRelations(): RelationsAccessor {
+        return RelationsAccessor(componentIdWithNullable<K>(), componentIdWithNullable<T>())
+    }
+
+    /** @see getRelations */
+    inline fun <reified K : Component?, reified T : Component?> getRelationsWithData(): RelationsWithDataAccessor<K, T> {
+        return RelationsWithDataAccessor(componentIdWithNullable<K>(), componentIdWithNullable<T>())
     }
 }

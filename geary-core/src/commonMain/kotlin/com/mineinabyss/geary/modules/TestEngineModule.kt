@@ -10,10 +10,10 @@ import com.mineinabyss.geary.engine.archetypes.EntityByArchetypeProvider
  */
 class TestEngineModule(
     reuseIDsAfterRemoval: Boolean = true,
-): ArchetypeEngineModule() {
+) : ArchetypeEngineModule() {
     override val entityProvider = EntityByArchetypeProvider(reuseIDsAfterRemoval)
 
-    companion object: GearyModuleProviderWithDefault<TestEngineModule> {
+    companion object : GearyModuleProviderWithDefault<TestEngineModule> {
         override fun init(module: TestEngineModule) {
             ArchetypeEngineModule.init(module)
         }

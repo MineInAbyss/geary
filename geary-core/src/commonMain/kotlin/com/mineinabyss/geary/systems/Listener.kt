@@ -1,14 +1,8 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.datatypes.Component
-import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.datatypes.family.family
-import com.mineinabyss.geary.events.Handler
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.systems.accessors.*
-import com.mineinabyss.geary.systems.accessors.types.ComponentAccessor
-import com.mineinabyss.geary.systems.accessors.types.DirectAccessor
-import kotlin.reflect.KProperty
+import com.mineinabyss.geary.systems.accessors.type.ComponentAccessor
 
 /**
  * #### [Guide: Listeners](https://wiki.mineinabyss.com/geary/guide/listeners)
@@ -18,58 +12,52 @@ import kotlin.reflect.KProperty
  * [Handler]s can be defined inside by annotating a function with [Handler], these
  * are the actual functions that run when a matching event is found.
  */
-abstract class Listener : AccessorOperations(), GearySystem, AccessorScopeSelector {
-    val source: AccessorHolder = AccessorHolder()
+abstract class Listener : AccessorOperations(), System {
     val target: AccessorHolder = AccessorHolder()
     val event: AccessorHolder = AccessorHolder()
+    val source: AccessorHolder = AccessorHolder()
 
     fun start() {
         onStart()
     }
 
-    operator fun <T> Accessor<T>.getValue(thisRef: SourceScope, property: KProperty<*>): T = access(thisRef)
-    operator fun <T> Accessor<T>.getValue(thisRef: TargetScope, property: KProperty<*>): T = access(thisRef)
-    operator fun <T> Accessor<T>.getValue(thisRef: EventScope, property: KProperty<*>): T = access(thisRef)
+    private fun getIndexForHolder(holder: AccessorHolder): Int= when(holder) {
+        target -> 0
+        event -> 1
+        source -> 2
+        else -> error("Holder is not a part of this listener: $holder")
+    }
 
-    fun <T> AccessorBuilder<ComponentAccessor<T>>.onSource(): ComponentAccessor<T> =
-        source.addAccessor { build(source, it) }
+    fun <T : ReadOnlyAccessor<A>, A> T.on(holder: AccessorHolder): ReadOnlyEntitySelectingAccessor<T, A> {
+        val index = getIndexForHolder(holder)
+        if (this is FamilyMatching) this.family?.let { holder.mutableFamily.add(it) }
+        return ReadOnlyEntitySelectingAccessor(this, index)
+    }
 
-    fun <T> AccessorBuilder<ComponentAccessor<T>>.onTarget(): ComponentAccessor<T> =
-        target.addAccessor { build(target, it) }
-
-    fun <T> AccessorBuilder<ComponentAccessor<T>>.onEvent(): ComponentAccessor<T> =
-        event.addAccessor { build(event, it) }
-
-    fun Family.onSource(): DirectAccessor<Family> =
-        source._family.add(this).let { DirectAccessor(this) }
-
-    fun Family.onTarget(): DirectAccessor<Family> =
-        target._family.add(this).let { DirectAccessor(this) }
-
-    fun Family.onEvent(): DirectAccessor<Family> =
-        event._family.add(this).let { DirectAccessor(this) }
+    fun <T : ReadWriteAccessor<A>, A> T.on(holder: AccessorHolder): ReadWriteEntitySelectingAccessor<T, A> {
+        val index = getIndexForHolder(holder)
+        if (this is FamilyMatching) this.family?.let { holder.mutableFamily.add(it) }
+        return ReadWriteEntitySelectingAccessor(this, index)
+    }
 
     /** Fires when an entity has a component of type [T] set or updated. */
-    inline fun <reified T : Component> onSet(): AccessorBuilder<ComponentAccessor<T>> {
-        return AccessorBuilder { holder, index ->
-            event._family.onSet(componentId<T>())
-            get<T>().build(holder, index)
-        }
+    inline fun <reified T: ComponentAccessor<A>, reified A> T.whenSetOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
+        event.mutableFamily.onSet(componentId<A>())
+        return this.on(target)
     }
 
     /** Fires when an entity has a component of type [T] set, only if it was not set before. */
-    inline fun <reified T : Component> onFirstSet(): AccessorBuilder<ComponentAccessor<T>> {
-        return AccessorBuilder { holder, index ->
-            event._family.onFirstSet(componentId<T>())
-            get<T>().build(holder, index)
-        }
+    inline fun <reified T: ComponentAccessor<A>, reified A> T.whenFirstSetOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
+        event.mutableFamily.onFirstSet(componentId<A>())
+        return this.on(target)
     }
 
-    //TODO support onAdd for relations
     /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
-    inline fun <reified T : Component> onAdd(): Family {
-        event._family.onAdd(componentId<T>())
-        return family { has<T>() }
+    inline fun <reified T: ComponentAccessor<A>, reified A> T.whenAddedOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
+        event.mutableFamily.onAdd(componentId<A>())
+        return this.on(event)
     }
+
+    abstract fun Pointers.handle()
 }
 

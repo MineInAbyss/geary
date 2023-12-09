@@ -5,7 +5,7 @@ import com.mineinabyss.geary.systems.RepeatingSystem
 import com.mineinabyss.geary.systems.System
 
 interface Pipeline {
-    fun intercept(phase: GearyPhase, block: () -> Unit)
+    fun runOnOrAfter(phase: GearyPhase, block: () -> Unit)
     fun interceptSystemAddition(run: (System) -> System?)
     fun runStartupTasks()
 

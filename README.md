@@ -9,18 +9,7 @@
 
 ## Overview
 
-<details>
-<summary> :warning: Notice: Looking for a new maintainer </summary>
-
-> This project was built from the ground up by myself, but its scope has finally caught up and I wish to move on and leave it in the hands of a bigger team that can get Geary to a state where others outside of Mine in Abyss can use it.\
-> \
-> If you're interested in building an ECS and find Geary's syntax interesting, I'm currently working on some major cleanup, and documenting usage + backend decisions that will hopefully make it easier to take over or build your own. If you just want a working engine (not using Kotlin), I recommend looking at [flecs](https://github.com/SanderMertens/flecs), otherwise browse through some established Java engines! \
-> \
-> \- Offz
-
-</details>
-
-Geary is an Entity Component System (ECS) written in Kotlin. The engine design is inspired by [flecs](https://github.com/SanderMertens/flecs). It is currently NOT optimized for performance. We use Geary internally for our Minecraft plugins, see [geary-papermc](https://github.com/MineInAbyss/geary-papermc) for more info.
+Geary is an Entity Component System (ECS) written in Kotlin. The engine design is inspired by [flecs](https://github.com/SanderMertens/flecs). Core parts of the engine (ex. system iteration, entity creation) are quite optimized, with the main exception being our event system. We use Geary internally for our Minecraft plugins, see [geary-papermc](https://github.com/MineInAbyss/geary-papermc) for more info.
 
 ## Features
 - Null safe component access
@@ -32,16 +21,17 @@ Geary is an Entity Component System (ECS) written in Kotlin. The engine design i
 
 ## Example
 
+A simple ssytem that iterates over all entities with a position and velocity, updating the position every engine tick.
 ```kotlin
 data class Position(var x: Double, var y: Double)
 data class Velocity(var x: Double, var y: Double)
 
 class UpdatePositionSystem : TickingSystem(interval = 20.milliseconds) {
     // Specify all components we want (Geary also supports branched AND/OR/NOT statements for selection)
-    val TargetScope.position by get<Position>()
-    val TargetScope.velocity by get<Velocity>()
+    val Pointer.position by get<Position>()
+    val Pointer.velocity by get<Velocity>()
 
-    override fun TargetScope.tick() {
+    override fun Pointer.tick() {
         // We can access our components like regular variables!
         position.x += velocity.x
         position.y += velocity.y
@@ -61,16 +51,12 @@ fun main() {
     entity {
         setAll(Position(0.0, 0.0), Velocity(1.0, 0.0))
     }
-
-    // Systems are queries!
-    val positions: List<Position> = UpdatePositionSystem.run {
-        filter { it.velocity != Velocity(0.0, 0.0) }
-            .map { it.position }
-    }
 }
 
 ```
 ## Usage
+
+A WIP wiki can be found at [wiki.mineinabyss.com](https://wiki.mineinabyss.com/geary/)
 
 ### Gradle
 ```kotlin
@@ -85,13 +71,10 @@ dependencies {
 }
 ```
 
-### Wiki
-A WIP wiki can be found at [wiki.mineinabyss.com](https://wiki.mineinabyss.com/geary/)
-
 ## Roadmap
 
 As the project matures, our primary goal is to make it useful to more people. Here are a handful of features we hope to achieve:
-- (Ongoing) Multiplatform support, with js, jvm, and native targets
-- Optimize key bottlenecks and benchmark the engine
+- Multiplatform support, with js, jvm, and native targets
+- Publish numbers for benchmarks and cover more parts of the engine with them
 - Component data migrations
 - Complex queries (including relations like parent/child)

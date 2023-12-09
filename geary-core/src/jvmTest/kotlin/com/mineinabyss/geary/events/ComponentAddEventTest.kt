@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.events
 
-import com.mineinabyss.geary.annotations.Handler
+import com.mineinabyss.geary.datatypes.Records
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
-import com.mineinabyss.geary.systems.accessors.TargetScope
+import com.mineinabyss.geary.systems.accessors.Pointers
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
@@ -16,12 +16,11 @@ internal class ComponentAddEventTest : GearyTest() {
     //TODO write test for all methods of checking for added
     inner class OnStringAdd : Listener() {
         // All three get added
-        val TargetScope.string by onSet<String>()
-        val TargetScope.int by onSet<Int>()
-        val TargetScope.double by onSet<Double>()
+        val Records.string by get<String>().whenSetOnTarget()
+        val Records.int by get<Int>().whenSetOnTarget()
+        val Records.double by get<Double>().whenSetOnTarget()
 
-        @Handler
-        fun TargetScope.increment() {
+        override fun Pointers.handle() {
             inc++
         }
     }

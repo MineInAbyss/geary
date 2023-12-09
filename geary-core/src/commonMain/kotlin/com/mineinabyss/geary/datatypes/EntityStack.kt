@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.helpers.toGeary
-import com.soywiz.kds.DoubleQueue
+import korlibs.datastructure.DoubleQueue
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 
@@ -13,7 +13,8 @@ class EntityStack(private val stack: DoubleQueue = DoubleQueue()) {
         }
     }
 
-    fun pop(): Entity = synchronized(removedEntitiesLock) {
-        stack.dequeue().toRawBits().toGeary()
+    fun pop(): Entity? = synchronized(removedEntitiesLock) {
+        if (stack.isEmpty()) null
+        else stack.dequeue().toRawBits().toGeary()
     }
 }

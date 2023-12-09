@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.annotations.Handler
+import com.mineinabyss.geary.datatypes.Records
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.accessors.TargetScope
+import com.mineinabyss.geary.systems.accessors.Pointers
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -14,25 +14,25 @@ import org.junit.jupiter.api.Test
 internal class QueryManagerTest : GearyTest() {
 
     private class TestComponent
-    private object EventListener : Listener() {
+    private class EventListener : Listener() {
         var ran = 0
-        private val TargetScope.testComponent by get<TestComponent>()
+        private val Records.testComponent by get<TestComponent>().on(target)
 
-        @Handler
-        fun handle() {
+        override fun Pointers.handle() {
             ran++
         }
     }
 
     @Test
     fun `empty event handler`() {
-        geary.pipeline.addSystem(EventListener)
-        (archetypes.archetypeProvider.rootArchetype.type in EventListener.event.family) shouldBe true
-        archetypes.archetypeProvider.rootArchetype.eventHandlers.map { it.parentListener } shouldContain EventListener
+        val listener = EventListener()
+        geary.pipeline.addSystem(listener)
+        (archetypes.archetypeProvider.rootArchetype.type in listener.event.family) shouldBe true
+        archetypes.archetypeProvider.rootArchetype.eventListeners shouldContain listener
         entity {
             set(TestComponent())
         }.callEvent()
         // 1 from setting, 1 from calling empty event
-        EventListener.ran shouldBe 2
+        listener.ran shouldBe 2
     }
 }
