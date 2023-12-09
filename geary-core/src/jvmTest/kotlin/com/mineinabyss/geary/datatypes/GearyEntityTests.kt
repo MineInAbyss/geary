@@ -150,7 +150,7 @@ internal class GearyEntityTests : GearyTest() {
             setPersisting("Test")
         }
         val relations = entity.type.getArchetype()
-            .relationsByKind[componentId<Persists>().toLong()]!!
+            .getRelationsByKind(componentId<Persists>())
 
         relations.size shouldBe 1 // one for persisting
         relations.first().target shouldBe componentId<String>()

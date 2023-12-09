@@ -2,7 +2,6 @@ package com.mineinabyss.geary.engine.archetypes
 
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
-import com.mineinabyss.geary.datatypes.maps.Long2ObjectMap
 import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.modules.archetypes
@@ -51,13 +50,13 @@ data class Archetype(
     internal val relations = type.inner.mapNotNull { it.toRelation() }
     internal val relationsWithData = relations.filter { it.id.holdsData() }
 
-    /** Map of relation [Relation.target] id to a list of relations with that [Relation.target]. */
-    internal val relationsByTarget: Long2ObjectMap<List<Relation>> = relations
-        .groupBy { it.target.toLong() }
+    fun getRelationsByTarget(target: EntityId): List<Relation> {
+        return relations.filter { it.target.toLong() == target.toLong() }
+    }
 
-    /** Map of relation [Relation.kind] id to a list of relations with that [Relation.kind]. */
-    internal val relationsByKind: Long2ObjectMap<List<Relation>> = relations
-        .groupBy { it.kind.toLong() }
+    fun getRelationsByKind(kind: ComponentId): List<Relation> {
+        return relations.filter { it.kind.toLong() == kind.toLong() }
+    }
 
     /** The amount of entities stored in this archetype. */
     val size: Int get() = ids.size
@@ -341,14 +340,14 @@ data class Archetype(
         val specificTarget = target and ENTITY_MASK != geary.components.any
         return when {
             specificKind && specificTarget -> listOf(Relation.of(kind, target))
-            specificTarget -> relationsByTarget[target.toLong()]
-            specificKind -> relationsByKind[kind.toLong()]
+            specificTarget -> getRelationsByTarget(target)
+            specificKind -> getRelationsByKind(kind)
             else -> relations
-        }?.run { //TODO this technically doesnt need to run when specificKind is set
+        }.run { //TODO this technically doesnt need to run when specificKind is set
             if (kind.hasRole(HOLDS_DATA)) filter { it.hasRole(HOLDS_DATA) } else this
-        }?.run {
+        }.run {
             if (target.holdsData()) filter { it.target.withRole(HOLDS_DATA) in type } else this
-        } ?: emptyList()
+        }
     }
 
     internal fun readRelationDataFor(

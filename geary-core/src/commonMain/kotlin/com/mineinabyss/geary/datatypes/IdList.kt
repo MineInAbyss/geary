@@ -2,7 +2,7 @@ package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.helpers.toGeary
 
-private const val initialSize: Int = 16
+private const val initialSize: Int = 4
 private const val growFactor: Int = 2
 
 class IdList {
