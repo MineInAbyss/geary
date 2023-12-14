@@ -11,7 +11,7 @@ class Family2ObjectArrayMapTest {
     fun addAndRemoveOne() {
         val familyMap = Family2ObjectArrayMap<String>()
         familyMap.add("a", EntityType(ulongArrayOf(1uL, 2uL, 3uL)))
-        familyMap.match(family { has(1uL) }) shouldContainExactly listOf("hello")
+        familyMap.match(family { has(1uL) }) shouldContainExactly listOf("a")
         familyMap.remove("a")
         familyMap.match(family { has(1uL) }).shouldBeEmpty()
     }
