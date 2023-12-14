@@ -16,9 +16,9 @@ import com.mineinabyss.geary.systems.accessors.RelationWithData
  * An example use case: If a query matches an archetype, it will also match all entities inside which
  * gives a large performance boost to system iteration.
  */
-data class Archetype internal constructor(
+class Archetype internal constructor(
     val type: EntityType,
-    val id: Int
+    var id: Int
 ) {
     private val records get() = archetypes.records
     private val archetypeProvider get() = archetypes.archetypeProvider
@@ -31,6 +31,8 @@ data class Archetype internal constructor(
 
     @PublishedApi
     internal var isIterating: Boolean = false
+
+    private var unregistered: Boolean = false
 
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
@@ -60,14 +62,11 @@ data class Archetype internal constructor(
     /** The amount of entities stored in this archetype. */
     val size: Int get() = ids.size
 
-    private val _sourceListeners = mutableSetOf<Listener>()
-    val sourceListeners: Set<Listener> = _sourceListeners
+    val sourceListeners = mutableSetOf<Listener>()
 
-    private val _targetListeners = mutableSetOf<Listener>()
-    val targetListeners: Set<Listener> = _targetListeners
+    val targetListeners = mutableSetOf<Listener>()
 
-    private val _eventListeners = mutableSetOf<Listener>()
-    val eventListeners: Set<Listener> = _eventListeners
+    val eventListeners = mutableSetOf<Listener>()
 
     // ==== Helper functions ====
     fun getEntity(row: Int): Entity {
@@ -96,19 +95,26 @@ data class Archetype internal constructor(
     operator fun contains(componentId: ComponentId): Boolean = componentId in type
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
-    operator fun plus(componentId: ComponentId): Archetype =
-        componentAddEdges.getOrSet(componentId) {
-            archetypeProvider.getArchetype(
-                if (componentId.hasRole(HOLDS_DATA))
-                    type + componentId.withoutRole(HOLDS_DATA) + componentId
-                else type + componentId
-            )
+    operator fun plus(componentId: ComponentId): Archetype {
+        componentAddEdges[componentId]?.let { return it }
+        if (componentId.holdsData()) {
+            // Try to get via the component without the data role
+            componentAddEdges[componentId.withoutRole(HOLDS_DATA)]
+                ?.plus(componentId)?.let { return it }
+            if (componentId.withoutRole(HOLDS_DATA) !in type)
+                return this + componentId.withoutRole(HOLDS_DATA) + componentId
         }
+        val archetype = archetypeProvider.getArchetype(type + componentId)
+        componentAddEdges[componentId] = archetype
+        archetype.componentRemoveEdges[componentId] = this
+        return archetype
+    }
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
     operator fun minus(componentId: ComponentId): Archetype =
         componentRemoveEdges.getOrSet(componentId) {
             archetypeProvider.getArchetype(type.minus(componentId))
+                .also { it.componentAddEdges[componentId] = this }
         }
 
     // ==== Entity mutation ====
@@ -194,6 +200,7 @@ data class Archetype internal constructor(
         entity: EntityId,
         copyData: () -> Unit
     ) {
+        if (unregistered) error("Tried adding entity to archetype that is no longer registered. Was it referenced outside of Geary?")
         ids.add(entity)
 
         copyData()
@@ -310,6 +317,17 @@ data class Archetype internal constructor(
         return true
     }
 
+    private fun unregisterIfEmpty() {
+        if (type.size != 0 && ids.size == 0 && componentAddEdges.size == 0) {
+            archetypes.queryManager.unregisterArchetype(this)
+            unregistered = true
+            for ((id, archetype) in componentRemoveEdges.entries()) {
+                archetype.componentAddEdges.remove(id)
+                archetype.unregisterIfEmpty()
+            }
+        }
+    }
+
     /** Gets all the components associated with an entity at a [row]. */
     internal fun getComponents(row: Int, add: Pair<Component, Int>? = null): Array<Component> {
         if (add != null) {
@@ -383,23 +401,16 @@ data class Archetype internal constructor(
             }
         }
 
+
         // Delete last row's data
         ids.removeLastOrNull()
         componentData.forEach { it.removeLastOrNull() }
+
+        // If we're the last archetype in the chain with no entities, unregister to free up memory
+        unregisterIfEmpty()
     }
 
-    // ==== Event listeners ====
-
-    /** Adds an event [handler] that listens to certain events relating to entities in this archetype. */
-    fun addEventListener(handler: Listener) {
-        _eventListeners += handler
-    }
-
-    fun addSourceListener(handler: Listener) {
-        _sourceListeners += handler
-    }
-
-    fun addTargetListener(handler: Listener) {
-        _targetListeners += handler
+    override fun equals(other: Any?): Boolean {
+        return type == (other as? Archetype)?.type
     }
 }

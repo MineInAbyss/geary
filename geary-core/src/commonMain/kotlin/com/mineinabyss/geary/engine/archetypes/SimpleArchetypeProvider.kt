@@ -14,15 +14,13 @@ class SimpleArchetypeProvider : ArchetypeProvider {
             queryManager.registerArchetype(it)
         }
     }
-    override val count: Int get() = trackedArchetypes.size
 
-    private val trackedArchetypes by lazy { mutableListOf(rootArchetype) }
     private val archetypeWriteLock = SynchronizedObject()
 
 
     private fun createArchetype(prevNode: Archetype, componentEdge: ComponentId): Archetype {
-        val arc = Archetype(prevNode.type.plus(componentEdge), trackedArchetypes.size)
-            .also { trackedArchetypes += it }
+        val arc = Archetype(prevNode.type.plus(componentEdge), queryManager.archetypeCount)
+
         arc.componentRemoveEdges[componentEdge] = prevNode
         prevNode.componentAddEdges[componentEdge] = arc
         queryManager.registerArchetype(arc)

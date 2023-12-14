@@ -7,6 +7,9 @@ import com.mineinabyss.geary.engine.QueryManager
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.query.GearyQuery
+import com.mineinabyss.geary.systems.query.Query
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 
 class ArchetypeQueryManager : QueryManager {
     private val queries = mutableListOf<GearyQuery>()
@@ -16,20 +19,24 @@ class ArchetypeQueryManager : QueryManager {
 
     private val archetypes = Family2ObjectArrayMap<Archetype>()
 
+    val archetypeRegistryLock = SynchronizedObject()
+
+    val archetypeCount get() = archetypes.elements.size
+
     override fun trackEventListener(listener: Listener) {
         val eventFamilyMatch = archetypes.match(listener.event.family)
-        for (archetype in eventFamilyMatch) archetype.addEventListener(listener)
+        for (archetype in eventFamilyMatch) archetype.eventListeners += listener
         eventListeners.add(listener)
 
         // Only start tracking a listener for the parts it actually cares for
         if (!listener.source.isEmpty) {
             val sourcesMatched = archetypes.match(listener.source.family)
-            for (archetype in sourcesMatched) archetype.addSourceListener(listener)
+            for (archetype in sourcesMatched) archetype.sourceListeners += listener
             sourceListeners.add(listener)
         }
         if (!listener.target.isEmpty) {
             val targetsMatched = archetypes.match(listener.target.family)
-            for (archetype in targetsMatched) archetype.addTargetListener(listener)
+            for (archetype in targetsMatched) archetype.targetListeners += listener
             targetListeners.add(listener)
         }
     }
@@ -41,23 +48,51 @@ class ArchetypeQueryManager : QueryManager {
         query.registered = true
     }
 
-    internal fun registerArchetype(archetype: Archetype) {
+    internal fun registerArchetype(archetype: Archetype) = synchronized(archetypeRegistryLock) {
         archetypes.add(archetype, archetype.type)
 
+        val (matched, matchedSources, matchedTargets, matchedEvents) = getQueriesMatching(archetype)
+
+        matchedSources.forEach { archetype.sourceListeners += it }
+        matchedTargets.forEach { archetype.targetListeners += it }
+        matchedEvents.forEach { archetype.eventListeners += it }
+        matched.forEach { it.matchedArchetypes += archetype }
+    }
+
+    internal fun unregisterArchetype(archetype: Archetype) = synchronized(archetypeRegistryLock) {
+//        archetypes.elements.last().id = archetype.id
+        archetypes.remove(archetype)
+
+        val matched = queries.filter { archetype.type in it.family }
+
+//        matchedSources.forEach { archetype.sourceListeners -= it }
+//        matchedTargets.forEach { archetype.targetListeners -= it }
+//        matchedEvents.forEach { archetype.eventListeners -= it }
+        matched.forEach { it.matchedArchetypes -= archetype }
+    }
+
+    data class MatchedQueries(
+        val queries: List<Query>,
+        val sourceListeners: List<Listener>,
+        val targetListeners: List<Listener>,
+        val eventListeners: List<Listener>
+    )
+
+    fun getQueriesMatching(archetype: Archetype): MatchedQueries {
         val matched = queries.filter { archetype.type in it.family }
         val matchedSources = sourceListeners.filter { archetype.type in it.source.family }
         val matchedTargets = targetListeners.filter { archetype.type in it.target.family }
         val matchedEvents = eventListeners.filter { archetype.type in it.event.family }
+        return MatchedQueries(matched, matchedSources, matchedTargets, matchedEvents)
+    }
 
-        matchedSources.forEach { archetype.addSourceListener(it) }
-        matchedTargets.forEach { archetype.addTargetListener(it) }
-        matchedEvents.forEach { archetype.addEventListener(it) }
-        matched.forEach { it.matchedArchetypes += archetype }
+    fun getArchetypesMatching(family: Family): List<Archetype> {
+        return archetypes.match(family)
     }
 
     //TODO convert to Sequence
     override fun getEntitiesMatching(family: Family): List<Entity> {
-        return archetypes.match(family).flatMap { arc ->
+        return getArchetypesMatching(family).flatMap { arc ->
             arc.entities
         }
     }

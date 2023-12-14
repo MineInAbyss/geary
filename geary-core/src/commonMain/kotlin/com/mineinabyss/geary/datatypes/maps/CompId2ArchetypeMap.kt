@@ -10,9 +10,15 @@ expect class CompId2ArchetypeMap() {
     operator fun get(id: GearyComponentId): Archetype?
     operator fun set(id: GearyComponentId, archetype: Archetype)
 
+    fun entries(): Set<Map.Entry<ULong, Archetype>>
+
+    fun remove(id: GearyComponentId)
+
     operator fun contains(id: GearyComponentId): Boolean
 
     fun getOrSet(id: GearyComponentId, put: () -> Archetype): Archetype
+
+    val size: Int
 }
 
 class CompId2ArchetypeMapViaMutableMap {
@@ -21,6 +27,14 @@ class CompId2ArchetypeMapViaMutableMap {
     operator fun set(id: GearyComponentId, archetype: Archetype) {
         inner[id] = archetype
     }
+
+    fun entries(): Set<Map.Entry<ULong, Archetype>> = inner.entries
+
+    fun remove(id: GearyComponentId) {
+        inner.remove(id)
+    }
+
+    val size: Int get() = inner.size
 
     operator fun contains(id: GearyComponentId): Boolean = inner.containsKey(id)
 
