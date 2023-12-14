@@ -17,7 +17,10 @@ class ArchetypeQueryManager : QueryManager {
     private val targetListeners = mutableListOf<Listener>()
     private val eventListeners = mutableListOf<Listener>()
 
-    private val archetypes = Family2ObjectArrayMap<Archetype>()
+    private val archetypes = Family2ObjectArrayMap<Archetype>(
+        getIndex = { it.id },
+        setIndex = { it, index -> it.id = index }
+    )
 
     val archetypeRegistryLock = SynchronizedObject()
 

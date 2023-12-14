@@ -325,6 +325,10 @@ class Archetype internal constructor(
                 archetype.componentAddEdges.remove(id)
                 archetype.unregisterIfEmpty()
             }
+            componentRemoveEdges.clear()
+            targetListeners.clear()
+            sourceListeners.clear()
+            eventListeners.clear()
         }
     }
 

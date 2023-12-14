@@ -9,7 +9,10 @@ import com.mineinabyss.geary.modules.geary
 /**
  * A map of [ComponentId]s to Arrays of objects with the ability to make fast queries based on component IDs.
  */
-internal class Family2ObjectArrayMap<T> {
+internal class Family2ObjectArrayMap<T>(
+    val getIndex: ((T) -> Int)? = null,
+    val setIndex: ((T, Int) -> Unit)? = null
+) {
     private val _elements = mutableListOf<T>()
     private val elementTypes = mutableListOf<EntityType>()
 
@@ -48,6 +51,7 @@ internal class Family2ObjectArrayMap<T> {
             }
             set(id)
         }
+        setIndex?.invoke(element, index)
     }
 
     private fun clearBits(type: EntityType, index: Int) {
@@ -65,7 +69,7 @@ internal class Family2ObjectArrayMap<T> {
     }
 
     internal fun remove(element: T) {
-        val index = _elements.indexOf(element)
+        val index = getIndex?.invoke(element) ?: _elements.indexOf(element)
          // Clear data for current element
         val type = elementTypes[index]
 

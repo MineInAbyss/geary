@@ -12,6 +12,8 @@ expect class CompId2ArchetypeMap() {
 
     fun entries(): Set<Map.Entry<ULong, Archetype>>
 
+    fun clear()
+
     fun remove(id: GearyComponentId)
 
     operator fun contains(id: GearyComponentId): Boolean
@@ -32,6 +34,10 @@ class CompId2ArchetypeMapViaMutableMap {
 
     fun remove(id: GearyComponentId) {
         inner.remove(id)
+    }
+
+    fun clear() {
+        inner.clear()
     }
 
     val size: Int get() = inner.size
