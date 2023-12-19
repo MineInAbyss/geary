@@ -34,6 +34,8 @@ class Archetype internal constructor(
 
     private var unregistered: Boolean = false
 
+    private var allowUnregister: Boolean? = null
+
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
     private val dataHoldingType: EntityType = type.filter { it.holdsData() }
@@ -261,6 +263,7 @@ class Archetype internal constructor(
             componentData[addIndex][row] = data
             if (callEvent) temporaryEntity { componentAddEvent ->
                 componentAddEvent.addRelation(geary.components.updatedComponent, componentId, noEvent = true)
+                componentAddEvent.add(geary.components.keepArchetype, noEvent = true)
                 eventRunner.callEvent(record, records[componentAddEvent], null)
             }
             return false
@@ -318,7 +321,10 @@ class Archetype internal constructor(
     }
 
     private fun unregisterIfEmpty() {
+        if (allowUnregister == false) return
         if (type.size != 0 && ids.size == 0 && componentAddEdges.size == 0) {
+            if (allowUnregister == null) allowUnregister = type.contains(geary.components.keepArchetype)
+            if (allowUnregister == false) return
             archetypes.queryManager.unregisterArchetype(this)
             unregistered = true
             for ((id, archetype) in componentRemoveEdges.entries()) {
