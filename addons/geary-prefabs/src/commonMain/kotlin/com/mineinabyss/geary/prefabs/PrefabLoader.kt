@@ -6,7 +6,6 @@ import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.with
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
@@ -44,11 +43,18 @@ class PrefabLoader {
 
     /** If this entity has a [Prefab] component, clears it and loads components from its file. */
     fun reread(entity: Entity) {
-        entity.with { prefab: Prefab, key: PrefabKey ->
-            entity.clear()
-            loadFromPath(key.namespace, prefab.file ?: return, entity)
-            entity.inheritPrefabs()
-        }
+        val prefab = entity.get<Prefab>() ?: error("Entity was not an already loaded prefab")
+        val key = entity.get<PrefabKey>() ?: error("Entity did not have a prefab key")
+        val file = prefab.file ?: error("Prefab did not have a file")
+        entity.clear()
+
+        // set basics here as well in case load fails
+        entity.addRelation<NoInherit, Prefab>()
+        entity.addRelation<NoInherit, Uuid>()
+        entity.set(key)
+        entity.set(prefab)
+        loadFromPath(key.namespace, file, entity).getOrThrow()
+        entity.inheritPrefabs()
     }
 
     /** Registers an entity with components defined in a [path], adding a [Prefab] component. */
@@ -56,16 +62,16 @@ class PrefabLoader {
         return runCatching {
             val serializer = ListSerializer(PolymorphicSerializer(Component::class))
             val ext = path.name.substringAfterLast('.')
-
             val decoded = formats[ext]?.decodeFromFile(serializer, path)
                 ?: throw IllegalArgumentException("Unknown file format $ext")
-            val entity = writeTo ?: entity()
-            entity.set(Prefab(path))
-            entity.addRelation<NoInherit, Prefab>()
-            entity.addRelation<NoInherit, Uuid>()
-            entity.setAll(decoded)
 
             val key = PrefabKey.of(namespace, path.name.substringBeforeLast('.'))
+
+            val entity = writeTo ?: entity()
+            entity.addRelation<NoInherit, Prefab>()
+            entity.addRelation<NoInherit, Uuid>()
+            entity.set(Prefab(path))
+            entity.setAll(decoded)
             entity.set(key)
             entity
         }
