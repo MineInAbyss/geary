@@ -22,7 +22,7 @@ class SerializersByMap(
         key: String,
         baseClass: KClass<in T>
     ): DeserializationStrategy<out T>? =
-        module.getPolymorphic(baseClass = baseClass, serializedClassName = key)
+        module.getPolymorphic(baseClass = baseClass, serializedClassName = key.prefixNamespaceIfNotPrefixed())
 
     override fun <T : Component> getSerializerFor(kClass: KClass<in T>): DeserializationStrategy<out T>? {
         val serialName = getSerialNameFor(kClass) ?: return null
@@ -32,4 +32,9 @@ class SerializersByMap(
 
     override fun getSerialNameFor(kClass: KClass<out Component>): String? =
         component2serialName[kClass]
+
+    private fun String.prefixNamespaceIfNotPrefixed(): String =
+        if (!contains(":"))
+            "geary:${this}"
+        else this
 }
