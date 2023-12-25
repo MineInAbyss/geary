@@ -1,7 +1,9 @@
 package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.annotations.optin.DangerousComponentOperation
+import com.mineinabyss.geary.components.RequestCheck
 import com.mineinabyss.geary.components.events.AddedComponent
+import com.mineinabyss.geary.components.events.FailedCheck
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.datatypes.family.family
@@ -320,6 +322,23 @@ value class Entity(val id: EntityId) {
         init(event)
         callEvent(event, source)
         result(event)
+    }
+
+    fun callCheck(
+        source: Entity? = null,
+    ): Boolean {
+        return callEvent({
+            add<RequestCheck>()
+        }, source) { !it.has<FailedCheck>()}
+    }
+    inline fun callCheck(
+        crossinline init: Entity.() -> Unit,
+        source: Entity? = null,
+    ): Boolean {
+        return callEvent({
+            init()
+            add<RequestCheck>()
+        }, source) { it.has<FailedCheck>()}
     }
 
     /** Calls an event using a specific [entity][event] on this entity. */

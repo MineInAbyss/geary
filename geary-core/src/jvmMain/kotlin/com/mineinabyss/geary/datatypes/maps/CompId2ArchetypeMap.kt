@@ -11,6 +11,18 @@ actual class CompId2ArchetypeMap {
         inner[id.toLong()] = archetype
     }
 
+    actual fun remove(id: GearyComponentId) {
+        inner.remove(id.toLong())
+    }
+
+    actual fun clear() {
+        inner.clear()
+    }
+
+    actual fun entries(): Set<Map.Entry<ULong, Archetype>> = inner.mapKeys { it.key.toULong() }.entries
+
+    actual val size: Int get() = inner.size
+
     actual operator fun contains(id: GearyComponentId): Boolean = inner.containsKey(id.toLong())
 
     actual inline fun getOrSet(id: GearyComponentId, put: () -> Archetype): Archetype {

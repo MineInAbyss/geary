@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.engine
 
 import com.mineinabyss.geary.components.CouldHaveChildren
+import com.mineinabyss.geary.components.KeepArchetype
 import com.mineinabyss.geary.components.events.*
 import com.mineinabyss.geary.components.relations.ChildOf
 import com.mineinabyss.geary.components.relations.InstanceOf
@@ -19,4 +20,5 @@ class Components {
     val entityRemoved = componentId<EntityRemoved>()
     val childOf = componentId<ChildOf>()
     val instanceOf = componentId<InstanceOf>()
+    val keepArchetype = componentId<KeepArchetype>()
 }

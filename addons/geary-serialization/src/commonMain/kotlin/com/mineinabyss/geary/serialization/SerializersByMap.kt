@@ -20,9 +20,16 @@ class SerializersByMap(
 
     override fun <T : Component> getSerializerFor(
         key: String,
-        baseClass: KClass<in T>
-    ): DeserializationStrategy<out T>? =
-        module.getPolymorphic(baseClass = baseClass, serializedClassName = key)
+        baseClass: KClass<in T>,
+        namespaces: List<String>,
+    ): DeserializationStrategy<T>? =
+        if (key.hasNamespace())
+            module.getPolymorphic(baseClass = baseClass, serializedClassName = key)
+        else {
+            namespaces.firstNotNullOfOrNull { namespace ->
+                module.getPolymorphic(baseClass = baseClass, serializedClassName = "$namespace:$key")
+            } ?: error("No serializer found for $key in any of the namespaces $namespaces")
+        }
 
     override fun <T : Component> getSerializerFor(kClass: KClass<in T>): DeserializationStrategy<out T>? {
         val serialName = getSerialNameFor(kClass) ?: return null
@@ -32,4 +39,10 @@ class SerializersByMap(
 
     override fun getSerialNameFor(kClass: KClass<out Component>): String? =
         component2serialName[kClass]
+
+    private fun String.hasNamespace(): Boolean = contains(":")
+    private fun String.prefixNamespaceIfNotPrefixed(): String =
+        if (!hasNamespace())
+            "geary:${this}"
+        else this
 }
