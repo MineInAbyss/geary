@@ -70,7 +70,7 @@ class ComponentListAsMapSerializer(
 
                 else -> {
                     val foundValueSerializer = serializableComponents.serializers
-                        .getSerializerFor("$prefix$key", GearyComponent::class, namespaces) as? KSerializer<Any>
+                        .getSerializerFor("$prefix$key".fromCamelCaseToSnakeCase(), GearyComponent::class, namespaces) as? KSerializer<Any>
                         ?: error("No component serializer registered for $key")
 
                     val decodedValue = compositeDecoder.decodeMapValue(foundValueSerializer)
@@ -82,7 +82,15 @@ class ComponentListAsMapSerializer(
         return components.toList()
     }
 
+
     override fun serialize(encoder: Encoder, value: List<GearyComponent>) {
         TODO("Not implemented")
+    }
+
+    companion object{
+        private val camelRegex = Regex("([A-Z])")
+        fun String.fromCamelCaseToSnakeCase(): String {
+            return this.replace(camelRegex, "_$1").removePrefix("_").lowercase()
+        }
     }
 }

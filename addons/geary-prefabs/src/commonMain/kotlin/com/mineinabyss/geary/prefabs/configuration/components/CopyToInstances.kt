@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
  * in the Engine.
  */
 @Serializable
-@SerialName("geary:copyToInstances")
+@SerialName("geary:copy_to_instances")
 data class CopyToInstances(
     private val temporary: Set<@Polymorphic Component> = setOf(),
     private val persisting: Set<@Polymorphic Component> = setOf(),

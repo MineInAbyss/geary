@@ -8,7 +8,7 @@ import kotlin.reflect.KClassifier
  * Represents the [class][kClass] a component entity is responsible for.
  */
 @Serializable
-@SerialName("geary:componentInfo")
+@SerialName("geary:component_info")
 data class ComponentInfo(
     val kClass: KClassifier
 )
