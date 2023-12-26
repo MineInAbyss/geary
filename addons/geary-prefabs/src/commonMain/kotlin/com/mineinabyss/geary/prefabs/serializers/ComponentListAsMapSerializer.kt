@@ -30,15 +30,24 @@ class GearyComponentSerializer : KSerializer<GearyComponent> {
 
 }
 
-class ComponentListAsMapSerializer : KSerializer<List<GearyComponent>> {
+class ComponentListAsMapSerializer(
+    val namespaces: List<String> = listOf(),
+    val prefix: String = "",
+) : KSerializer<List<GearyComponent>> {
     val keySerializer = String.serializer()
     val valueSerializer = GearyComponentSerializer()
 
     override val descriptor: SerialDescriptor
         get() = MapSerializer(keySerializer, valueSerializer).descriptor
 
+    fun <T> CompositeDecoder.decodeMapValue(valueSerializer: KSerializer<T>): T {
+        val newDescriptor = MapSerializer(keySerializer, valueSerializer).descriptor
+        val newIndex = decodeElementIndex(newDescriptor)
+        return decodeSerializableElement(newDescriptor, newIndex, valueSerializer)
+    }
+
     override fun deserialize(decoder: Decoder): List<GearyComponent> {
-        val namespaces = mutableListOf<String>()
+        val namespaces = namespaces.toMutableList()
         val components = mutableListOf<GearyComponent>()
         val compositeDecoder = decoder.beginStructure(descriptor)
         while (true) {
@@ -47,25 +56,24 @@ class ComponentListAsMapSerializer : KSerializer<List<GearyComponent>> {
 
             val startIndex = components.size * 2
             val key: String = compositeDecoder.decodeSerializableElement(descriptor, startIndex + index, keySerializer)
-            when (key) {
-                "namespaces" -> {
+            when {
+                key == "namespaces" -> {
                     val valueSerializer = ListSerializer(String.serializer())
-                    val newIndex =
-                        compositeDecoder.decodeElementIndex(MapSerializer(keySerializer, valueSerializer).descriptor)
-                    val namespacesList = compositeDecoder.decodeSerializableElement(descriptor, newIndex, valueSerializer)
+                    val namespacesList = compositeDecoder.decodeMapValue(valueSerializer)
                     namespaces.addAll(namespacesList)
                 }
+
+                key.endsWith("*") -> {
+                    val innerSerializer = ComponentListAsMapSerializer(namespaces, key.removeSuffix("*"))
+                    components.addAll(compositeDecoder.decodeMapValue(innerSerializer))
+                }
+
                 else -> {
-                    val foundValueSerializer =
-                        serializableComponents.serializers.getSerializerFor(key, GearyComponent::class, namespaces) as? KSerializer<Any>
-                            ?: error("No component serializer registered for $key")
-                    val newDescriptor = MapSerializer(keySerializer, foundValueSerializer).descriptor
-                    val newIndex = compositeDecoder.decodeElementIndex(newDescriptor)
-                    val decodedValue = compositeDecoder.decodeSerializableElement<Any>(
-                        descriptor = newDescriptor,
-                        index = newIndex,
-                        deserializer = foundValueSerializer,
-                    )
+                    val foundValueSerializer = serializableComponents.serializers
+                        .getSerializerFor("$prefix$key", GearyComponent::class, namespaces) as? KSerializer<Any>
+                        ?: error("No component serializer registered for $key")
+
+                    val decodedValue = compositeDecoder.decodeMapValue(foundValueSerializer)
                     components += decodedValue
                 }
             }
