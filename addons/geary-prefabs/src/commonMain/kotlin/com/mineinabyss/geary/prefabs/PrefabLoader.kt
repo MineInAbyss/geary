@@ -4,12 +4,14 @@ import co.touchlab.kermit.Severity
 import com.benasher44.uuid.Uuid
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
-import com.mineinabyss.geary.prefabs.serializers.ComponentListAsMapSerializer
+import com.mineinabyss.geary.prefabs.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.dsl.serializableComponents
+import kotlinx.serialization.PolymorphicSerializer
 import okio.Path
 
 class PrefabLoader {
@@ -58,7 +60,7 @@ class PrefabLoader {
     /** Registers an entity with components defined in a [path], adding a [Prefab] component. */
     fun loadFromPath(namespace: String, path: Path, writeTo: Entity? = null): Result<Entity> {
         return runCatching {
-            val serializer = ComponentListAsMapSerializer()
+            val serializer = PolymorphicListAsMapSerializer.of(PolymorphicSerializer(GearyComponent::class))
             val ext = path.name.substringAfterLast('.')
             val decoded = formats[ext]?.decodeFromFile(serializer, path)
                 ?: throw IllegalArgumentException("Unknown file format $ext")

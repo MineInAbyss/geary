@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.prefabs.serializers
 
 import com.mineinabyss.geary.datatypes.GearyComponent
-import com.mineinabyss.geary.serialization.dsl.serializableComponents
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -30,10 +30,16 @@ class GearyComponentSerializer : KSerializer<GearyComponent> {
 
 }
 
-class ComponentListAsMapSerializer(
-    val namespaces: List<String> = listOf(),
-    val prefix: String = "",
-) : KSerializer<List<GearyComponent>> {
+class PolymorphicListAsMapSerializer<T : Any> internal constructor(
+    serializer: KSerializer<T>,
+) : KSerializer<List<T>> {
+    // We need primary constructor to be a single serializer for generic serialization to work, use of() if manually creating
+    private var namespaces: List<String> = listOf()
+    private var prefix: String = ""
+
+
+    val polymorphicSerializer = serializer as? PolymorphicSerializer<T> ?: error("Serializer is not polymorphic")
+
     val keySerializer = String.serializer()
     val valueSerializer = GearyComponentSerializer()
 
@@ -46,9 +52,9 @@ class ComponentListAsMapSerializer(
         return decodeSerializableElement(newDescriptor, newIndex, valueSerializer)
     }
 
-    override fun deserialize(decoder: Decoder): List<GearyComponent> {
+    override fun deserialize(decoder: Decoder): List<T> {
         val namespaces = namespaces.toMutableList()
-        val components = mutableListOf<GearyComponent>()
+        val components = mutableListOf<T>()
         val compositeDecoder = decoder.beginStructure(descriptor)
         while (true) {
             val index = compositeDecoder.decodeElementIndex(descriptor)
@@ -64,16 +70,13 @@ class ComponentListAsMapSerializer(
                 }
 
                 key.endsWith("*") -> {
-                    val innerSerializer = ComponentListAsMapSerializer(namespaces, key.removeSuffix("*"))
+                    val innerSerializer = of(polymorphicSerializer, namespaces, key.removeSuffix("*"))
                     components.addAll(compositeDecoder.decodeMapValue(innerSerializer))
                 }
 
                 else -> {
-                    val foundValueSerializer = serializableComponents.serializers
-                        .getSerializerFor("$prefix$key".fromCamelCaseToSnakeCase(), GearyComponent::class, namespaces) as? KSerializer<Any>
-                        ?: error("No component serializer registered for $key")
-
-                    val decodedValue = compositeDecoder.decodeMapValue(foundValueSerializer)
+                    val decodedValue =
+                        compositeDecoder.decodeMapValue(findSerializerFor(compositeDecoder, namespaces, key))
                     components += decodedValue
                 }
             }
@@ -82,15 +85,43 @@ class ComponentListAsMapSerializer(
         return components.toList()
     }
 
+    @OptIn(InternalSerializationApi::class)
+    fun findSerializerFor(
+        decoder: CompositeDecoder,
+        namespaces: List<String>,
+        key: String,
+    ): KSerializer<T> {
+        val parsedKey = "$prefix$key".fromCamelCaseToSnakeCase()
+        return (if (parsedKey.hasNamespace()) polymorphicSerializer.findPolymorphicSerializerOrNull(decoder, parsedKey)
+        else namespaces.firstNotNullOfOrNull { namespace ->
+            polymorphicSerializer.findPolymorphicSerializerOrNull(decoder, "$namespace:$parsedKey")
+        } ?: error("No serializer found for $parsedKey in any of the namespaces $namespaces"))
+                as? KSerializer<T> ?: error("Serializer for $parsedKey is not a component serializer")
+    }
 
-    override fun serialize(encoder: Encoder, value: List<GearyComponent>) {
+    private fun String.hasNamespace(): Boolean = contains(":")
+
+    override fun serialize(encoder: Encoder, value: List<T>) {
         TODO("Not implemented")
     }
 
-    companion object{
+    companion object {
         private val camelRegex = Regex("([A-Z])")
         fun String.fromCamelCaseToSnakeCase(): String {
             return this.replace(camelRegex, "_$1").removePrefix("_").lowercase()
+        }
+
+
+        fun <T : Any> of(
+            serializer: PolymorphicSerializer<T>,
+            namespaces: List<String> = listOf(),
+            prefix: String = ""
+        ):
+                PolymorphicListAsMapSerializer<T> {
+            return PolymorphicListAsMapSerializer(serializer).apply {
+                this.namespaces = namespaces
+                this.prefix = prefix
+            }
         }
     }
 }
