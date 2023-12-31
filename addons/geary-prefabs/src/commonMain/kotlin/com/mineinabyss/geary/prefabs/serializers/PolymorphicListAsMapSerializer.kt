@@ -11,7 +11,6 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 
 
 class PolymorphicListAsMapSerializer<T : Any> internal constructor(
@@ -52,9 +51,8 @@ class PolymorphicListAsMapSerializer<T : Any> internal constructor(
             val key: String = compositeDecoder.decodeSerializableElement(descriptor, startIndex + index, keySerializer)
             when {
                 key == "namespaces" -> {
-                    val valueSerializer = ListSerializer(String.serializer())
-                    val namespacesList = compositeDecoder.decodeMapValue(valueSerializer)
-//                    namespaces.addAll(namespacesList)
+                    // Ignore namespaces component, it's parsed as a file-wide property
+                    compositeDecoder.decodeMapValue(ListSerializer(String.serializer()))
                 }
 
                 key.endsWith("*") -> {

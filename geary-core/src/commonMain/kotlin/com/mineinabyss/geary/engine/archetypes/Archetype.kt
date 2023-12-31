@@ -1,7 +1,10 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import com.mineinabyss.geary.components.relations.InstanceOf
+import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
+import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.modules.archetypes
@@ -295,6 +298,21 @@ class Archetype internal constructor(
             }
         }
         return true
+    }
+
+    fun instantiateTo(
+        base: Record,
+        instance: Record,
+    ) {
+        instance.archetype.addComponent(instance, Relation.of<InstanceOf?>(base.entity).id, true)
+        type.filter { !it.holdsData() }.forEach {
+            instance.archetype.addComponent(instance, it, true)
+        }
+        val noInheritComponents = EntityType(getRelationsByKind(componentId<NoInherit>()).map { it.target })
+        dataHoldingType.forEach {
+            if (it.withoutRole(HOLDS_DATA) in noInheritComponents) return@forEach
+            instance.archetype.setComponent(instance, it, get(base.row, it)!!, true)
+        }
     }
 
     /**

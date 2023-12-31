@@ -20,7 +20,7 @@ interface EntityMutateOperations {
     /** Adds this [componentId] to the [entity]'s type but doesn't store any data. */
     fun addComponentFor(entity: Entity, componentId: ComponentId, noEvent: Boolean)
 
-    fun addPrefabFor(entity: Entity, base: Entity)
+    fun extendFor(entity: Entity, base: Entity)
 
     /** Removes a [componentId] from an [entity] and clears any data previously associated with it. */
     fun removeComponentFor(entity: Entity, componentId: ComponentId): Boolean

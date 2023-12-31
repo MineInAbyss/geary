@@ -1,10 +1,8 @@
 package com.mineinabyss.geary.prefabs
 
-import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.prefabs.helpers.addPrefab
 import com.mineinabyss.idofront.di.DI
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
@@ -28,27 +26,11 @@ class PrefabTests {
         val prefab = entity { set(testKey) }
 
         // act
-        val instance = entity { addPrefab(prefab) }
+        val instance = entity { extend(prefab) }
 
         // assert
         testKey.toEntity() shouldBe prefab
         instance.get<PrefabKey>().shouldBeNull()
-    }
-
-    @Test
-    fun `should inherit relations`() {
-        // arrange
-        val relatesTo = entity()
-        val prefab = entity {
-            set(testKey)
-            addRelation<String>(relatesTo)
-        }
-
-        // act
-        val instance = entity { addPrefab(prefab) }
-
-        // assert
-        instance.getRelations<String, Any?>().shouldBe(listOf(relatesTo))
     }
 
     @Test
@@ -58,23 +40,5 @@ class PrefabTests {
 
         // assert
         testKey.toEntityOrNull() shouldBe prefab
-    }
-
-    @Test
-    fun `should respect NoInherit relation`() {
-        // arrange
-        val prefab = entity {
-            set("test")
-            set(1)
-            addRelation<NoInherit, String>()
-            set(testKey)
-        }
-
-        // act
-        val instance = entity { addPrefab(prefab) }
-
-        // assert
-        instance.get<String>().shouldBeNull()
-        instance.get<Int>() shouldBe 1
     }
 }
