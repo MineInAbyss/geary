@@ -34,5 +34,11 @@ kotlin {
                 implementation(project(":geary-serialization"))
             }
         }
+
+        val jvmTest by getting {
+            dependencies {
+                implementation(libs.junit.jupiter)
+            }
+        }
     }
 }

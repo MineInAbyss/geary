@@ -226,9 +226,9 @@ value class Entity(val id: EntityId) {
      */
     fun hasAll(components: Collection<KClass<*>>): Boolean = components.all { has(it) }
 
-    /** Adds a [prefab] entity to this entity.  */
-    fun addPrefab(prefab: Entity) {
-        write.addPrefabFor(this, prefab)
+    /** Adds a [base] entity to this entity.  */
+    fun extend(base: Entity) {
+        write.extendFor(this, base)
     }
 
     /** Adds a [prefab] entity to this entity.  */

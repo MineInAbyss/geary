@@ -20,6 +20,6 @@ fun Entity.inheritPrefabs(instances: Set<Entity> = setOf()) {
         }
     }.forEach { parent ->
         parent.inheritPrefabs(instances + this)
-        addPrefab(parent)
+        extend(parent)
     }
 }

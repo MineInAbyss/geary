@@ -4,6 +4,7 @@ import com.mineinabyss.geary.prefabs.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.serialization.formats.YamlFormat
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
@@ -12,9 +13,11 @@ import kotlinx.serialization.modules.subclass
 import okio.Path
 import okio.Path.Companion.toOkioPath
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import java.nio.file.Files
 import kotlin.io.path.writeText
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SerializerTest {
     interface Components
 
@@ -41,70 +44,52 @@ class SerializerTest {
             }
         })
 
-    @Serializable
-    class SerializerTest(val components: @Serializable(with = PolymorphicListAsMapSerializer::class) List<@Polymorphic Components>)
+    val mapSerializer = PolymorphicListAsMapSerializer(PolymorphicSerializer(Components::class))
 
-    fun String.asTempFile(): Path = Files.createTempFile("tempfiles", ".tmp").apply { writeText(this@asTempFile) }.toOkioPath()
+    fun String.asTempFile(): Path =
+        Files.createTempFile("tempfiles", ".tmp").apply { writeText(this@asTempFile) }.toOkioPath()
+
     @Test
     fun `should serialize via @Serializable`() {
         val file =
             """
-            {
-                "components": {
-                    "test:thing.a": {},
-                    "test:thing.b": {}
-                }
-            }
+            test:thing.a: {}
+            test:thing.b: {}
             """.trimIndent().asTempFile()
-        format.decodeFromFile(SerializerTest.serializer(), file).components shouldBe listOf(A, B)
+        format.decodeFromFile(mapSerializer, file) shouldBe listOf(A, B)
     }
 
     @Test
     fun `should support subkey syntax`() {
         val file =
             """
-            {
-                "components": {
-                   "test:thing.*": {
-                     "a": {},
-                     "b": {}
-                   }
-                }
-            }
+            test:thing.*:
+                a: {}
+                b: {}
             """.trimIndent().asTempFile()
-        format.decodeFromFile(SerializerTest.serializer(), file).components shouldBe listOf(A, B)
+        format.decodeFromFile(mapSerializer, file) shouldBe listOf(A, B)
     }
 
     @Test
     fun `should support importing namespaces`() {
         val file =
             """
-            {
-                "namespaces": ["test"],
-                "components": {
-                    "thing.a": {},
-                    "thing.b": {}
-                }
-            }
+            namespaces: ["test"]
+            thing.a: {}
+            thing.b: {}
             """.trimIndent().asTempFile()
-        format.decodeFromFile(SerializerTest.serializer(), file).components shouldBe listOf(A, B)
+        format.decodeFromFile(mapSerializer, file) shouldBe listOf(A, B)
     }
 
     @Test
     fun `should pass namespaces to child serializers`() {
         val file =
             """
-            {
-                "namespaces": ["test"],
-                "components": {
-                    "subserializers": {
-                        "components": {
-                            "thing.a": {}
-                        }
-                    }
-                }
-            }
+            "namespaces": ["test"]
+            "subserializers":
+                "components":
+                    "thing.a": {}
             """.trimIndent().asTempFile()
-        format.decodeFromFile(SerializerTest.serializer(), file).components shouldBe listOf(SubSerializers(listOf(A)))
+        format.decodeFromFile(mapSerializer, file) shouldBe listOf(SubSerializers(listOf(A)))
     }
 }
