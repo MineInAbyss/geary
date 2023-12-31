@@ -37,7 +37,3 @@ for (addon in file("addons").listFiles()) {
         project(":${addon.name}").projectDir = file(addon)
     }
 }
-
-includeBuild("../geary-papermc")
-includeBuild("../mobzy")
-includeBuild("../looty")
