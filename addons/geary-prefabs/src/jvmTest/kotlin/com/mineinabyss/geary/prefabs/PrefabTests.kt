@@ -36,6 +36,22 @@ class PrefabTests {
     }
 
     @Test
+    fun `should inherit relations`() {
+        // arrange
+        val relatesTo = entity()
+        val prefab = entity {
+            set(testKey)
+            addRelation<String>(relatesTo)
+        }
+
+        // act
+        val instance = entity { addPrefab(prefab) }
+
+        // assert
+        instance.getRelations<String, Any?>().shouldBe(listOf(relatesTo))
+    }
+
+    @Test
     fun `should track prefabs when key added`(){
         // arrange & act
         val prefab = entity { set(testKey) }

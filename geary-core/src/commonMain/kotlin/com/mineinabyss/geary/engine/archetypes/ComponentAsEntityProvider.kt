@@ -15,6 +15,7 @@ class ComponentAsEntityProvider : ComponentProvider {
 
     private val classToComponentMap = ClassToComponentMap()
     private val classToComponentMapLock = SynchronizedObject()
+    private val platformSpecificComponentRegistry = PlatformSpecificComponentRegistry()
 
     internal fun createComponentInfo() {
         logger.v("Registering ComponentInfo component")
@@ -26,7 +27,7 @@ class ComponentAsEntityProvider : ComponentProvider {
 
     override fun getOrRegisterComponentIdForClass(kClass: KClass<*>): ComponentId =
         synchronized(classToComponentMapLock) {
-            val id = classToComponentMap[kClass]
+            val id = classToComponentMap[ kClass]
             if (id == (-1L).toULong()) return registerComponentIdForClass(kClass)
             return id
         }
@@ -36,6 +37,7 @@ class ComponentAsEntityProvider : ComponentProvider {
         val compEntity = entityProvider.create()
         compEntity.set(ComponentInfo(kClass), noEvent = true)
         classToComponentMap[kClass] = compEntity.id
+        platformSpecificComponentRegistry.onRegisterComponent(kClass, compEntity.id)
         return compEntity.id
     }
 }
