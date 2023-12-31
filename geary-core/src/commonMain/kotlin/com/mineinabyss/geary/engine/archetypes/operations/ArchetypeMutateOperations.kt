@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.engine.archetypes.operations
 
+import com.mineinabyss.geary.components.relations.InstanceOf
+import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityMutateOperations
@@ -31,6 +33,23 @@ class ArchetypeMutateOperations : EntityMutateOperations {
     ) {
         records[entity].apply {
             archetype.addComponent(this, componentId.withoutRole(HOLDS_DATA), !noEvent)
+        }
+    }
+
+    override fun addPrefabFor(entity: Entity, prefab: Entity) {
+        records[entity].apply {
+            archetype.addExtends(this, records[prefab])
+            addRelation<InstanceOf>(prefab)
+            //TODO this isn't copying over any relations
+            val comp = prefab.getAll().toMutableSet()
+            prefab.getRelationsWithData<NoInherit?, Any>().forEach {
+                comp -= it.targetData
+            }
+            prefab.children.forEach { it.addParent(this) }
+            setAll(comp, override = false) //TODO plan out more thoroughly and document overriding behaviour
+            prefab.with { copy: CopyToInstances ->
+                copy.decodeComponentsTo(this, override = false)
+            }
         }
     }
 

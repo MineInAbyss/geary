@@ -16,6 +16,8 @@ import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
 
+typealias GearyEntity = Entity
+
 /**
  * A wrapper around [EntityId] that gets inlined to just a long (no performance degradation since no boxing occurs).
  *
@@ -45,6 +47,9 @@ value class Entity(val id: EntityId) {
         get() = queryManager.getEntitiesMatching(family {
             hasRelation(geary.components.instanceOf, this@Entity.id)
         })
+
+    val prefabs: List<Entity>
+        get() = getRelations<InstanceOf?, Any?>().map { it.target.toGeary() }
 
     /** Remove this entity from the ECS. */
     fun removeEntity() {
@@ -221,6 +226,16 @@ value class Entity(val id: EntityId) {
      */
     fun hasAll(components: Collection<KClass<*>>): Boolean = components.all { has(it) }
 
+    /** Adds a [prefab] entity to this entity.  */
+    fun addPrefab(prefab: Entity) {
+        write.addPrefabFor(this, prefab)
+    }
+
+    /** Adds a [prefab] entity to this entity.  */
+    fun Entity.removePrefab(prefab: Entity) {
+        removeRelation<InstanceOf>(prefab)
+    }
+
     // Relations
 
     /** Gets the data stored under the relation of kind [K] and target [T]. */
@@ -329,8 +344,9 @@ value class Entity(val id: EntityId) {
     ): Boolean {
         return callEvent({
             add<RequestCheck>()
-        }, source) { !it.has<FailedCheck>()}
+        }, source) { !it.has<FailedCheck>() }
     }
+
     inline fun callCheck(
         crossinline init: Entity.() -> Unit,
         source: Entity? = null,
@@ -338,7 +354,7 @@ value class Entity(val id: EntityId) {
         return callEvent({
             init()
             add<RequestCheck>()
-        }, source) { it.has<FailedCheck>()}
+        }, source) { it.has<FailedCheck>() }
     }
 
     /** Calls an event using a specific [entity][event] on this entity. */

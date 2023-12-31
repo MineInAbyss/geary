@@ -1,34 +1,18 @@
 package com.mineinabyss.geary.prefabs.serializers
 
-import com.mineinabyss.geary.datatypes.GearyComponent
+import com.mineinabyss.geary.serialization.ProvidedNamespaces
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 
-
-class GearyComponentSerializer : KSerializer<GearyComponent> {
-    @OptIn(InternalSerializationApi::class)
-    override val descriptor: SerialDescriptor =
-        buildSerialDescriptor("GearyComponentSerializer", PolymorphicKind.SEALED)
-
-    override fun deserialize(decoder: Decoder): GearyComponent {
-        TODO("Not yet implemented")
-    }
-
-    override fun serialize(encoder: Encoder, value: GearyComponent) {
-        TODO("Not yet implemented")
-    }
-
-}
 
 class PolymorphicListAsMapSerializer<T : Any> internal constructor(
     serializer: KSerializer<T>,
@@ -53,7 +37,11 @@ class PolymorphicListAsMapSerializer<T : Any> internal constructor(
     }
 
     override fun deserialize(decoder: Decoder): List<T> {
-        val namespaces = namespaces.toMutableList()
+        val namespaces = mutableListOf<String>().apply {
+            (decoder.serializersModule.getContextual(ProvidedNamespaces::class) as? ProvidedNamespaces)?.namespaces
+                ?.let { addAll(it) }
+//            addAll(namespaces)
+        }
         val components = mutableListOf<T>()
         val compositeDecoder = decoder.beginStructure(descriptor)
         while (true) {
@@ -66,7 +54,7 @@ class PolymorphicListAsMapSerializer<T : Any> internal constructor(
                 key == "namespaces" -> {
                     val valueSerializer = ListSerializer(String.serializer())
                     val namespacesList = compositeDecoder.decodeMapValue(valueSerializer)
-                    namespaces.addAll(namespacesList)
+//                    namespaces.addAll(namespacesList)
                 }
 
                 key.endsWith("*") -> {

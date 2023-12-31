@@ -4,7 +4,7 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         maven("https://repo.mineinabyss.com/releases")
-//        maven("https://repo.papermc.io/repository/maven-public/")
+        mavenLocal()
     }
 }
 
@@ -13,6 +13,7 @@ dependencyResolutionManagement {
 
     repositories {
         maven("https://repo.mineinabyss.com/releases")
+        mavenLocal()
     }
 
     versionCatalogs {
@@ -36,3 +37,7 @@ for (addon in file("addons").listFiles()) {
         project(":${addon.name}").projectDir = file(addon)
     }
 }
+
+includeBuild("../geary-papermc")
+includeBuild("../mobzy")
+includeBuild("../looty")
