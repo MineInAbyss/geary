@@ -275,7 +275,11 @@ value class Entity(val id: EntityId) {
     }
 
     inline fun <reified K : Any> setRelation(data: K, target: Entity, noEvent: Boolean = false) {
-        geary.write.setComponentFor(this, Relation.of<K>(target).id, data, noEvent)
+        setRelation(componentId<K>(), target.id, data, noEvent)
+    }
+
+    fun setRelation(kind: ComponentId, target: EntityId, data: Component, noEvent: Boolean = false) {
+        geary.write.setComponentFor(this, Relation.of(kind, target).id, data, noEvent)
     }
 
     inline fun <reified K : Any, reified T : Any> addRelation(noEvent: Boolean = false) {

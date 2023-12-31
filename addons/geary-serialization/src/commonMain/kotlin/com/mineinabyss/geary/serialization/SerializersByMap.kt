@@ -1,6 +1,8 @@
 package com.mineinabyss.geary.serialization
 
 import com.mineinabyss.geary.datatypes.Component
+import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.fromCamelCaseToSnakeCase
+import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.hasNamespace
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.modules.SerializersModule
 import kotlin.reflect.KClass
@@ -14,9 +16,15 @@ class SerializersByMap(
         .associate { it.value to it.key }
 
     //TODO allow this to work for all registered classes, not just components
-    override fun getClassFor(serialName: String): KClass<out Component> =
-        serialName2Component[serialName]
-            ?: error("$serialName is not a valid component name in the registered components")
+    override fun getClassFor(serialName: String, namespaces: List<String>): KClass<out Component> {
+        val parsedKey = serialName.fromCamelCaseToSnakeCase()
+        return (if (parsedKey.hasNamespace())
+            serialName2Component[parsedKey]
+        else namespaces.firstNotNullOfOrNull { namespace ->
+            serialName2Component["$namespace:$parsedKey"]
+        })
+            ?: error("$parsedKey is not a component registered in any of the namespaces: $namespaces")
+    }
 
     override fun <T : Component> getSerializerFor(
         key: String,
