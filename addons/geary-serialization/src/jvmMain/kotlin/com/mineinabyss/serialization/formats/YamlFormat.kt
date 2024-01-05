@@ -10,6 +10,8 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.overwriteWith
 import okio.Path
+import org.intellij.lang.annotations.Language
+import java.io.InputStream
 
 class YamlFormat(
     module: SerializersModule
@@ -35,11 +37,19 @@ class YamlFormat(
     class YamlFileProperties(val namespaces: List<String> = listOf())
 
     override fun <T> decodeFromFile(deserializer: DeserializationStrategy<T>, path: Path): T {
-        val fileProperties = propertiesYaml.decodeFromStream(YamlFileProperties.serializer(), path.toFile().inputStream())
+        return decodeFromStream(deserializer) { path.toFile().inputStream() }
+    }
+
+    fun <T> decodeFromStream(deserializer: DeserializationStrategy<T>, inputStream: () -> InputStream): T {
+        val fileProperties = propertiesYaml.decodeFromStream(YamlFileProperties.serializer(), inputStream())
         val newModule = readingYaml.serializersModule.overwriteWith(SerializersModule {
             contextual(ProvidedNamespaces::class, ProvidedNamespaces(fileProperties.namespaces))
         })
-        return Yaml(newModule, readingYaml.configuration).decodeFromStream(deserializer, path.toFile().inputStream())
+        return Yaml(newModule, readingYaml.configuration).decodeFromStream(deserializer, inputStream())
+    }
+
+    fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, @Language("yaml") string: String): T {
+        return decodeFromStream(deserializer) { string.byteInputStream() }
     }
 
     override fun <T> encodeToFile(serializer: SerializationStrategy<T>, value: T, path: Path) {

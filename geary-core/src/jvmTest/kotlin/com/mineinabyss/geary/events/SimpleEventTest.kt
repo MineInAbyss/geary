@@ -23,6 +23,16 @@ class SimpleEventTest : GearyTest() {
         }
     }
 
+    class SourceOnlyListener: Listener() {
+        var called = 0
+        val Records.event by get<MyEvent>().on(event)
+        val Records.data by get<Int>().on(source)
+
+        override fun Pointers.handle() {
+            called += 1
+        }
+    }
+
     @Test
     fun `simple set listener`() {
         val listener = MyListener()
@@ -41,6 +51,24 @@ class SimpleEventTest : GearyTest() {
         entity.callEvent(entity())
         listener.called shouldBe 1
         entity().callEvent(event)
+        listener.called shouldBe 1
+    }
+
+    @Test
+    fun `source only simple set listener`() {
+        val listener = SourceOnlyListener()
+        geary.pipeline.addSystem(listener)
+
+        val target = entity()
+        val source = entity {
+            set(1)
+        }
+        val event = entity {
+            set(MyEvent())
+        }
+
+        listener.called shouldBe 0
+        target.callEvent(event, source = source)
         listener.called shouldBe 1
     }
 }

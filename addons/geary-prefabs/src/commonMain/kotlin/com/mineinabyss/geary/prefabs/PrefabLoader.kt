@@ -9,8 +9,8 @@ import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
-import com.mineinabyss.geary.prefabs.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.dsl.serializableComponents
+import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import kotlinx.serialization.PolymorphicSerializer
 import okio.Path
 

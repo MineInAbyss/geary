@@ -2,6 +2,7 @@ package com.mineinabyss.geary.serialization
 
 import com.mineinabyss.geary.datatypes.Component
 import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.modules.SerializersModule
 import kotlin.reflect.KClass
 
@@ -18,6 +19,8 @@ interface ComponentSerializers {
 
     fun <T : Component> getSerializerFor(kClass: KClass<in T>): DeserializationStrategy<out T>?
     fun getSerialNameFor(kClass: KClass<out Component>): String?
+
+    fun <T : Any> getKClassFor(serializer: KSerializer<T>): KClass<T>?
 
     companion object {
         private val camelRegex = Regex("([A-Z])")

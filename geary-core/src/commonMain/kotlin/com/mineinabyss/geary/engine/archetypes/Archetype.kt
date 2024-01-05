@@ -4,6 +4,7 @@ import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
+import com.mineinabyss.geary.helpers.addParent
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.temporaryEntity
 import com.mineinabyss.geary.helpers.toGeary
@@ -11,6 +12,7 @@ import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.RelationWithData
+import korlibs.datastructure.iterators.fastForEach
 
 /**
  * Archetypes store a list of entities with the same [EntityType], and provide functions to
@@ -37,7 +39,8 @@ class Archetype internal constructor(
 
     private var unregistered: Boolean = false
 
-    private var allowUnregister: Boolean? = null
+    // This is way slower as a Boolean? because of boxing
+    private var allowUnregister: Byte = 0
 
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
@@ -67,11 +70,11 @@ class Archetype internal constructor(
     /** The amount of entities stored in this archetype. */
     val size: Int get() = ids.size
 
-    val sourceListeners = mutableSetOf<Listener>()
+    val sourceListeners = mutableListOf<Listener>()
 
-    val targetListeners = mutableSetOf<Listener>()
+    val targetListeners = mutableListOf<Listener>()
 
-    val eventListeners = mutableSetOf<Listener>()
+    val eventListeners = mutableListOf<Listener>()
 
     // ==== Helper functions ====
     fun getEntity(row: Int): Entity {
@@ -238,10 +241,8 @@ class Archetype internal constructor(
         moveTo.moveOnlyAdding(record, entityId)
         removeEntity(row)
 
-        if (callEvent) temporaryEntity { componentAddEvent ->
-            componentAddEvent.addRelation(geary.components.addedComponent, componentId, noEvent = true)
-            eventRunner.callEvent(record, records[componentAddEvent], null)
-        }
+        if (callEvent) callComponentModifyEvent(geary.components.addedComponent, record, componentId)
+
         return true
     }
 
@@ -264,11 +265,7 @@ class Archetype internal constructor(
         val addIndex = indexOf(dataComponent)
         if (addIndex != -1) {
             componentData[addIndex][row] = data
-            if (callEvent) temporaryEntity { componentAddEvent ->
-                componentAddEvent.addRelation(geary.components.updatedComponent, componentId, noEvent = true)
-                componentAddEvent.add(geary.components.keepArchetype, noEvent = true)
-                eventRunner.callEvent(record, records[componentAddEvent], null)
-            }
+            if (callEvent) callComponentModifyEvent(geary.components.updatedComponent, record, componentId)
             return false
         }
 
@@ -278,26 +275,23 @@ class Archetype internal constructor(
         moveTo.moveWithNewComponent(record, data, dataComponent, entityId)
         removeEntity(row)
 
-        if (callEvent && moveTo.targetListeners.isNotEmpty()) {
-            // Archetype for the set event
-            val eventArc = archetypeProvider.getArchetype(
-                GearyEntityType(
-                    ulongArrayOf(
-                        Relation.of(
-                            geary.components.setComponent,
-                            componentId
-                        ).id
-                    )
-                )
-            )
-            if (eventArc.eventListeners.isNotEmpty()) {
-                temporaryEntity { componentAddEvent ->
-                    componentAddEvent.addRelation(geary.components.setComponent, componentId, noEvent = true)
-                    eventRunner.callEvent(record, records[componentAddEvent], null)
-                }
+        // Component add listeners must query the target, this is an optimization
+        if (callEvent) callComponentModifyEvent(geary.components.setComponent, record, componentId)
+        return true
+    }
+
+    fun callComponentModifyEvent(eventType: ComponentId, record: Record, componentId: ComponentId) {
+        // Archetype for the set event, if this doesn't have an event listener we skip
+        val eventArc = archetypeProvider.getArchetype(
+            GearyEntityType(ulongArrayOf(Relation.of(eventType, componentId).id))
+        )
+        if (eventArc.eventListeners.isNotEmpty()) {
+            temporaryEntity { event ->
+                event.add(geary.components.keepArchetype, noEvent = true)
+                event.addRelation(eventType, componentId, noEvent = true)
+                eventRunner.callEvent(record, records[event], null)
             }
         }
-        return true
     }
 
     fun instantiateTo(
@@ -312,6 +306,9 @@ class Archetype internal constructor(
         dataHoldingType.forEach {
             if (it.withoutRole(HOLDS_DATA) in noInheritComponents) return@forEach
             instance.archetype.setComponent(instance, it, get(base.row, it)!!, true)
+        }
+        base.entity.children.forEach {
+            it.addParent(instance.entity)
         }
     }
 
@@ -339,10 +336,11 @@ class Archetype internal constructor(
     }
 
     private fun unregisterIfEmpty() {
-        if (allowUnregister == false) return
-        if (type.size != 0 && ids.size == 0 && componentAddEdges.size == 0) {
-            if (allowUnregister == null) allowUnregister = type.contains(geary.components.keepArchetype)
-            if (allowUnregister == false) return
+        if (allowUnregister == FALSE) return
+        if (ids.size == 0 && type.size != 0 && componentAddEdges.size == 0) {
+            if (allowUnregister == UNKNOWN) allowUnregister =
+                if (type.contains(geary.components.keepArchetype)) FALSE else TRUE
+            if (allowUnregister == FALSE) return
             archetypes.queryManager.unregisterArchetype(this)
             unregistered = true
             for ((id, archetype) in componentRemoveEdges.entries()) {
@@ -431,14 +429,21 @@ class Archetype internal constructor(
 
 
         // Delete last row's data
-        ids.removeLastOrNull()
-        componentData.forEach { it.removeLastOrNull() }
-
         // If we're the last archetype in the chain with no entities, unregister to free up memory
+
+        ids.removeLastOrNull()
+        if(componentData.isNotEmpty())
+            componentData.fastForEach { it.removeAt(lastIndex) }
         unregisterIfEmpty()
     }
 
     override fun equals(other: Any?): Boolean {
         return type == (other as? Archetype)?.type
+    }
+
+    companion object {
+        private const val FALSE = 1.toByte()
+        private const val UNKNOWN = 0.toByte()
+        private const val TRUE = 2.toByte()
     }
 }

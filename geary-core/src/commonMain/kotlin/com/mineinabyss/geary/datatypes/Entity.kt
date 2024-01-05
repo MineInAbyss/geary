@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.annotations.optin.DangerousComponentOperation
+import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.components.RequestCheck
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.FailedCheck
@@ -12,7 +13,6 @@ import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.RelationWithData
-import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
 
@@ -23,7 +23,6 @@ typealias GearyEntity = Entity
  *
  * Provides some useful functions, so we aren't forced to go through [Engine] every time we want to do some things.
  */
-@Serializable
 @JvmInline
 value class Entity(val id: EntityId) {
     private val entityProvider get() = geary.entityProvider
@@ -367,6 +366,16 @@ value class Entity(val id: EntityId) {
     }
 
     // Other
+
+    fun lookup(query: String): GearyEntity? {
+        val firstSubstring = query.substringBefore(".")
+        val child = children.firstOrNull {
+            it.get<EntityName>()?.name == firstSubstring
+        }
+        val remaining = query.substringAfter(".")
+        if (remaining == "" || remaining == query) return child
+        return child?.lookup(remaining)
+    }
 
     operator fun component1(): EntityId = id
 

@@ -77,12 +77,12 @@ class NewEntityBenchmark {
 
         repeat(oneMil) {
             entity {
-                set(Comp1(0), comp1Id)
-                set(Comp2(0), comp2Id)
-                set(Comp3(0), comp3Id)
-                set(Comp4(0), comp4Id)
-                set(Comp5(0), comp5Id)
-                set(Comp6(0), comp6Id)
+                set(Comp1(0), comp1Id, noEvent = true)
+                set(Comp2(0), comp2Id, noEvent = true)
+                set(Comp3(0), comp3Id, noEvent = true)
+                set(Comp4(0), comp4Id, noEvent = true)
+                set(Comp5(0), comp5Id, noEvent = true)
+                set(Comp6(0), comp6Id, noEvent = true)
             }
         }
     }
@@ -90,5 +90,7 @@ class NewEntityBenchmark {
 
 fun main() {
     geary(TestEngineModule)
-    NewEntityBenchmark().create1MilEntitiesWith0Components()
+    repeat(100) {
+        NewEntityBenchmark().create1MilEntitiesWith6Components()
+    }
 }

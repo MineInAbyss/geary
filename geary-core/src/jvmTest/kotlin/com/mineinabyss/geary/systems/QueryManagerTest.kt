@@ -7,7 +7,6 @@ import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.accessors.Pointers
-import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
@@ -28,11 +27,9 @@ internal class QueryManagerTest : GearyTest() {
         val listener = EventListener()
         geary.pipeline.addSystem(listener)
         (archetypes.archetypeProvider.rootArchetype.type in listener.event.family) shouldBe true
-        archetypes.archetypeProvider.rootArchetype.eventListeners shouldContain listener
         entity {
             set(TestComponent())
         }.callEvent()
-        // 1 from setting, 1 from calling empty event
-        listener.ran shouldBe 2
+        listener.ran shouldBe 1
     }
 }
