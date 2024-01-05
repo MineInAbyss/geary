@@ -2,7 +2,6 @@ package com.mineinabyss.geary.autoscan
 
 import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.datatypes.Component
-import com.mineinabyss.geary.helpers.component
 import com.mineinabyss.geary.modules.GearyConfiguration
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.dsl.serialization
@@ -68,7 +67,9 @@ class AutoScannerDSL(
                 components {
                     scanned.forEach { scannedComponent ->
                         runCatching { component(scannedComponent) }
-                            .onFailure { this@AutoScannerDSL.logger.w("Failed to register component ${scannedComponent.simpleName}") }
+                            .onFailure {
+                                this@AutoScannerDSL.logger.w("Failed to register component ${scannedComponent.simpleName}\n${it.stackTraceToString()}")
+                            }
                     }
                 }
             }

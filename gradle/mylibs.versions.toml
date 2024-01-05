@@ -5,7 +5,7 @@ atomicfu = "0.22.0"
 atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
 uuid = "com.benasher44:uuid:0.8.1"
 okio = "com.squareup.okio:okio:3.5.0"
-kds = "com.soywiz.korlibs.kds:kds:4.0.10"
+kds = "com.soywiz.korge:korge-foundation:5.1.0"
 roaringbitmap = "org.roaringbitmap:RoaringBitmap:0.9.32"
 bitvector = "net.onedaybeard.bitvector:bitvector-js:0.1.4"
 kermit = "co.touchlab:kermit:1.2.2"

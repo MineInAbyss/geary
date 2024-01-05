@@ -8,6 +8,7 @@ import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.systems.Listener
+import korlibs.datastructure.iterators.fastForEach
 
 class ArchetypeEventRunner : EventRunner {
     private val records: TypeMap get() = archetypes.records
@@ -16,18 +17,13 @@ class ArchetypeEventRunner : EventRunner {
         callEvent(records[target], records[event], source?.let { records[source] })
     }
 
+
     fun callEvent(target: Record, event: Record, source: Record?) {
-        val origEventArc = event.archetype
-        val origTargetArc = target.archetype
-        val origSourceArc = source?.archetype
+        val eventArc = event.archetype
+        val targetArc = target.archetype
+        val sourceArc = source?.archetype
 
-        // triple intersection of listeners
-        val listeners: Set<Listener> = origTargetArc.targetListeners.toMutableSet().apply {
-            retainAll(origEventArc.eventListeners)
-            retainAll { it.source.isEmpty || (origSourceArc != null && it in origSourceArc.sourceListeners) }
-        }
-
-        for (listener in listeners) {
+        fun callListener(listener: Listener) {
             val pointers: Records = when (source) {
                 null -> Records(RecordPointer(target), RecordPointer(event), null)
                 else -> Records(RecordPointer(target), RecordPointer(event), RecordPointer(source))
@@ -35,6 +31,26 @@ class ArchetypeEventRunner : EventRunner {
             with(listener) {
                 pointers.handle()
             }
+        }
+
+        targetArc.targetListeners.fastForEach {
+            if ((it.event.isEmpty || it in eventArc.eventListeners) &&
+                (it.source.isEmpty || it in (sourceArc?.sourceListeners ?: emptySet()))
+            ) callListener(it)
+        }
+        eventArc.eventListeners.fastForEach {
+            // Check empty target to not double call listeners
+            if (it.target.isEmpty &&
+                (it.event.isEmpty || it in eventArc.eventListeners) &&
+                (it.source.isEmpty || it in (sourceArc?.sourceListeners ?: emptySet()))
+            ) callListener(it)
+        }
+        sourceArc?.sourceListeners?.fastForEach {
+            // Likewise both target and event must be empty to not double call listeners
+            if (it.target.isEmpty && it.event.isEmpty &&
+                (it.target.isEmpty || it in targetArc.targetListeners) &&
+                (it.event.isEmpty || it in (eventArc.eventListeners))
+            ) callListener(it)
         }
     }
 }

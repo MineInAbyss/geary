@@ -1,9 +1,6 @@
 package com.mineinabyss.geary.prefabs.serializers
 
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.engine.Engine
-import com.mineinabyss.geary.helpers.DescriptorWrapper
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.PrefabManager
 import com.mineinabyss.geary.prefabs.prefabs
@@ -19,11 +16,9 @@ import kotlinx.serialization.encoding.Encoder
 @Deprecated("This will not work properly until ktx.serialization fully supports inline classes")
 class PrefabByReferenceSerializer : KSerializer<Entity> {
     private val prefabManager: PrefabManager get() = prefabs.manager
-    private val engine: Engine get() = geary.engine
 
-    override val descriptor: SerialDescriptor = DescriptorWrapper("geary:prefab", PrefabKey.serializer().descriptor)
+    override val descriptor = SerialDescriptor("geary:prefab", PrefabKey.serializer().descriptor)
 
-    @Suppress("UNCHECKED_CAST")
     override fun deserialize(decoder: Decoder): Entity {
         val prefabKey = decoder.decodeSerializableValue(PrefabKey.serializer())
         return (prefabManager[prefabKey] ?: error("Error deserializing, $prefabKey is not a registered prefab"))

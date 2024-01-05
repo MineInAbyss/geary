@@ -27,6 +27,10 @@ class IdList {
         return backingArr[--size]
     }
 
+    fun removeLast(): ULong {
+        return backingArr[--size]
+    }
+
     fun getEntities(): Sequence<Entity> {
         return backingArr.asSequence().take(size).map { it.toGeary() }
     }

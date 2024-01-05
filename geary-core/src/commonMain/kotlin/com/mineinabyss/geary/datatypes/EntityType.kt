@@ -40,7 +40,7 @@ class EntityType private constructor(
     fun last(): ComponentId = inner.last()
 
     inline fun forEach(run: (ComponentId) -> Unit) {
-        for(i in 0..inner.lastIndex) {
+        for (i in 0..inner.lastIndex) {
             run(inner[i])
         }
     }

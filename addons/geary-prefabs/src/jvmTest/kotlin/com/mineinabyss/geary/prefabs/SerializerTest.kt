@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.prefabs
 
-import com.mineinabyss.geary.prefabs.serializers.PolymorphicListAsMapSerializer
+import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.serialization.formats.YamlFormat
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.Polymorphic
@@ -10,12 +10,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
-import okio.Path
-import okio.Path.Companion.toOkioPath
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.nio.file.Files
-import kotlin.io.path.writeText
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SerializerTest {
@@ -46,17 +42,14 @@ class SerializerTest {
 
     val mapSerializer = PolymorphicListAsMapSerializer(PolymorphicSerializer(Components::class))
 
-    fun String.asTempFile(): Path =
-        Files.createTempFile("tempfiles", ".tmp").apply { writeText(this@asTempFile) }.toOkioPath()
-
     @Test
     fun `should serialize via @Serializable`() {
         val file =
             """
             test:thing.a: {}
             test:thing.b: {}
-            """.trimIndent().asTempFile()
-        format.decodeFromFile(mapSerializer, file) shouldBe listOf(A, B)
+            """.trimIndent()
+        format.decodeFromString(mapSerializer, file) shouldBe listOf(A, B)
     }
 
     @Test
@@ -66,8 +59,8 @@ class SerializerTest {
             test:thing.*:
                 a: {}
                 b: {}
-            """.trimIndent().asTempFile()
-        format.decodeFromFile(mapSerializer, file) shouldBe listOf(A, B)
+            """.trimIndent()
+        format.decodeFromString(mapSerializer, file) shouldBe listOf(A, B)
     }
 
     @Test
@@ -77,8 +70,8 @@ class SerializerTest {
             namespaces: ["test"]
             thing.a: {}
             thing.b: {}
-            """.trimIndent().asTempFile()
-        format.decodeFromFile(mapSerializer, file) shouldBe listOf(A, B)
+            """.trimIndent()
+        format.decodeFromString(mapSerializer, file) shouldBe listOf(A, B)
     }
 
     @Test
@@ -89,7 +82,7 @@ class SerializerTest {
             "subserializers":
                 "components":
                     "thing.a": {}
-            """.trimIndent().asTempFile()
-        format.decodeFromFile(mapSerializer, file) shouldBe listOf(SubSerializers(listOf(A)))
+            """.trimIndent()
+        format.decodeFromString(mapSerializer, file) shouldBe listOf(SubSerializers(listOf(A)))
     }
 }

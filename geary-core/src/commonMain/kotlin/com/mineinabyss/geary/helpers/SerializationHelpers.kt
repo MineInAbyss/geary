@@ -1,18 +1,9 @@
 package com.mineinabyss.geary.helpers
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-
-/** A class that holds only one value that we want to delegate serialization to. */
-interface FlatWrap<A> {
-    val wrapped: A
-}
-
-/** A wrapper around [SerialDescriptor] that only overrides the [serialName]. */
-class DescriptorWrapper(override val serialName: String, wrapped: SerialDescriptor) :
-    SerialDescriptor by wrapped
 
 /**
  * A wrapper around [KSerializer] that only overrides the [descriptor].
@@ -21,29 +12,8 @@ class DescriptorWrapper(override val serialName: String, wrapped: SerialDescript
 class SerializerWrapper<T>(override val descriptor: SerialDescriptor, wrapped: KSerializer<T>) :
     KSerializer<T> by wrapped
 
-fun <T> KSerializer<T>.withSerialName(name: String): SerializerWrapper<T> =
-    SerializerWrapper(DescriptorWrapper(name, this.descriptor), this)
-
-/**
- * An abstract serializer for a [FlatWrap] that will use the [wrapped][FlatWrap.wrapped] value's serializer to
- * serialize this class.
- *
- * @param serializer The wrapped class' serializer, type can be inferenced from just `serializer()`
- * @param create How to create the [FlatWrap] class given the wrapped value
- */
-abstract class FlatSerializer<T : FlatWrap<A>, A : Any>(
-    serialName: String,
-    serializer: KSerializer<A>,
-    private val create: (A) -> T
-) : KSerializer<T> {
-    final override val descriptor: SerialDescriptor = DescriptorWrapper(serialName, serializer.descriptor)
-    private val wrappedSerializer = SerializerWrapper(descriptor, serializer)
-
-    override fun deserialize(decoder: Decoder): T {
-        return create(decoder.decodeSerializableValue(wrappedSerializer))
-    }
-
-    override fun serialize(encoder: Encoder, value: T) {
-        encoder.encodeSerializableValue(wrappedSerializer, value.wrapped)
-    }
+fun <T> KSerializer<T>.withSerialName(name: String): SerializerWrapper<T> {
+    val kind = descriptor.kind
+    return if (kind is PrimitiveKind) SerializerWrapper(PrimitiveSerialDescriptor(name, kind), this)
+    else SerializerWrapper(SerialDescriptor(name, this.descriptor), this)
 }

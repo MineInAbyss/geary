@@ -4,6 +4,8 @@ import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.fromCamelCaseToSnakeCase
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.hasNamespace
 import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.capturedKClass
 import kotlinx.serialization.modules.SerializersModule
 import kotlin.reflect.KClass
 
@@ -41,4 +43,11 @@ class SerializersByMap(
     override fun getSerialNameFor(kClass: KClass<out Component>): String? =
         component2serialName[kClass]
 
+    override fun <T : Any> getKClassFor(serializer: KSerializer<T>): KClass<T>? {
+        // If this is a contextual serializer, we already have the type information
+        serializer.descriptor.capturedKClass?.let { return it as KClass<T> }
+
+        // Otherwise, look it up by serialName
+        return serialName2Component[serializer.descriptor.serialName] as KClass<T>?
+    }
 }
