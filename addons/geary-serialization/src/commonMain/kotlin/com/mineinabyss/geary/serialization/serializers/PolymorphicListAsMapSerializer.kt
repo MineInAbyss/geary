@@ -4,15 +4,12 @@ import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.fromCamelCaseToSnakeCase
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.hasNamespace
 import com.mineinabyss.geary.serialization.ProvidedNamespaces
-import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.descriptors.PolymorphicKind
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -27,59 +24,39 @@ open class PolymorphicListAsMapSerializer<T : Any>(
 
     val polymorphicSerializer = serializer as? PolymorphicSerializer<T> ?: error("Serializer is not polymorphic")
 
-    val keySerializer = String.serializer()
-
-    @OptIn(InternalSerializationApi::class)
-    val valueSerializer = object : KSerializer<Any> {
-        override val descriptor = buildSerialDescriptor("GearyComponentSerializer", PolymorphicKind.SEALED)
-
-        override fun deserialize(decoder: Decoder): Any = TODO("Not yet implemented")
-
-        override fun serialize(encoder: Encoder, value: Any): Unit = TODO("Not yet implemented")
-    }
-
-    override val descriptor: SerialDescriptor
-        get() = MapSerializer(keySerializer, valueSerializer).descriptor
-
-    fun <T> CompositeDecoder.decodeMapValue(valueSerializer: KSerializer<T>): T {
-        val newDescriptor = MapSerializer(keySerializer, valueSerializer).descriptor
-        val newIndex = decodeElementIndex(newDescriptor)
-        return decodeSerializableElement(newDescriptor, newIndex, valueSerializer)
-    }
+    override val descriptor = MapSerializer(String.serializer(), ContextualSerializer(Any::class)).descriptor
 
     override fun deserialize(decoder: Decoder): List<T> {
-        val namespaces = getNamespaces(decoder.serializersModule)
         val components = mutableListOf<T>()
-        val compositeDecoder = decoder.beginStructure(descriptor)
-        while (true) {
-            val index = compositeDecoder.decodeElementIndex(descriptor)
-            if (index == CompositeDecoder.DECODE_DONE) break
 
-            val startIndex = components.size * 2
-            val key: String = compositeDecoder.decodeSerializableElement(descriptor, startIndex + index, keySerializer)
-            when {
-                key == "namespaces" -> {
-                    // Ignore namespaces component, it's parsed as a file-wide property
-                    compositeDecoder.decodeMapValue(ListSerializer(String.serializer()))
-                }
+        val mapSerializer = object : CustomMapSerializer() {
+            override fun decode(key: String, compositeDecoder: CompositeDecoder) {
+                val namespaces = getNamespaces(decoder.serializersModule)
+                when {
+                    key == "namespaces" -> {
+                        // Ignore namespaces component, it's parsed as a file-wide property
+                        compositeDecoder.decodeMapValue(ListSerializer(String.serializer()))
+                    }
 
-                key.endsWith("*") -> {
-                    val innerSerializer = of(polymorphicSerializer, key.removeSuffix("*"))
-                    components.addAll(compositeDecoder.decodeMapValue(innerSerializer))
-                }
+                    key.endsWith("*") -> {
+                        val innerSerializer = of(polymorphicSerializer, key.removeSuffix("*"))
+                        components.addAll(compositeDecoder.decodeMapValue(innerSerializer))
+                    }
 
-                else -> {
-                    components += decodeEntry(key, compositeDecoder, namespaces)
+                    else -> {
+                        components += compositeDecoder.decodeMapValue(
+                            findSerializerFor(
+                                compositeDecoder.serializersModule,
+                                namespaces,
+                                key
+                            )
+                        )
+                    }
                 }
             }
         }
-        compositeDecoder.endStructure(descriptor)
-        return components.toList()
-    }
-
-    open fun decodeEntry(key: String, compositeDecoder: CompositeDecoder, namespaces: List<String>): T {
-        return compositeDecoder
-            .decodeMapValue(findSerializerFor(compositeDecoder.serializersModule, namespaces, key))
+        mapSerializer.deserialize(decoder)
+        return components
     }
 
     fun getNamespaces(serializersModule: SerializersModule): List<String> {
