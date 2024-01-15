@@ -4,6 +4,7 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         maven("https://repo.mineinabyss.com/releases")
+        maven("https://repo.mineinabyss.com/snapshots")
         mavenLocal()
     }
 }
@@ -13,6 +14,7 @@ dependencyResolutionManagement {
 
     repositories {
         maven("https://repo.mineinabyss.com/releases")
+        maven("https://repo.mineinabyss.com/snapshots")
         mavenLocal()
     }
 
