@@ -5,7 +5,7 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.dsl.serializableComponents
 import com.mineinabyss.geary.serialization.dsl.serialization
 import com.mineinabyss.geary.serialization.serializers.GearyEntitySerializer
-import com.mineinabyss.serialization.formats.YamlFormat
+import com.mineinabyss.geary.serialization.formats.YamlFormat
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
