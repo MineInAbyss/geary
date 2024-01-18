@@ -1,6 +1,5 @@
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id(libs.plugins.mia.kotlin.multiplatform.get().pluginId)
     id(libs.plugins.mia.publication.get().pluginId)
