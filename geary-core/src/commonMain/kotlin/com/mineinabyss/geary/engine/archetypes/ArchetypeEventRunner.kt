@@ -6,9 +6,9 @@ import com.mineinabyss.geary.datatypes.RecordPointer
 import com.mineinabyss.geary.datatypes.Records
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EventRunner
+import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.systems.Listener
-import korlibs.datastructure.iterators.fastForEach
 
 class ArchetypeEventRunner : EventRunner {
     private val records: TypeMap get() = archetypes.records
