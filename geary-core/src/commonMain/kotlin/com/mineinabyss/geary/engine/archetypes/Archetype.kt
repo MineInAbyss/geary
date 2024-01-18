@@ -4,15 +4,11 @@ import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
-import com.mineinabyss.geary.helpers.addParent
-import com.mineinabyss.geary.helpers.componentId
-import com.mineinabyss.geary.helpers.temporaryEntity
-import com.mineinabyss.geary.helpers.toGeary
+import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.accessors.RelationWithData
-import korlibs.datastructure.iterators.fastForEach
 
 /**
  * Archetypes store a list of entities with the same [EntityType], and provide functions to

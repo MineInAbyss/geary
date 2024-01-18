@@ -3,11 +3,11 @@ package com.mineinabyss.geary.systems.query
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.engine.archetypes.Archetype
+import com.mineinabyss.geary.helpers.fastForEachWithIndex
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.accessors.AccessorHolder
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import com.mineinabyss.geary.systems.accessors.Pointer
-import korlibs.datastructure.iterators.fastForEachWithIndex
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 

@@ -5,7 +5,6 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.RepeatingSystem
 import com.mineinabyss.geary.systems.System
-import korlibs.datastructure.sortedMapOf
 
 class PipelineImpl : Pipeline {
     private val queryManager get() = geary.queryManager
@@ -14,12 +13,12 @@ class PipelineImpl : Pipeline {
     private val registeredSystems: MutableSet<RepeatingSystem> = mutableSetOf()
     private val registeredListeners: MutableSet<Listener> = mutableSetOf()
 
-    private val scheduled = sortedMapOf<GearyPhase, MutableList<() -> Unit>>()
+    private val scheduled = Array(GearyPhase.entries.size) { mutableListOf<() -> Unit>() }
     private var currentPhase = GearyPhase.entries.first()
 
     override fun runOnOrAfter(phase: GearyPhase, block: () -> Unit) {
         if (currentPhase > phase) block()
-        else scheduled.getOrPut(phase) { mutableListOf() }.add(block)
+        else scheduled[phase.ordinal].add(block)
     }
 
     override fun interceptSystemAddition(run: (System) -> System?) {
@@ -27,7 +26,7 @@ class PipelineImpl : Pipeline {
     }
 
     override fun runStartupTasks() {
-        scheduled.values.forEach { actions ->
+        scheduled.forEach { actions ->
             actions.forEach { it() }
         }
     }
