@@ -26,10 +26,10 @@ class PrefabLoader {
         readFiles.add(path)
     }
 
-    internal fun loadPrefabs() {
+    fun loadOrUpdatePrefabs() {
         val loaded = readFiles.flatMap { read ->
             read.get().map { path ->
-                loadFromPath(read.namespace, path).onFailure {
+                runCatching { loadFromPathOrReloadExisting(read.namespace, path) }.onFailure {
                     if (logger.config.minSeverity <= Severity.Debug)
                         logger.e("Could not read prefab $path:\n\u001B[37m${it.stackTraceToString()}")
                     else
@@ -42,38 +42,41 @@ class PrefabLoader {
     }
 
     /** If this entity has a [Prefab] component, clears it and loads components from its file. */
-    fun reread(entity: Entity) {
+    fun reload(entity: Entity) {
         val prefab = entity.get<Prefab>() ?: error("Entity was not an already loaded prefab")
         val key = entity.get<PrefabKey>() ?: error("Entity did not have a prefab key")
         val file = prefab.file ?: error("Prefab did not have a file")
         entity.clear()
-
-        // set basics here as well in case load fails
-        entity.addRelation<NoInherit, Prefab>()
-        entity.addRelation<NoInherit, Uuid>()
-        entity.set(key)
-        entity.set(prefab)
-        loadFromPath(key.namespace, file, entity).getOrThrow()
+        loadFromPath(key.namespace, file, entity)
         entity.inheritPrefabs()
     }
 
     /** Registers an entity with components defined in a [path], adding a [Prefab] component. */
-    fun loadFromPath(namespace: String, path: Path, writeTo: Entity? = null): Result<Entity> {
-        return runCatching {
+    fun loadFromPath(namespace: String, path: Path, writeTo: Entity? = null): Entity {
+        val decoded = runCatching {
             val serializer = PolymorphicListAsMapSerializer.of(PolymorphicSerializer(GearyComponent::class))
             val ext = path.name.substringAfterLast('.')
-            val decoded = formats[ext]?.decodeFromFile(serializer, path)
+            formats[ext]?.decodeFromFile(serializer, path)
                 ?: throw IllegalArgumentException("Unknown file format $ext")
-
-            val key = PrefabKey.of(namespace, path.name.substringBeforeLast('.'))
-
-            val entity = writeTo ?: entity()
-            entity.addRelation<NoInherit, Prefab>()
-            entity.addRelation<NoInherit, Uuid>()
-            entity.set(Prefab(path))
-            entity.setAll(decoded)
-            entity.set(key)
-            entity
         }
+
+        // Stop here if we need to make a new entity
+        // For existing prefabs, add all tags except decoded on fail to keep them tracked
+        if (writeTo == null && decoded.isFailure) decoded.getOrThrow()
+
+        val key = PrefabKey.of(namespace, path.name.substringBeforeLast('.'))
+        val entity = writeTo ?: entity()
+        entity.addRelation<NoInherit, Prefab>()
+        entity.addRelation<NoInherit, Uuid>()
+        entity.set(Prefab(path))
+        decoded.getOrNull()?.let { entity.setAll(it) }
+        entity.set(key)
+        return entity
+    }
+
+    fun loadFromPathOrReloadExisting(namespace: String, path: Path): Entity {
+        val existing = prefabs.manager[PrefabKey.of(namespace, path.name.substringBeforeLast('.'))]
+        existing?.clear()
+        return loadFromPath(namespace, path, existing)
     }
 }

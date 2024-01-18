@@ -34,7 +34,7 @@ interface Prefabs {
                 TrackPrefabsByKeySystem(),
             )
             geary.pipeline.runOnOrAfter(GearyPhase.INIT_ENTITIES) {
-                loader.loadPrefabs()
+                loader.loadOrUpdatePrefabs()
             }
         }
     }
