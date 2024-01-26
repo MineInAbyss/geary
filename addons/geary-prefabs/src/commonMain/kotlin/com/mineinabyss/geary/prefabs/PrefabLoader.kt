@@ -59,7 +59,6 @@ class PrefabLoader {
             formats[ext]?.decodeFromFile(serializer, path)
                 ?: throw IllegalArgumentException("Unknown file format $ext")
         }
-
         // Stop here if we need to make a new entity
         // For existing prefabs, add all tags except decoded on fail to keep them tracked
         if (writeTo == null && decoded.isFailure) decoded.getOrThrow()
@@ -71,6 +70,7 @@ class PrefabLoader {
         entity.set(Prefab(path))
         decoded.getOrNull()?.let { entity.setAll(it) }
         entity.set(key)
+        decoded.getOrThrow()
         return entity
     }
 
