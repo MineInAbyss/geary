@@ -13,12 +13,12 @@ class ArrayTypeMap : TypeMap {
 
     override fun set(entity: Entity, record: Record) {
         val id = entity.id.toInt()
-        if(map.size == id) {
+        if (map.size == id) {
             map.add(record)
             return
         }
         if (contains(entity)) error("Tried setting the record of an entity that already exists.")
-        while(map.size <= id) map.add(null)
+        while (map.size <= id) map.add(null)
         map[id] = record
     }
 
