@@ -9,7 +9,8 @@ kotlin {
             dependencies {
                 implementation(project(":geary-core"))
 
-                implementation(mylibs.uuid)
+                api(mylibs.uuid)
+                implementation(mylibs.atomicfu)
                 implementation(libs.idofront.di)
             }
         }
