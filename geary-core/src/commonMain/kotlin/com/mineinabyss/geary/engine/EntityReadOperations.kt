@@ -10,6 +10,9 @@ interface EntityReadOperations {
     /** Gets a list of all the components [entity] has, as well as relations in the form of [RelationComponent]. */
     fun getComponentsFor(entity: Entity): Array<Component>
 
+    /** Checks whether an [entity] is still active in the engine. */
+    fun exists(entity: Entity): Boolean
+
     /**
      * Gets relations in the same format as [Archetype.getRelations], but when kind/target [HOLDS_DATA], the appropriate
      * data is written to a [RelationWithData] object.

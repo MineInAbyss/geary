@@ -55,6 +55,9 @@ value class Entity(val id: EntityId) {
         entityProvider.remove(this)
     }
 
+    /** Checks whether this entity has not been removed. */
+    fun exists(): Boolean = read.exists(this)
+
     /**
      * Sets a component that holds data for this entity
      *

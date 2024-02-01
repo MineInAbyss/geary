@@ -68,7 +68,10 @@ class AutoScannerDSL(
                     scanned.forEach { scannedComponent ->
                         runCatching { component(scannedComponent) }
                             .onFailure {
-                                this@AutoScannerDSL.logger.w("Failed to register component ${scannedComponent.simpleName}\n${it.stackTraceToString()}")
+                                if (it is ClassNotFoundException)
+                                    this@AutoScannerDSL.logger.w("Failed to register component ${scannedComponent.simpleName}, class not found")
+                                else
+                                    this@AutoScannerDSL.logger.w("Failed to register component ${scannedComponent.simpleName}\n${it.stackTraceToString()}")
                             }
                     }
                 }

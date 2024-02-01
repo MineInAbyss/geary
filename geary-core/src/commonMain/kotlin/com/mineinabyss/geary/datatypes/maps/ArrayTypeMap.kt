@@ -28,6 +28,6 @@ class ArrayTypeMap : TypeMap {
 
     override operator fun contains(entity: Entity): Boolean {
         val id = entity.id.toInt()
-        return map.size < id && map[id] != null
+        return map.size > id && map[id] != null
     }
 }
