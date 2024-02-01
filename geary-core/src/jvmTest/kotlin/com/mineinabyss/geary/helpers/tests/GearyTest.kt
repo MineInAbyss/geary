@@ -29,13 +29,15 @@ abstract class GearyTest {
         startEngine()
     }
 
-    suspend inline fun concurrentOperation(
-        times: Int = 10000,
-        crossinline run: suspend (id: Int) -> Unit
-    ): List<Deferred<*>> {
-        return withContext(Dispatchers.Default) {
-            (0 until times).map { id ->
-                async { run(id) }
+    companion object {
+        suspend inline fun <T> concurrentOperation(
+            times: Int = 10000,
+            crossinline run: suspend (id: Int) -> T
+        ): List<Deferred<T>> {
+            return withContext(Dispatchers.Default) {
+                (0 until times).map { id ->
+                    async { run(id) }
+                }
             }
         }
     }

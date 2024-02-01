@@ -1,6 +1,9 @@
 package com.mineinabyss.geary.systems
 
+import com.mineinabyss.geary.components.events.ExtendedEntity
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.accessors.*
 import com.mineinabyss.geary.systems.accessors.type.ComponentAccessor
 
@@ -21,7 +24,7 @@ abstract class Listener : AccessorOperations(), System {
         onStart()
     }
 
-    private fun getIndexForHolder(holder: AccessorHolder): Int= when(holder) {
+    private fun getIndexForHolder(holder: AccessorHolder): Int = when (holder) {
         target -> 0
         event -> 1
         source -> 2
@@ -41,21 +44,27 @@ abstract class Listener : AccessorOperations(), System {
     }
 
     /** Fires when an entity has a component of type [T] set or updated. */
-    inline fun <reified T: ComponentAccessor<A>, reified A> T.whenSetOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
+    inline fun <reified T : ComponentAccessor<A>, reified A> T.whenSetOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
         event.mutableFamily.onSet(componentId<A>())
         return this.on(target)
     }
 
     /** Fires when an entity has a component of type [T] set, only if it was not set before. */
-    inline fun <reified T: ComponentAccessor<A>, reified A> T.whenFirstSetOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
+    inline fun <reified T : ComponentAccessor<A>, reified A> T.whenFirstSetOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
         event.mutableFamily.onFirstSet(componentId<A>())
         return this.on(target)
     }
 
     /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
-    inline fun <reified T: ComponentAccessor<A>, reified A> T.whenAddedOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
+    inline fun <reified T : ComponentAccessor<A>, reified A> T.whenAddedOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
         event.mutableFamily.onAdd(componentId<A>())
         return this.on(event)
+    }
+
+    /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
+    fun whenExtendedEntity(): ReadOnlyEntitySelectingAccessor<ReadOnlyAccessor<GearyEntity>, GearyEntity> {
+        event.mutableFamily.onExtendedEntity()
+        return getRelations<ExtendedEntity?, Any?>().map { it.single().target.toGeary() }.on(event)
     }
 
     abstract fun Pointers.handle()
