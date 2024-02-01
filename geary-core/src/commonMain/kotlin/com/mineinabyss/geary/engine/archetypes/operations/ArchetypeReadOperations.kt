@@ -24,6 +24,10 @@ class ArchetypeReadOperations : EntityReadOperations {
         }
     }
 
+    override fun exists(entity: Entity): Boolean {
+        return records.contains(entity)
+    }
+
     override fun getRelationsWithDataFor(
         entity: Entity,
         kind: ComponentId,
