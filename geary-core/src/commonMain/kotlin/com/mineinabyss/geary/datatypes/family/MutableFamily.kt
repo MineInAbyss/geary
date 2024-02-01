@@ -3,11 +3,11 @@ package com.mineinabyss.geary.datatypes.family
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.SetComponent
 import com.mineinabyss.geary.components.events.UpdatedComponent
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
+import com.mineinabyss.geary.modules.geary
 
 inline fun family(init: MutableFamily.Selector.And.() -> Unit): Family {
     return MutableFamily.Selector.And().apply(init)
@@ -127,6 +127,10 @@ sealed class MutableFamily : Family {
 
         fun onFirstSet(id: ComponentId) {
             onAdd.hasRelation<SetComponent?>(id)
+        }
+
+        fun onExtendedEntity() {
+            onAdd.hasRelation(geary.components.extendedEntity, geary.components.any)
         }
 
         inline fun or(init: Or.() -> Unit) {

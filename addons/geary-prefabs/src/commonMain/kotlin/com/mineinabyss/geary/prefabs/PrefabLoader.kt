@@ -7,6 +7,7 @@ import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
 import com.mineinabyss.geary.serialization.dsl.serializableComponents
@@ -67,6 +68,7 @@ class PrefabLoader {
         val entity = writeTo ?: entity()
         entity.addRelation<NoInherit, Prefab>()
         entity.addRelation<NoInherit, Uuid>()
+        entity.addRelation<NoInherit, CopyToInstances>()
         entity.set(Prefab(path))
         decoded.getOrNull()?.let { entity.setAll(it) }
         entity.set(key)

@@ -3,6 +3,7 @@ package com.mineinabyss.geary.prefabs.configuration.components
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.serialization.dsl.serializableComponents
+import com.mineinabyss.geary.serialization.serializers.SerializedComponents
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -17,20 +18,38 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("geary:copy_to_instances")
 data class CopyToInstances(
-    private val temporary: Set<@Polymorphic Component> = setOf(),
-    private val persisting: Set<@Polymorphic Component> = setOf(),
+    private val temporary: SerializedComponents? = null,
+    private val persisting: SerializedComponents? = null,
 ) {
+    @Serializable
+    private data class DeepCopy(
+        val temporary: List<@Polymorphic Component>?,
+        val persisting: List<@Polymorphic Component>?
+    )
+
     val formats get() = serializableComponents.formats
 
     // This is the safest and cleanest way to deep-copy, even if a little performance intense.
-    private val serializedComponents by lazy { formats.binaryFormat.encodeToByteArray(serializer(), this) }
+    private val serializedComponents by lazy {
+        formats.binaryFormat.encodeToByteArray(
+            DeepCopy.serializer(),
+            DeepCopy(temporary, persisting)
+        )
+    }
 
-    private fun getDeepCopied() = formats.binaryFormat.decodeFromByteArray(serializer(), serializedComponents)
+    private fun getDeepCopied() = formats.binaryFormat.decodeFromByteArray(
+        DeepCopy.serializer(), serializedComponents
+    )
 
-    fun decodeComponentsTo(entity: Entity, override: Boolean = true) {
+    fun decodeComponentsTo(entity: Entity) {
         val (instance, persist) = getDeepCopied()
         //order of addition specifies that persisting components should override all
-        entity.setAll(instance, override)
-        entity.setAllPersisting(persist, override)
+        if (instance != null) {
+            entity.setAll(instance, override = false)
+        }
+        if (persist != null) {
+            entity.setAllPersisting(persist, override = false)
+        }
     }
 }
+

@@ -14,3 +14,5 @@ sealed class AddedComponent
 sealed class SetComponent
 
 sealed class UpdatedComponent
+
+sealed class ExtendedEntity

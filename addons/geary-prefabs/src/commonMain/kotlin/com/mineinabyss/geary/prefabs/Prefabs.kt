@@ -5,10 +5,7 @@ import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.GearyAddonWithDefault
 import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.prefabs.configuration.systems.ParseChildOnPrefab
-import com.mineinabyss.geary.prefabs.configuration.systems.ParseChildrenOnPrefab
-import com.mineinabyss.geary.prefabs.configuration.systems.ParseRelationOnPrefab
-import com.mineinabyss.geary.prefabs.configuration.systems.ParseRelationWithDataSystem
+import com.mineinabyss.geary.prefabs.configuration.systems.*
 import com.mineinabyss.geary.prefabs.systems.TrackPrefabsByKeySystem
 import com.mineinabyss.idofront.di.DI
 
@@ -32,6 +29,7 @@ interface Prefabs {
                 ParseRelationOnPrefab(),
                 ParseRelationWithDataSystem(),
                 TrackPrefabsByKeySystem(),
+                CopyToInstancesSystem(),
             )
             geary.pipeline.runOnOrAfter(GearyPhase.INIT_ENTITIES) {
                 loader.loadOrUpdatePrefabs()

@@ -293,12 +293,13 @@ class Archetype internal constructor(
     fun instantiateTo(
         base: Record,
         instance: Record,
+        callEvent: Boolean = true,
     ) {
         instance.archetype.addComponent(instance, Relation.of<InstanceOf?>(base.entity).id, true)
-        type.filter { !it.holdsData() }.forEach {
+        val noInheritComponents = EntityType(getRelationsByKind(componentId<NoInherit>()).map { it.target })
+        type.filter { !it.holdsData() && it !in noInheritComponents }.forEach {
             instance.archetype.addComponent(instance, it, true)
         }
-        val noInheritComponents = EntityType(getRelationsByKind(componentId<NoInherit>()).map { it.target })
         dataHoldingType.forEach {
             if (it.withoutRole(HOLDS_DATA) in noInheritComponents) return@forEach
             instance.archetype.setComponent(instance, it, get(base.row, it)!!, true)
@@ -306,6 +307,7 @@ class Archetype internal constructor(
         base.entity.children.forEach {
             it.addParent(instance.entity)
         }
+        if (callEvent) callComponentModifyEvent(geary.components.extendedEntity, instance, base.entity.id)
     }
 
     /**
