@@ -21,6 +21,10 @@ abstract class CustomMapSerializer {
         return decodeSerializableElement(newDescriptor, newIndex, valueSerializer)
     }
 
+    fun CompositeDecoder.skipMapValue() {
+        decodeElementIndex(MapSerializer(keySerializer, ContextualSerializer(Any::class)).descriptor)
+    }
+
     fun deserialize(decoder: Decoder) {
         var size = 0
         val compositeDecoder = decoder.beginStructure(descriptor)
