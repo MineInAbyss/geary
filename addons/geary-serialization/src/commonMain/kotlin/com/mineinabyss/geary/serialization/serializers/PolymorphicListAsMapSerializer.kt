@@ -22,6 +22,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
     // We need primary constructor to be a single serializer for generic serialization to work, use of() if manually creating
     private var prefix: String = ""
     private var onMissingSerializer: OnMissing = OnMissing.WARN
+    private var skipMalformedComponents: Boolean = true
 
 
     val polymorphicSerializer = serializer as? PolymorphicSerializer<T> ?: error("Serializer is not polymorphic")
@@ -53,7 +54,17 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                                 key
                             )
                         }.onSuccess { componentSerializer ->
-                            components += compositeDecoder.decodeMapValue(componentSerializer)
+                            runCatching {
+                                compositeDecoder.decodeMapValue(componentSerializer)
+                            }.onSuccess { components += it }.onFailure {
+                                if (skipMalformedComponents) {
+                                    geary.logger.w("Malformed component $key, ignoring")
+                                    it.stackTraceToString()
+                                        .lineSequence()
+                                        .joinToString("\n", limit = 10, truncated = "...")
+                                        .let(geary.logger::w)
+                                } else throw it
+                            }
                         }.onFailure {
                             when (onMissingSerializer) {
                                 OnMissing.ERROR -> throw it
