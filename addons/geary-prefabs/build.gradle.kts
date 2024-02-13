@@ -1,7 +1,7 @@
 plugins {
-    id(libs.plugins.mia.kotlin.multiplatform.get().pluginId)
-    id(libs.plugins.mia.publication.get().pluginId)
-    alias(libs.plugins.kotlinx.serialization)
+    id(idofrontLibs.plugins.mia.kotlin.multiplatform.get().pluginId)
+    id(idofrontLibs.plugins.mia.publication.get().pluginId)
+    alias(idofrontLibs.plugins.kotlinx.serialization)
 }
 
 kotlin {
@@ -11,24 +11,24 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                compileOnly(mylibs.okio)
-                compileOnly(mylibs.uuid)
-                compileOnly(libs.kotlinx.serialization.json)
-                compileOnly(libs.kotlinx.serialization.cbor)
+                compileOnly(libs.okio)
+                compileOnly(libs.uuid)
+                compileOnly(idofrontLibs.kotlinx.serialization.json)
+                compileOnly(idofrontLibs.kotlinx.serialization.cbor)
 
                 compileOnly(project(":geary-core"))
                 compileOnly(project(":geary-serialization"))
-                implementation(libs.idofront.di)
+                implementation(idofrontLibs.idofront.di)
             }
         }
 
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation(libs.kotlinx.coroutines.test)
-                implementation(libs.kotest.assertions)
-                implementation(libs.kotest.property)
-                implementation(libs.idofront.di)
+                implementation(idofrontLibs.kotlinx.coroutines.test)
+                implementation(idofrontLibs.kotest.assertions)
+                implementation(idofrontLibs.kotest.property)
+                implementation(idofrontLibs.idofront.di)
                 implementation(project(":geary-core"))
                 implementation(project(":geary-serialization"))
             }
@@ -36,7 +36,7 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                implementation(libs.junit.jupiter)
+                implementation(idofrontLibs.junit.jupiter)
             }
         }
     }

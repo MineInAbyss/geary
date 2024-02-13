@@ -2,9 +2,9 @@ import kotlinx.benchmark.gradle.JvmBenchmarkTarget
 import org.jetbrains.kotlin.allopen.gradle.AllOpenExtension
 
 plugins {
-    id(libs.plugins.mia.kotlin.jvm.get().pluginId)
-//    id(libs.plugins.mia.publication.get().pluginId)
-//    alias(libs.plugins.kotlinx.serialization)
+    id(idofrontLibs.plugins.mia.kotlin.jvm.get().pluginId)
+//    id(idofrontLibs.plugins.mia.publication.get().pluginId)
+//    alias(idofrontLibs.plugins.kotlinx.serialization)
     id("org.jetbrains.kotlinx.benchmark") version "0.4.9"
     kotlin("plugin.allopen") version "1.9.10"
 }

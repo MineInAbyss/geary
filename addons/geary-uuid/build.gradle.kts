@@ -1,6 +1,6 @@
 plugins {
-    id(libs.plugins.mia.kotlin.multiplatform.get().pluginId)
-    id(libs.plugins.mia.publication.get().pluginId)
+    id(idofrontLibs.plugins.mia.kotlin.multiplatform.get().pluginId)
+    id(idofrontLibs.plugins.mia.publication.get().pluginId)
 }
 
 kotlin {
@@ -9,9 +9,9 @@ kotlin {
             dependencies {
                 implementation(project(":geary-core"))
 
-                api(mylibs.uuid)
-                implementation(mylibs.atomicfu)
-                implementation(libs.idofront.di)
+                api(libs.uuid)
+                implementation(libs.atomicfu)
+                implementation(idofrontLibs.idofront.di)
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.autoscan
 
+import co.touchlab.kermit.Severity
 import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.modules.GearyConfiguration
@@ -61,6 +62,7 @@ class AutoScannerDSL(
             .asSequence()
             .map { it.kotlin }
             .filter { !it.hasAnnotation<ExcludeAutoScan>() }
+            .toList()
 
         geary {
             serialization {
@@ -68,17 +70,19 @@ class AutoScannerDSL(
                     scanned.forEach { scannedComponent ->
                         runCatching { component(scannedComponent) }
                             .onFailure {
-                                if (it is ClassNotFoundException)
-                                    this@AutoScannerDSL.logger.w("Failed to register component ${scannedComponent.simpleName}, class not found")
-                                else
-                                    this@AutoScannerDSL.logger.w("Failed to register component ${scannedComponent.simpleName}\n${it.stackTraceToString()}")
+                                when {
+                                    geary.logger.config.minSeverity <= Severity.Verbose -> geary.logger.w("Failed to register component ${scannedComponent.simpleName}\n${it.stackTraceToString()}")
+                                    else -> geary.logger.w("Failed to register component ${scannedComponent.simpleName} ${it::class.simpleName}: ${it.message}")
+                                }
                             }
                     }
                 }
             }
         }
 
-        logger.i("Autoscan found components: ${scanned.joinToString { it.simpleName!! }}")
+        if (logger.config.minSeverity <= Severity.Verbose)
+            logger.i("Autoscan found components: ${scanned.joinToString { it.simpleName!! }} in packages $limitTo")
+        else logger.i("Autoscan found ${scanned.size} components in packages $limitTo")
 
         autoScanner.scannedComponents += scanned
     }
@@ -114,12 +118,15 @@ class AutoScannerDSL(
                             .map { it.kotlin }
                             .filter { !it.hasAnnotation<ExcludeAutoScan>() }
                             .filterIsInstance<KClass<T>>()
+                            .toList()
 
                         scanned.forEach { scannedClass ->
                             runCatching { subclass(scannedClass, scannedClass.serializer()) }
                                 .onFailure { this@AutoScannerDSL.logger.w("Failed to load subclass ${scannedClass.simpleName} of ${kClass.simpleName}") }
                         }
-                        this@AutoScannerDSL.logger.i("Autoscan found subclasses for ${kClass.simpleName}: ${scanned.joinToString { it.simpleName!! }}")
+                        if (geary.logger.config.minSeverity <= Severity.Verbose)
+                            geary.logger.i("Autoscan found subclasses for ${kClass.simpleName}: ${scanned.joinToString { it.simpleName!! }}")
+                        else geary.logger.i("Autoscan found ${scanned.size} subclasses for ${kClass.simpleName}")
                     }
                 }
             }

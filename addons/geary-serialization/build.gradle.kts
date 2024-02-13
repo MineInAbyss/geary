@@ -1,7 +1,7 @@
 plugins {
-    id(libs.plugins.mia.kotlin.multiplatform.get().pluginId)
-    id(libs.plugins.mia.publication.get().pluginId)
-    alias(libs.plugins.kotlinx.serialization)
+    id(idofrontLibs.plugins.mia.kotlin.multiplatform.get().pluginId)
+    id(idofrontLibs.plugins.mia.publication.get().pluginId)
+    alias(idofrontLibs.plugins.kotlinx.serialization)
 }
 
 kotlin {
@@ -9,18 +9,18 @@ kotlin {
         commonMain {
             dependencies {
                 compileOnly(project(":geary-core"))
-                compileOnly(libs.kotlinx.serialization.json)
-                compileOnly(libs.kotlinx.serialization.cbor)
+                compileOnly(idofrontLibs.kotlinx.serialization.json)
+                compileOnly(idofrontLibs.kotlinx.serialization.cbor)
 
-                implementation(mylibs.uuid)
-                implementation(libs.idofront.di)
+                implementation(libs.uuid)
+                implementation(idofrontLibs.idofront.di)
 
-                api(mylibs.okio)
+                api(libs.okio)
             }
         }
         jvmMain {
             dependencies {
-                compileOnly(libs.kotlinx.serialization.kaml)
+                compileOnly(idofrontLibs.kotlinx.serialization.kaml)
             }
         }
     }

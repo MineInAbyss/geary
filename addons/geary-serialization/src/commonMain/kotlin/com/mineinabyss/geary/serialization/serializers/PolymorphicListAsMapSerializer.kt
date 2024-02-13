@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.serialization.serializers
 
 import com.mineinabyss.geary.datatypes.GearyComponent
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.fromCamelCaseToSnakeCase
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.hasNamespace
 import com.mineinabyss.geary.serialization.ProvidedNamespaces
@@ -20,6 +21,8 @@ open class PolymorphicListAsMapSerializer<T : Any>(
 ) : KSerializer<List<T>> {
     // We need primary constructor to be a single serializer for generic serialization to work, use of() if manually creating
     private var prefix: String = ""
+    private var onMissingSerializer: OnMissing = OnMissing.WARN
+    private var skipMalformedComponents: Boolean = true
 
 
     val polymorphicSerializer = serializer as? PolymorphicSerializer<T> ?: error("Serializer is not polymorphic")
@@ -44,13 +47,32 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                     }
 
                     else -> {
-                        components += compositeDecoder.decodeMapValue(
+                        runCatching {
                             findSerializerFor(
                                 compositeDecoder.serializersModule,
                                 namespaces,
                                 key
                             )
-                        )
+                        }.onSuccess { componentSerializer ->
+                            runCatching {
+                                compositeDecoder.decodeMapValue(componentSerializer)
+                            }.onSuccess { components += it }.onFailure {
+                                if (skipMalformedComponents) {
+                                    geary.logger.w("Malformed component $key, ignoring")
+                                    it.stackTraceToString()
+                                        .lineSequence()
+                                        .joinToString("\n", limit = 10, truncated = "...")
+                                        .let(geary.logger::w)
+                                } else throw it
+                            }
+                        }.onFailure {
+                            when (onMissingSerializer) {
+                                OnMissing.ERROR -> throw it
+                                OnMissing.WARN -> geary.logger.w("No serializer found for $key in namespaces $namespaces, ignoring")
+                                OnMissing.IGNORE -> Unit
+                            }
+                            compositeDecoder.skipMapValue()
+                        }
                     }
                 }
             }
@@ -87,14 +109,19 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         TODO("Not implemented")
     }
 
+    enum class OnMissing {
+        ERROR, WARN, IGNORE
+    }
+
     companion object {
         fun <T : Any> of(
             serializer: PolymorphicSerializer<T>,
-            prefix: String = ""
-        ):
-                PolymorphicListAsMapSerializer<T> {
+            prefix: String = "",
+            onMissingSerializer: OnMissing = OnMissing.WARN,
+        ): PolymorphicListAsMapSerializer<T> {
             return PolymorphicListAsMapSerializer(serializer).apply {
                 this.prefix = prefix
+                this.onMissingSerializer = onMissingSerializer
             }
         }
 

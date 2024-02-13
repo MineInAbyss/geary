@@ -86,8 +86,6 @@ class EntityType private constructor(
         return EntityType(arr)
     }
 
-    //TODO intersection and union
-
     override fun toString(): String =
         inner.joinToString(", ", prefix = "[", postfix = "]") { it.readableString() }
 }
