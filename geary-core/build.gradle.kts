@@ -1,14 +1,14 @@
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 
 plugins {
-    id(libs.plugins.mia.kotlin.multiplatform.get().pluginId)
-    id(libs.plugins.mia.publication.get().pluginId)
-    alias(libs.plugins.kotlinx.serialization)
+    id(idofrontLibs.plugins.mia.kotlin.multiplatform.get().pluginId)
+    id(idofrontLibs.plugins.mia.publication.get().pluginId)
+    alias(idofrontLibs.plugins.kotlinx.serialization)
 }
 
 buildscript {
     dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${mylibs.versions.atomicfu.get()}")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${libs.versions.atomicfu.get()}")
     }
 }
 
@@ -26,32 +26,32 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
-                implementation(mylibs.atomicfu)
-                implementation(libs.kotlin.reflect)
-                implementation(libs.kotlinx.serialization.cbor)
+                implementation(libs.atomicfu)
+                implementation(idofrontLibs.kotlin.reflect)
+                implementation(idofrontLibs.kotlinx.serialization.cbor)
 
-                api(libs.idofront.di)
-                api(mylibs.kermit)
-                api(libs.kotlinx.coroutines)
-                api(libs.kotlinx.serialization.json)
+                api(idofrontLibs.idofront.di)
+                api(libs.kermit)
+                api(idofrontLibs.kotlinx.coroutines)
+                api(idofrontLibs.kotlinx.serialization.json)
             }
 
         }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation(libs.kotlinx.coroutines.test)
-                implementation(libs.kotest.assertions)
-                implementation(libs.kotest.property)
-                implementation(libs.idofront.di)
+                implementation(idofrontLibs.kotlinx.coroutines.test)
+                implementation(idofrontLibs.kotest.assertions)
+                implementation(idofrontLibs.kotest.property)
+                implementation(idofrontLibs.idofront.di)
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                implementation(libs.kotlinx.serialization.kaml)
-                implementation(libs.fastutil)
-                implementation(mylibs.roaringbitmap)
+                implementation(idofrontLibs.kotlinx.serialization.kaml)
+                implementation(idofrontLibs.fastutil)
+                implementation(libs.roaringbitmap)
             }
         }
         val jsMain by getting {

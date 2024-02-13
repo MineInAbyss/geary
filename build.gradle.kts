@@ -1,7 +1,7 @@
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.dokka)
-    alias(libs.plugins.mia.autoversion)
+    alias(idofrontLibs.plugins.kotlin.multiplatform)
+    alias(idofrontLibs.plugins.dokka)
+    alias(idofrontLibs.plugins.mia.autoversion)
 }
 
 allprojects {

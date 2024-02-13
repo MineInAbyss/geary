@@ -1,14 +1,14 @@
 plugins {
-    id(libs.plugins.mia.kotlin.jvm.get().pluginId)
-    id(libs.plugins.mia.publication.get().pluginId)
-    alias(libs.plugins.kotlinx.serialization)
+    id(idofrontLibs.plugins.mia.kotlin.jvm.get().pluginId)
+    id(idofrontLibs.plugins.mia.publication.get().pluginId)
+    alias(idofrontLibs.plugins.kotlinx.serialization)
 }
 
 dependencies {
     compileOnly(project(":geary-core"))
     compileOnly(project(":geary-serialization"))
 
-    implementation(libs.reflections)
-    implementation(libs.kotlin.reflect)
-    implementation(libs.idofront.di)
+    implementation(idofrontLibs.reflections)
+    implementation(idofrontLibs.kotlin.reflect)
+    implementation(idofrontLibs.idofront.di)
 }
