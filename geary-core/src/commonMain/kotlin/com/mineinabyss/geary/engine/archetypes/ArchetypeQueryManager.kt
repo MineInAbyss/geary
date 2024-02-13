@@ -89,10 +89,13 @@ class ArchetypeQueryManager : QueryManager {
         return archetypes.match(family)
     }
 
-    //TODO convert to Sequence
     override fun getEntitiesMatching(family: Family): List<Entity> {
-        return getArchetypesMatching(family).flatMap { arc ->
-            arc.entities
-        }
+        return getArchetypesMatching(family).flatMap(Archetype::entities)
+    }
+
+    override fun getEntitiesMatchingAsSequence(family: Family): Sequence<Entity> {
+        return getArchetypesMatching(family)
+            .asSequence()
+            .flatMap(Archetype::entities)
     }
 }
