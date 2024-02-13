@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.autoscan
 
+import co.touchlab.kermit.Severity
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.addons.dsl.GearyAddonWithDefault
 import com.mineinabyss.geary.modules.geary
@@ -28,8 +29,11 @@ interface AutoScanner {
                     .filterIsInstance<System>()
                     .onEach { geary.pipeline.addSystem(it) }
                     .map { it::class.simpleName }
-                    .joinToString()
-                    .let { logger.i("Autoscan loaded singleton systems: $it") }
+                    .let {
+                        if (logger.config.minSeverity <= Severity.Verbose)
+                            logger.i("Autoscan loaded singleton systems: ${it.joinToString()}")
+                        else logger.i("Autoscan loaded ${it.count()} singleton systems")
+                    }
             }
         }
 
