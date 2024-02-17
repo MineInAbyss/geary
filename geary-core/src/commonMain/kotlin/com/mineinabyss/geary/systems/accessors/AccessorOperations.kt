@@ -7,16 +7,17 @@ import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.systems.accessors.type.*
+import com.mineinabyss.geary.systems.query.QueriedEntity
 import kotlin.reflect.KProperty
 
 open class AccessorOperations {
     /** Accesses a component, ensuring it is on the entity. */
-    inline fun <reified T : Any> get(): ComponentAccessor<T> {
+    inline fun <reified T : Any> QueriedEntity.get(): ComponentAccessor<T> {
         return NonNullComponentAccessor(componentId<T>().withRole(HOLDS_DATA))
     }
 
     /** Accesses a data stored in a relation with kind [K] and target type [T], ensuring it is on the entity. */
-    inline fun <reified K: Any, reified T : Any> getRelation(): ComponentAccessor<T> {
+    inline fun <reified K: Any, reified T : Any> QueriedEntity.getRelation(): ComponentAccessor<T> {
         return NonNullComponentAccessor(Relation.of<K, T>().id)
     }
 
@@ -65,12 +66,12 @@ open class AccessorOperations {
      * - One of [K] or [T] is [Any] => gets all relations matching the other (specified) type.
      * - Note: nullability rules are still upheld with [Any].
      */
-    inline fun <reified K : Component?, reified T : Component?> getRelations(): RelationsAccessor {
+    inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelations(): RelationsAccessor {
         return RelationsAccessor(componentIdWithNullable<K>(), componentIdWithNullable<T>())
     }
 
     /** @see getRelations */
-    inline fun <reified K : Component?, reified T : Component?> getRelationsWithData(): RelationsWithDataAccessor<K, T> {
+    inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelationsWithData(): RelationsWithDataAccessor<K, T> {
         return RelationsWithDataAccessor(componentIdWithNullable<K>(), componentIdWithNullable<T>())
     }
 }

@@ -8,6 +8,7 @@ import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import com.mineinabyss.geary.systems.accessors.Pointer
 import com.mineinabyss.geary.systems.accessors.ReadWriteAccessor
+import com.mineinabyss.geary.systems.query.Query
 import kotlin.reflect.KProperty
 
 @OptIn(UnsafeAccessors::class)
@@ -46,11 +47,11 @@ abstract class ComponentAccessor<T>(
         cachedDataArray[thisRef.row] = value
     }
 
-    final override fun getValue(thisRef: Pointer, property: KProperty<*>): T {
+    final override fun getValue(thisRef: Query, property: KProperty<*>): T {
         return get(thisRef)
     }
 
-    final override fun setValue(thisRef: Pointer, property: KProperty<*>, value: T) {
+    final override fun setValue(thisRef: Query, property: KProperty<*>, value: T) {
         return set(thisRef, value)
     }
 }

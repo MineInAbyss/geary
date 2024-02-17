@@ -27,7 +27,7 @@ internal class ComponentAddEventTest : GearyTest() {
 
     @Test
     fun componentAddEvent() {
-        val listener = OnStringAdd()
+        val listener = listener(StringAddQuery()).handle { inc++ }
         geary.pipeline.addSystem(listener)
 
         entity {
