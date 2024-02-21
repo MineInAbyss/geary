@@ -1,5 +1,4 @@
 package com.mineinabyss.geary.systems
 
-typealias GearyListener = Listener
+typealias GearyListener<T> = Listener<T>
 typealias GearySystem = System
-typealias GearyRepeatingSystem = RepeatingSystem

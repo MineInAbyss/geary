@@ -1,72 +1,15 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.components.events.ExtendedEntity
-import com.mineinabyss.geary.datatypes.GearyEntity
-import com.mineinabyss.geary.helpers.componentId
-import com.mineinabyss.geary.helpers.toGeary
-import com.mineinabyss.geary.systems.accessors.*
-import com.mineinabyss.geary.systems.accessors.type.ComponentAccessor
+import com.mineinabyss.geary.datatypes.family.Family
+import com.mineinabyss.geary.systems.query.EventQuery
 
-/**
- * #### [Guide: Listeners](https://wiki.mineinabyss.com/geary/guide/listeners)
- *
- * Exposes a way to match against certain combinations of [source]/[target]/[event] entities present on a fired event.
- *
- * [Handler]s can be defined inside by annotating a function with [Handler], these
- * are the actual functions that run when a matching event is found.
- */
-abstract class Listener : AccessorOperations(), System {
-    val target: AccessorHolder = AccessorHolder()
-    val event: AccessorHolder = AccessorHolder()
-    val source: AccessorHolder = AccessorHolder()
-
-    fun start() {
-        onStart()
-    }
-
-    private fun getIndexForHolder(holder: AccessorHolder): Int = when (holder) {
-        target -> 0
-        event -> 1
-        source -> 2
-        else -> error("Holder is not a part of this listener: $holder")
-    }
-
-    fun <T : ReadOnlyAccessor<A>, A> T.on(holder: AccessorHolder): ReadOnlyEntitySelectingAccessor<T, A> {
-        val index = getIndexForHolder(holder)
-        if (this is FamilyMatching) this.family?.let { holder.mutableFamily.add(it) }
-        return ReadOnlyEntitySelectingAccessor(this, index)
-    }
-
-    fun <T : ReadWriteAccessor<A>, A> T.on(holder: AccessorHolder): ReadWriteEntitySelectingAccessor<T, A> {
-        val index = getIndexForHolder(holder)
-        if (this is FamilyMatching) this.family?.let { holder.mutableFamily.add(it) }
-        return ReadWriteEntitySelectingAccessor(this, index)
-    }
-
-    /** Fires when an entity has a component of type [T] set or updated. */
-    inline fun <reified T : ComponentAccessor<A>, reified A> T.whenSetOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
-        event.mutableFamily.onSet(componentId<A>())
-        return this.on(target)
-    }
-
-    /** Fires when an entity has a component of type [T] set, only if it was not set before. */
-    inline fun <reified T : ComponentAccessor<A>, reified A> T.whenFirstSetOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
-        event.mutableFamily.onFirstSet(componentId<A>())
-        return this.on(target)
-    }
-
-    /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
-    inline fun <reified T : ComponentAccessor<A>, reified A> T.whenAddedOnTarget(): ReadWriteEntitySelectingAccessor<T, A> {
-        event.mutableFamily.onAdd(componentId<A>())
-        return this.on(event)
-    }
-
-    /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
-    fun whenExtendedEntity(): ReadOnlyEntitySelectingAccessor<ReadOnlyAccessor<GearyEntity>, GearyEntity> {
-        event.mutableFamily.onExtendedEntity()
-        return getRelations<ExtendedEntity?, Any?>().map { it.single().target.toGeary() }.on(event)
-    }
-
-    abstract fun Pointers.handle()
+class Listener<T : EventQuery> internal constructor(
+    val query: T,
+    val families: EventQuery.Families,
+    val handle: T.() -> Unit,
+) {
+    fun run() = handle(query)
+    val event: Family.Selector.And get() = families.event
+    val source: Family.Selector.And get() = families.source
+    val target: Family.Selector.And get() = families.target
 }
-

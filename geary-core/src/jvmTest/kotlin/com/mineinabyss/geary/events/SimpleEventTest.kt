@@ -1,43 +1,36 @@
 package com.mineinabyss.geary.events
 
-import com.mineinabyss.geary.datatypes.Records
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.Listener
-import com.mineinabyss.geary.systems.accessors.Pointers
+import com.mineinabyss.geary.systems.listener
+import com.mineinabyss.geary.systems.query.EventQuery
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class SimpleEventTest : GearyTest() {
     class MyEvent()
 
-    class MyListener : Listener() {
-        var called = 0
+    var called = 0
 
-        val Records.data by get<Int>().on(target)
-        val Records.event by get<MyEvent>().on(event)
-
-        override fun Pointers.handle() {
-            called += 1
-        }
+    fun myListener() = geary.listener(object : EventQuery() {
+        val data by target.get<Int>()
+        val myEvent by event.get<MyEvent>()
+    }) {
+        called++
     }
 
-    class SourceOnlyListener: Listener() {
-        var called = 0
-        val Records.event by get<MyEvent>().on(event)
-        val Records.data by get<Int>().on(source)
-
-        override fun Pointers.handle() {
-            called += 1
-        }
+    fun sourceOnlyListener() = geary.listener(object : EventQuery() {
+        val data by source.get<Int>()
+        val myEvent by event.get<MyEvent>()
+    }) {
+        called++
     }
 
     @Test
     fun `simple set listener`() {
-        val listener = MyListener()
-        geary.pipeline.addSystem(listener)
-
+        called = 0
+        val listener = myListener()
         val entity = entity {
             set(1)
         }
@@ -45,19 +38,19 @@ class SimpleEventTest : GearyTest() {
             set(MyEvent())
         }
 
-        listener.called shouldBe 0
+        called shouldBe 0
         entity.callEvent(event)
-        listener.called shouldBe 1
+        called shouldBe 1
         entity.callEvent(entity())
-        listener.called shouldBe 1
+        called shouldBe 1
         entity().callEvent(event)
-        listener.called shouldBe 1
+        called shouldBe 1
     }
 
     @Test
     fun `source only simple set listener`() {
-        val listener = SourceOnlyListener()
-        geary.pipeline.addSystem(listener)
+        called = 0
+        val listener = sourceOnlyListener()
 
         val target = entity()
         val source = entity {
@@ -67,8 +60,8 @@ class SimpleEventTest : GearyTest() {
             set(MyEvent())
         }
 
-        listener.called shouldBe 0
+        called shouldBe 0
         target.callEvent(event, source = source)
-        listener.called shouldBe 1
+        called shouldBe 1
     }
 }

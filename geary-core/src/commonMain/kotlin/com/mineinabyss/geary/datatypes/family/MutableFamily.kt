@@ -9,7 +9,7 @@ import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.modules.geary
 
-inline fun family(init: MutableFamily.Selector.And.() -> Unit): Family {
+inline fun family(init: MutableFamily.Selector.And.() -> Unit): Family.Selector.And {
     return MutableFamily.Selector.And().apply(init)
 }
 

@@ -3,17 +3,17 @@ package com.mineinabyss.geary.systems.accessors.type
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityId
 import com.mineinabyss.geary.datatypes.Relation
-import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.systems.accessors.Pointer
+import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import com.mineinabyss.geary.systems.accessors.ReadOnlyAccessor
+import com.mineinabyss.geary.systems.query.QueriedEntity
 import kotlin.reflect.KProperty
 
-@OptIn(UnsafeAccessors::class)
 class RelationsAccessor(
+    override val queriedEntity: QueriedEntity,
     val kind: ComponentId,
     val target: EntityId,
 ) : ReadOnlyAccessor<List<Relation>>, FamilyMatching {
@@ -22,8 +22,8 @@ class RelationsAccessor(
     private var cachedRelations = emptyList<Relation>()
     private var cachedArchetype: Archetype? = null
 
-    override fun getValue(thisRef: Pointer, property: KProperty<*>): List<Relation> {
-        val archetype = thisRef.archetype
+    override fun getValue(thisRef: AccessorOperations, property: KProperty<*>): List<Relation> {
+        val archetype = queriedEntity.currArchetype
         if (archetype != cachedArchetype) {
             cachedArchetype = archetype
             cachedRelations = archetype.getRelations(kind, target)

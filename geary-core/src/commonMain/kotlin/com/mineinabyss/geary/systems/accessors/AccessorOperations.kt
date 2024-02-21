@@ -3,6 +3,8 @@ package com.mineinabyss.geary.systems.accessors
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.datatypes.Relation
+import com.mineinabyss.geary.datatypes.family.Family
+import com.mineinabyss.geary.datatypes.family.MutableFamily
 import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
@@ -27,7 +29,7 @@ open class AccessorOperations {
      * As a result, the type is nullable since it may be removed during system runtime.
      */
     fun <T: Any> ComponentAccessor<T>.removable(): RemovableComponentAccessor<T> {
-        return RemovableComponentAccessor(id)
+        return RemovableComponentAccessor(queriedEntity, id)
     }
 
     /**
@@ -41,9 +43,10 @@ open class AccessorOperations {
     /** Maps an accessor, will recalculate on every call. */
     fun <T, U, A : ReadOnlyAccessor<T>> A.map(mapping: (T) -> U): ReadOnlyAccessor<U> {
         return object : ReadOnlyAccessor<U>, FamilyMatching {
+            override val queriedEntity: QueriedEntity = TODO()
             override val family = (this@map as? FamilyMatching)?.family
 
-            override fun getValue(thisRef: Query, property: KProperty<*>): U {
+            override fun getValue(thisRef: AccessorOperations, property: KProperty<*>): U {
                 val value = this@map.getValue(thisRef, property)
                 return mapping(value)
             }
@@ -68,11 +71,16 @@ open class AccessorOperations {
      * - Note: nullability rules are still upheld with [Any].
      */
     inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelations(): RelationsAccessor {
-        return RelationsAccessor(componentIdWithNullable<K>(), componentIdWithNullable<T>())
+        return RelationsAccessor(this, componentIdWithNullable<K>(), componentIdWithNullable<T>())
     }
 
     /** @see getRelations */
     inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelationsWithData(): RelationsWithDataAccessor<K, T> {
-        return RelationsWithDataAccessor(componentIdWithNullable<K>(), componentIdWithNullable<T>())
+        return RelationsWithDataAccessor(this, componentIdWithNullable<K>(), componentIdWithNullable<T>())
+    }
+
+    fun QueriedEntity.family(init: MutableFamily.Selector.And.() -> Unit) {
+        val family = com.mineinabyss.geary.datatypes.family.family(init)
+        extraFamilies.add(family)
     }
 }
