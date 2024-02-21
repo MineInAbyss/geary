@@ -2,8 +2,8 @@ package com.mineinabyss.geary.prefabs.configuration.components
 
 import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.datatypes.Component
-import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
+import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable

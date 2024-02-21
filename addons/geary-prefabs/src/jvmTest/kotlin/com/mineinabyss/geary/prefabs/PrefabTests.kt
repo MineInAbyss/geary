@@ -34,7 +34,7 @@ class PrefabTests {
     }
 
     @Test
-    fun `should track prefabs when key added`(){
+    fun `should track prefabs when key added`() {
         // arrange & act
         val prefab = entity { set(testKey) }
 

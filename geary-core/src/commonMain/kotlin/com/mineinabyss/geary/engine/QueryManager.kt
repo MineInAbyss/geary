@@ -8,7 +8,7 @@ import com.mineinabyss.geary.systems.query.GearyQuery
 import com.mineinabyss.geary.systems.query.Query
 
 interface QueryManager {
-    fun trackEventListener(listener: Listener)
+    fun trackEventListener(listener: Listener<*>)
     fun <T: Query> trackQuery(query: T): CachedQueryRunner<T>
 
     /** Returns a list of entities matching the given family. */

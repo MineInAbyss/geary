@@ -2,11 +2,8 @@ package com.mineinabyss.geary.queries
 
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.modules.dsl.track
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.accessors.Pointer
 import com.mineinabyss.geary.systems.query.Query
-import com.mineinabyss.geary.systems.query.system
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 

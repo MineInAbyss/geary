@@ -5,12 +5,12 @@ import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.maps.Family2ObjectArrayMap
 import com.mineinabyss.geary.engine.QueryManager
 import com.mineinabyss.geary.helpers.contains
-import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.query.CachedQueryRunner
-import com.mineinabyss.geary.systems.query.GearyQuery
 import com.mineinabyss.geary.systems.query.Query
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
+
+typealias Listener = com.mineinabyss.geary.systems.Listener<*>
 
 class ArchetypeQueryManager : QueryManager {
     private val queries = mutableListOf<CachedQueryRunner<*>>()
@@ -28,20 +28,20 @@ class ArchetypeQueryManager : QueryManager {
     val archetypeCount get() = archetypes.elements.size
 
     override fun trackEventListener(listener: Listener) {
-        if (!listener.event.isEmpty) {
-            val eventFamilyMatch = archetypes.match(listener.event.family)
+        if (listener.event.and.isNotEmpty()) {
+            val eventFamilyMatch = archetypes.match(listener.event)
             for (archetype in eventFamilyMatch) archetype.eventListeners += listener
             eventListeners.add(listener)
         }
 
         // Only start tracking a listener for the parts it actually cares for
-        if (!listener.source.isEmpty) {
-            val sourcesMatched = archetypes.match(listener.source.family)
+        if (listener.source.and.isNotEmpty()) {
+            val sourcesMatched = archetypes.match(listener.source)
             for (archetype in sourcesMatched) archetype.sourceListeners += listener
             sourceListeners.add(listener)
         }
-        if (!listener.target.isEmpty) {
-            val targetsMatched = archetypes.match(listener.target.family)
+        if (listener.target.and.isNotEmpty()) {
+            val targetsMatched = archetypes.match(listener.target)
             for (archetype in targetsMatched) archetype.targetListeners += listener
             targetListeners.add(listener)
         }
@@ -81,9 +81,9 @@ class ArchetypeQueryManager : QueryManager {
 
     fun getQueriesMatching(archetype: Archetype): MatchedQueries {
         val matched = queries.filter { archetype.type in it.family }
-        val matchedSources = sourceListeners.filter { archetype.type in it.source.family }
-        val matchedTargets = targetListeners.filter { archetype.type in it.target.family }
-        val matchedEvents = eventListeners.filter { archetype.type in it.event.family }
+        val matchedSources = sourceListeners.filter { archetype.type in it.source }
+        val matchedTargets = targetListeners.filter { archetype.type in it.target }
+        val matchedEvents = eventListeners.filter { archetype.type in it.event }
         return MatchedQueries(matched, matchedSources, matchedTargets, matchedEvents)
     }
 
