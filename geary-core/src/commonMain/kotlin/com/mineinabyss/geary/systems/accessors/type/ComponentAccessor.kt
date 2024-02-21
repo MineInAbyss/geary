@@ -8,11 +8,13 @@ import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import com.mineinabyss.geary.systems.accessors.Pointer
 import com.mineinabyss.geary.systems.accessors.ReadWriteAccessor
+import com.mineinabyss.geary.systems.query.QueriedEntity
 import com.mineinabyss.geary.systems.query.Query
 import kotlin.reflect.KProperty
 
 @OptIn(UnsafeAccessors::class)
 abstract class ComponentAccessor<T>(
+    val entity: QueriedEntity,
     val id: ComponentId
 ) : ReadWriteAccessor<T>, FamilyMatching {
     override val family: Family = family { hasSet(id) }
@@ -21,30 +23,30 @@ abstract class ComponentAccessor<T>(
     protected var cachedDataArray: MutableList<T> = mutableListOf()
     protected var cachedArchetype: Archetype? = null
 
-    abstract operator fun get(thisRef: Pointer): T
+    abstract operator fun get(thisRef: Query): T
 
-    internal inline fun get(thisRef: Pointer, beforeRead: () -> Unit): T {
-        val archetype = thisRef.archetype
+    internal inline fun get(thisRef: Query, beforeRead: () -> Unit): T {
+        val archetype = entity.currArchetype
         if (archetype !== cachedArchetype) {
             cachedArchetype = archetype
             cachedIndex = archetype.indexOf(id)
             if (cachedIndex != -1) cachedDataArray = archetype.componentData[cachedIndex] as MutableList<T>
         }
         beforeRead()
-        return cachedDataArray[thisRef.row]
+        return cachedDataArray[entity.currEntityIndex]
     }
 
-    abstract operator fun set(thisRef: Pointer, value: T)
+    abstract operator fun set(thisRef: Query, value: T)
 
-    internal inline fun set(thisRef: Pointer, value: T, beforeWrite: () -> Unit) {
-        val archetype = thisRef.archetype
+    internal inline fun set(thisRef: Query, value: T, beforeWrite: () -> Unit) {
+        val archetype = entity.currArchetype
         if (archetype !== cachedArchetype) {
             cachedArchetype = archetype
             cachedIndex = archetype.indexOf(id)
             if (cachedIndex != -1) cachedDataArray = archetype.componentData[cachedIndex] as MutableList<T>
         }
         beforeWrite()
-        cachedDataArray[thisRef.row] = value
+        cachedDataArray[entity.currEntityIndex] = value
     }
 
     final override fun getValue(thisRef: Query, property: KProperty<*>): T {

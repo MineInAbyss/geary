@@ -1,14 +1,18 @@
 package com.mineinabyss.geary.systems.query
 
+import com.mineinabyss.geary.modules.GearyConfiguration
+import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.systems.System
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 
-inline fun <T : Query> system(
-    query: () -> T,
-//    interval: Duration = Duration.ZERO,
-    onTick: T.() -> Unit,
+inline fun <T : Query> GearyModule.system(
+    query: T,
+    init: SystemBuilder<T>.() -> Unit
 ): System {
-//    onTick(query)
+    val system = SystemBuilder(query).apply(init).build()
+    return pipeline.addSystem(system)
 }
 
 class SystemTick<T : Query> {
@@ -18,36 +22,38 @@ class SystemTick<T : Query> {
 }
 
 class SystemBuilder<T : Query>(val query: T) {
-    inline fun onTick(run: T.() -> Unit): SystemBuilder<T> {
-        SystemTick<T>().forEach(run)
-        return this
-    }
-
+    @PublishedApi
+    internal var onTick: CachedQueryRunner<T>.() -> Unit = {}
     var interval: Duration = Duration.ZERO
+
+    inline fun onTick(crossinline run: T.() -> Unit) {
+        onTick = { forEach(run) }
+    }
+    fun onTickAll(run: CachedQueryRunner<T>.() -> Unit) {
+        onTick = run
+    }
+    fun build(): System = System(
+        query,
+        onTick as CachedQueryRunner<*>.() -> Unit ,
+        interval
+    )
 }
 
-class System
-
-class TestQuery : EventQuery() {
-    var string by target.get<String>()
-    val int by event.get<Int>().map { it.toString() }
-}
-
-
-fun printStringSystem() = system(fun() = object : Query() {
+fun printStringSystem() = system(object : Query() {
     var string by target.get<String>()
 }) {
-    println(string)
+    onTick {
+        println(string)
+    }
 }
 
 fun main() {
-    system(::TestQuery) {
-        println(string)
-    }
-
-    system(fun() = object : Query() {
+    system(object : Query() {
         var string by target.get<String>().removable()
     }) {
-        println(string)
+        onTick {
+            println(string)
+        }
+        interval = 2.seconds
     }
 }

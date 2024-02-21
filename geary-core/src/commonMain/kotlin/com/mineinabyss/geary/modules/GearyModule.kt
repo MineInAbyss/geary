@@ -44,7 +44,7 @@ interface GearyModule {
     val defaults: Defaults
 
     operator fun invoke(configure: GearyConfiguration.() -> Unit) {
-        GearyConfiguration().apply(configure)
+        GearyConfiguration(this).apply(configure)
     }
 
     companion object
