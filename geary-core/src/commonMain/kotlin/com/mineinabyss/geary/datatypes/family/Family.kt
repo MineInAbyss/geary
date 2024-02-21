@@ -2,9 +2,9 @@ package com.mineinabyss.geary.datatypes.family
 
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityId
-import com.mineinabyss.geary.systems.accessors.Pointer
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import com.mineinabyss.geary.systems.accessors.ReadOnlyAccessor
+import com.mineinabyss.geary.systems.query.Query
 import kotlin.reflect.KProperty
 
 sealed interface Family : ReadOnlyAccessor<Family>, FamilyMatching {
@@ -44,7 +44,7 @@ sealed interface Family : ReadOnlyAccessor<Family>, FamilyMatching {
 
     // Helpers for writing queries
     override val family: Family? get() = this
-    override fun getValue(thisRef: Pointer, property: KProperty<*>): Family {
+    override fun getValue(thisRef: Query, property: KProperty<*>): Family {
         return this
     }
 }

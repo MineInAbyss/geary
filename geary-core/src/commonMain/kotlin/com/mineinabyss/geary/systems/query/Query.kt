@@ -2,21 +2,19 @@ package com.mineinabyss.geary.systems.query
 
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.family
-import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import kotlin.reflect.KProperty
 
-abstract class Query : AccessorOperations() {
-    @PublishedApi
-    internal var currArchetype: Archetype? = null
-    @PublishedApi
-    internal var currEntityIndex: Int = 0
+abstract class Query(
+    val baseFamily: Family = family {  }
+) : AccessorOperations() {
 
-    val target: QueriedEntity = TODO()
+    val target: QueriedEntity = QueriedEntity()
 
     private val props: MutableMap<KProperty<*>, Family> = mutableMapOf()
-    fun buildQuery(): Family = family {
+
+    fun buildFamily(): Family = family {
         for (family in props.values) {
             add(family)
         }
