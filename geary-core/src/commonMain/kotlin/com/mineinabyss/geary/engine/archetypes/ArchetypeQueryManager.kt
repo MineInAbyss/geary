@@ -6,13 +6,14 @@ import com.mineinabyss.geary.datatypes.maps.Family2ObjectArrayMap
 import com.mineinabyss.geary.engine.QueryManager
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.systems.Listener
+import com.mineinabyss.geary.systems.query.CachedQueryRunner
 import com.mineinabyss.geary.systems.query.GearyQuery
 import com.mineinabyss.geary.systems.query.Query
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 
 class ArchetypeQueryManager : QueryManager {
-    private val queries = mutableListOf<GearyQuery>()
+    private val queries = mutableListOf<CachedQueryRunner<*>>()
     private val sourceListeners = mutableListOf<Listener>()
     private val targetListeners = mutableListOf<Listener>()
     private val eventListeners = mutableListOf<Listener>()
@@ -22,7 +23,7 @@ class ArchetypeQueryManager : QueryManager {
         setIndex = { it, index -> it.id = index }
     )
 
-    val archetypeRegistryLock = SynchronizedObject()
+    private val archetypeRegistryLock = SynchronizedObject()
 
     val archetypeCount get() = archetypes.elements.size
 
@@ -46,11 +47,12 @@ class ArchetypeQueryManager : QueryManager {
         }
     }
 
-    override fun trackQuery(query: GearyQuery) {
-        val matched = archetypes.match(query.family)
-        query.matchedArchetypes += matched
-        queries.add(query)
-        query.registered = true
+    override fun <T : Query> trackQuery(query: T): CachedQueryRunner<T> {
+        val queryRunner = CachedQueryRunner(query)
+        val matched = archetypes.match(queryRunner.family)
+        queryRunner.matchedArchetypes += matched
+        queries.add(queryRunner)
+        return queryRunner
     }
 
     internal fun registerArchetype(archetype: Archetype) = synchronized(archetypeRegistryLock) {
@@ -71,7 +73,7 @@ class ArchetypeQueryManager : QueryManager {
     }
 
     data class MatchedQueries(
-        val queries: List<Query>,
+        val queries: List<CachedQueryRunner<*>>,
         val sourceListeners: List<Listener>,
         val targetListeners: List<Listener>,
         val eventListeners: List<Listener>

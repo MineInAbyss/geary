@@ -9,13 +9,15 @@ import com.mineinabyss.idofront.di.DI
 import kotlin.reflect.KClass
 
 @GearyDSL
-class GearyConfiguration {
+class GearyConfiguration(
+    val module: GearyModule
+) {
     val installedAddons = mutableMapOf<KClass<out GearyAddon<*>>, Any>()
     inline fun <T : GearyAddonWithDefault<Module>, reified Module : Any> install(
         addon: T,
     ): Module {
         val module = DI.getOrNull<Module>()
-        if(module != null) return module
+        if (module != null) return module
         return install(addon, addon.default())
     }
 

@@ -7,7 +7,8 @@ import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.RepeatingSystem
-import com.mineinabyss.geary.systems.accessors.Pointer
+import com.mineinabyss.geary.systems.query.Query
+import com.mineinabyss.geary.systems.query.system
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Scope
 import org.openjdk.jmh.annotations.Setup
@@ -18,31 +19,13 @@ class VelocitySystemBenchmark {
     data class Velocity(val x: Float, val y: Float)
     data class Position(var x: Float, var y: Float)
 
-    object VelocitySystem : RepeatingSystem() {
-        private val Pointer.velocity by get<Velocity>()
-        private var Pointer.position by get<Position>()
-
-        override fun Pointer.tick() {
+    val VelocitySystem = geary.system(object : Query() {
+        val velocity by target.get<Velocity>()
+        var position by target.get<Position>()
+    }) {
+        onTick {
             position.x += velocity.x
             position.y += velocity.y
-        }
-    }
-
-    // sanity check that `by` and a function call is not causing slowdowns
-    object VelocitySystemNoBoxing : RepeatingSystem() {
-        private val velocity = get<Velocity>()
-        private var position = get<Position>()
-
-        val test by family {
-            hasSet<Velocity>()
-            hasSet<Position>()
-        }
-
-        override fun tickAll() {
-            forEach {
-                position[it].x += velocity[it].x
-                position[it].y += velocity[it].y
-            }
         }
     }
 
@@ -63,19 +46,14 @@ class VelocitySystemBenchmark {
 
     @Benchmark
     fun velocitySystem() {
-        VelocitySystem.tickAll()
-    }
-
-    @Benchmark
-    fun velocitySystemNoBoxing() {
-        VelocitySystemNoBoxing.tickAll()
+        createVelocitySystem().tickAll()
     }
 
     // Theoretical performance with zero ECS overhead
     @Benchmark
     fun pureArrays() {
         var i = 0
-        while(i < tenMil) {
+        while (i < tenMil) {
             positions[i].x += velocities[i].x
             positions[i].y += velocities[i].y
             i++

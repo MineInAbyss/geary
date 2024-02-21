@@ -8,17 +8,18 @@ import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.systems.accessors.type.*
 import com.mineinabyss.geary.systems.query.QueriedEntity
+import com.mineinabyss.geary.systems.query.Query
 import kotlin.reflect.KProperty
 
 open class AccessorOperations {
     /** Accesses a component, ensuring it is on the entity. */
     inline fun <reified T : Any> QueriedEntity.get(): ComponentAccessor<T> {
-        return NonNullComponentAccessor(componentId<T>().withRole(HOLDS_DATA))
+        return NonNullComponentAccessor(this, componentId<T>().withRole(HOLDS_DATA))
     }
 
     /** Accesses a data stored in a relation with kind [K] and target type [T], ensuring it is on the entity. */
     inline fun <reified K: Any, reified T : Any> QueriedEntity.getRelation(): ComponentAccessor<T> {
-        return NonNullComponentAccessor(Relation.of<K, T>().id)
+        return NonNullComponentAccessor(this, Relation.of<K, T>().id)
     }
 
     /**
@@ -42,7 +43,7 @@ open class AccessorOperations {
         return object : ReadOnlyAccessor<U>, FamilyMatching {
             override val family = (this@map as? FamilyMatching)?.family
 
-            override fun getValue(thisRef: Pointer, property: KProperty<*>): U {
+            override fun getValue(thisRef: Query, property: KProperty<*>): U {
                 val value = this@map.getValue(thisRef, property)
                 return mapping(value)
             }
