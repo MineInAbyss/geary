@@ -66,11 +66,11 @@ class Archetype internal constructor(
     /** The amount of entities stored in this archetype. */
     val size: Int get() = ids.size
 
-    val sourceListeners = mutableListOf<Listener>()
+    val sourceListeners = mutableListOf<Listener<*>>()
 
-    val targetListeners = mutableListOf<Listener>()
+    val targetListeners = mutableListOf<Listener<*>>()
 
-    val eventListeners = mutableListOf<Listener>()
+    val eventListeners = mutableListOf<Listener<*>>()
 
     // ==== Helper functions ====
     fun getEntity(row: Int): Entity {

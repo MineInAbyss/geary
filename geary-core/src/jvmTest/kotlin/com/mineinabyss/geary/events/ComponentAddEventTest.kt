@@ -1,34 +1,34 @@
 package com.mineinabyss.geary.events
 
-import com.mineinabyss.geary.datatypes.Records
+import com.mineinabyss.geary.components.events.UpdatedComponent
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.Listener
-import com.mineinabyss.geary.systems.accessors.Pointers
+import com.mineinabyss.geary.systems.listener
+import com.mineinabyss.geary.systems.query.EventQuery
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 internal class ComponentAddEventTest : GearyTest() {
     var inc = 0
 
-    //TODO write test for all methods of checking for added
-    inner class OnStringAdd : Listener() {
-        // All three get added
-        val Records.string by get<String>().whenSetOnTarget()
-        val Records.int by get<Int>().whenSetOnTarget()
-        val Records.double by get<Double>().whenSetOnTarget()
+    fun onStringAdd() = geary.listener(object : EventQuery() {
+        val string by target.get<String>()
+        val int by target.get<Int>()
+        val double by target.get<Double>()
 
-        override fun Pointers.handle() {
-            inc++
+        init {
+            event.family {
+                hasRelation<UpdatedComponent?>()
+            }
+            onAnySet(::string, ::int, ::double)
         }
-    }
+    }) { inc++ }
 
     @Test
     fun componentAddEvent() {
-        val listener = listener(StringAddQuery()).handle { inc++ }
-        geary.pipeline.addSystem(listener)
+        val listener = onStringAdd()
 
         entity {
             fun addedListeners() = type.getArchetype().targetListeners.count { it === listener }

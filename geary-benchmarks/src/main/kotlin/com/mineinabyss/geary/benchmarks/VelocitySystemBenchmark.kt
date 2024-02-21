@@ -2,13 +2,11 @@ package com.mineinabyss.geary.benchmarks
 
 import com.mineinabyss.geary.benchmarks.helpers.oneMil
 import com.mineinabyss.geary.benchmarks.helpers.tenMil
-import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.RepeatingSystem
 import com.mineinabyss.geary.systems.query.Query
-import com.mineinabyss.geary.systems.query.system
+import com.mineinabyss.geary.systems.system
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Scope
 import org.openjdk.jmh.annotations.Setup
@@ -19,7 +17,7 @@ class VelocitySystemBenchmark {
     data class Velocity(val x: Float, val y: Float)
     data class Position(var x: Float, var y: Float)
 
-    val VelocitySystem = geary.system(object : Query() {
+    val velocitySystem = geary.system(object : Query() {
         val velocity by target.get<Velocity>()
         var position by target.get<Position>()
     }) {
@@ -46,7 +44,7 @@ class VelocitySystemBenchmark {
 
     @Benchmark
     fun velocitySystem() {
-        createVelocitySystem().tickAll()
+        velocitySystem.tick()
     }
 
     // Theoretical performance with zero ECS overhead

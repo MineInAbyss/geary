@@ -7,8 +7,7 @@ import com.mineinabyss.geary.systems.accessors.ReadOnlyAccessor
 import com.mineinabyss.geary.systems.query.Query
 import kotlin.reflect.KProperty
 
-sealed interface Family : ReadOnlyAccessor<Family>, FamilyMatching {
-
+sealed interface Family {
     sealed class Leaf : Family {
         sealed interface Component : Family {
             val component: ComponentId
@@ -40,11 +39,5 @@ sealed interface Family : ReadOnlyAccessor<Family>, FamilyMatching {
         sealed interface Or : Selector {
             val or: List<Family>
         }
-    }
-
-    // Helpers for writing queries
-    override val family: Family? get() = this
-    override fun getValue(thisRef: Query, property: KProperty<*>): Family {
-        return this
     }
 }

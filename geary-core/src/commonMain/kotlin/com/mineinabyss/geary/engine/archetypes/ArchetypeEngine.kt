@@ -3,7 +3,7 @@ package com.mineinabyss.geary.engine.archetypes
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.*
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.RepeatingSystem
+import com.mineinabyss.geary.systems.TrackedSystem
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
@@ -24,8 +24,8 @@ open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine(
         (CoroutineScope(Dispatchers.Default) + CoroutineName("Geary Engine")).coroutineContext
 
     /** Describes how to individually tick each system */
-    protected open fun RepeatingSystem.runSystem() {
-        tickAll()
+    protected open fun TrackedSystem.runSystem() {
+        system.onTick(runner)
     }
 
     override fun scheduleSystemTicking() {
@@ -41,7 +41,7 @@ open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine(
     override fun tick(currentTick: Long) {
         // Create a job but don't start it
         pipeline.getRepeatingInExecutionOrder()
-            .filter { currentTick % (it.interval / tickDuration).toInt().coerceAtLeast(1) == 0L }
+            .filter { currentTick % (it.system.interval / tickDuration).toInt().coerceAtLeast(1) == 0L }
             .also { logger.v("Ticking engine with systems $it") }
             .forEach { system ->
                 runCatching {
