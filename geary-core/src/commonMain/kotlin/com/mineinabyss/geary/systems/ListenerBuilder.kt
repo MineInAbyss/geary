@@ -14,7 +14,7 @@ fun <T : ListenerQuery> GearyModule.listener(
     return ListenerBuilder(query, pipeline)
 }
 
-class ListenerBuilder<T: ListenerQuery>(
+class ListenerBuilder<T : ListenerQuery>(
     val query: T,
     val pipeline: Pipeline,
 ) {
@@ -29,6 +29,7 @@ class ListenerBuilder<T: ListenerQuery>(
 
     @OptIn(UnsafeAccessors::class)
     fun check(check: T.() -> Boolean): Listener<*> {
+        query.initialize()
         val families = query.buildFamilies()
         val listener = Listener(
             query,

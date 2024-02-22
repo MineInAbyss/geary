@@ -8,17 +8,18 @@ import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.systems.accessors.type.*
+import com.mineinabyss.geary.systems.query.EventQueriedEntity
 import com.mineinabyss.geary.systems.query.QueriedEntity
 import kotlin.reflect.KProperty
 
 open class AccessorOperations {
     /** Accesses a component, ensuring it is on the entity. */
-    inline fun <reified T : Any> QueriedEntity.get(): ComponentAccessor<T> {
+    protected inline fun <reified T : Any> QueriedEntity.get(): ComponentAccessor<T> {
         return NonNullComponentAccessor(this, componentId<T>().withRole(HOLDS_DATA))
     }
 
     /** Accesses a data stored in a relation with kind [K] and target type [T], ensuring it is on the entity. */
-    inline fun <reified K: Any, reified T : Any> QueriedEntity.getRelation(): ComponentAccessor<T> {
+    protected inline fun <reified K: Any, reified T : Any> QueriedEntity.getRelation(): ComponentAccessor<T> {
         return NonNullComponentAccessor(this, Relation.of<K, T>().id)
     }
 
@@ -68,17 +69,32 @@ open class AccessorOperations {
      * - One of [K] or [T] is [Any] => gets all relations matching the other (specified) type.
      * - Note: nullability rules are still upheld with [Any].
      */
-    inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelations(): RelationsAccessor {
+    protected inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelations(): RelationsAccessor {
         return RelationsAccessor(this, componentIdWithNullable<K>(), componentIdWithNullable<T>())
     }
 
     /** @see getRelations */
-    inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelationsWithData(): RelationsWithDataAccessor<K, T> {
+    protected inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelationsWithData(): RelationsWithDataAccessor<K, T> {
         return RelationsWithDataAccessor(this, componentIdWithNullable<K>(), componentIdWithNullable<T>())
     }
 
-    fun QueriedEntity.match(init: MutableFamily.Selector.And.() -> Unit) {
+    protected fun QueriedEntity.match(init: MutableFamily.Selector.And.() -> Unit) {
         val family = com.mineinabyss.geary.datatypes.family.family(init)
         extraFamilies.add(family)
+    }
+
+    /** Fires when an entity has a component of type [T] set or updated. */
+    protected fun EventQueriedEntity.anySet(vararg props: KProperty<*>) {
+        val names = props.map { it.name }.toSet()
+        match {
+            this@anySet.props.filterKeys { prop ->
+                prop.name in names
+            }.values.flatMap {
+                it.components
+            }.forEach { component ->
+                onSet(component)
+                // TODO do we error here if not, this isn't really typesafe?
+            }
+        }
     }
 }

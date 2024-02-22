@@ -9,7 +9,8 @@ import com.mineinabyss.geary.uuid.uuid2Geary
 
 //TODO fix
 fun createUntrackUuidOnRemoveSystem() = geary.listener(object : ListenerQuery() {
-    val uuid by target.get<Uuid>()
-}.apply { event.match { has<EntityRemoved>() } }) {
+    val uuid by get<Uuid>()
+    override fun ensure() = event.match { has<EntityRemoved>() }
+}).exec {
     uuid2Geary.remove(uuid)
 }

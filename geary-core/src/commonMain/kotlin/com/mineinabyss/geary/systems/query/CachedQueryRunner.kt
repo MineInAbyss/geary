@@ -6,7 +6,7 @@ import com.mineinabyss.geary.helpers.fastForEachWithIndex
 
 class CachedQueryRunner<T : Query> internal constructor(val query: T) {
     val matchedArchetypes: MutableList<Archetype> = mutableListOf()
-    val family = query.target.buildFamily()
+    val family = query.buildFamily()
 
     inline fun <R> toList(crossinline map: T.() -> R): List<R> {
         val list = mutableListOf<R>()
@@ -27,7 +27,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
             val archetype = matched[n]
             archetype.isIterating = true
             val upTo = archetype.size
-            val target = query.target
+            val target = query
             // TODO upTo isn't perfect for cases where entities may be added or removed in the same iteration
             target.originalArchetype = archetype
 

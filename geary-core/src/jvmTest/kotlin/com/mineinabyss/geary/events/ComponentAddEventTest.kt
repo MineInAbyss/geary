@@ -13,12 +13,11 @@ internal class ComponentAddEventTest : GearyTest() {
     var inc = 0
 
     fun onStringAdd() = geary.listener(object : ListenerQuery() {
-        val string by target.get<String>()
-        val int by target.get<Int>()
-        val double by target.get<Double>()
-    }.apply { onSet(::string, ::int, ::double) }) {
-        inc++
-    }
+        val string by get<String>()
+        val int by get<Int>()
+        val double by get<Double>()
+    }.apply { onSet(::string, ::int, ::double) })
+        .exec { inc++ }
 
     @Test
     fun componentAddEvent() {
