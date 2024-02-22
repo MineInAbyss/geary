@@ -25,7 +25,7 @@ class RelationMatchingSystemTest : GearyTest() {
         val system = geary.system(object : Query() {
             val persists by target.getRelationsWithData<Persists, Any?>()
         }) {
-            onTick {
+            exec {
                 ran++
                 persists.forAll { it.data.shouldBeInstanceOf<Persists>() }
             }
@@ -61,7 +61,7 @@ class RelationMatchingSystemTest : GearyTest() {
             val persists by target.getRelationsWithData<Persists, Any>()
             val instanceOf by target.getRelationsWithData<InstanceOf?, Any?>()
         }) {
-            onTick {
+            exec {
                 ran++
                 persistsCount += persists.size
                 instanceOfCount += instanceOf.size
@@ -115,7 +115,7 @@ class RelationMatchingSystemTest : GearyTest() {
         val system = geary.system(object : Query() {
             val withData by target.getRelationsWithData<Persists, Any>()
         }) {
-            onTick {
+            exec {
                 withData.forAll { it.data shouldBe Persists() }
                 withData.forAll { it.targetData shouldBe "Test" }
             }

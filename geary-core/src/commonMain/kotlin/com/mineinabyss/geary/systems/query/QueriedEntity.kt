@@ -7,9 +7,11 @@ import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import kotlin.reflect.KProperty
 
-class QueriedEntity {
+open class EventQueriedEntity: QueriedEntity()
+open class QueriedEntity: AccessorOperations() {
     internal val extraFamilies: MutableList<Family> = mutableListOf()
     internal val props: MutableMap<KProperty<*>, Family.Selector> = mutableMapOf()
 
@@ -49,9 +51,4 @@ class QueriedEntity {
             delegated = true
             return entity
         }
-
-    @UnsafeAccessors
-    operator fun component1(): Archetype = archetype
-
-    operator fun component2(): Int = row
 }

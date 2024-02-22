@@ -21,7 +21,7 @@ class FamilyMatchingTest : GearyTest() {
     val system = geary.system(object : Query() {
         val string by target.get<String>()
     }.apply { target.match { has<Int>() } }) {
-        onTick {
+        exec {
             string shouldBe target.entity.get<String>()
             target.entity.has<Int>() shouldBe true
         }

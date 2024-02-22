@@ -26,9 +26,9 @@ class ArchetypeEventRunner : EventRunner {
             query.event.delegated = false
             query.event.originalArchetype = event.archetype
             query.event.originalRow = event.row
-            query.target.delegated = false
-            query.target.originalArchetype = target.archetype
-            query.target.originalRow = target.row
+            query.delegated = false
+            query.originalArchetype = target.archetype
+            query.originalRow = target.row
             if (source != null) {
                 query.source.delegated = false
                 query.source.originalArchetype = source.archetype
