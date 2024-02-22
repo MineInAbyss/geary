@@ -4,7 +4,7 @@ import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.listener
-import com.mineinabyss.geary.systems.query.EventQuery
+import com.mineinabyss.geary.systems.query.ListenerQuery
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
@@ -13,14 +13,14 @@ class SimpleEventTest : GearyTest() {
 
     var called = 0
 
-    fun myListener() = geary.listener(object : EventQuery() {
+    fun myListener() = geary.listener(object : ListenerQuery() {
         val data by target.get<Int>()
         val myEvent by event.get<MyEvent>()
     }) {
         called++
     }
 
-    fun sourceOnlyListener() = geary.listener(object : EventQuery() {
+    fun sourceOnlyListener() = geary.listener(object : ListenerQuery() {
         val data by source.get<Int>()
         val myEvent by event.get<MyEvent>()
     }) {

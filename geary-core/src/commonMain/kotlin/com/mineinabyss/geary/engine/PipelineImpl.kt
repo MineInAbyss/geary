@@ -37,7 +37,7 @@ class PipelineImpl : Pipeline {
 //        val resultSystem = onSystemRegister.fold(system) { acc, func -> func(acc) ?: return }
         // Track systems right at startup since they are likely going to tick very soon anyway, and we don't care about
         // any hiccups at that point.
-        val runner = CachedQueryRunner(system.query)
+        val runner = queryManager.trackQuery(system.query)
         val tracked = TrackedSystem(system, runner)
         if (system.interval != Duration.ZERO) {
             registeredSystems.add(tracked)

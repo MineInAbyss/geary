@@ -23,9 +23,9 @@ interface Prefabs {
 
 
         override fun Prefabs.install() {
+            createParseChildOnPrefabListener()
+            createParseChildrenOnPrefabListener()
             geary.pipeline.addSystems(
-                ParseChildOnPrefab(),
-                ParseChildrenOnPrefab(),
                 ParseRelationOnPrefab(),
                 ParseRelationWithDataSystem(),
                 TrackPrefabsByKeySystem(),

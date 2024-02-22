@@ -16,7 +16,7 @@ abstract class ComponentAccessor<T>(
     override val queriedEntity: QueriedEntity,
     val id: ComponentId
 ) : ReadWriteAccessor<T>, FamilyMatching {
-    override val family: Family = family { hasSet(id) }
+    override val family = family { hasSet(id) }
 
     protected var cachedIndex = -1
     protected var cachedDataArray: MutableList<T> = mutableListOf()
@@ -25,27 +25,27 @@ abstract class ComponentAccessor<T>(
     abstract operator fun get(thisRef: AccessorOperations): T
 
     internal inline fun get(thisRef: AccessorOperations, beforeRead: () -> Unit): T {
-        val archetype = queriedEntity.currArchetype
+        val archetype = queriedEntity.archetype
         if (archetype !== cachedArchetype) {
             cachedArchetype = archetype
             cachedIndex = archetype.indexOf(id)
             if (cachedIndex != -1) cachedDataArray = archetype.componentData[cachedIndex] as MutableList<T>
         }
         beforeRead()
-        return cachedDataArray[queriedEntity.currRow]
+        return cachedDataArray[queriedEntity.row]
     }
 
     abstract operator fun set(thisRef: AccessorOperations, value: T)
 
     internal inline fun set(thisRef: AccessorOperations, value: T, beforeWrite: () -> Unit) {
-        val archetype = queriedEntity.currArchetype
+        val archetype = queriedEntity.archetype
         if (archetype !== cachedArchetype) {
             cachedArchetype = archetype
             cachedIndex = archetype.indexOf(id)
             if (cachedIndex != -1) cachedDataArray = archetype.componentData[cachedIndex] as MutableList<T>
         }
         beforeWrite()
-        cachedDataArray[queriedEntity.currRow] = value
+        cachedDataArray[queriedEntity.row] = value
     }
 
     final override fun getValue(thisRef: AccessorOperations, property: KProperty<*>): T {

@@ -4,18 +4,17 @@ import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.checkingListener
-import com.mineinabyss.geary.systems.query.EventQuery
+import com.mineinabyss.geary.systems.listener
+import com.mineinabyss.geary.systems.query.ListenerQuery
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class CheckingListenerTest : GearyTest() {
     class MyEvent()
 
-    fun myListener() = geary.checkingListener(object: EventQuery() {
+    fun myListener() = geary.listener(object: ListenerQuery() {
         val data by target.get<Int>()
-    }) {
-        data > 10
-    }
+    }).check { data > 10 }
 
     @Test
     fun `simple set listener`() {
