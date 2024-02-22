@@ -11,15 +11,16 @@ import com.mineinabyss.geary.uuid.uuid2Geary
 
 @OptIn(UnsafeAccessors::class)
 fun createTrackUUIDOnAddSystem() = geary.listener(object : ListenerQuery() {
-    var uuid by target.get<Uuid>()
-    val regenerateUUIDOnClash by target.get<RegenerateUUIDOnClash>().orNull()
-}.apply { onSet(::uuid) }).exec {
+    var uuid by get<Uuid>()
+    val regenerateUUIDOnClash by get<RegenerateUUIDOnClash>().orNull()
+    override fun ensure() = event.anySet(::uuid)
+}).exec {
     if (uuid in uuid2Geary)
         if (regenerateUUIDOnClash != null) {
             val newUuid = uuid4()
             uuid = newUuid
-            uuid2Geary[newUuid] = target.entity
-        } else error("Tried tracking entity $target.entity with already existing uuid $uuid")
+            uuid2Geary[newUuid] = entity
+        } else error("Tried tracking entity $entity with already existing uuid $uuid")
     else
-        uuid2Geary[uuid] = target.entity
+        uuid2Geary[uuid] = entity
 }

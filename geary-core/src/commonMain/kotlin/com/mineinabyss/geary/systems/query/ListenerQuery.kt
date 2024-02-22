@@ -1,13 +1,11 @@
 package com.mineinabyss.geary.systems.query
 
 import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import kotlin.reflect.KProperty
 
-abstract class ListenerQuery : AccessorOperations() {
-    val target: QueriedEntity = QueriedEntity()
-    val event: QueriedEntity = QueriedEntity()
+abstract class ListenerQuery : QueriedEntity() {
+    val event: EventQueriedEntity = EventQueriedEntity()
     val source: QueriedEntity = QueriedEntity()
 
     data class Families(
@@ -18,9 +16,13 @@ abstract class ListenerQuery : AccessorOperations() {
 
     fun buildFamilies(): Families = Families(
         event = event.buildFamily(),
-        target = target.buildFamily(),
+        target = this.buildFamily(),
         source = source.buildFamily(),
     )
+
+    protected open fun ensure() {}
+
+    internal fun initialize() = ensure()
 
     /** Automatically matches families for any accessor that's supposed to match a family. */
     operator fun <T : FamilyMatching> T.provideDelegate(
@@ -32,33 +34,18 @@ abstract class ListenerQuery : AccessorOperations() {
     }
 
     /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
-    fun onExtend() {
+    protected fun onExtend() {
         event.match { onExtendedEntity() }
 //        return getRelations<ExtendedEntity?, Any?>().map { it.single().target.toGeary() }.on(event)
     }
 
     /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
-    fun onAdd(vararg props: KProperty<*>) {
+    protected fun onAdd(vararg props: KProperty<*>) {
 
-    }
-
-    /** Fires when an entity has a component of type [T] set or updated. */
-    fun onSet(vararg props: KProperty<*>) {
-        val names = props.map { it.name }.toSet()
-        event.match {
-            target.props.filterKeys { prop ->
-                prop.name in names
-            }.values.flatMap {
-                it.components
-            }.forEach { component ->
-                onSet(component)
-                // TODO do we error here if not, this isn't really typesafe?
-            }
-        }
     }
 
     /** Fires when an entity has a component of type [T] set, only if it was not set before. */
-    fun onFirstSet(vararg props: KProperty<*>) {
+    protected fun onFirstSet(vararg props: KProperty<*>) {
 
     }
 }

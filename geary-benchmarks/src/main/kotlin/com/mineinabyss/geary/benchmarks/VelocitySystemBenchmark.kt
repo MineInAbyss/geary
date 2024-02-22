@@ -18,13 +18,11 @@ class VelocitySystemBenchmark {
     data class Position(var x: Float, var y: Float)
 
     val velocitySystem = geary.system(object : Query() {
-        val velocity by target.get<Velocity>()
-        var position by target.get<Position>()
-    }) {
-        onTick {
-            position.x += velocity.x
-            position.y += velocity.y
-        }
+        val velocity by get<Velocity>()
+        var position by get<Position>()
+    }).exec {
+        position.x += velocity.x
+        position.y += velocity.y
     }
 
     val velocities = Array(tenMil) { Velocity(it.toFloat() / oneMil, it.toFloat() / oneMil) }
