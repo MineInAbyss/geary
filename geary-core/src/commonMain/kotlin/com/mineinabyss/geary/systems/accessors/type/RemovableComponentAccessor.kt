@@ -2,6 +2,7 @@ package com.mineinabyss.geary.systems.accessors.type
 
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
+import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.query.QueriedEntity
 
@@ -19,11 +20,15 @@ class RemovableComponentAccessor<T>(
         set(thisRef, value, beforeWrite = {
             if (cachedIndex == -1) {
                 if (value == null) return
-                else queriedEntity.entity.set(value, id)
+                else {
+                    queriedEntity.entity.set(value, id)
+                    queriedEntity.delegateTo(archetypes.records[queriedEntity.entity])
+                }
                 return
             }
             if (value == null) {
                 queriedEntity.entity.remove(id)
+                queriedEntity.delegateTo(archetypes.records[queriedEntity.entity])
                 return
             }
         })

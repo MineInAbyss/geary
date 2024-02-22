@@ -2,13 +2,12 @@ package com.mineinabyss.geary.systems
 
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.Persists
-import com.mineinabyss.geary.datatypes.RecordPointer
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.accessors.Pointer
+import com.mineinabyss.geary.systems.query.Query
 import io.kotest.inspectors.forAll
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
@@ -21,18 +20,16 @@ import kotlin.test.Test
 class RelationMatchingSystemTest : GearyTest() {
     @Test
     fun relations() {
+        var ran = 0
         resetEngine()
-        val system = object: RepeatingSystem() {
-            val Pointer.persists by getRelationsWithData<Persists, Any?>()
-
-            var ran = 0
-
-            override fun Pointer.tick() {
+        val system = geary.system(object : Query() {
+            val persists by target.getRelationsWithData<Persists, Any?>()
+        }) {
+            onTick {
                 ran++
                 persists.forAll { it.data.shouldBeInstanceOf<Persists>() }
             }
         }
-        geary.pipeline.addSystem(system)
 
         val entity = entity {
             addRelation<Persists, String>()
@@ -46,12 +43,12 @@ class RelationMatchingSystemTest : GearyTest() {
             setRelation<Persists, Int>(Persists())
             add<String>()
         }
-        (entity3.type in system.family) shouldBe true
-        system.matchedArchetypes.shouldNotContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
-        system.matchedArchetypes.shouldContain(entity3.type.getArchetype())
+        (entity3.type in system.runner.family) shouldBe true
+        system.runner.matchedArchetypes.shouldNotContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
+        system.runner.matchedArchetypes.shouldContain(entity3.type.getArchetype())
 
-        geary.engine.tick(0)
-        system.ran shouldBe 1
+        system.tick()
+        ran shouldBe 1
     }
 
     @Test
@@ -60,11 +57,11 @@ class RelationMatchingSystemTest : GearyTest() {
         var ran = 0
         var persistsCount = 0
         var instanceOfCount = 0
-        val system = object : RepeatingSystem() {
-            val RecordPointer.persists by getRelationsWithData<Persists, Any>()
-            val RecordPointer.instanceOf by getRelationsWithData<InstanceOf?, Any?>()
-
-            override fun RecordPointer.tick() {
+        val system = geary.system(object : Query() {
+            val persists by target.getRelationsWithData<Persists, Any>()
+            val instanceOf by target.getRelationsWithData<InstanceOf?, Any?>()
+        }) {
+            onTick {
                 ran++
                 persistsCount += persists.size
                 instanceOfCount += instanceOf.size
@@ -73,7 +70,6 @@ class RelationMatchingSystemTest : GearyTest() {
                 instanceOf.forAll { it.data shouldBe null }
             }
         }
-        geary.pipeline.addSystem(system)
 
         entity {
             setRelation<Persists, Int>(Persists()) // Yes
@@ -93,7 +89,7 @@ class RelationMatchingSystemTest : GearyTest() {
             addRelation<Persists, String>() // No
         }
 
-        geary.engine.tick(0)
+        system.tick()
 
         // Only two of the Persists relations are valid, times both InstanceOf are valid
         ran shouldBe 1
@@ -104,14 +100,7 @@ class RelationMatchingSystemTest : GearyTest() {
     @Test
     fun relationsWithData() {
         resetEngine()
-        val system = object : RepeatingSystem() {
-            val RecordPointer.withData by getRelationsWithData<Persists, Any>()
 
-            override fun RecordPointer.tick() {
-                withData.forAll { it.data shouldBe Persists() }
-                withData.forAll { it.targetData shouldBe "Test" }
-            }
-        }
 
         val entity = entity {
             setRelation<Persists, String>(Persists())
@@ -123,10 +112,17 @@ class RelationMatchingSystemTest : GearyTest() {
             set("Test")
         }
 
-        geary.queryManager.trackQuery(system)
+        val system = geary.system(object : Query() {
+            val withData by target.getRelationsWithData<Persists, Any>()
+        }) {
+            onTick {
+                withData.forAll { it.data shouldBe Persists() }
+                withData.forAll { it.targetData shouldBe "Test" }
+            }
+        }
 
-        system.matchedArchetypes.shouldNotContain(entity.type.getArchetype())
-        system.matchedArchetypes.shouldContain(entityWithData.type.getArchetype())
+        system.runner.matchedArchetypes.shouldNotContain(entity.type.getArchetype())
+        system.runner.matchedArchetypes.shouldContain(entityWithData.type.getArchetype())
 
         geary.engine.tick(0)
     }

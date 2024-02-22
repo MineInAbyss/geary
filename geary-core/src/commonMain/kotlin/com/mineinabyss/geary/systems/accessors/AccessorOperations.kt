@@ -3,14 +3,12 @@ package com.mineinabyss.geary.systems.accessors
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.datatypes.Relation
-import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.MutableFamily
 import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.systems.accessors.type.*
 import com.mineinabyss.geary.systems.query.QueriedEntity
-import com.mineinabyss.geary.systems.query.Query
 import kotlin.reflect.KProperty
 
 open class AccessorOperations {
@@ -79,7 +77,7 @@ open class AccessorOperations {
         return RelationsWithDataAccessor(this, componentIdWithNullable<K>(), componentIdWithNullable<T>())
     }
 
-    fun QueriedEntity.family(init: MutableFamily.Selector.And.() -> Unit) {
+    fun QueriedEntity.match(init: MutableFamily.Selector.And.() -> Unit) {
         val family = com.mineinabyss.geary.datatypes.family.family(init)
         extraFamilies.add(family)
     }

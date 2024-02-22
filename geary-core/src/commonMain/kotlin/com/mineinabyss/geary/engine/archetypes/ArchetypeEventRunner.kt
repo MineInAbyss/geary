@@ -22,13 +22,17 @@ class ArchetypeEventRunner : EventRunner {
 
         fun callListener(listener: Listener<*>) {
             val query = listener.query
-            query.event.currArchetype = event.archetype
-            query.event.currRow = event.row
-            query.target.currArchetype = target.archetype
-            query.target.currRow = target.row
+            //TODO function extract
+            query.event.delegated = false
+            query.event.originalArchetype = event.archetype
+            query.event.originalRow = event.row
+            query.target.delegated = false
+            query.target.originalArchetype = target.archetype
+            query.target.originalRow = target.row
             if (source != null) {
-                query.source.currArchetype = source.archetype
-                query.source.currRow = source.row
+                query.source.delegated = false
+                query.source.originalArchetype = source.archetype
+                query.source.originalRow = source.row
             }
             listener.run()
         }

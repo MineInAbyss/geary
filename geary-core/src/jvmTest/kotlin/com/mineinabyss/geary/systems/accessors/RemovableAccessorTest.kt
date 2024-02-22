@@ -4,14 +4,17 @@ import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.helpers.Comp1
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
+import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.systems.cachedQuery
 import com.mineinabyss.geary.systems.query.Query
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
-class RemovableAccessorTest: GearyTest() {
-    class MyQueryRemovable : Query() {
-        var Pointer.data by get<Comp1>().removable()
-    }
+class RemovableAccessorTest : GearyTest() {
+    private fun createRemovableQuery() = geary.cachedQuery(object : Query() {
+        var data by target.get<Comp1>().removable()
+    })
+
 
     @OptIn(UnsafeAccessors::class)
     @Test
@@ -22,14 +25,12 @@ class RemovableAccessorTest: GearyTest() {
         }
         var count = 0
 
-        MyQueryRemovable().run {
-            forEach {
-                it.data shouldBe Comp1(1)
-                it.data = null
-                it.data shouldBe null
-                it.entity.has<Comp1>() shouldBe false
-                count++
-            }
+        createRemovableQuery().forEach {
+            data shouldBe Comp1(1)
+            data = null
+            data shouldBe null
+            target.entity.has<Comp1>() shouldBe false
+            count++
         }
         count shouldBe 1
     }

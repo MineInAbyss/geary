@@ -21,18 +21,18 @@ class RelationsWithDataAccessor<K, T>(
     val kind: ComponentId,
     val target: EntityId,
 ) : ReadOnlyAccessor<List<RelationWithData<K, T>>>, FamilyMatching {
-    override val family: Family = family { hasRelation(kind, target) }
+    override val family = family { hasRelation(kind, target) }
 
     private var cachedRelations = emptyList<Relation>()
     private var cachedArchetype: Archetype? = null
 
     override fun getValue(thisRef: AccessorOperations, property: KProperty<*>): List<RelationWithData<K, T>> {
-        val archetype = queriedEntity.currArchetype
+        val archetype = queriedEntity.archetype
         if (archetype != cachedArchetype) {
             cachedArchetype = archetype
             cachedRelations = archetype.getRelations(kind, target)
         }
 
-        return archetype.readRelationDataFor(queriedEntity.currRow, kind, target, cachedRelations) as List<RelationWithData<K, T>>
+        return archetype.readRelationDataFor(queriedEntity.row, kind, target, cachedRelations) as List<RelationWithData<K, T>>
     }
 }
