@@ -1,15 +1,10 @@
 package com.mineinabyss.geary.systems.query
 
-import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.datatypes.family.family
-import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import kotlin.reflect.KProperty
 
-abstract class Query(
-    val baseFamily: Family = family { }
-) : AccessorOperations() {
+abstract class Query : AccessorOperations() {
     val target: QueriedEntity = QueriedEntity()
 
     //TODO duplicate with EventQuery

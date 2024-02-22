@@ -4,15 +4,16 @@ import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.helpers.Comp1
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
+import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.systems.cachedQuery
 import com.mineinabyss.geary.systems.query.Query
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class UnsafeQueryAccessTests : GearyTest() {
-    class MyQuery : Query() {
-        var Pointer.data by get<Comp1>()
-    }
-
+    private fun registerQuery() = geary.cachedQuery(object : Query() {
+        var data by target.get<Comp1>()
+    })
 
     @Test
     fun `should allow data modify via accessor`() {
@@ -22,13 +23,11 @@ class UnsafeQueryAccessTests : GearyTest() {
         }
 
         var count = 0
-        MyQuery().run {
-            forEach {
-                it.data shouldBe Comp1(1)
-                it.data = Comp1(10)
-                it.data shouldBe Comp1(10)
-                count++
-            }
+        registerQuery().forEach {
+            data shouldBe Comp1(1)
+            data = Comp1(10)
+            data shouldBe Comp1(10)
+            count++
         }
         count shouldBe 1
     }
@@ -42,15 +41,13 @@ class UnsafeQueryAccessTests : GearyTest() {
         }
 
         var count = 0
-        MyQuery().run {
-            forEach {
-                it.data shouldBe Comp1(1)
-                it.data = Comp1(10)
-                it.entity.set("Other comp")
-                it.entity.add<Int>()
-                it.data shouldBe Comp1(10)
-                count++
-            }
+        registerQuery().forEach {
+            data shouldBe Comp1(1)
+            data = Comp1(10)
+            target.entity.set("Other comp")
+            target.entity.add<Int>()
+            data shouldBe Comp1(10)
+            count++
         }
         count shouldBe 1
     }
@@ -64,18 +61,15 @@ class UnsafeQueryAccessTests : GearyTest() {
         }
 
         var count = 0
-        MyQuery().run {
-            forEach {
-                it.data shouldBe Comp1(1)
-                it.entity.remove<Comp1>()
-                it.data = Comp1(10)
-                it.data shouldBe Comp1(10)
-                it.entity.set("Other comp")
-                it.data shouldBe Comp1(10)
-                count++
-            }
+        registerQuery().forEach {
+            data shouldBe Comp1(1)
+            target.entity.remove<Comp1>()
+            data = Comp1(10)
+            data shouldBe Comp1(10)
+            target.entity.set("Other comp")
+            data shouldBe Comp1(10)
+            count++
         }
         count shouldBe 1
     }
-
 }

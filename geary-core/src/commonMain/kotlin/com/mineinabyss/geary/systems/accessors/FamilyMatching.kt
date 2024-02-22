@@ -9,5 +9,5 @@ import com.mineinabyss.geary.systems.query.QueriedEntity
  */
 interface FamilyMatching {
     val queriedEntity: QueriedEntity
-    val family: Family?
+    val family: Family.Selector?
 }

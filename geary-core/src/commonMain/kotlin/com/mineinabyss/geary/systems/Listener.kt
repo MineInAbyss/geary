@@ -1,11 +1,11 @@
 package com.mineinabyss.geary.systems
 
 import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.systems.query.EventQuery
+import com.mineinabyss.geary.systems.query.ListenerQuery
 
-class Listener<T : EventQuery> internal constructor(
+class Listener<T : ListenerQuery> internal constructor(
     val query: T,
-    val families: EventQuery.Families,
+    val families: ListenerQuery.Families,
     val handle: T.() -> Unit,
 ) {
     fun run() = handle(query)

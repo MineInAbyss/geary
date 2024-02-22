@@ -1,12 +1,10 @@
 package com.mineinabyss.geary.events
 
-import com.mineinabyss.geary.datatypes.Records
-import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.Listener
-import com.mineinabyss.geary.systems.accessors.Pointers
+import com.mineinabyss.geary.systems.listener
+import com.mineinabyss.geary.systems.query.ListenerQuery
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
@@ -15,22 +13,16 @@ class SourceTargetEventTest : GearyTest() {
     class Attack
     data class Health(val amount: Int)
 
-    inner class Interaction : Listener() {
-        val Records.strength by get<Strength>().on(source)
-        var Records.health by get<Health>().on(target)
-
-        init {
-            event.mutableFamily.add(family { has<Attack>() })
-        }
-
-        override fun Pointers.handle() {
-            health = Health(health.amount - strength.amount)
-        }
+    fun interactionListener() = geary.listener(object : ListenerQuery() {
+        val strength by source.get<Strength>()
+        var health by target.get<Health>()
+    }.apply { event.match { has<Attack>() } }) {
+        health = Health(health.amount - strength.amount)
     }
 
     @Test
     fun interactions() {
-        geary.pipeline.addSystem(Interaction())
+        interactionListener()
         val source = entity {
             set(Strength(10))
         }

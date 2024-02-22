@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.systems.accessors.type
 
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityId
 import com.mineinabyss.geary.datatypes.Relation
@@ -17,13 +18,14 @@ class RelationsAccessor(
     val kind: ComponentId,
     val target: EntityId,
 ) : ReadOnlyAccessor<List<Relation>>, FamilyMatching {
-    override val family: Family = family { hasRelation(kind, target) }
+    override val family = family { hasRelation(kind, target) }
 
     private var cachedRelations = emptyList<Relation>()
     private var cachedArchetype: Archetype? = null
 
+    @OptIn(UnsafeAccessors::class)
     override fun getValue(thisRef: AccessorOperations, property: KProperty<*>): List<Relation> {
-        val archetype = queriedEntity.currArchetype
+        val archetype = queriedEntity.archetype
         if (archetype != cachedArchetype) {
             cachedArchetype = archetype
             cachedRelations = archetype.getRelations(kind, target)
