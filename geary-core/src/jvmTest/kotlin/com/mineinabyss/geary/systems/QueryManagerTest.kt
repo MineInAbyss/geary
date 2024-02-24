@@ -15,8 +15,8 @@ internal class QueryManagerTest : GearyTest() {
 
     var ran = 0
     fun myListener() = geary.listener(object : ListenerQuery() {
-        val testComponent by target.get<TestComponent>()
-    }) { ran++ }
+        val testComponent by get<TestComponent>()
+    }).exec { ran++ }
 
     @Test
     fun `empty event handler`() {

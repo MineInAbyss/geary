@@ -1,7 +1,11 @@
 package com.mineinabyss.geary.systems.query
 
+import com.mineinabyss.geary.components.events.ExtendedEntity
+import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.family.Family
+import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
+import com.mineinabyss.geary.systems.accessors.ReadOnlyAccessor
 import kotlin.reflect.KProperty
 
 abstract class ListenerQuery : QueriedEntity() {
@@ -31,12 +35,6 @@ abstract class ListenerQuery : QueriedEntity() {
     ): T {
         family?.let { queriedEntity.props[prop] = it }
         return this
-    }
-
-    /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
-    protected fun onExtend() {
-        event.match { onExtendedEntity() }
-//        return getRelations<ExtendedEntity?, Any?>().map { it.single().target.toGeary() }.on(event)
     }
 
     /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */

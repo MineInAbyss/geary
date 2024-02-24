@@ -1,20 +1,19 @@
 package com.mineinabyss.geary.prefabs.configuration.systems
 
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.configuration.components.RelationOnPrefab
-import com.mineinabyss.geary.systems.Listener
-import com.mineinabyss.geary.systems.accessors.Pointers
+import com.mineinabyss.geary.systems.listener
+import com.mineinabyss.geary.systems.query.ListenerQuery
 
 
-class ParseRelationOnPrefab : Listener() {
-    private var Pointers.relation by get<RelationOnPrefab>().removable().whenSetOnTarget()
-
-    override fun Pointers.handle() {
-        try {
-            val rel: RelationOnPrefab = relation!!
+fun createParseRelationOnPrefabListener() = geary.listener(object : ListenerQuery() {
+    var relation by get<RelationOnPrefab>().removable()
+    override fun ensure() = event.anySet(::relation)
+}).exec {
+    try {
+        val rel: RelationOnPrefab = relation!!
 //            entity.setRelation(relation.value, entity.parseEntity(relation.key).id)
-        } finally {
-            relation = null
-        }
+    } finally {
+        relation = null
     }
 }
-

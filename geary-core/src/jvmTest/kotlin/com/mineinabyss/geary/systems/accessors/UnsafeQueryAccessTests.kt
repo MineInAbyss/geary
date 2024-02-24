@@ -12,7 +12,7 @@ import kotlin.test.Test
 
 class UnsafeQueryAccessTests : GearyTest() {
     private fun registerQuery() = geary.cachedQuery(object : Query() {
-        var data by target.get<Comp1>()
+        var data by get<Comp1>()
     })
 
     @Test
@@ -44,8 +44,8 @@ class UnsafeQueryAccessTests : GearyTest() {
         registerQuery().forEach {
             data shouldBe Comp1(1)
             data = Comp1(10)
-            target.entity.set("Other comp")
-            target.entity.add<Int>()
+            entity.set("Other comp")
+            entity.add<Int>()
             data shouldBe Comp1(10)
             count++
         }
