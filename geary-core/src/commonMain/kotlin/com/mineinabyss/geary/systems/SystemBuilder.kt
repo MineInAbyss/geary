@@ -26,8 +26,12 @@ class SystemBuilder<T : Query>(val query: T, val pipeline: Pipeline) {
         return pipeline.addSystem(system)
     }
 
-//    fun onTickAll(run: CachedQueryRunner<T>.() -> Unit) {
-//        onTick = run
-//    }
-
+    fun execOnAll(run: CachedQueryRunner<T>.() -> Unit): TrackedSystem {
+        val system = System(
+            query,
+            run as CachedQueryRunner<*>.() -> Unit,
+            interval
+        )
+        return pipeline.addSystem(system)
+    }
 }

@@ -20,8 +20,7 @@ class FamilyMatchingTest : GearyTest() {
     @OptIn(UnsafeAccessors::class)
     val system = geary.system(object : Query() {
         val string by get<String>()
-        ensure // TODO
-//        { target.match { has<Int>() } }
+        override fun ensure() = this { has<Int>() }
     }).exec {
         string shouldBe entity.get<String>()
         entity.has<Int>() shouldBe true

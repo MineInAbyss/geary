@@ -29,7 +29,7 @@ class RemovableAccessorTest : GearyTest() {
             data shouldBe Comp1(1)
             data = null
             data shouldBe null
-            target.entity.has<Comp1>() shouldBe false
+            entity.has<Comp1>() shouldBe false
             count++
         }
         count shouldBe 1

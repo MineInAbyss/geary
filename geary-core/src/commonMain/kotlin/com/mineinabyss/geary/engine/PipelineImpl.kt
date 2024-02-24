@@ -5,6 +5,7 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.System
 import com.mineinabyss.geary.systems.TrackedSystem
+import com.mineinabyss.geary.systems.cachedQuery
 import com.mineinabyss.geary.systems.query.CachedQueryRunner
 import kotlin.time.Duration
 
