@@ -56,8 +56,8 @@ class RelationMatchingSystemTest : GearyTest() {
         var persistsCount = 0
         var instanceOfCount = 0
         val system = geary.system(object : Query() {
-            val persists by target.getRelationsWithData<Persists, Any>()
-            val instanceOf by target.getRelationsWithData<InstanceOf?, Any?>()
+            val persists by getRelationsWithData<Persists, Any>()
+            val instanceOf by getRelationsWithData<InstanceOf?, Any?>()
         }).exec {
             ran++
             persistsCount += persists.size
@@ -109,12 +109,10 @@ class RelationMatchingSystemTest : GearyTest() {
         }
 
         val system = geary.system(object : Query() {
-            val withData by target.getRelationsWithData<Persists, Any>()
-        }) {
-            exec {
-                withData.forAll { it.data shouldBe Persists() }
-                withData.forAll { it.targetData shouldBe "Test" }
-            }
+            val withData by getRelationsWithData<Persists, Any>()
+        }).exec {
+            withData.forAll { it.data shouldBe Persists() }
+            withData.forAll { it.targetData shouldBe "Test" }
         }
 
         system.runner.matchedArchetypes.shouldNotContain(entity.type.getArchetype())
