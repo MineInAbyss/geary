@@ -2,7 +2,6 @@ package com.mineinabyss.geary.autoscan
 
 import com.mineinabyss.geary.systems.GearySystem
 import com.mineinabyss.geary.systems.Listener
-import com.mineinabyss.geary.systems.RepeatingSystem
 import com.mineinabyss.geary.systems.query.GearyQuery
 
 /**
