@@ -23,12 +23,10 @@ class RelationMatchingSystemTest : GearyTest() {
         var ran = 0
         resetEngine()
         val system = geary.system(object : Query() {
-            val persists by target.getRelationsWithData<Persists, Any?>()
-        }) {
-            exec {
-                ran++
-                persists.forAll { it.data.shouldBeInstanceOf<Persists>() }
-            }
+            val persists by getRelationsWithData<Persists, Any?>()
+        }).exec {
+            ran++
+            persists.forAll { it.data.shouldBeInstanceOf<Persists>() }
         }
 
         val entity = entity {
@@ -60,15 +58,13 @@ class RelationMatchingSystemTest : GearyTest() {
         val system = geary.system(object : Query() {
             val persists by target.getRelationsWithData<Persists, Any>()
             val instanceOf by target.getRelationsWithData<InstanceOf?, Any?>()
-        }) {
-            exec {
-                ran++
-                persistsCount += persists.size
-                instanceOfCount += instanceOf.size
-                persists.forAll { it.data.shouldBeInstanceOf<Persists>() }
-                persists.forAll { it.targetData shouldNotBe null }
-                instanceOf.forAll { it.data shouldBe null }
-            }
+        }).exec {
+            ran++
+            persistsCount += persists.size
+            instanceOfCount += instanceOf.size
+            persists.forAll { it.data.shouldBeInstanceOf<Persists>() }
+            persists.forAll { it.targetData shouldNotBe null }
+            instanceOf.forAll { it.data shouldBe null }
         }
 
         entity {

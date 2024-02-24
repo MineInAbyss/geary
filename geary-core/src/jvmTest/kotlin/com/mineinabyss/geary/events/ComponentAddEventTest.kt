@@ -16,8 +16,8 @@ internal class ComponentAddEventTest : GearyTest() {
         val string by get<String>()
         val int by get<Int>()
         val double by get<Double>()
-    }.apply { onSet(::string, ::int, ::double) })
-        .exec { inc++ }
+        override fun ensure() = event.anySet(::string, ::int, ::double)
+    }).exec { inc++ }
 
     @Test
     fun componentAddEvent() {

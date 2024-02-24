@@ -1,12 +1,11 @@
 package com.mineinabyss.geary.systems.accessors
 
-import com.mineinabyss.geary.datatypes.Component
-import com.mineinabyss.geary.datatypes.HOLDS_DATA
-import com.mineinabyss.geary.datatypes.Relation
+import com.mineinabyss.geary.components.events.ExtendedEntity
+import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.family.MutableFamily
-import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
+import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.accessors.type.*
 import com.mineinabyss.geary.systems.query.EventQueriedEntity
 import com.mineinabyss.geary.systems.query.QueriedEntity
@@ -78,7 +77,7 @@ open class AccessorOperations {
         return RelationsWithDataAccessor(this, componentIdWithNullable<K>(), componentIdWithNullable<T>())
     }
 
-    protected fun QueriedEntity.match(init: MutableFamily.Selector.And.() -> Unit) {
+    protected operator fun QueriedEntity.invoke(init: MutableFamily.Selector.And.() -> Unit) {
         val family = com.mineinabyss.geary.datatypes.family.family(init)
         extraFamilies.add(family)
     }
@@ -86,7 +85,7 @@ open class AccessorOperations {
     /** Fires when an entity has a component of type [T] set or updated. */
     protected fun EventQueriedEntity.anySet(vararg props: KProperty<*>) {
         val names = props.map { it.name }.toSet()
-        match {
+        invoke {
             this@anySet.props.filterKeys { prop ->
                 prop.name in names
             }.values.flatMap {
@@ -96,5 +95,12 @@ open class AccessorOperations {
                 // TODO do we error here if not, this isn't really typesafe?
             }
         }
+    }
+
+
+    /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
+    protected fun EventQueriedEntity.extendedEntity(): ReadOnlyAccessor<Entity> {
+        invoke { onExtendedEntity() }
+        return getRelations<ExtendedEntity?, Any?>().map { it.single().target.toGeary() }
     }
 }

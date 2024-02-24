@@ -11,8 +11,9 @@ import kotlin.test.Test
 class SimpleComponentAddListenerTest : GearyTest() {
     var called = 0
     fun myListener() = geary.listener(object : ListenerQuery() {
-        val data by target.get<Int>()
-    }.apply { onSet(::data) }) { called += 1 }
+        val data by get<Int>()
+        override fun ensure() = event.anySet(::data)
+    }).exec { called += 1 }
 
     @Test
     fun `simple event listener`() {

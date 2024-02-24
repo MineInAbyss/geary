@@ -9,7 +9,7 @@ import kotlin.test.Test
 
 class SimpleQueryTest : GearyTest() {
     class MyQuery : Query() {
-        val int by target.get<Int>()
+        val int by get<Int>()
     }
 
     @Test

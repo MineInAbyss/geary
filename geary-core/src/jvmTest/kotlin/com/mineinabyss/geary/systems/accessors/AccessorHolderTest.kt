@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test
 
 internal class AccessorHolderTest : GearyTest() {
     fun fancyQuery() = object : Query() {
-        val default by target.get<String>().orDefault { "empty!" }
-        val mapped by target.get<Int>().map { it.toString() }
+        val default by get<String>().orDefault { "empty!" }
+        val mapped by get<Int>().map { it.toString() }
     }
 
     @ExperimentalCoroutinesApi
