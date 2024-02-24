@@ -63,10 +63,10 @@ class UnsafeQueryAccessTests : GearyTest() {
         var count = 0
         registerQuery().forEach {
             data shouldBe Comp1(1)
-            target.entity.remove<Comp1>()
+            entity.remove<Comp1>()
             data = Comp1(10)
             data shouldBe Comp1(10)
-            target.entity.set("Other comp")
+            entity.set("Other comp")
             data shouldBe Comp1(10)
             count++
         }
