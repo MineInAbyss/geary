@@ -12,7 +12,7 @@ import kotlin.test.Test
 
 class RemovableAccessorTest : GearyTest() {
     private fun createRemovableQuery() = geary.cachedQuery(object : Query() {
-        var data by target.get<Comp1>().removable()
+        var data by get<Comp1>().removable()
     })
 
 

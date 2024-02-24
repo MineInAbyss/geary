@@ -19,12 +19,12 @@ class FamilyMatchingTest : GearyTest() {
 
     @OptIn(UnsafeAccessors::class)
     val system = geary.system(object : Query() {
-        val string by target.get<String>()
-    }.apply { target.match { has<Int>() } }) {
-        exec {
-            string shouldBe target.entity.get<String>()
-            target.entity.has<Int>() shouldBe true
-        }
+        val string by get<String>()
+        ensure // TODO
+//        { target.match { has<Int>() } }
+    }).exec {
+        string shouldBe entity.get<String>()
+        entity.has<Int>() shouldBe true
     }
 
     val root = archetypes.archetypeProvider.rootArchetype

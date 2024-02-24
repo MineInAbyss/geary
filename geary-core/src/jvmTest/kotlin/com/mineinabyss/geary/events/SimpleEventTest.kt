@@ -14,18 +14,14 @@ class SimpleEventTest : GearyTest() {
     var called = 0
 
     fun myListener() = geary.listener(object : ListenerQuery() {
-        val data by target.get<Int>()
+        val data by get<Int>()
         val myEvent by event.get<MyEvent>()
-    }) {
-        called++
-    }
+    }).exec { called++ }
 
     fun sourceOnlyListener() = geary.listener(object : ListenerQuery() {
         val data by source.get<Int>()
         val myEvent by event.get<MyEvent>()
-    }) {
-        called++
-    }
+    }).exec { called++ }
 
     @Test
     fun `simple set listener`() {

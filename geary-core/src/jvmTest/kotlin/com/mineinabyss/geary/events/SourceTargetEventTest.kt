@@ -15,8 +15,9 @@ class SourceTargetEventTest : GearyTest() {
 
     fun interactionListener() = geary.listener(object : ListenerQuery() {
         val strength by source.get<Strength>()
-        var health by target.get<Health>()
-    }.apply { event.match { has<Attack>() } }) {
+        var health by get<Health>()
+        override fun ensure() = event { has<Attack>()}
+    }).exec {
         health = Health(health.amount - strength.amount)
     }
 
