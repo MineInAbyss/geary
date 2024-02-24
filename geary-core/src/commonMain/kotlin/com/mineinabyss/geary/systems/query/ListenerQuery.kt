@@ -46,4 +46,20 @@ abstract class ListenerQuery : QueriedEntity() {
     protected fun onFirstSet(vararg props: KProperty<*>) {
 
     }
+
+
+    /** Fires when an entity has a component of type [T] set or updated. */
+    protected fun EventQueriedEntity.anySet(vararg props: KProperty<*>) {
+        val names = props.map { it.name }.toSet()
+        invoke {
+            this@ListenerQuery.props.filterKeys { prop ->
+                prop.name in names
+            }.values.flatMap {
+                it.components
+            }.forEach { component ->
+                onSet(component)
+                // TODO do we error here if not, this isn't really typesafe?
+            }
+        }
+    }
 }

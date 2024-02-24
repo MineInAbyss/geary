@@ -19,6 +19,7 @@ class ListenerBuilder<T : ListenerQuery>(
     val pipeline: Pipeline,
 ) {
     fun exec(handle: T.() -> Unit): Listener<*> {
+        query.initialize()
         val listener = Listener(
             query,
             query.buildFamilies(),
