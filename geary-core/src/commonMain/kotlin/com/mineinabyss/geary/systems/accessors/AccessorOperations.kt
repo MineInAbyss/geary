@@ -9,7 +9,6 @@ import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.accessors.type.*
 import com.mineinabyss.geary.systems.query.EventQueriedEntity
 import com.mineinabyss.geary.systems.query.QueriedEntity
-import kotlin.reflect.KProperty
 
 open class AccessorOperations {
     /** Accesses a component, ensuring it is on the entity. */
@@ -18,7 +17,7 @@ open class AccessorOperations {
     }
 
     /** Accesses a data stored in a relation with kind [K] and target type [T], ensuring it is on the entity. */
-    protected inline fun <reified K: Any, reified T : Any> QueriedEntity.getRelation(): ComponentAccessor<T> {
+    protected inline fun <reified K : Any, reified T : Any> QueriedEntity.getRelation(): ComponentAccessor<T> {
         return NonNullComponentAccessor(this, Relation.of<K, T>().id)
     }
 
@@ -26,7 +25,7 @@ open class AccessorOperations {
      * Accesses a component, allows removing it by setting to null.
      * As a result, the type is nullable since it may be removed during system runtime.
      */
-    fun <T: Any> ComponentAccessor<T>.removable(): RemovableComponentAccessor<T> {
+    fun <T : Any> ComponentAccessor<T>.removable(): RemovableComponentAccessor<T> {
         return RemovableComponentAccessor(queriedEntity, id)
     }
 
@@ -40,19 +39,13 @@ open class AccessorOperations {
 
     /** Maps an accessor, will recalculate on every call. */
     fun <T, U, A : ReadOnlyAccessor<T>> A.map(mapping: (T) -> U): ReadOnlyAccessor<U> {
-        return object : ReadOnlyAccessor<U>, FamilyMatching {
-            override val queriedEntity: QueriedEntity = TODO()
-            override val family = (this@map as? FamilyMatching)?.family
-
-            override fun getValue(thisRef: AccessorOperations, property: KProperty<*>): U {
-                val value = this@map.getValue(thisRef, property)
-                return mapping(value)
-            }
-        }
+        return if (this is FamilyMatching)
+            object : ReadOnlyAccessor<U> by MappedAccessor(this, mapping), FamilyMatching by this {}
+        else MappedAccessor(this, mapping)
     }
 
     /** Accesses a component or `null` if the entity doesn't have it. */
-    fun <T: Any> ComponentAccessor<T>.orNull(): ComponentOrDefaultAccessor<T?> {
+    fun <T : Any> ComponentAccessor<T>.orNull(): ComponentOrDefaultAccessor<T?> {
         return orDefault { null }
     }
 
@@ -81,22 +74,6 @@ open class AccessorOperations {
         val family = com.mineinabyss.geary.datatypes.family.family(init)
         extraFamilies.add(family)
     }
-
-    /** Fires when an entity has a component of type [T] set or updated. */
-    protected fun EventQueriedEntity.anySet(vararg props: KProperty<*>) {
-        val names = props.map { it.name }.toSet()
-        invoke {
-            this@anySet.props.filterKeys { prop ->
-                prop.name in names
-            }.values.flatMap {
-                it.components
-            }.forEach { component ->
-                onSet(component)
-                // TODO do we error here if not, this isn't really typesafe?
-            }
-        }
-    }
-
 
     /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
     protected fun EventQueriedEntity.extendedEntity(): ReadOnlyAccessor<Entity> {
