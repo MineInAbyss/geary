@@ -7,6 +7,7 @@ import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.systems.Listener
+import com.mineinabyss.geary.systems.query.QueriedEntity
 
 class ArchetypeEventRunner : EventRunner {
     private val records: TypeMap get() = archetypes.records
@@ -20,20 +21,17 @@ class ArchetypeEventRunner : EventRunner {
         val targetArc = target.archetype
         val sourceArc = source?.archetype
 
+        fun QueriedEntity.reset(record: Record) {
+            originalArchetype = record.archetype
+            originalRow = record.row
+            delegated = false
+        }
+
         fun callListener(listener: Listener<*>) {
             val query = listener.query
-            //TODO function extract
-            query.event.delegated = false
-            query.event.originalArchetype = event.archetype
-            query.event.originalRow = event.row
-            query.delegated = false
-            query.originalArchetype = target.archetype
-            query.originalRow = target.row
-            if (source != null) {
-                query.source.delegated = false
-                query.source.originalArchetype = source.archetype
-                query.source.originalRow = source.row
-            }
+            query.event.reset(event)
+            query.reset(target)
+            source?.let { query.source.reset(it) }
             listener.run()
         }
 

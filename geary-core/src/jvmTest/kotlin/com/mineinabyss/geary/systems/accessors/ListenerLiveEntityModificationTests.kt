@@ -5,8 +5,8 @@ import com.mineinabyss.geary.helpers.Comp1
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.cachedQuery
-import com.mineinabyss.geary.systems.listener
+import com.mineinabyss.geary.systems.builders.cachedQuery
+import com.mineinabyss.geary.systems.builders.listener
 import com.mineinabyss.geary.systems.query.ListenerQuery
 import com.mineinabyss.geary.systems.query.Query
 import io.kotest.matchers.shouldBe
