@@ -6,7 +6,7 @@ import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.query.Query
-import com.mineinabyss.geary.systems.system
+import com.mineinabyss.geary.systems.builders.system
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Scope
 import org.openjdk.jmh.annotations.Setup

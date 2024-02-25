@@ -6,6 +6,7 @@ import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.systems.builders.system
 import com.mineinabyss.geary.systems.query.Query
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll

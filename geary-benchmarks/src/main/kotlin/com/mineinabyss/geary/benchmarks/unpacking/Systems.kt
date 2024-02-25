@@ -2,7 +2,7 @@ package com.mineinabyss.geary.benchmarks.unpacking
 
 import com.mineinabyss.geary.benchmarks.helpers.*
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.cachedQuery
+import com.mineinabyss.geary.systems.builders.cachedQuery
 import com.mineinabyss.geary.systems.query.GearyQuery
 
 class Query1 : GearyQuery() {
