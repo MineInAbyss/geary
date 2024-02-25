@@ -13,24 +13,22 @@ import com.mineinabyss.geary.systems.listener
 import com.mineinabyss.geary.systems.query.ListenerQuery
 
 
-@OptIn(UnsafeAccessors::class)
 fun createParseChildOnPrefabListener() = geary.listener(object : ListenerQuery() {
-    var child by get<ChildOnPrefab>().removable()
+    val child by get<ChildOnPrefab>()
     override fun ensure() = event.anySet(::child)
 }).exec {
     entity {
         addParent(entity)
-        setAll(child!!.components)
+        setAll(child.components)
     }
-    child = null
+    entity.remove<ChildOnPrefab>()
 }
 
-@OptIn(UnsafeAccessors::class)
 fun createParseChildrenOnPrefabListener() = geary.listener(object : ListenerQuery() {
-    var children by get<ChildrenOnPrefab>().removable()
+    var children by get<ChildrenOnPrefab>()
     override fun ensure() = event.anySet(::children)
 }).exec {
-    children!!.nameToComponents.forEach { (name, components) ->
+    children.nameToComponents.forEach { (name, components) ->
         entity {
             set(EntityName(name))
             set(Prefab())
@@ -39,5 +37,5 @@ fun createParseChildrenOnPrefabListener() = geary.listener(object : ListenerQuer
             setAll(components)
         }
     }
-    children = null
+    entity.remove<ChildrenOnPrefab>()
 }

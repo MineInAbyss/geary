@@ -7,18 +7,28 @@ import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
-import kotlin.reflect.KProperty
+import com.mineinabyss.geary.systems.accessors.FamilyMatching
 
-open class EventQueriedEntity: QueriedEntity()
-open class QueriedEntity: AccessorOperations() {
+open class EventQueriedEntity : QueriedEntity(cacheAccessors = false)
+open class QueriedEntity(
+    override val cacheAccessors: Boolean
+) : AccessorOperations() {
+
     internal val extraFamilies: MutableList<Family> = mutableListOf()
-    internal val props: MutableMap<KProperty<*>, Family.Selector> = mutableMapOf()
+
+    internal val props: MutableMap<String, Accessor> = mutableMapOf()
+
+    @PublishedApi
+    internal val accessors: MutableSet<Accessor> = mutableSetOf()
 
     fun buildFamily(): Family.Selector.And = family {
-        for (family in props.values.union(extraFamilies)) {
-            add(family)
-        }
+        accessors
+            .filterIsInstance<FamilyMatching>()
+            .mapNotNull { it.family }
+            .union(extraFamilies)
+            .forEach(::add)
     }
 
     @PublishedApi
@@ -42,7 +52,7 @@ open class QueriedEntity: AccessorOperations() {
     }
 
     @UnsafeAccessors
-    val entity: Entity
+    val unsafeEntity: Entity
         get() {
             val entity = archetype.getEntity(row)
             if (!delegated) {

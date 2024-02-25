@@ -1,16 +1,15 @@
 package com.mineinabyss.geary.systems.query
 
-import com.mineinabyss.geary.components.events.ExtendedEntity
-import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.helpers.toGeary
+import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
-import com.mineinabyss.geary.systems.accessors.ReadOnlyAccessor
 import kotlin.reflect.KProperty
 
-abstract class ListenerQuery : QueriedEntity() {
+abstract class ListenerQuery : Query() {
+    override val cacheAccessors: Boolean = false
     val event: EventQueriedEntity = EventQueriedEntity()
-    val source: QueriedEntity = QueriedEntity()
+    val source: QueriedEntity = QueriedEntity(false)
 
     data class Families(
         val event: Family.Selector.And,
@@ -24,19 +23,6 @@ abstract class ListenerQuery : QueriedEntity() {
         source = source.buildFamily(),
     )
 
-    protected open fun ensure() {}
-
-    internal fun initialize() = ensure()
-
-    /** Automatically matches families for any accessor that's supposed to match a family. */
-    operator fun <T : FamilyMatching> T.provideDelegate(
-        thisRef: Any,
-        prop: KProperty<*>
-    ): T {
-        family?.let { queriedEntity.props[prop] = it }
-        return this
-    }
-
     /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
     protected fun onAdd(vararg props: KProperty<*>) {
 
@@ -47,19 +33,25 @@ abstract class ListenerQuery : QueriedEntity() {
 
     }
 
+    @OptIn(UnsafeAccessors::class)
+    val QueriedEntity.entity get() = unsafeEntity
+
+    protected fun EventQueriedEntity.anySet(vararg props: KProperty<*>) {
+        anySet(*props.mapNotNull { this@ListenerQuery.props[it.name] }.toTypedArray())
+    }
 
     /** Fires when an entity has a component of type [T] set or updated. */
-    protected fun EventQueriedEntity.anySet(vararg props: KProperty<*>) {
-        val names = props.map { it.name }.toSet()
+    protected fun EventQueriedEntity.anySet(vararg props: Accessor) {
         invoke {
-            this@ListenerQuery.props.filterKeys { prop ->
-                prop.name in names
-            }.values.flatMap {
-                it.components
-            }.forEach { component ->
-                onSet(component)
-                // TODO do we error here if not, this isn't really typesafe?
-            }
+            this@ListenerQuery.accessors.intersect(props.toSet())
+                .asSequence()
+                .filterIsInstance<FamilyMatching>()
+                .mapNotNull { it.family }
+                .flatMap { it.components }
+                .forEach { component ->
+                    onSet(component)
+                    // TODO do we error here if not, this isn't really typesafe?
+                }
         }
     }
 }

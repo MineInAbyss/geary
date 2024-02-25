@@ -47,20 +47,25 @@ class Unpack6Benchmark {
         }
     }
 
-    //TODO currently no way to avoid delegates
-//    @Benchmark
-//    fun unpack6of6CompNoDelegate() {
-//        systemOf6WithoutDelegate().run {
-//            forEach {
-//                comp1
-//                comp2
-//                comp3
-//                comp4
-//                comp5
-//                comp6
-//            }
-//        }
-//    }
+    @Benchmark
+    fun unpack1of6CompNoDelegate() {
+        systemOf6WithoutDelegate().forEach {
+            comp1()
+        }
+    }
+
+    // This test gives ridiculous numbers, I think kotlin might just be optimizing some calls away that it can't with a delegate?
+    @Benchmark
+    fun unpack6of6CompNoDelegate() {
+        systemOf6WithoutDelegate().forEach {
+            comp1()
+            comp2()
+            comp3()
+            comp4()
+            comp5()
+            comp6()
+        }
+    }
 }
 
 fun main() {
@@ -68,6 +73,7 @@ fun main() {
         setUp()
         repeat(100) {
             unpack6of6Comp()
+//            unpack6of6CompNoDelegate()
         }
     }
 }

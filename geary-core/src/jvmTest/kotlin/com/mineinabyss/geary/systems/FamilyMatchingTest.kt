@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
@@ -17,12 +16,11 @@ class FamilyMatchingTest : GearyTest() {
     val stringId = componentId<String>() or HOLDS_DATA
     val intId = componentId<Int>()
 
-    @OptIn(UnsafeAccessors::class)
     val system = geary.system(object : Query() {
         val string by get<String>()
         override fun ensure() = this { has<Int>() }
-    }).exec {
-        string shouldBe entity.get<String>()
+    }).defer { string }.onFinish { data, entity ->
+        data shouldBe entity.get<String>()
         entity.has<Int>() shouldBe true
     }
 

@@ -17,12 +17,19 @@ class VelocitySystemBenchmark {
     data class Velocity(val x: Float, val y: Float)
     data class Position(var x: Float, var y: Float)
 
-    val velocitySystem = geary.system(object : Query() {
+    fun createVelocitySystem() = geary.system(object : Query() {
         val velocity by get<Velocity>()
         var position by get<Position>()
     }).exec {
         position.x += velocity.x
         position.y += velocity.y
+    }
+    fun createVelocitySystemNoDelegates() = geary.system(object : Query() {
+        val velocity = get<Velocity>()
+        var position = get<Position>()
+    }).exec {
+        position().x += velocity().x
+        position().y += velocity().y
     }
 
     val velocities = Array(tenMil) { Velocity(it.toFloat() / oneMil, it.toFloat() / oneMil) }
@@ -41,8 +48,8 @@ class VelocitySystemBenchmark {
     }
 
     @Benchmark
-    fun velocitySystem() {
-        velocitySystem.tick()
+    fun velocitySystemNoDelegates() {
+        createVelocitySystemNoDelegates().tick()
     }
 
     // Theoretical performance with zero ECS overhead
@@ -55,6 +62,11 @@ class VelocitySystemBenchmark {
             i++
         }
     }
+
+    @Benchmark
+    fun velocitySystem() {
+        createVelocitySystem().tick()
+    }
 }
 
 fun main() {
@@ -62,7 +74,7 @@ fun main() {
         setUp()
 
         repeat(400) {
-//            velocitySystem()
+            createVelocitySystem()
         }
     }
 }

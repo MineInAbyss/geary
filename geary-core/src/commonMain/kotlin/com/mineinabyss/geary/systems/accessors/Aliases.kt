@@ -1,8 +1,18 @@
 package com.mineinabyss.geary.systems.accessors
 
+import com.mineinabyss.geary.systems.query.QueriedEntity
 import com.mineinabyss.geary.systems.query.Query
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 
-typealias ReadOnlyAccessor<T> = ReadOnlyProperty<AccessorOperations, T>
-typealias ReadWriteAccessor<T> = ReadWriteProperty<AccessorOperations, T>
+interface Accessor {
+    val originalAccessor: Accessor?
+    val queriedEntity: QueriedEntity
+}
+interface ReadOnlyAccessor<T> : Accessor, ReadOnlyProperty<Query, T> {
+
+}
+
+interface ReadWriteAccessor<T> : ReadOnlyAccessor<T>, ReadWriteProperty<Query, T> {
+
+}

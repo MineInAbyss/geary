@@ -17,18 +17,17 @@ class SimpleQueryTest : GearyTest() {
         val query = geary.queryManager.trackQuery(MyQuery())
         repeat(10) {
             entity {
-                set(1)
+                set(it)
             }
             entity {
                 set("Not this!")
             }
         }
 
-        var count = 0
+        val nums = mutableListOf<Int>()
         query.forEach {
-            int shouldBe 1
-            count++
+            nums.add(int)
         }
-        count shouldBe 10
+        nums.sorted() shouldBe (0..9).toList()
     }
 }

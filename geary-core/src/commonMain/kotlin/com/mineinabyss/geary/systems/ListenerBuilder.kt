@@ -6,6 +6,7 @@ import com.mineinabyss.geary.components.events.FailedCheck
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Pipeline
 import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.systems.query.CachedQueryRunner
 import com.mineinabyss.geary.systems.query.ListenerQuery
 
 fun <T : ListenerQuery> GearyModule.listener(

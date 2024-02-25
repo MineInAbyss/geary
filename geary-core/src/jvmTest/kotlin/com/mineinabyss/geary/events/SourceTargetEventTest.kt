@@ -23,6 +23,7 @@ class SourceTargetEventTest : GearyTest() {
 
     @Test
     fun interactions() {
+        resetEngine()
         interactionListener()
         val source = entity {
             set(Strength(10))
