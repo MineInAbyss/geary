@@ -5,9 +5,6 @@ import com.mineinabyss.geary.benchmarks.helpers.tenMil
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.cachedQuery
-import com.mineinabyss.geary.systems.query.GearyQuery
-import com.mineinabyss.geary.systems.system
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Scope
 import org.openjdk.jmh.annotations.Setup

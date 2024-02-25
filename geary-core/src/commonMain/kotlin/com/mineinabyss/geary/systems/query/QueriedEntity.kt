@@ -46,11 +46,6 @@ open class QueriedEntity(
     @PublishedApi
     internal var delegated = false
 
-    internal fun delegateTo(record: Record) {
-        delegated = true
-        delegate = record
-    }
-
     @UnsafeAccessors
     val unsafeEntity: Entity
         get() {

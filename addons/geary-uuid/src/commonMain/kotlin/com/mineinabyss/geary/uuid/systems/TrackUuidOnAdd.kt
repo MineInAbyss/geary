@@ -4,7 +4,7 @@ import com.benasher44.uuid.Uuid
 import com.benasher44.uuid.uuid4
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.listener
+import com.mineinabyss.geary.systems.builders.listener
 import com.mineinabyss.geary.systems.query.ListenerQuery
 import com.mineinabyss.geary.uuid.components.RegenerateUUIDOnClash
 import com.mineinabyss.geary.uuid.uuid2Geary

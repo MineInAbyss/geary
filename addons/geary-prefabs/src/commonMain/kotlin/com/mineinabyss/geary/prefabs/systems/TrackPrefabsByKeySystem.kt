@@ -5,7 +5,7 @@ import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.prefabs
-import com.mineinabyss.geary.systems.listener
+import com.mineinabyss.geary.systems.builders.listener
 import com.mineinabyss.geary.systems.query.ListenerQuery
 
 @OptIn(UnsafeAccessors::class)

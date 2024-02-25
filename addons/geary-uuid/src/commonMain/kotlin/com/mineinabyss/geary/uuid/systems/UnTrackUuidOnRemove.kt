@@ -3,7 +3,7 @@ package com.mineinabyss.geary.uuid.systems
 import com.benasher44.uuid.Uuid
 import com.mineinabyss.geary.components.events.EntityRemoved
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.listener
+import com.mineinabyss.geary.systems.builders.listener
 import com.mineinabyss.geary.systems.query.ListenerQuery
 import com.mineinabyss.geary.uuid.uuid2Geary
 
