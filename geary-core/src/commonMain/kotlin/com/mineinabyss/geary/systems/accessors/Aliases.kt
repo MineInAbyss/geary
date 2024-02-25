@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.systems.accessors
 
+import com.mineinabyss.geary.engine.archetypes.Archetype
+import com.mineinabyss.geary.systems.query.CachedQueryRunner
 import com.mineinabyss.geary.systems.query.QueriedEntity
 import com.mineinabyss.geary.systems.query.Query
 import kotlin.properties.ReadOnlyProperty
