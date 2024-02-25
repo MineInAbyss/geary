@@ -10,38 +10,51 @@ import com.mineinabyss.geary.systems.accessors.type.*
 import com.mineinabyss.geary.systems.query.EventQueriedEntity
 import com.mineinabyss.geary.systems.query.QueriedEntity
 
-open class AccessorOperations {
+abstract class AccessorOperations {
+    abstract val cacheAccessors: Boolean
+
     /** Accesses a component, ensuring it is on the entity. */
     protected inline fun <reified T : Any> QueriedEntity.get(): ComponentAccessor<T> {
-        return NonNullComponentAccessor(this, componentId<T>().withRole(HOLDS_DATA))
+        return addAccessor { NonNullComponentAccessor(cacheAccessors, null, this, componentId<T>().withRole(HOLDS_DATA)) }
     }
 
     /** Accesses a data stored in a relation with kind [K] and target type [T], ensuring it is on the entity. */
     protected inline fun <reified K : Any, reified T : Any> QueriedEntity.getRelation(): ComponentAccessor<T> {
-        return NonNullComponentAccessor(this, Relation.of<K, T>().id)
+        return addAccessor { NonNullComponentAccessor(cacheAccessors, null, this, Relation.of<K, T>().id) }
+    }
+
+    inline fun <T : Accessor> QueriedEntity.addAccessor(create: () -> T): T {
+        val accessor = create()
+        accessors.add(accessor)
+        if (accessor.originalAccessor != null) accessors.remove(accessor.originalAccessor)
+        return accessor
     }
 
     /**
      * Accesses a component, allows removing it by setting to null.
      * As a result, the type is nullable since it may be removed during system runtime.
      */
-    fun <T : Any> ComponentAccessor<T>.removable(): RemovableComponentAccessor<T> {
-        return RemovableComponentAccessor(queriedEntity, id)
-    }
+//    @Deprecated("Removing")
+//    fun <T : Any> ComponentAccessor<T>.removable(): RemovableComponentAccessor<T> {
+//        return queriedEntity.addAccessor { RemovableComponentAccessor(this, queriedEntity, id) }
+//    }
 
     /**
      * Accesses a component or provides a [default] if the entity doesn't have it.
      * Default gets recalculated on every call to the accessor.
      */
     fun <T> ComponentAccessor<T & Any>.orDefault(default: () -> T): ComponentOrDefaultAccessor<T> {
-        return ComponentOrDefaultAccessor(id, default)
+        return queriedEntity.addAccessor { ComponentOrDefaultAccessor(this, queriedEntity, id, default) }
     }
 
     /** Maps an accessor, will recalculate on every call. */
     fun <T, U, A : ReadOnlyAccessor<T>> A.map(mapping: (T) -> U): ReadOnlyAccessor<U> {
-        return if (this is FamilyMatching)
-            object : ReadOnlyAccessor<U> by MappedAccessor(this, mapping), FamilyMatching by this {}
-        else MappedAccessor(this, mapping)
+        return queriedEntity.addAccessor {
+            when (this) {
+                is FamilyMatching -> object : ReadOnlyAccessor<U> by MappedAccessor(this, mapping), FamilyMatching by this {}
+                else -> MappedAccessor(this, mapping)
+            }
+        }
     }
 
     /** Accesses a component or `null` if the entity doesn't have it. */
@@ -62,12 +75,12 @@ open class AccessorOperations {
      * - Note: nullability rules are still upheld with [Any].
      */
     protected inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelations(): RelationsAccessor {
-        return RelationsAccessor(this, componentIdWithNullable<K>(), componentIdWithNullable<T>())
+        return addAccessor { RelationsAccessor(null, this, componentIdWithNullable<K>(), componentIdWithNullable<T>()) }
     }
 
     /** @see getRelations */
     protected inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelationsWithData(): RelationsWithDataAccessor<K, T> {
-        return RelationsWithDataAccessor(this, componentIdWithNullable<K>(), componentIdWithNullable<T>())
+        return addAccessor { RelationsWithDataAccessor(null, this, componentIdWithNullable<K>(), componentIdWithNullable<T>()) }
     }
 
     protected operator fun QueriedEntity.invoke(init: MutableFamily.Selector.And.() -> Unit) {

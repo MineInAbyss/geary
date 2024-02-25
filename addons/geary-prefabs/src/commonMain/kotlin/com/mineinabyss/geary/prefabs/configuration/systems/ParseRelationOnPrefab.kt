@@ -7,13 +7,14 @@ import com.mineinabyss.geary.systems.query.ListenerQuery
 
 
 fun createParseRelationOnPrefabListener() = geary.listener(object : ListenerQuery() {
-    var relation by get<RelationOnPrefab>().removable()
+    var relation by get<RelationOnPrefab>()
     override fun ensure() = event.anySet(::relation)
 }).exec {
     try {
-        val rel: RelationOnPrefab = relation!!
+        //TODO
+        val rel: RelationOnPrefab = relation
 //            entity.setRelation(relation.value, entity.parseEntity(relation.key).id)
     } finally {
-        relation = null
+        entity.remove<RelationOnPrefab>()
     }
 }

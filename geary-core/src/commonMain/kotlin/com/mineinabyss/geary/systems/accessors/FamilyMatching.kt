@@ -8,6 +8,5 @@ import com.mineinabyss.geary.systems.query.QueriedEntity
  * (ex a component accessor needs the component present on the entity.)
  */
 interface FamilyMatching {
-    val queriedEntity: QueriedEntity
     val family: Family.Selector?
 }
