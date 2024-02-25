@@ -15,7 +15,9 @@ abstract class AccessorOperations {
 
     /** Accesses a component, ensuring it is on the entity. */
     protected inline fun <reified T : Any> QueriedEntity.get(): ComponentAccessor<T> {
-        return addAccessor { NonNullComponentAccessor(cacheAccessors, null, this, componentId<T>().withRole(HOLDS_DATA)) }
+        return addAccessor {
+            NonNullComponentAccessor(cacheAccessors, null, this, componentId<T>().withRole(HOLDS_DATA))
+        }
     }
 
     /** Accesses a data stored in a relation with kind [K] and target type [T], ensuring it is on the entity. */
@@ -26,6 +28,7 @@ abstract class AccessorOperations {
     inline fun <T : Accessor> QueriedEntity.addAccessor(create: () -> T): T {
         val accessor = create()
         accessors.add(accessor)
+        if (accessor is ComponentAccessor<*>) cachingAccessors.add(accessor)
         if (accessor.originalAccessor != null) accessors.remove(accessor.originalAccessor)
         return accessor
     }
@@ -51,7 +54,9 @@ abstract class AccessorOperations {
     fun <T, U, A : ReadOnlyAccessor<T>> A.map(mapping: (T) -> U): ReadOnlyAccessor<U> {
         return queriedEntity.addAccessor {
             when (this) {
-                is FamilyMatching -> object : ReadOnlyAccessor<U> by MappedAccessor(this, mapping), FamilyMatching by this {}
+                is FamilyMatching -> object : ReadOnlyAccessor<U> by MappedAccessor(this, mapping),
+                    FamilyMatching by this {}
+
                 else -> MappedAccessor(this, mapping)
             }
         }
@@ -80,7 +85,14 @@ abstract class AccessorOperations {
 
     /** @see getRelations */
     protected inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelationsWithData(): RelationsWithDataAccessor<K, T> {
-        return addAccessor { RelationsWithDataAccessor(null, this, componentIdWithNullable<K>(), componentIdWithNullable<T>()) }
+        return addAccessor {
+            RelationsWithDataAccessor(
+                null,
+                this,
+                componentIdWithNullable<K>(),
+                componentIdWithNullable<T>()
+            )
+        }
     }
 
     protected operator fun QueriedEntity.invoke(init: MutableFamily.Selector.And.() -> Unit) {

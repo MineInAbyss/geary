@@ -23,8 +23,7 @@ abstract class ComponentAccessor<T>(
     protected var cachedIndex = -1
     protected var cachedDataArray: MutableList<T> = mutableListOf()
 
-    @PublishedApi
-    internal fun updateCache(archetype: Archetype) {
+    fun updateCache(archetype: Archetype) {
         cachedIndex = archetype.indexOf(id)
         if (cachedIndex != -1) cachedDataArray = archetype.componentData[cachedIndex] as MutableList<T>
     }

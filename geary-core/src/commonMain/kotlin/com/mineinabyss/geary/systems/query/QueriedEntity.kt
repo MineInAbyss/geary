@@ -10,6 +10,7 @@ import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
+import com.mineinabyss.geary.systems.accessors.type.ComponentAccessor
 
 open class EventQueriedEntity : QueriedEntity(cacheAccessors = false)
 open class QueriedEntity(
@@ -22,6 +23,9 @@ open class QueriedEntity(
 
     @PublishedApi
     internal val accessors: MutableSet<Accessor> = mutableSetOf()
+
+    @PublishedApi
+    internal val cachingAccessors: MutableSet<ComponentAccessor<*>> = mutableSetOf()
 
     fun buildFamily(): Family.Selector.And = family {
         accessors
