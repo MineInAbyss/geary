@@ -9,13 +9,7 @@ import com.mineinabyss.geary.systems.accessors.type.ComponentAccessor
 class CachedQueryRunner<T : Query> internal constructor(val query: T) {
     val matchedArchetypes: MutableList<Archetype> = mutableListOf()
     val family = query.buildFamily()
-    val accessors = query.accessors.toTypedArray().filterIsInstance<ComponentAccessor<*>>()
-
-    inline fun <R> toList(crossinline map: T.() -> R): List<R> {
-        val list = mutableListOf<R>()
-        forEach { list.add(this.map()) }
-        return list
-    }
+    val cachingAccessors = query.cachingAccessors.toTypedArray()
 
     /**
      * Quickly iterates over all matched entities, running [run] for each.
@@ -26,7 +20,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
         val matched = matchedArchetypes
         var n = 0
         val size = matched.size // Get size ahead of time to avoid rerunning on entities that end up in new archetypes
-        val accessors = accessors
+        val accessors = cachingAccessors
         while (n < size) {
             val archetype = matched[n]
             archetype.isIterating = true
@@ -47,9 +41,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
 
     inline fun <R> map(crossinline run: T.() -> R): List<R> {
         val deferred = mutableListOf<R>()
-        forEach {
-            deferred.add(run())
-        }
+        forEach { deferred.add(run()) }
         return deferred
     }
 
@@ -62,9 +54,16 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
     inline fun <R> mapWithEntity(crossinline run: T.() -> R): List<Deferred<R>> {
         val deferred = mutableListOf<Deferred<R>>()
         forEach {
-            deferred.add(Deferred(run(), archetype.getEntity(row)))
+            deferred.add(Deferred(run(), unsafeEntity))
         }
         return deferred
+    }
+
+    @OptIn(UnsafeAccessors::class)
+    fun entities(): List<GearyEntity> {
+        val entities = mutableListOf<GearyEntity>()
+        forEach { entities.add(unsafeEntity) }
+        return entities
     }
 }
 
