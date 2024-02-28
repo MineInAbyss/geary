@@ -26,7 +26,7 @@ interface AutoScanner {
             override fun installSystems() {
                 scannedSystems.asSequence()
                     .mapNotNull { it.objectInstance ?: runCatching { it.createInstance() }.getOrNull() }
-                    .filterIsInstance<System>()
+                    .filterIsInstance<System<*>>()
                     .onEach { geary.pipeline.addSystem(it) }
                     .map { it::class.simpleName }
                     .let {

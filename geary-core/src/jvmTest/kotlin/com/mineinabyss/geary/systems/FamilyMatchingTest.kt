@@ -1,8 +1,11 @@
 package com.mineinabyss.geary.systems
 
+import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
+import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.modules.geary
@@ -27,12 +30,6 @@ class FamilyMatchingTest : GearyTest() {
 
     val root = archetypes.archetypeProvider.rootArchetype
     val correctArchetype = root + stringId + intId
-
-    @Test
-    fun `family type is correct`() {
-        // TODO families can are wrapped by accessors now, so components won't be directly on it
-//        EntityType(system.family.components).getArchetype() shouldBe root + stringId
-    }
 
     @Test
     fun `archetypes have been matched correctly`() {
