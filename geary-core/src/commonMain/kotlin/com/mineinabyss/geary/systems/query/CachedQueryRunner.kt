@@ -4,7 +4,6 @@ import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.fastForEach
-import com.mineinabyss.geary.systems.accessors.type.ComponentAccessor
 
 class CachedQueryRunner<T : Query> internal constructor(val query: T) {
     val matchedArchetypes: MutableList<Archetype> = mutableListOf()
@@ -24,10 +23,12 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
         while (n < size) {
             val archetype = matched[n]
             archetype.isIterating = true
+
+            // We disallow entity archetype modifications while iterating, but allow creating new entities.
+            // These will always end up at the end of the archetype list so we just don't iterate over them.
             val upTo = archetype.size
             var row = 0
             query.originalArchetype = archetype
-            // TODO upTo isn't perfect for cases where entities may be added or removed in the same iteration
             accessors.fastForEach { it.updateCache(archetype) }
             while (row < upTo) {
                 query.originalRow = row
