@@ -7,13 +7,14 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.System
 import com.mineinabyss.idofront.di.DI
 import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
 import kotlin.reflect.full.createInstance
 
 val autoScanner by DI.observe<AutoScanner>()
 
 interface AutoScanner {
     val scannedComponents: MutableSet<KClass<*>>
-    val scannedSystems: MutableSet<KClass<*>>
+    val scannedSystems: MutableSet<KFunction<*>>
 
     fun installSystems()
 
@@ -21,14 +22,12 @@ interface AutoScanner {
         override fun default() = object : AutoScanner {
             private val logger get() = geary.logger
             override val scannedComponents = mutableSetOf<KClass<*>>()
-            override val scannedSystems = mutableSetOf<KClass<*>>()
+            override val scannedSystems = mutableSetOf<KFunction<*>>()
 
             override fun installSystems() {
                 scannedSystems.asSequence()
-                    .mapNotNull { it.objectInstance ?: runCatching { it.createInstance() }.getOrNull() }
-                    .filterIsInstance<System<*>>()
-                    .onEach { geary.pipeline.addSystem(it) }
-                    .map { it::class.simpleName }
+                    .onEach { it.call(geary) }
+                    .map { it.name }
                     .let {
                         if (logger.config.minSeverity <= Severity.Verbose)
                             logger.i("Autoscan loaded singleton systems: ${it.joinToString()}")
