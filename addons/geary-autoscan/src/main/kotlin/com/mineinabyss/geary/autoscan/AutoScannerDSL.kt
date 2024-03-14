@@ -7,18 +7,14 @@ import com.mineinabyss.geary.modules.GearyConfiguration
 import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.dsl.serialization
-import com.mineinabyss.geary.systems.System
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.polymorphic
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners
 import org.reflections.util.ConfigurationBuilder
 import org.reflections.util.FilterBuilder
-import java.lang.reflect.Method
 import kotlin.reflect.KClass
-import kotlin.reflect.KFunction
 import kotlin.reflect.full.hasAnnotation
-import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.kotlinFunction
 import kotlin.reflect.typeOf
 
@@ -42,6 +38,7 @@ class AutoScannerDSL(
             ConfigurationBuilder()
                 .apply { limitTo.forEach { forPackage(it, classLoader) } }
                 .filterInputsBy(FilterBuilder().apply { limitTo.forEach { includePackage(it) } })
+                .setScanners(Scanners.SubTypes, Scanners.TypesAnnotated, Scanners.MethodsAnnotated)
         )
     }
 
@@ -101,9 +98,8 @@ class AutoScannerDSL(
      */
     fun systems() {
         val scanned = reflections
-            .get(Scanners.MethodsAnnotated.with(AutoScan::class.java).`as`(Method::class.java))
-            .asSequence()
-            .mapNotNull { it.kotlinFunction }
+            .get(Scanners.MethodsAnnotated.with(AutoScan::class.java))
+            .mapNotNull { reflections.forMethod(it, classLoader)?.kotlinFunction }
             .filter { it.parameters.singleOrNull()?.type == typeOf<GearyModule>() }
 
         autoScanner.scannedSystems += scanned

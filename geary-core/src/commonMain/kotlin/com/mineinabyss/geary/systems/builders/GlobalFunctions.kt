@@ -22,5 +22,15 @@ fun <T : ListenerQuery> GearyModule.listener(
 fun <T : Query> GearyModule.system(
     query: T
 ): SystemBuilder<T> {
-    return SystemBuilder(query, pipeline)
+    val defaultName = Throwable().stackTraceToString()
+        .lineSequence()
+        .drop(2) // First line error, second line is this function
+        .first()
+        .trim()
+        .substringBeforeLast("(")
+        .substringAfter("$")
+        .substringAfter("Kt.")
+        .substringAfter("create")
+
+    return SystemBuilder(defaultName, query, pipeline)
 }

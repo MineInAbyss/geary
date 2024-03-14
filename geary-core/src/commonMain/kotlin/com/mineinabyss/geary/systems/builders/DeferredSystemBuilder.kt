@@ -15,7 +15,7 @@ class DeferredSystemBuilder<T : Query, R>(
         val onTick: CachedQueryRunner<T>.() -> Unit = {
             mapping().execOnFinish(run)
         }
-        val system = System(systemBuilder.query, onTick, systemBuilder.interval)
+        val system = System(systemBuilder.name, systemBuilder.query, onTick, systemBuilder.interval)
         return systemBuilder.pipeline.addSystem(system)
     }
 }
