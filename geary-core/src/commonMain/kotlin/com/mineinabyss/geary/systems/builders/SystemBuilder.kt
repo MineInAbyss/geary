@@ -7,18 +7,23 @@ import com.mineinabyss.geary.systems.query.CachedQueryRunner
 import com.mineinabyss.geary.systems.query.Query
 import kotlin.time.Duration
 
-class SystemBuilder<T : Query>(
+data class SystemBuilder<T : Query>(
+    val name: String,
     val query: T,
     val pipeline: Pipeline,
     val interval: Duration? = null
 ) {
+    fun named(name: String): SystemBuilder<T> {
+        return copy(name = name)
+    }
+
     fun every(interval: Duration): SystemBuilder<T> {
-        return SystemBuilder(query, pipeline, interval)
+        return copy(interval = interval)
     }
 
     inline fun exec(crossinline run: T.() -> Unit): TrackedSystem<*> {
         val onTick: CachedQueryRunner<T>.() -> Unit = { forEach(run) }
-        val system = System(query, onTick, interval)
+        val system = System(name, query, onTick, interval)
         return pipeline.addSystem(system)
     }
 
@@ -31,7 +36,7 @@ class SystemBuilder<T : Query>(
     }
 
     fun execOnAll(run: CachedQueryRunner<T>.() -> Unit): TrackedSystem<*> {
-        val system = System(query, run, interval)
+        val system = System(name, query, run, interval)
         return pipeline.addSystem(system)
     }
 }
