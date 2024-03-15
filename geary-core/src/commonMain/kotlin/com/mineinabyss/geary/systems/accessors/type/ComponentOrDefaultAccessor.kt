@@ -1,10 +1,9 @@
 package com.mineinabyss.geary.systems.accessors.type
 
-import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
+import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.accessors.Accessor
-import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.ReadOnlyAccessor
 import com.mineinabyss.geary.systems.query.QueriedEntity
 import com.mineinabyss.geary.systems.query.Query
@@ -27,6 +26,6 @@ class ComponentOrDefaultAccessor<T>(
             cachedIndex = archetype.indexOf(id)
         }
         if (cachedIndex == -1) return default()
-        return archetype.componentData[cachedIndex][thisRef.row] as T
+        return archetype.componentData[cachedIndex][queriedEntity.row] as T
     }
 }
