@@ -13,28 +13,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - uses: MineInAbyss/publish-action@master
+      - uses: MineInAbyss/publish-action@develop
         with:
           maven-metadata-url: https://repo.mineinabyss.com/releases/com/mineinabyss/geary-core/maven-metadata.xml
           maven-snapshot-metadata-url: https://repo.mineinabyss.com/snapshots/com/mineinabyss/geary-core/maven-metadata.xml
-          # pages-path: build/dokka/htmlMultiModule/
-          # dokka: dokkaHtmlMultiModule
           maven-username: ${{ secrets.MAVEN_PUBLISH_USERNAME }}
           maven-password: ${{ secrets.MAVEN_PUBLISH_PASSWORD }}
-
-  # deploy:
-  #   permissions:
-  #     pages: write
-  #     id-token: write
-  #   environment:
-  #     name: github-pages
-  #     url: ${{ steps.deployment.outputs.page_url }}
-  #   if: ${{ github.ref == 'refs/heads/master' }}
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   steps:
-  #     - name: Deploy to GitHub Pages
-  #       id: deployment
-  #       uses: actions/deploy-pages@v2

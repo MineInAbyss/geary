@@ -34,7 +34,7 @@ class SerializersByMap(
     ): DeserializationStrategy<T>? =
         module.getPolymorphic(baseClass = baseClass, serializedClassName = key)
 
-    override fun <T : Component> getSerializerFor(kClass: KClass<in T>): DeserializationStrategy<out T>? {
+    override fun <T : Component> getSerializerFor(kClass: KClass<in T>): DeserializationStrategy<T>? {
         val serialName = getSerialNameFor(kClass) ?: return null
 
         return getSerializerFor(serialName, Component::class)
@@ -43,6 +43,7 @@ class SerializersByMap(
     override fun getSerialNameFor(kClass: KClass<out Component>): String? =
         component2serialName[kClass]
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T : Any> getKClassFor(serializer: KSerializer<T>): KClass<T>? {
         // If this is a contextual serializer, we already have the type information
         serializer.descriptor.capturedKClass?.let { return it as KClass<T> }

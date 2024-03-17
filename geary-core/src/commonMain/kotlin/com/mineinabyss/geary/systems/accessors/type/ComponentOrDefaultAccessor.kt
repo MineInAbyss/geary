@@ -26,6 +26,7 @@ class ComponentOrDefaultAccessor<T>(
             cachedIndex = archetype.indexOf(id)
         }
         if (cachedIndex == -1) return default()
+        @Suppress("UNCHECKED_CAST")
         return archetype.componentData[cachedIndex][queriedEntity.row] as T
     }
 }
