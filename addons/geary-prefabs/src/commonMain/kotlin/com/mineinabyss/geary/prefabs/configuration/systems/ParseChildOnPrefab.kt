@@ -4,6 +4,7 @@ import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.helpers.addParent
 import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.configuration.components.ChildOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.ChildrenOnPrefab
@@ -12,7 +13,7 @@ import com.mineinabyss.geary.systems.builders.listener
 import com.mineinabyss.geary.systems.query.ListenerQuery
 
 
-fun createParseChildOnPrefabListener() = geary.listener(object : ListenerQuery() {
+fun GearyModule.createParseChildOnPrefabListener() = listener(object : ListenerQuery() {
     val child by get<ChildOnPrefab>()
     override fun ensure() = event.anySet(::child)
 }).exec {
@@ -23,7 +24,7 @@ fun createParseChildOnPrefabListener() = geary.listener(object : ListenerQuery()
     entity.remove<ChildOnPrefab>()
 }
 
-fun createParseChildrenOnPrefabListener() = geary.listener(object : ListenerQuery() {
+fun GearyModule.createParseChildrenOnPrefabListener() = listener(object : ListenerQuery() {
     var children by get<ChildrenOnPrefab>()
     override fun ensure() = event.anySet(::children)
 }).exec {

@@ -2,13 +2,14 @@ package com.mineinabyss.geary.uuid.systems
 
 import com.benasher44.uuid.Uuid
 import com.benasher44.uuid.uuid4
+import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.builders.listener
 import com.mineinabyss.geary.systems.query.ListenerQuery
 import com.mineinabyss.geary.uuid.components.RegenerateUUIDOnClash
 import com.mineinabyss.geary.uuid.uuid2Geary
 
-fun createTrackUUIDOnAddListener() = geary.listener(object : ListenerQuery() {
+fun GearyModule.createTrackUUIDOnAddListener() = listener(object : ListenerQuery() {
     var uuid by get<Uuid>()
     val regenerateUUIDOnClash by get<RegenerateUUIDOnClash>().orNull()
     override fun ensure() = event.anySet(::uuid)

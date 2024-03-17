@@ -1,7 +1,5 @@
 package com.mineinabyss.geary.systems.accessors
 
-import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.systems.query.CachedQueryRunner
 import com.mineinabyss.geary.systems.query.QueriedEntity
 import com.mineinabyss.geary.systems.query.Query
 import kotlin.properties.ReadOnlyProperty
@@ -11,10 +9,7 @@ interface Accessor {
     val originalAccessor: Accessor?
     val queriedEntity: QueriedEntity
 }
-interface ReadOnlyAccessor<T> : Accessor, ReadOnlyProperty<Query, T> {
 
-}
+interface ReadOnlyAccessor<T> : Accessor, ReadOnlyProperty<Query, T>
 
-interface ReadWriteAccessor<T> : ReadOnlyAccessor<T>, ReadWriteProperty<Query, T> {
-
-}
+interface ReadWriteAccessor<T> : ReadOnlyAccessor<T>, ReadWriteProperty<Query, T>

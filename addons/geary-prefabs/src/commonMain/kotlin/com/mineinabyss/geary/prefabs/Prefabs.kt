@@ -24,13 +24,15 @@ interface Prefabs {
 
 
         override fun Prefabs.install() {
-            createInheritPrefabsOnLoadListener()
-            createParseChildOnPrefabListener()
-            createParseChildrenOnPrefabListener()
-            createParseRelationOnPrefabListener()
-            createParseRelationWithDataListener()
-            createTrackPrefabsByKeyListener()
-            createCopyToInstancesSystem()
+            geary.run {
+                createInheritPrefabsOnLoadListener()
+                createParseChildOnPrefabListener()
+                createParseChildrenOnPrefabListener()
+                createParseRelationOnPrefabListener()
+                createParseRelationWithDataListener()
+                createTrackPrefabsByKeyListener()
+                createCopyToInstancesSystem()
+            }
             geary.pipeline.runOnOrAfter(GearyPhase.INIT_ENTITIES) {
                 loader.loadOrUpdatePrefabs()
             }

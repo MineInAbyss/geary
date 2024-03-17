@@ -1,9 +1,11 @@
 package com.mineinabyss.geary.systems.query
 
+import com.mineinabyss.geary.annotations.optin.ExperimentalGearyApi
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.fastForEach
+import com.mineinabyss.geary.modules.archetypes
 
 class CachedQueryRunner<T : Query> internal constructor(val query: T) {
     val matchedArchetypes: MutableList<Archetype> = mutableListOf()
@@ -30,14 +32,93 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
             var row = 0
             query.originalArchetype = archetype
             accessors.fastForEach { it.updateCache(archetype) }
-            while (row < upTo) {
-                query.originalRow = row
-                run(query)
-                row++
+            try {
+                while (row < upTo) {
+                    query.originalRow = row
+                    run(query)
+                    row++
+                }
+                n++
+            } finally {
+                archetype.isIterating = false
             }
-            archetype.isIterating = false
-            n++
         }
+    }
+
+    /**
+     * Allows collecting values as a sequence under some rules. Slower than [forEach] or functions directly on the runner like [map], [any], [find]
+     * since an iterator must be used, but can be much faster if terminating early (ex. `take(5)`).
+     *
+     * ### Rules
+     *
+     * - Sequence can only be terminated once, and **MUST NOT** be consumed outside the [collector] block.
+     * - *Stateful* operations **MUST** run on calculated values, not the query directly, otherwise the same value will be reused.
+     *   All of Kotlin's sequence operations tell you if they're *stateful* or *stateless* in their documentation.
+     *    - Ex. `map { it.myComponent }.sorted()` is okay, while `sortedBy { it.myComponent }.map { it.myComponent }` is not.
+     *      The latter will return the same value for every element.
+     * - You **MUST NOT** swap threads, the sequence must run on the sync engine thread or data may be jumbled.
+     */
+    @ExperimentalGearyApi
+    fun <R> collect(collector: Sequence<T>.() -> R): R {
+        val matched = matchedArchetypes
+        var n = 0
+        val size = matched.size
+        val accessors = cachingAccessors
+
+        // current archetype
+        var archetype = archetypes.archetypeProvider.rootArchetype // avoid nullable perf loss
+        var upTo = 0
+
+        // current entity
+        var row = 0
+        query.originalArchetype = archetype
+        accessors.fastForEach { it.updateCache(archetype) }
+
+        fun prepareRow(): Boolean {
+            if (row >= upTo) return false
+            query.originalRow = row
+            return true
+        }
+
+        fun prepareArchetype(): Boolean {
+            if (n >= size) return false
+            archetype = matched[n]
+            upTo = archetype.size
+            query.originalArchetype = archetype
+            accessors.fastForEach { it.updateCache(archetype) }
+            archetype.isIterating = true
+            return true
+        }
+
+        fun terminatedError(): Nothing = error("Sequence must be consumed inside use block")
+        var closed = false
+
+        val collected = try {
+            collector(generateSequence(seedFunction = {
+                if (closed) terminatedError()
+                prepareArchetype()
+                prepareRow()
+                query
+            }) {
+                if (closed) terminatedError()
+                row++
+                if (prepareRow()) {
+                    query
+                } else {
+                    archetype.isIterating = false
+                    n++
+                    if (prepareArchetype()) {
+                        prepareRow()
+                        query
+                    } else null
+                }
+            }.constrainOnce())
+        } finally {
+            //TODO issues if it's just root archetype?
+            archetype.isIterating = false
+            closed = true
+        }
+        return collected
     }
 
     inline fun <R> map(crossinline run: T.() -> R): List<R> {
@@ -45,6 +126,42 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
         forEach { deferred.add(run()) }
         return deferred
     }
+
+    inline fun <R> mapNotNull(crossinline run: T.() -> R?): List<R> {
+        val deferred = mutableListOf<R>()
+        forEach { run().let { if (it != null) deferred.add(it) } }
+        return deferred
+    }
+
+    @PublishedApi
+    internal class FoundValue : Throwable()
+
+    inline fun any(crossinline predicate: T.() -> Boolean): Boolean {
+        try {
+            forEach { if (predicate()) throw FoundValue() }
+        } catch (e: FoundValue) {
+            return true
+        }
+
+        return false
+    }
+
+    inline fun <R> find(crossinline map: T.() -> R, crossinline predicate: T.() -> Boolean): R? {
+        var found: R? = null
+        try {
+            forEach {
+                if (predicate()) {
+                    found = this.map()
+                    throw FoundValue()
+                }
+            }
+        } catch (e: FoundValue) {
+            return found
+        }
+
+        return found
+    }
+
 
     data class Deferred<R>(
         val data: R,

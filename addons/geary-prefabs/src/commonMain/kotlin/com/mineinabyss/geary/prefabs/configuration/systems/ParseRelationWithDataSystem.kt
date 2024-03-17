@@ -1,13 +1,11 @@
 package com.mineinabyss.geary.prefabs.configuration.systems
 
-import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
-import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import com.mineinabyss.geary.systems.builders.listener
 import com.mineinabyss.geary.systems.query.ListenerQuery
 
-@OptIn(UnsafeAccessors::class)
-fun createParseRelationWithDataListener() = geary.listener(object : ListenerQuery() {
+fun GearyModule.createParseRelationWithDataListener() = listener(object : ListenerQuery() {
     val relationWithData by get<RelationWithData<*, *>>()
     override fun ensure() = event.anySet(::relationWithData)
 }).exec {
