@@ -34,15 +34,6 @@ abstract class AccessorOperations {
     }
 
     /**
-     * Accesses a component, allows removing it by setting to null.
-     * As a result, the type is nullable since it may be removed during system runtime.
-     */
-//    @Deprecated("Removing")
-//    fun <T : Any> ComponentAccessor<T>.removable(): RemovableComponentAccessor<T> {
-//        return queriedEntity.addAccessor { RemovableComponentAccessor(this, queriedEntity, id) }
-//    }
-
-    /**
      * Accesses a component or provides a [default] if the entity doesn't have it.
      * Default gets recalculated on every call to the accessor.
      */
