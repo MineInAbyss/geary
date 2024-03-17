@@ -30,6 +30,7 @@ class RelationsWithDataAccessor<K, T>(
             cachedRelations = archetype.getRelations(kind, target)
         }
 
+        @Suppress("UNCHECKED_CAST")
         return archetype.readRelationDataFor(
             queriedEntity.row,
             kind,

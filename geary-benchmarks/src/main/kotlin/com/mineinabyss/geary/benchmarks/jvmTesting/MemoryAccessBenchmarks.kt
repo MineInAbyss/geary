@@ -98,14 +98,14 @@ class MemoryAccessBenchmarks {
     @Benchmark
     fun readObjPackToLocalArr() {
         for (i in 0 until oneMil) {
-            val localArr = intArrayOf(intArr[i])
+            intArrayOf(intArr[i])
         }
     }
 
     @Benchmark
     fun readObjPackManyToLocalArr() {
         for (i in 0 until oneMil) {
-            val localArr = arrayOf(intArr[i], byteArr[i], objArr[i])
+            arrayOf(intArr[i], byteArr[i], objArr[i])
         }
     }
 

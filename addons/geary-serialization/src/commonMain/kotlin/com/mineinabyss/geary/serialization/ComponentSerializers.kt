@@ -17,7 +17,7 @@ interface ComponentSerializers {
         baseClass: KClass<in T>
     ): DeserializationStrategy<T>?
 
-    fun <T : Component> getSerializerFor(kClass: KClass<in T>): DeserializationStrategy<out T>?
+    fun <T : Component> getSerializerFor(kClass: KClass<in T>): DeserializationStrategy<T>?
     fun getSerialNameFor(kClass: KClass<out Component>): String?
 
     fun <T : Any> getKClassFor(serializer: KSerializer<T>): KClass<T>?

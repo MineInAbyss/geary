@@ -25,6 +25,7 @@ abstract class ComponentAccessor<T>(
 
     fun updateCache(archetype: Archetype) {
         cachedIndex = archetype.indexOf(id)
+        @Suppress("UNCHECKED_CAST")
         if (cachedIndex != -1) cachedDataArray = archetype.componentData[cachedIndex] as MutableList<T>
     }
 
