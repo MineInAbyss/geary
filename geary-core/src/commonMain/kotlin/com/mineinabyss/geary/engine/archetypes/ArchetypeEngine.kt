@@ -2,6 +2,7 @@ package com.mineinabyss.geary.engine.archetypes
 
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.*
+import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.TrackedSystem
 import com.mineinabyss.geary.systems.query.Query
@@ -47,7 +48,7 @@ open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine(
                         && (currentTick % (it.system.interval / tickDuration).toInt().coerceAtLeast(1) == 0L)
             }
             .also { logger.v("Ticking engine with systems $it") }
-            .forEach { system ->
+            .fastForEach { system ->
                 runCatching {
                     system.runSystem()
                 }.onFailure {
