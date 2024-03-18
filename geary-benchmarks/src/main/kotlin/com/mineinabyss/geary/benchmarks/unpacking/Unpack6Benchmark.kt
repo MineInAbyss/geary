@@ -36,6 +36,13 @@ class Unpack6Benchmark {
     }
 
     @Benchmark
+    fun unpack1of6CompWithUnoptimizedAccessor() {
+        systemOf1Defaulting().forEach {
+            comp1
+        }
+    }
+
+    @Benchmark
     fun unpack6of6Comp() {
         systemOf6().forEach {
             comp1
@@ -71,8 +78,8 @@ class Unpack6Benchmark {
 fun main() {
     Unpack6Benchmark().apply {
         setUp()
-        repeat(100) {
-            unpack6of6Comp()
+        repeat(10000) {
+            unpack1of6CompNoDelegate()
 //            unpack6of6CompNoDelegate()
         }
     }

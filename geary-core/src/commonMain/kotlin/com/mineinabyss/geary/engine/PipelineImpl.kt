@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.engine
 
 import com.mineinabyss.geary.addons.GearyPhase
+import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.System
@@ -27,13 +28,13 @@ class PipelineImpl : Pipeline {
     }
 
     override fun runStartupTasks() {
-        scheduled.forEach { actions ->
-            actions.forEach { it() }
+        scheduled.fastForEach { actions ->
+            actions.fastForEach { it() }
         }
     }
 
     override fun <T : Query> addSystem(system: System<T>): TrackedSystem<*> {
-        onSystemAdd.forEach { it(system) }
+        onSystemAdd.fastForEach { it(system) }
         val runner = queryManager.trackQuery(system.query)
         val tracked = TrackedSystem(system, runner)
         if (system.interval != null) {
@@ -43,7 +44,7 @@ class PipelineImpl : Pipeline {
     }
 
     override fun addSystems(vararg systems: System<*>) {
-        systems.forEach { addSystem(it) }
+        systems.fastForEach { addSystem(it) }
     }
 
     override fun addListener(listener: Listener<*>): Listener<*> {

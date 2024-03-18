@@ -5,6 +5,7 @@ import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.maps.Family2ObjectArrayMap
 import com.mineinabyss.geary.engine.QueryManager
 import com.mineinabyss.geary.helpers.contains
+import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.systems.query.CachedQueryRunner
 import com.mineinabyss.geary.systems.query.Query
 import kotlinx.atomicfu.locks.SynchronizedObject
@@ -61,16 +62,16 @@ class ArchetypeQueryManager : QueryManager {
 
         val (matched, matchedSources, matchedTargets, matchedEvents) = getQueriesMatching(archetype)
 
-        matchedSources.forEach { archetype.sourceListeners += it }
-        matchedTargets.forEach { archetype.targetListeners += it }
-        matchedEvents.forEach { archetype.eventListeners += it }
-        matched.forEach { it.matchedArchetypes += archetype }
+        matchedSources.fastForEach { archetype.sourceListeners += it }
+        matchedTargets.fastForEach { archetype.targetListeners += it }
+        matchedEvents.fastForEach { archetype.eventListeners += it }
+        matched.fastForEach { it.matchedArchetypes += archetype }
     }
 
     internal fun unregisterArchetype(archetype: Archetype) = synchronized(archetypeRegistryLock) {
         archetypes.remove(archetype)
         val matched = queries.filter { archetype.type in it.family }
-        matched.forEach { it.matchedArchetypes -= archetype }
+        matched.fastForEach { it.matchedArchetypes -= archetype }
     }
 
     data class MatchedQueries(

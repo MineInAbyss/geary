@@ -304,7 +304,7 @@ class Archetype internal constructor(
             if (it.withoutRole(HOLDS_DATA) in noInheritComponents) return@forEach
             instance.archetype.setComponent(instance, it, get(base.row, it)!!, true)
         }
-        base.entity.children.forEach {
+        base.entity.children.fastForEach {
             it.addParent(instance.entity)
         }
         if (callEvent) callComponentModifyEvent(geary.components.extendedEntity, instance, base.entity.id)
@@ -418,7 +418,7 @@ class Archetype internal constructor(
         if (lastIndex != row) {
             val replacement = ids[lastIndex]
             ids[row] = replacement
-            componentData.forEach { it[row] = it.last() }
+            componentData.fastForEach { it[row] = it.last() }
             records[replacement.toGeary()].apply {
                 this.archetype = this@Archetype
                 this.row = row
@@ -430,8 +430,7 @@ class Archetype internal constructor(
         // If we're the last archetype in the chain with no entities, unregister to free up memory
 
         ids.removeLastOrNull()
-        if(componentData.isNotEmpty())
-            componentData.fastForEach { it.removeAt(lastIndex) }
+        componentData.fastForEach { it.removeAt(lastIndex) }
         unregisterIfEmpty()
     }
 

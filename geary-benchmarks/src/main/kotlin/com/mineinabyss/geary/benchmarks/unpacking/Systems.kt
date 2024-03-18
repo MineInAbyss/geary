@@ -9,6 +9,11 @@ class Query1 : GearyQuery() {
     val comp1 by get<Comp1>()
 }
 
+class Query1Defaulting : GearyQuery() {
+    val comp1 by get<Comp1>().orDefault { Comp1(0) }
+    override fun ensure() = this { has<Comp1>()}
+}
+
 class Query2 : GearyQuery() {
     val comp1 by get<Comp1>()
     val comp2 by get<Comp2>()
@@ -43,6 +48,7 @@ class Query6WithoutDelegate : GearyQuery() {
 }
 
 fun systemOf1() = geary.cachedQuery(Query1())
+fun systemOf1Defaulting() = geary.cachedQuery(Query1Defaulting())
 fun systemOf2() = geary.cachedQuery(Query2())
 fun systemOf6() = geary.cachedQuery(Query6())
 fun systemOf6WithoutDelegate() = geary.cachedQuery(Query6WithoutDelegate())
