@@ -4,6 +4,7 @@ import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.EntityStack
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityProvider
 import com.mineinabyss.geary.helpers.fastForEach
@@ -17,8 +18,9 @@ import kotlinx.atomicfu.atomic
 class EntityByArchetypeProvider(
     private val reuseIDsAfterRemoval: Boolean = true,
 ) : EntityProvider {
-    private val records: TypeMap by lazy { archetypes.records }
-    private val archetypeProvider: ArchetypeProvider by lazy { archetypes.archetypeProvider }
+    private lateinit var records: TypeMap
+//    private val archetypeProvider: ArchetypeProvider by lazy { archetypes.archetypeProvider }
+    private val root by lazy { archetypes.archetypeProvider.rootArchetype }
 
     private val removedEntities: EntityStack = EntityStack()
     private val currId = atomic(0L)
@@ -46,18 +48,22 @@ class EntityByArchetypeProvider(
             }
         }
 
-        val (archetype, row) = records[entity]
-        archetype.removeEntity(row)
+        (records as ArrayTypeMap).runOn(entity) { archetype, row ->
+            archetype.removeEntity(row)
+            records.remove(entity)
+            removedEntities.push(entity)
+        }
+    }
 
-        records.remove(entity)
-        removedEntities.push(entity)
+    fun init(records: TypeMap) {
+        this.records = records
     }
 
     override fun getType(entity: Entity): EntityType = records[entity].archetype.type
 
     private fun createRecord(entity: Entity) {
-        val root = archetypeProvider.rootArchetype
-        val createdRecord = root.createWithoutData(entity)
-        records[entity] = createdRecord
+        val root = root
+        val row = root.createWithoutData(entity)
+        records.set(entity, root, row)
     }
 }

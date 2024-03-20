@@ -2,6 +2,7 @@ package com.mineinabyss.geary.datatypes.maps
 
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.Record
+import com.mineinabyss.geary.engine.archetypes.Archetype
 
 interface TypeMap {
     // We don't return nullable record to avoid boxing.
@@ -10,7 +11,7 @@ interface TypeMap {
     operator fun get(entity: Entity): Record
 
     /** Updates the record of a given entity */
-    operator fun set(entity: Entity, record: Record)
+    operator fun set(entity: Entity, archetype: Archetype, row: Int)
 
     /** Removes a record associated with an entity. */
     fun remove(entity: Entity)

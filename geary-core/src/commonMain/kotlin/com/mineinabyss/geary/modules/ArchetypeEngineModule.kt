@@ -25,13 +25,14 @@ open class ArchetypeEngineModule(
     override val eventRunner = ArchetypeEventRunner()
     override val pipeline = PipelineImpl()
 
+    open val records: TypeMap = ArrayTypeMap()
+
     override val read = ArchetypeReadOperations()
     override val write = ArchetypeMutateOperations()
     override val entityProvider = EntityByArchetypeProvider()
     override val componentProvider = ComponentAsEntityProvider()
     override val defaults: Defaults = Defaults()
 
-    open val records: TypeMap = ArrayTypeMap()
     open val archetypeProvider: ArchetypeProvider = SimpleArchetypeProvider()
 
     override val components by lazy { Components() }
@@ -42,6 +43,7 @@ open class ArchetypeEngineModule(
         }
 
         override fun init(module: ArchetypeEngineModule) {
+            module.entityProvider.init(module.records)
             DI.add<ArchetypeEngineModule>(module)
             DI.add<GearyModule>(module)
             module.componentProvider.createComponentInfo()

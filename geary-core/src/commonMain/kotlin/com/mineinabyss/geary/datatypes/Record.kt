@@ -4,22 +4,9 @@ import com.mineinabyss.geary.engine.archetypes.Archetype
 import kotlinx.atomicfu.locks.SynchronizedObject
 
 
-class Record @PublishedApi internal constructor(
-    archetype: Archetype,
-    row: Int
+data class Record @PublishedApi internal constructor(
+    val archetype: Archetype,
+    val row: Int
 ) : SynchronizedObject() {
-    var archetype: Archetype
-        internal set
-    var row: Int
-        internal set
-
-    init {
-        this.archetype = archetype
-        this.row = row
-    }
-
     val entity: Entity get() = archetype.getEntity(row)
-
-    operator fun component1(): Archetype = archetype
-    operator fun component2(): Int = row
 }

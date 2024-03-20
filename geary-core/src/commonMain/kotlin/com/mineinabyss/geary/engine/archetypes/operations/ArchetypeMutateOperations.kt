@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.engine.archetypes.operations
 
 import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityMutateOperations
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
@@ -16,11 +17,11 @@ class ArchetypeMutateOperations : EntityMutateOperations {
         data: Component,
         noEvent: Boolean
     ) {
-        records[entity].apply {
+        (records as ArrayTypeMap).runOn(entity) { archetype, row ->
             // Only add HOLDS_DATA if this isn't a relation. All relations implicitly hold data currently and that bit
             // corresponds to the component part of the relation.
             val componentWithRole = componentId.withRole(HOLDS_DATA)
-            archetype.setComponent(this, componentWithRole, data, !noEvent)
+            archetype.setComponent(row, componentWithRole, data, !noEvent)
         }
     }
 
@@ -39,12 +40,11 @@ class ArchetypeMutateOperations : EntityMutateOperations {
         prefabRec.archetype.instantiateTo(prefabRec, records[entity])
     }
 
-    override fun removeComponentFor(entity: Entity, componentId: ComponentId): Boolean =
-        records[entity].run {
-            val a = archetype.removeComponent(this, componentId.withRole(HOLDS_DATA))
-            val b = archetype.removeComponent(this, componentId.withoutRole(HOLDS_DATA))
-            a || b // return whether anything was changed
-        }
+    override fun removeComponentFor(entity: Entity, componentId: ComponentId): Boolean {
+        val a = records[entity].run { archetype.removeComponent(row, componentId.withRole(HOLDS_DATA)) }
+        val b = records[entity].run { archetype.removeComponent(row, componentId.withoutRole(HOLDS_DATA)) }
+        return a || b // return whether anything was changed
+    }
 
     override fun clearEntity(entity: Entity) {
         val record = records[entity]

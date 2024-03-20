@@ -13,11 +13,12 @@ class TestEngineModule(
     reuseIDsAfterRemoval: Boolean = true,
     useSynchronized: Boolean = false,
 ) : ArchetypeEngineModule() {
-    override val entityProvider = EntityByArchetypeProvider(reuseIDsAfterRemoval)
     override val records = if (useSynchronized) SynchronizedTypeMap(super.records) else super.records
+    override val entityProvider = EntityByArchetypeProvider(reuseIDsAfterRemoval)
 
     companion object : GearyModuleProviderWithDefault<TestEngineModule> {
         override fun init(module: TestEngineModule) {
+            module.entityProvider.init(module.records)
             ArchetypeEngineModule.init(module)
         }
 
