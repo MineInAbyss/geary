@@ -25,7 +25,7 @@ open class ArchetypeEngineModule(
     override val eventRunner = ArchetypeEventRunner()
     override val pipeline = PipelineImpl()
 
-    open val records: TypeMap = ArrayTypeMap()
+    open val records: ArrayTypeMap = ArrayTypeMap()
 
     override val read = ArchetypeReadOperations()
     override val write = ArchetypeMutateOperations()

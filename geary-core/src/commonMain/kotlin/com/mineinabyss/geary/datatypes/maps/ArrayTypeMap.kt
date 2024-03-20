@@ -1,14 +1,13 @@
 package com.mineinabyss.geary.datatypes.maps
 
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.datatypes.Record
 import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.modules.archetypes
 
 
-class ArrayTypeMap : TypeMap {
+open class ArrayTypeMap : TypeMap {
     @PublishedApi
     internal val archList = arrayListOf<Archetype>()
+
     //    private val map: ArrayList<Record?> = arrayListOf()
 //    private var archIndexes = IntArray(10)
 //    private var rows = IntArray(10)
@@ -18,12 +17,15 @@ class ArrayTypeMap : TypeMap {
 
     // We don't return nullable record to avoid boxing.
     // Accessing an entity that doesn't exist is indicative of a problem elsewhere and should be made obvious.
-    override fun get(entity: Entity): Record {
-        val info = archAndRow[entity.id.toInt()]
-        return Record(
-            archList[(info shr 32).toInt()],
-            info.toInt()
-        )
+//    override fun get(entity: Entity): Record {
+//        val info = archAndRow[entity.id.toInt()]
+//        return Record(
+//            archList[(info shr 32).toInt()],
+//            info.toInt()
+//        )
+//    }
+    open fun getArchAndRow(entity: Entity): ULong {
+        return archAndRow[entity.id.toInt()]
     }
 
     override fun set(entity: Entity, archetype: Archetype, row: Int) {
@@ -34,7 +36,7 @@ class ArrayTypeMap : TypeMap {
                 grow()
         }
 
-        archAndRow[id] = (indexOrAdd(archetype).toULong() shl 32 )or row.toULong()
+        archAndRow[id] = (indexOrAdd(archetype).toULong() shl 32) or row.toULong()
 //        archIndexes[id] = indexOrAdd(archetype)
     }
 
@@ -66,8 +68,8 @@ class ArrayTypeMap : TypeMap {
     }
 
 
-    inline fun runOn(entity: Entity, run: (Archetype, Int) -> Unit) {
-        val info = archAndRow[entity.id.toInt()]
-        run(archList[(info shr 32).toInt()], info.toInt())
+    inline fun <T> runOn(entity: Entity, run: (archetype: Archetype, row: Int) -> T):T {
+        val info = getArchAndRow(entity)
+        return run(archList[(info shr 32).toInt()], info.toInt())
     }
 }

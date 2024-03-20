@@ -18,7 +18,7 @@ import kotlinx.atomicfu.atomic
 class EntityByArchetypeProvider(
     private val reuseIDsAfterRemoval: Boolean = true,
 ) : EntityProvider {
-    private lateinit var records: TypeMap
+    private lateinit var records: ArrayTypeMap
 //    private val archetypeProvider: ArchetypeProvider by lazy { archetypes.archetypeProvider }
     private val root by lazy { archetypes.archetypeProvider.rootArchetype }
 
@@ -55,11 +55,13 @@ class EntityByArchetypeProvider(
         }
     }
 
-    fun init(records: TypeMap) {
+    fun init(records: ArrayTypeMap) {
         this.records = records
     }
 
-    override fun getType(entity: Entity): EntityType = records[entity].archetype.type
+    override fun getType(entity: Entity): EntityType = records.runOn(entity) { archetype, _ ->
+        archetype.type
+    }
 
     private fun createRecord(entity: Entity) {
         val root = root
