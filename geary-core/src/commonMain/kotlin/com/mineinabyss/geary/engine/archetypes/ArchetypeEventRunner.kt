@@ -21,10 +21,10 @@ class ArchetypeEventRunner : EventRunner {
     }
 
     fun callEvent(
-        eventArc: Archetype,
-        eventRow: Int,
         targetArc: Archetype,
         targetRow: Int,
+        eventArc: Archetype,
+        eventRow: Int,
         sourceArc: Archetype?,
         sourceRow: Int?
     ) {

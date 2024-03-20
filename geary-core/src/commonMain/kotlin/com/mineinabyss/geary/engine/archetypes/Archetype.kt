@@ -206,41 +206,57 @@ class Archetype internal constructor(
     internal inline fun move(
         entity: EntityId,
         copyData: () -> Unit
-    ) {
+    ): Int {
         if (unregistered) error("Tried adding entity to archetype that is no longer registered. Was it referenced outside of Geary?")
         ids.add(entity)
+        val row = ids.lastIndex
 
         copyData()
 
-        records.set(entity.toGeary(), this, ids.lastIndex)
+        records.set(entity.toGeary(), this, row)
+        return row
     }
 
     // For the following few functions, both entity and row are passed to avoid doing several array look-ups
     //  (ex when set calls remove).
 
-    /**
-     * Add a [componentId] to an entity represented by [record], moving it to the appropriate archetype.
-     *
-     * @return Whether the record has changed.
-     */
     internal fun addComponent(
         row: Int,
         componentId: ComponentId,
         callEvent: Boolean,
-    ): Boolean {
+    ) = addComponent(row, componentId, callEvent) { _, _ -> }
+
+    /**
+     * Add a [componentId] to an entity represented by [record], moving it to the appropriate archetype.
+     *
+     * @return New archetype for entity
+     */
+    internal inline fun addComponent(
+        row: Int,
+        componentId: ComponentId,
+        callEvent: Boolean,
+        onUpdated: (Archetype, row: Int) -> Unit
+    ) {
         // if already present in this archetype, stop here since we don't need to update any data
-        if (contains(componentId)) return false
+        if (contains(componentId)) return
 
         val moveTo = this + (componentId.withoutRole(HOLDS_DATA))
 
         val entityId = ids[row]
-        moveTo.moveOnlyAdding(this, row, entityId)
+        val newRow = moveTo.moveOnlyAdding(this, row, entityId)
         removeEntity(row)
 
-        if (callEvent) callComponentModifyEvent(geary.components.addedComponent, row, componentId)
+        if (callEvent) moveTo.callComponentModifyEvent(geary.components.addedComponent, newRow, componentId)
 
-        return true
+        onUpdated(moveTo, newRow)
     }
+
+    internal fun setComponent(
+        row: Int,
+        componentId: ComponentId,
+        data: Component,
+        callEvent: Boolean,
+    ) = setComponent(row, componentId, data, callEvent) { _, _ -> }
 
     /**
      * Sets [data] at a [componentId] for an [record], moving it to the appropriate archetype.
@@ -248,12 +264,13 @@ class Archetype internal constructor(
      *
      * @return Whether the record has changed.
      */
-    internal fun setComponent(
+    internal inline fun setComponent(
         row: Int,
         componentId: ComponentId,
         data: Component,
         callEvent: Boolean,
-    ): Boolean {
+        onUpdated: (Archetype, row: Int) -> Unit
+    ) {
         val dataComponent = componentId.withRole(HOLDS_DATA)
 
         //If component already in this type, just update the data
@@ -261,18 +278,18 @@ class Archetype internal constructor(
         if (addIndex != -1) {
             componentData[addIndex][row] = data
             if (callEvent) callComponentModifyEvent(geary.components.updatedComponent, row, componentId)
-            return false
+            return
         }
 
         //if component is not already added, add it, then set
         val entityId = ids[row]
         val moveTo = this + dataComponent
-        moveTo.moveWithNewComponent(this, row, data, dataComponent, entityId)
+        val newRow = moveTo.moveWithNewComponent(this, row, data, dataComponent, entityId)
         removeEntity(row)
 
         // Component add listeners must query the target, this is an optimization
-        if (callEvent) callComponentModifyEvent(geary.components.setComponent, row, componentId)
-        return true
+        if (callEvent) moveTo.callComponentModifyEvent(geary.components.setComponent, newRow, componentId)
+        return onUpdated(moveTo, newRow)
     }
 
     fun callComponentModifyEvent(eventType: ComponentId, row: Int, componentId: ComponentId) {
@@ -303,19 +320,24 @@ class Archetype internal constructor(
         callEvent: Boolean = true,
     ) {
         val baseEntity = this.getEntity(baseRow)
-        instanceArch.addComponent(instanceRow, Relation.of<InstanceOf?>(baseEntity).id, true)
+        var currArch = instanceArch
+        var currRow = instanceRow
+        currArch.addComponent(currRow, Relation.of<InstanceOf?>(baseEntity).id, true) { arch, row ->
+            currArch = arch; currRow = row
+        }
+
         val noInheritComponents = EntityType(getRelationsByKind(componentId<NoInherit>()).map { it.target })
         type.filter { !it.holdsData() && it !in noInheritComponents }.forEach {
-            instanceArch.addComponent(instanceRow, it, true)
+            currArch.addComponent(currRow, it, true) { arch, row -> currArch = arch; currRow = row }
         }
         dataHoldingType.forEach {
             if (it.withoutRole(HOLDS_DATA) in noInheritComponents) return@forEach
-            instanceArch.setComponent(instanceRow, it, get(baseRow, it)!!, true)
+            currArch.setComponent(currRow, it, get(baseRow, it)!!, true) { arch, row -> currArch = arch; currRow = row }
         }
         baseEntity.children.fastForEach {
             it.addParent(instanceArch.getEntity(instanceRow))
         }
-        if (callEvent) callComponentModifyEvent(geary.components.extendedEntity, instanceRow, baseEntity.id)
+        if (callEvent) currArch.callComponentModifyEvent(geary.components.extendedEntity, currRow, baseEntity.id)
     }
 
     /**
