@@ -100,14 +100,21 @@ class Archetype internal constructor(
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
     operator fun plus(componentId: ComponentId): Archetype {
-        componentAddEdges[componentId]?.let { return it }
-        if (componentId.holdsData()) {
+        return componentAddEdges.getOrElse(componentId) {
+            val noDataId = componentId.withoutRole(HOLDS_DATA)
+
             // Try to get via the component without the data role
-            componentAddEdges[componentId.withoutRole(HOLDS_DATA)]
-                ?.plus(componentId)?.let { return it }
-            if (componentId.withoutRole(HOLDS_DATA) !in type)
-                return this + componentId.withoutRole(HOLDS_DATA) + componentId
+            if (componentId.holdsData()) {
+                return componentAddEdges.getOrElse(noDataId) {
+                    return if (noDataId !in type) this + noDataId + componentId
+                    else updateFor(componentId)
+                }.plus(componentId)
+            }
+            updateFor(componentId)
         }
+    }
+
+    fun updateFor(componentId: ComponentId): Archetype {
         val archetype = archetypeProvider.getArchetype(type + componentId)
         componentAddEdges[componentId] = archetype
         archetype.componentRemoveEdges[componentId] = this
@@ -341,7 +348,7 @@ class Archetype internal constructor(
             if (allowUnregister == FALSE) return
             archetypes.queryManager.unregisterArchetype(this)
             unregistered = true
-            for ((id, archetype) in componentRemoveEdges.entries()) {
+            componentRemoveEdges.forEach { id, archetype ->
                 archetype.componentAddEdges.remove(id)
                 archetype.unregisterIfEmpty()
             }

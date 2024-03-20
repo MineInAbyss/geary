@@ -79,8 +79,8 @@ fun main() {
     Unpack6Benchmark().apply {
         setUp()
         repeat(10000) {
-            unpack1of6CompNoDelegate()
-//            unpack6of6CompNoDelegate()
+//            unpack1of6CompNoDelegate()
+            unpack6of6CompNoDelegate()
         }
     }
 }

@@ -17,9 +17,13 @@ class IdList {
 
     fun add(value: ULong) {
         if (size == backingArr.size) {
-            backingArr = backingArr.copyOf(size * growFactor)
+            grow()
         }
         backingArr[size++] = value
+    }
+
+    fun grow(){
+        backingArr = backingArr.copyOf(size * growFactor)
     }
 
     fun removeLastOrNull(): ULong? {
@@ -31,7 +35,21 @@ class IdList {
         return backingArr[--size]
     }
 
+    internal fun removeAt(index: Int) {
+        if (index == -1) return
+        // replace with last
+        backingArr[index] = backingArr[--size]
+    }
+
     fun getEntities(): Sequence<Entity> {
         return backingArr.asSequence().take(size).map { it.toGeary() }
+    }
+
+    fun indexOf(value: ULong): Int {
+        var n = 0
+        val size = size
+        while (n < size)
+            if (backingArr[n++] == value) return n - 1
+        return -1
     }
 }
