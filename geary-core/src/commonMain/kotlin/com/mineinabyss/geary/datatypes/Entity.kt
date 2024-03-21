@@ -146,7 +146,7 @@ value class Entity(val id: EntityId) {
      * @return Whether the component was present before removal.
      */
     inline fun <reified T : Component> remove(): Boolean =
-        remove(componentId<T>()) || remove(componentId<T>() and ENTITY_MASK)
+        remove(componentId<T>())
 
     /** Removes a component whose class is [kClass] from this entity. */
     fun remove(kClass: KClass<*>): Boolean =

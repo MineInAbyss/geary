@@ -30,7 +30,7 @@ class SimpleArchetypeProvider : ArchetypeProvider {
     override fun getArchetype(entityType: EntityType): Archetype = synchronized(archetypeWriteLock) {
         var node = rootArchetype
         entityType.forEach { compId ->
-            node = node.componentAddEdges[compId] ?: createArchetype(node, compId)
+            node = node.componentAddEdges.getOrElse(compId) { createArchetype(node, compId) }
         }
         return node
     }

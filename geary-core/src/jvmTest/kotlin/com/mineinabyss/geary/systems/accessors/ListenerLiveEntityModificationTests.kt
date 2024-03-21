@@ -56,7 +56,16 @@ class ListenerLiveEntityModificationTests : GearyTest() {
         count shouldBe 1
     }
 
-    @OptIn(UnsafeAccessors::class)
+    @Test
+    fun `testing`() {
+        entity {
+            set(Comp1(1))
+            remove<Comp1>()
+            set(Comp1(10))
+        }
+
+    }
+
     @Test
     fun `should allow data modify when entity archetype changed by REMOVE`() {
         resetEngine()
