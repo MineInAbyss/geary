@@ -37,6 +37,7 @@ class Archetype internal constructor(
 
     // This is way slower as a Boolean? because of boxing
     private var allowUnregister: Byte = 0
+    internal var indexInRecords = -1
 
     /** Component ids in the type that are to hold data */
     // Currently all relations must hold data and the HOLDS_DATA bit on them corresponds to the component part.
@@ -101,24 +102,18 @@ class Archetype internal constructor(
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
     operator fun plus(componentId: ComponentId): Archetype {
         return componentAddEdges.getOrElse(componentId) {
-            val noDataId = componentId.withoutRole(HOLDS_DATA)
-
-            // Try to get via the component without the data role
-            if (componentId.holdsData()) {
-                return componentAddEdges.getOrElse(noDataId) {
-                    return if (noDataId !in type) this + noDataId + componentId
-                    else updateFor(componentId)
-                }.plus(componentId)
-            }
-            updateFor(componentId)
+            val archetype = archetypeProvider.getArchetype(type + componentId)
+            updateComponentEdgesFor(componentId, archetype)
+            archetype
         }
     }
 
-    fun updateFor(componentId: ComponentId): Archetype {
-        val archetype = archetypeProvider.getArchetype(type + componentId)
+    private fun updateComponentEdgesFor(
+        componentId: ComponentId,
+        archetype: Archetype,
+    ) {
         componentAddEdges[componentId] = archetype
         archetype.componentRemoveEdges[componentId] = this
-        return archetype
     }
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
@@ -213,7 +208,7 @@ class Archetype internal constructor(
 
         copyData()
 
-        records.set(entity.toGeary(), this, row)
+        records[Entity(entity), this] = row
         return row
     }
 
@@ -283,7 +278,7 @@ class Archetype internal constructor(
 
         //if component is not already added, add it, then set
         val entityId = ids[row]
-        val moveTo = this + dataComponent
+        val moveTo = this + dataComponent.withoutRole(HOLDS_DATA) + dataComponent
         val newRow = moveTo.moveWithNewComponent(this, row, data, dataComponent, entityId)
         removeEntity(row)
 

@@ -9,7 +9,7 @@ import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.modules.archetypes
 
 class ArchetypeMutateOperations : EntityMutateOperations {
-    private val records get() = archetypes.records
+    private lateinit var records: ArrayTypeMap
     private val archetypeProvider: ArchetypeProvider get() = archetypes.archetypeProvider
 
     override fun setComponentFor(
@@ -60,5 +60,9 @@ class ArchetypeMutateOperations : EntityMutateOperations {
             val newRow = archetypeProvider.rootArchetype.createWithoutData(entity)
             records.set(entity, archetypes.archetypeProvider.rootArchetype, newRow)
         }
+    }
+
+    fun init(records: ArrayTypeMap) {
+        this.records = records
     }
 }

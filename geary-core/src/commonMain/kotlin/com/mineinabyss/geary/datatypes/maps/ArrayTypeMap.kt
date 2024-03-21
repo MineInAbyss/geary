@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.datatypes.maps
 
+import com.mineinabyss.geary.datatypes.BucketedULongArray
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.engine.archetypes.Archetype
 
@@ -12,7 +13,7 @@ open class ArrayTypeMap : TypeMap {
 //    private var archIndexes = IntArray(10)
 //    private var rows = IntArray(10)
     @PublishedApi
-    internal var archAndRow = ULongArray(10)
+    internal var archAndRow = BucketedULongArray()
     var size = 0
 
     // We don't return nullable record to avoid boxing.
@@ -30,36 +31,22 @@ open class ArrayTypeMap : TypeMap {
 
     override fun set(entity: Entity, archetype: Archetype, row: Int) {
         val id = entity.id.toInt()
-        if (id > size) {
-            size = id
-            while (id >= archAndRow.size)
-                grow()
-        }
-
         archAndRow[id] = (indexOrAdd(archetype).toULong() shl 32) or row.toULong()
-//        archIndexes[id] = indexOrAdd(archetype)
     }
 
     fun indexOrAdd(archetype: Archetype): Int {
+        if (archetype.indexInRecords != -1) return archetype.indexInRecords
         val index = archList.indexOf(archetype)
+        archetype.indexInRecords = index
         return if (index == -1) {
             archList.add(archetype)
             archList.lastIndex
         } else index
     }
 
-    fun grow() {
-        archAndRow = archAndRow.copyOf(size * 2)
-//        rows = rows.copyOf(size * 2)
-//        archIndexes = archIndexes.copyOf(size * 2)
-    }
-
-
     override fun remove(entity: Entity) {
         val id = entity.id.toInt()
         archAndRow[id] = 0UL
-//        archIndexes[id] = -1
-//        rows[id] = -1
     }
 
     override operator fun contains(entity: Entity): Boolean {
@@ -68,7 +55,7 @@ open class ArrayTypeMap : TypeMap {
     }
 
 
-    inline fun <T> runOn(entity: Entity, run: (archetype: Archetype, row: Int) -> T):T {
+    inline fun <T> runOn(entity: Entity, run: (archetype: Archetype, row: Int) -> T): T {
         val info = getArchAndRow(entity)
         return run(archList[(info shr 32).toInt()], info.toInt())
     }

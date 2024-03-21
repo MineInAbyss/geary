@@ -43,9 +43,10 @@ open class ArchetypeEngineModule(
         }
 
         override fun init(module: ArchetypeEngineModule) {
-            module.entityProvider.init(module.records)
             DI.add<ArchetypeEngineModule>(module)
             DI.add<GearyModule>(module)
+            module.entityProvider.init(module.records, module.archetypeProvider.rootArchetype)
+            module.write.init(module.records)
             module.componentProvider.createComponentInfo()
         }
 

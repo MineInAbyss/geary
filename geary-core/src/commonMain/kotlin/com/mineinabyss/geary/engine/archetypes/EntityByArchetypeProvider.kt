@@ -20,7 +20,7 @@ class EntityByArchetypeProvider(
 ) : EntityProvider {
     private lateinit var records: ArrayTypeMap
 //    private val archetypeProvider: ArchetypeProvider by lazy { archetypes.archetypeProvider }
-    private val root by lazy { archetypes.archetypeProvider.rootArchetype }
+    private lateinit var root: Archetype
 
     private val removedEntities: EntityStack = EntityStack()
     private val currId = atomic(0L)
@@ -48,15 +48,16 @@ class EntityByArchetypeProvider(
             }
         }
 
-        (records as ArrayTypeMap).runOn(entity) { archetype, row ->
+        records.runOn(entity) { archetype, row ->
             archetype.removeEntity(row)
             records.remove(entity)
             removedEntities.push(entity)
         }
     }
 
-    fun init(records: ArrayTypeMap) {
+    fun init(records: ArrayTypeMap, root: Archetype) {
         this.records = records
+        this.root = root
     }
 
     override fun getType(entity: Entity): EntityType = records.runOn(entity) { archetype, _ ->

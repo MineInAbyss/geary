@@ -18,7 +18,6 @@ class TestEngineModule(
 
     companion object : GearyModuleProviderWithDefault<TestEngineModule> {
         override fun init(module: TestEngineModule) {
-            module.entityProvider.init(module.records)
             ArchetypeEngineModule.init(module)
         }
 
