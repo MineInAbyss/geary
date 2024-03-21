@@ -3,7 +3,6 @@ package com.mineinabyss.geary.datatypes
 import kotlinx.serialization.Polymorphic
 
 typealias GearyEntityType = EntityType
-typealias GearyRecord = Record
 typealias GearyRelation = Relation
 
 /**

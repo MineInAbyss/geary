@@ -1,8 +1,6 @@
 package com.mineinabyss.geary.engine.archetypes
 
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.datatypes.Record
-import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.archetypes
@@ -10,28 +8,38 @@ import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.query.QueriedEntity
 
 class ArchetypeEventRunner : EventRunner {
-    private val records: TypeMap get() = archetypes.records
+    private val records get() = archetypes.records
 
     override fun callEvent(target: Entity, event: Entity, source: Entity?) {
-        callEvent(records[target], records[event], source?.let { records[source] })
+        records.runOn(target) { targetArc, targetRow ->
+            records.runOn(event) { eventArc, eventRow ->
+                if(source != null) records.runOn(source) { sourceArc, sourceRow ->
+                    callEvent(targetArc, targetRow, eventArc, eventRow, sourceArc, sourceRow)
+                } else callEvent(targetArc, targetRow, eventArc, eventRow, null, null)
+            }
+        }
     }
 
-    fun callEvent(target: Record, event: Record, source: Record?) {
-        val eventArc = event.archetype
-        val targetArc = target.archetype
-        val sourceArc = source?.archetype
-
-        fun QueriedEntity.reset(record: Record) {
-            originalArchetype = record.archetype
-            originalRow = record.row
+    fun callEvent(
+        targetArc: Archetype,
+        targetRow: Int,
+        eventArc: Archetype,
+        eventRow: Int,
+        sourceArc: Archetype?,
+        sourceRow: Int?
+    ) {
+        fun QueriedEntity.reset(arch: Archetype, row: Int) {
+            originalArchetype = arch
+            originalRow = row
             delegated = false
         }
 
         fun callListener(listener: Listener<*>) {
             val query = listener.query
-            query.event.reset(event)
-            query.reset(target)
-            source?.let { query.source.reset(it) }
+            query.event.reset(eventArc, eventRow)
+            query.reset(targetArc, targetRow)
+            if(sourceArc != null && sourceRow != null)
+                query.source.reset(sourceArc, sourceRow)
             listener.run()
         }
 

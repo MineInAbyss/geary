@@ -2,7 +2,7 @@ package com.mineinabyss.geary.systems.query
 
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.datatypes.Record
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.archetypes.Archetype
@@ -42,10 +42,16 @@ open class QueriedEntity(
     internal var originalRow = 0
 
     @UnsafeAccessors
-    val archetype: Archetype get() = if (delegated) delegate!!.archetype else originalArchetype
-    val row: Int get() = if (delegated) delegate!!.row else originalRow
+    val archetype: Archetype
+        get() = if (delegated)
+            archetypes.records.runOn(delegate!!) { archetype, _ -> archetype }
+        else originalArchetype
+    val row: Int
+        get() = if (delegated)
+            archetypes.records.runOn(delegate!!) { _, row -> row }
+        else originalRow
 
-    private var delegate: Record? = null
+    private var delegate: GearyEntity? = null
 
     @PublishedApi
     internal var delegated = false
@@ -55,7 +61,7 @@ open class QueriedEntity(
         get() {
             val entity = archetype.getEntity(row)
             if (!delegated) {
-                delegate = archetypes.records[entity]
+                delegate = entity
             }
             delegated = true
             return entity
