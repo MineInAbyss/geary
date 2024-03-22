@@ -11,23 +11,37 @@ class ArchetypeEventRunner : EventRunner {
     private val records get() = archetypes.records
 
     override fun callEvent(target: Entity, event: Entity, source: Entity?) {
-        records.runOn(target) { targetArc, targetRow ->
-            records.runOn(event) { eventArc, eventRow ->
-                if(source != null) records.runOn(source) { sourceArc, sourceRow ->
-                    callEvent(targetArc, targetRow, eventArc, eventRow, sourceArc, sourceRow)
-                } else callEvent(targetArc, targetRow, eventArc, eventRow, null, null)
+//        records.runOn(target) { targetArc, targetRow ->
+//            records.runOn(event) { eventArc, eventRow ->
+//                if(source != null) records.runOn(source) { sourceArc, sourceRow ->
+//                    callEvent(targetArc, targetRow, eventArc, eventRow, sourceArc, sourceRow)
+//                } else callEvent(targetArc, targetRow, eventArc, eventRow, null, null)
+//            }
+//        }
+
+        var targetArc: Archetype = archetypes.archetypeProvider.rootArchetype
+        var targetRow: Int = -1
+        var eventArc: Archetype = archetypes.archetypeProvider.rootArchetype
+        var eventRow: Int = -1
+        var sourceArc: Archetype? = null
+        var sourceRow: Int? = null
+        fun updateArcsAndRows() {
+            records.runOn(target) { arch, row ->
+                targetArc = arch
+                targetRow = row
+            }
+            records.runOn(event) { arch, row ->
+                eventArc = arch
+                eventRow = row
+            }
+            if (source != null) records.runOn(source) { arch, row ->
+                sourceArc = arch
+                sourceRow = row
             }
         }
-    }
 
-    fun callEvent(
-        targetArc: Archetype,
-        targetRow: Int,
-        eventArc: Archetype,
-        eventRow: Int,
-        sourceArc: Archetype?,
-        sourceRow: Int?
-    ) {
+        updateArcsAndRows()
+
         fun QueriedEntity.reset(arch: Archetype, row: Int) {
             originalArchetype = arch
             originalRow = row
@@ -35,11 +49,15 @@ class ArchetypeEventRunner : EventRunner {
         }
 
         fun callListener(listener: Listener<*>) {
+            updateArcsAndRows()
             val query = listener.query
             query.event.reset(eventArc, eventRow)
             query.reset(targetArc, targetRow)
-            if(sourceArc != null && sourceRow != null)
-                query.source.reset(sourceArc, sourceRow)
+            sourceArc?.let { arc ->
+                sourceRow?.let { row ->
+                    query.source.reset(arc, row)
+                }
+            }
             listener.run()
         }
 

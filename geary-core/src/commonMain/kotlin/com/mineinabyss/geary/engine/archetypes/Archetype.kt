@@ -21,9 +21,9 @@ class Archetype internal constructor(
     val type: EntityType,
     var id: Int
 ) {
-    private val records get() = archetypes.records
-    private val archetypeProvider get() = archetypes.archetypeProvider
-    private val eventRunner get() = archetypes.eventRunner
+    private val records = archetypes.records
+    private val archetypeProvider = archetypes.archetypeProvider
+    private val eventRunner = archetypes.eventRunner
 
     val entities: Sequence<Entity> get() = ids.getEntities()
 
@@ -298,11 +298,10 @@ class Archetype internal constructor(
                 event.addRelation(eventType, componentId, noEvent = true)
                 records.runOn(event) { eventArc, eventRow ->
                     eventRunner.callEvent(
-                        this, row,
-                        eventArc, eventRow,
-                        null, null
+                        getEntity(row),
+                        eventArc.getEntity(eventRow),
+                        null
                     )
-
                 }
             }
         }
