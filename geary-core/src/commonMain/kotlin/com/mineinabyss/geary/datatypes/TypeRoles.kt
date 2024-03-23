@@ -3,10 +3,13 @@
 
 package com.mineinabyss.geary.datatypes
 
-//can't make const because of the shl
-const val NO_ROLE: ULong = 0uL
-const val RELATION: ULong = 0x8000000000000000uL // 1 shl 63
-const val HOLDS_DATA: ULong = 0x4000000000000000uL // 1 shl 62
+//TODO Currently avoiding using consts because it's a breaking change, check if this is actually worth the perf.
+//const val NO_ROLE: ULong = 0uL
+//const val RELATION: ULong = 0x8000000000000000uL // 1 shl 63
+//const val HOLDS_DATA: ULong = 0x4000000000000000uL // 1 shl 62
+val NO_ROLE: ULong = 0uL
+val RELATION: ULong = 1uL shl 63
+val HOLDS_DATA: ULong = 1uL shl 62
 //4
 //5
 //5
