@@ -271,7 +271,7 @@ class Archetype internal constructor(
         val addIndex = indexOf(dataComponent)
         if (addIndex != -1) {
             componentData[addIndex][row] = data
-            if (callEvent) callComponentModifyEvent(geary.components.updatedComponent, row, componentId)
+            if (callEvent) callComponentModifyEvent(geary.components.updatedComponent, row, componentId, onUpdated)
             return
         }
 
@@ -325,6 +325,7 @@ class Archetype internal constructor(
         callEvent: Boolean = true,
     ) {
         val baseEntity = this.getEntity(baseRow)
+        val instanceEntity = instanceArch.getEntity(instanceRow)
         var instanceArch = instanceArch
         var instanceRow = instanceRow
         instanceArch.addComponent(instanceRow, Relation.of<InstanceOf?>(baseEntity).id, true) { arch, row ->
@@ -342,8 +343,10 @@ class Archetype internal constructor(
             }
         }
         baseEntity.children.fastForEach {
-            it.addParent(instanceArch.getEntity(instanceRow))
+            it.addParent(instanceEntity)
         }
+        records.runOn(instanceEntity) { arch, row -> instanceArch = arch; instanceRow = row }
+
         if (callEvent) instanceArch.callComponentModifyEvent(
             geary.components.extendedEntity,
             instanceRow,
