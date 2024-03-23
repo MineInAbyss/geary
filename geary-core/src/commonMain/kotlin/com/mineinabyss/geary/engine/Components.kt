@@ -17,6 +17,7 @@ class Components {
     val addedComponent = componentId<AddedComponent>()
     val setComponent = componentId<SetComponent>()
     val updatedComponent = componentId<UpdatedComponent>()
+    val removedComponent = componentId<RemovedComponent>()
     val extendedEntity = componentId<ExtendedEntity>()
     val entityRemoved = componentId<EntityRemoved>()
     val childOf = componentId<ChildOf>()

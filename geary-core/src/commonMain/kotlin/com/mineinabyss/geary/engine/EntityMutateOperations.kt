@@ -23,7 +23,7 @@ interface EntityMutateOperations {
     fun extendFor(entity: Entity, base: Entity)
 
     /** Removes a [componentId] from an [entity] and clears any data previously associated with it. */
-    fun removeComponentFor(entity: Entity, componentId: ComponentId): Boolean
+    fun removeComponentFor(entity: Entity, componentId: ComponentId, noEvent: Boolean): Boolean
 
     /** Removes all components from an entity. */
     fun clearEntity(entity: Entity)
