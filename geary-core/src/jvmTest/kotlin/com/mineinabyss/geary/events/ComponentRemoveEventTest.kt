@@ -6,6 +6,7 @@ import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.builders.listener
 import com.mineinabyss.geary.systems.query.ListenerQuery
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -134,5 +135,29 @@ internal class ComponentRemoveEventTest : GearyTest() {
         called.filter { it == entity1 }.size shouldBe 1
         called.filter { it == entity2 }.size shouldBe 1
         called.filter { it == entity3 }.size shouldBe 0
+    }
+
+    @Test
+    fun `should correctly remove component if event listener modifies type`() {
+        // arrange
+        var called = 0
+        geary.listener(object : ListenerQuery() {
+            val string by get<String>()
+            override fun ensure() = event.anyRemoved(::string)
+        }).exec {
+            called++
+            entity.set(1)
+        }
+        val entity = entity {
+            set("data")
+        }
+
+        // act
+        entity.remove<String>()
+
+        // assert
+        called shouldBe 1
+        entity.get<String>().shouldBeNull()
+        entity.get<Int>() shouldBe 1
     }
 }
