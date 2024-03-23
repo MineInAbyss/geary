@@ -33,6 +33,8 @@ abstract class ListenerQuery : Query() {
     }
     protected fun EventQueriedEntity.anySet(vararg props: KProperty<*>) = anySet(*getAccessorsFor(*props))
 
+    protected fun EventQueriedEntity.anyRemoved(vararg props: KProperty<*>) = anyRemoved(*getAccessorsFor(*props))
+
     protected fun EventQueriedEntity.anyAdded(vararg props: KProperty<*>) = anyAdded(*getAccessorsFor(*props))
 
     protected fun EventQueriedEntity.anyFirstSet(vararg props: KProperty<*>) = anyFirstSet(*getAccessorsFor(*props))
@@ -55,6 +57,17 @@ abstract class ListenerQuery : Query() {
     protected fun EventQueriedEntity.anySet(vararg props: Accessor) {
         forEachAccessorComponent(props.toSet()) { onSet(it) }
     }
+
+
+    /**
+     * Listens to removal of any component read by any of [accessors].
+     * Entity will still have the component on it when the event is fire,
+     * the component will *always* be removed after all relevant listeners are fired.
+     */
+    protected fun EventQueriedEntity.anyRemoved(vararg accessors: Accessor) {
+        forEachAccessorComponent(accessors.toSet()) { onRemove(it) }
+    }
+
 
     /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
     protected fun EventQueriedEntity.anyAdded(vararg props: Accessor) {

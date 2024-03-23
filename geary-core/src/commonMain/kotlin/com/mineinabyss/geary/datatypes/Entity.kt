@@ -153,8 +153,8 @@ value class Entity(val id: EntityId) {
         remove(componentId(kClass))
 
     /** Removes a component with id [component] from this entity. */
-    fun remove(component: ComponentId): Boolean =
-        write.removeComponentFor(this, component)
+    fun remove(component: ComponentId, noEvent: Boolean = false): Boolean =
+        write.removeComponentFor(this, component, noEvent)
 
     /**
      * Removes a list of [components] from this entity.
@@ -301,8 +301,8 @@ value class Entity(val id: EntityId) {
         return removeRelation<K>(component<T>())
     }
 
-    inline fun <reified K : Any> removeRelation(target: Entity): Boolean {
-        return geary.write.removeComponentFor(this, Relation.of<K>(target).id)
+    inline fun <reified K : Any> removeRelation(target: Entity, noEvent: Boolean = false): Boolean {
+        return geary.write.removeComponentFor(this, Relation.of<K>(target).id, noEvent)
     }
 
     // Events

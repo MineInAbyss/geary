@@ -2,10 +2,8 @@ package com.mineinabyss.geary.engine.archetypes.operations
 
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
-import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityMutateOperations
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
-import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.modules.archetypes
 
 class ArchetypeMutateOperations : EntityMutateOperations {
@@ -44,12 +42,12 @@ class ArchetypeMutateOperations : EntityMutateOperations {
         }
     }
 
-    override fun removeComponentFor(entity: Entity, componentId: ComponentId): Boolean {
+    override fun removeComponentFor(entity: Entity, componentId: ComponentId, noEvent: Boolean): Boolean {
         val a = records.runOn(entity) { archetype, row ->
-            archetype.removeComponent(row, componentId.withRole(HOLDS_DATA))
+            archetype.removeComponent(row, componentId.withRole(HOLDS_DATA), !noEvent)
         }
         val b = records.runOn(entity) { archetype, row ->
-            archetype.removeComponent(row, componentId.withoutRole(HOLDS_DATA))
+            archetype.removeComponent(row, componentId.withoutRole(HOLDS_DATA), !noEvent)
         }
         return a || b // return whether anything was changed
     }
