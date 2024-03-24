@@ -145,12 +145,12 @@ value class Entity(val id: EntityId) {
      *
      * @return Whether the component was present before removal.
      */
-    inline fun <reified T : Component> remove(): Boolean =
-        remove(componentId<T>())
+    inline fun <reified T : Component> remove(noEvent: Boolean = false): Boolean =
+        remove(componentId<T>(), noEvent)
 
     /** Removes a component whose class is [kClass] from this entity. */
-    fun remove(kClass: KClass<*>): Boolean =
-        remove(componentId(kClass))
+    fun remove(kClass: KClass<*>, noEvent: Boolean = false): Boolean =
+        remove(componentId(kClass), noEvent)
 
     /** Removes a component with id [component] from this entity. */
     fun remove(component: ComponentId, noEvent: Boolean = false): Boolean =
@@ -296,9 +296,8 @@ value class Entity(val id: EntityId) {
         geary.write.addComponentFor(this, Relation.of(kind, target).id, noEvent)
     }
 
-    /** Removes a relation key of type [K] and value of type [V]. */
-    inline fun <reified K : Component, reified T : Component> removeRelation(): Boolean {
-        return removeRelation<K>(component<T>())
+    inline fun <reified K : Component, reified T : Component> removeRelation(noEvent: Boolean = false): Boolean {
+        return removeRelation<K>(component<T>(), noEvent)
     }
 
     inline fun <reified K : Any> removeRelation(target: Entity, noEvent: Boolean = false): Boolean {
@@ -391,4 +390,8 @@ value class Entity(val id: EntityId) {
     @DangerousComponentOperation
     fun setPersisting(components: Collection<Component>): Collection<Component> =
         setPersisting(component = components)
+
+    // Marked for removal. Avoid breaking changes from adding the remove event.
+    fun remove(kClass: KClass<*>): Boolean = remove(kClass, false)
+    fun remove(component: ComponentId): Boolean = remove(component, false)
 }
