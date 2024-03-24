@@ -52,6 +52,9 @@ class ArchetypeMutateOperations : EntityMutateOperations {
         return a || b // return whether anything was changed
     }
 
+    override fun removeComponentFor(entity: Entity, componentId: ComponentId): Boolean =
+        removeComponentFor(entity, componentId, false)
+
     override fun clearEntity(entity: Entity) {
         records.runOn(entity) { archetype, row ->
             archetype.removeEntity(row)
