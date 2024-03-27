@@ -57,6 +57,7 @@ class PrefabLoader {
         val decoded = runCatching {
             val serializer = PolymorphicListAsMapSerializer.of(PolymorphicSerializer(GearyComponent::class))
             val ext = path.name.substringAfterLast('.')
+            logger.d("Loading prefab at $path")
             formats[ext]?.decodeFromFile(serializer, path)
                 ?: throw IllegalArgumentException("Unknown file format $ext")
         }

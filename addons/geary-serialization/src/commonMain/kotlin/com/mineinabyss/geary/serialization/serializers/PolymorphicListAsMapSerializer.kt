@@ -58,11 +58,12 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                                 compositeDecoder.decodeMapValue(componentSerializer)
                             }.onSuccess { components += it }.onFailure {
                                 if (skipMalformedComponents) {
-                                    geary.logger.w("Malformed component $key, ignoring")
-                                    it.stackTraceToString()
-                                        .lineSequence()
-                                        .joinToString("\n", limit = 10, truncated = "...")
-                                        .let(geary.logger::w)
+                                    geary.logger.w(
+                                        "Malformed component $key, ignoring:\n" +
+                                                it.stackTraceToString()
+                                                    .lineSequence()
+                                                    .joinToString("\n", limit = 10, truncated = "...")
+                                    )
                                 } else throw it
                             }
                         }.onFailure {
