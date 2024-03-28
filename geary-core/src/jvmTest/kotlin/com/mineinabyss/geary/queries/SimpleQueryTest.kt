@@ -40,6 +40,18 @@ class SimpleQueryTest : GearyTest() {
     }
 
     @Test
+    fun `entities should return matched entities correctly`() {
+        val query = geary.queryManager.trackQuery(MyQuery())
+
+        val nums = mutableListOf<Int>()
+        query.entities().forEach {
+            nums.add(it.get<Int>()!!)
+        }
+
+        nums.sorted() shouldBe (0..9).toList()
+    }
+
+    @Test
     fun `first should correctly return first matched entity`() {
         val query = geary.queryManager.trackQuery(MyQuery())
 

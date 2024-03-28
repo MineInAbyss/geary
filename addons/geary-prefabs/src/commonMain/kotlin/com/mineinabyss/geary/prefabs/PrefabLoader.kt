@@ -34,7 +34,11 @@ class PrefabLoader {
                     if (logger.config.minSeverity <= Severity.Debug)
                         logger.e("Could not read prefab $path:\n\u001B[37m${it.stackTraceToString()}")
                     else
-                        logger.e("Could not read prefab $path:\n\u001B[37m${it.message}")
+                        logger.e(
+                            "Could not read prefab $path:\n\u001B[37m${
+                                it.stackTraceToString().lines().take(5).joinToString("\n")
+                            }"
+                        )
                 }
             }
         }

@@ -35,6 +35,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
             try {
                 while (row < upTo) {
                     query.originalRow = row
+                    query.delegated = false
                     run(query)
                     row++
                 }
@@ -77,6 +78,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
         fun prepareRow(): Boolean {
             if (row >= upTo) return false
             query.originalRow = row
+            query.delegated = false
             return true
         }
 
