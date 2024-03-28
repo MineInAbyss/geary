@@ -157,6 +157,15 @@ internal class GearyEntityTests : GearyTest() {
         entity.getAllPersisting().shouldContainExactly("Test")
     }
 
+    @Test
+    fun `should correctly remove entities`() {
+        val entity = entity { set("Test") }
+
+        entity.exists() shouldBe true
+        entity.removeEntity()
+        entity.exists() shouldBe false
+    }
+
     @Nested
     inner class ChildTest {
         @Test

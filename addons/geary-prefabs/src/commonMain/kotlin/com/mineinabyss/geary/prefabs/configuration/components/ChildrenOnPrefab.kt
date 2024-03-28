@@ -2,10 +2,9 @@ package com.mineinabyss.geary.prefabs.configuration.components
 
 import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.datatypes.Component
-import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
+import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import kotlinx.serialization.Polymorphic
-import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -23,7 +22,7 @@ class ChildrenOnPrefab(
 ) {
     class Serializer : InnerSerializer<Map<String, List<Component>>, ChildrenOnPrefab>(
         "geary:children",
-        MapSerializer(String.serializer(), PolymorphicListAsMapSerializer.of(PolymorphicSerializer(Component::class))),
+        MapSerializer(String.serializer(), PolymorphicListAsMapSerializer.ofComponents()),
         { ChildrenOnPrefab(it) },
         { it.nameToComponents },
     )

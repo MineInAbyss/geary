@@ -1,50 +1,66 @@
 package com.mineinabyss.geary.datatypes.maps
 
 import com.mineinabyss.geary.datatypes.GearyComponentId
+import com.mineinabyss.geary.datatypes.IdList
 import com.mineinabyss.geary.engine.archetypes.Archetype
 
 /**
  * Inlined class that acts as a map of components to archetypes. Uses archetype ids for better performance.
  */
-expect class CompId2ArchetypeMap() {
-    operator fun get(id: GearyComponentId): Archetype?
-    operator fun set(id: GearyComponentId, archetype: Archetype)
 
-    fun entries(): Set<Map.Entry<ULong, Archetype>>
-
-    fun clear()
-
-    fun remove(id: GearyComponentId)
-
-    operator fun contains(id: GearyComponentId): Boolean
-
-    fun getOrSet(id: GearyComponentId, put: () -> Archetype): Archetype
-
-    val size: Int
-}
-
-class CompId2ArchetypeMapViaMutableMap {
-    val inner: MutableMap<ULong, Archetype> = mutableMapOf()
-    operator fun get(id: GearyComponentId): Archetype? = inner[id]
+class CompId2ArchetypeMap {
+    //    val inner = Long2ObjectArrayMap<Archetype>()
+    val ids = IdList()
+    val values = mutableListOf<Archetype>()
+    //    actual operator fun get(id: GearyComponentId): Archetype? =
+//        values[entries.indexOf(id).also { if (it == -1) return null }]
     operator fun set(id: GearyComponentId, archetype: Archetype) {
-        inner[id] = archetype
+        val index = ids.indexOf(id)
+        if (index == -1) {
+            ids.add(id)
+            values.add(archetype)
+        } else {
+            values[index] = archetype
+        }
     }
 
-    fun entries(): Set<Map.Entry<ULong, Archetype>> = inner.entries
-
     fun remove(id: GearyComponentId) {
-        inner.remove(id)
+        val index = ids.indexOf(id)
+        if (index != -1) {
+            ids.removeAt(index)
+            values[index] = values[values.lastIndex]
+            values.removeLast()
+        }
     }
 
     fun clear() {
-        inner.clear()
+        ids.size = 0
+        values.clear()
     }
 
-    val size: Int get() = inner.size
+    inline fun forEach(action: (ULong, Archetype) -> Unit) {
+        for(i in 0 until ids.size) {
+            action(ids[i], values[i])
+        }
+    }
 
-    operator fun contains(id: GearyComponentId): Boolean = inner.containsKey(id)
+    val size: Int get() = ids.size
 
-    fun getOrSet(id: GearyComponentId, put: () -> Archetype): Archetype {
-        return inner[id] ?: put().also { inner[id] = it }
+    operator fun contains(id: GearyComponentId): Boolean = ids.indexOf(id) != -1
+
+    inline fun getOrElse(id: GearyComponentId, defaultValue: () -> Archetype): Archetype {
+        val index = ids.indexOf(id)
+        return if (index == -1) defaultValue() else values[index]
+    }
+
+    inline fun getOrSet(id: GearyComponentId, put: () -> Archetype): Archetype {
+        val index = ids.indexOf(id)
+        if (index == -1) {
+            val arc = put()
+            ids.add(id)
+            values.add(arc)
+            return arc
+        }
+        return values[index]
     }
 }

@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.modules
 
-import com.mineinabyss.geary.datatypes.maps.SynchronizedTypeMap
+import com.mineinabyss.geary.datatypes.maps.SynchronizedArrayTypeMap
 import com.mineinabyss.geary.engine.archetypes.EntityByArchetypeProvider
 
 /**
@@ -13,8 +13,8 @@ class TestEngineModule(
     reuseIDsAfterRemoval: Boolean = true,
     useSynchronized: Boolean = false,
 ) : ArchetypeEngineModule() {
+    override val records = if (useSynchronized) SynchronizedArrayTypeMap() else super.records
     override val entityProvider = EntityByArchetypeProvider(reuseIDsAfterRemoval)
-    override val records = if (useSynchronized) SynchronizedTypeMap(super.records) else super.records
 
     companion object : GearyModuleProviderWithDefault<TestEngineModule> {
         override fun init(module: TestEngineModule) {

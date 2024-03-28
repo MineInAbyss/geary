@@ -4,11 +4,20 @@ import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
+import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.systems.builders.listener
+import com.mineinabyss.geary.systems.query.ListenerQuery
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class InstancingTest: GearyTest() {
+class InstancingTest : GearyTest() {
+    @BeforeEach
+    fun reset() { // Order of component init and events we register matters for tests here
+        resetEngine()
+    }
+
     @Test
     fun `should inherit relations`() {
         // arrange
@@ -52,6 +61,30 @@ class InstancingTest: GearyTest() {
 
         // assert
         instance.get<String>().shouldBeNull()
+        instance.get<Int>() shouldBe 1
+    }
+
+
+    @Test
+    fun `should correctly extend entity when listener modifies it during extend process`() {
+        // arrange
+        geary.listener(object : ListenerQuery() {
+            val data by get<Int>()
+            override fun ensure() = event.anySet(::data)
+        }).exec {
+            entity.set("Modifying!")
+        }
+        val prefab = entity {
+            set(1)
+            set("test")
+        }
+
+        // act
+        // order will be set int -> event fires -> set string (because of the creation order of the component ids)
+        val instance = entity { extend(prefab) }
+
+        // assert
+        instance.get<String>() shouldBe "test"
         instance.get<Int>() shouldBe 1
     }
 }

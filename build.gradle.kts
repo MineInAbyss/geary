@@ -15,12 +15,6 @@ allprojects {
     }
 }
 
-subprojects {
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        kotlinOptions.freeCompilerArgs += "-opt-in=kotlinx.serialization.ExperimentalSerializationApi"
-    }
-}
-
 allprojects {
     apply(plugin = "org.jetbrains.dokka")
 
@@ -47,5 +41,12 @@ allprojects {
                 }
             }
         }
+    }
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        kotlinOptions.freeCompilerArgs += listOf(
+            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+            "-Xexpect-actual-classes"
+        )
     }
 }

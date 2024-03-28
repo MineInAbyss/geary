@@ -12,7 +12,7 @@ fun Entity.addParent(parent: Entity) {
 
 /** Adds a list of [parents] entities to this entity. */
 fun Entity.addParents(parents: Array<Entity>) {
-    parents.forEach { addParent(it) }
+    parents.fastForEach { addParent(it) }
 }
 
 /** Removes a [parent], also unlinking this child from that parent. */
@@ -32,7 +32,7 @@ fun Entity.addChild(child: Entity) {
 
 /** Adds a list of [children] entities to this entity. */
 fun Entity.addChildren(children: Array<Entity>) {
-    children.forEach { addChild(it) }
+    children.fastForEach { addChild(it) }
 }
 
 /** Removes a [child], also unlinking this parent from that child. */
@@ -42,7 +42,7 @@ fun Entity.removeChild(child: Entity) {
 
 /** Removes all of this entity's children, also unlinking this parent from them. */
 fun Entity.clearChildren() {
-    children.forEach { remove(it.id) }
+    children.fastForEach { remove(it.id) }
 }
 
 /** Gets the first parent of this entity */

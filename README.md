@@ -2,7 +2,8 @@
 
 # Geary
 [![Java CI with Gradle](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml/badge.svg)](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml)
-[![Package](https://img.shields.io/maven-metadata/v?metadataUrl=https://repo.mineinabyss.com/releases/com/mineinabyss/geary-core/maven-metadata.xml)](https://repo.mineinabyss.com/#/releases/com/mineinabyss/geary-core)
+[![Package](https://img.shields.io/maven-metadata/v?metadataUrl=https://repo.mineinabyss.com/releases/com/mineinabyss/geary-core/maven-metadata.xml&color=light_green)](https://repo.mineinabyss.com/#/releases/com/mineinabyss/geary-core)
+[![Package](https://img.shields.io/maven-metadata/v?metadataUrl=https://repo.mineinabyss.com/snapshots/com/mineinabyss/geary-core/maven-metadata.xml&label=prerelease)](https://repo.mineinabyss.com/#/snapshots/com/mineinabyss/geary-core)
 [![Wiki](https://img.shields.io/badge/-Project%20Wiki-blueviolet?logo=Wikipedia&labelColor=gray)](https://wiki.mineinabyss.com/geary)
 [![Contribute](https://shields.io/badge/Contribute-e57be5?logo=github%20sponsors&style=flat&logoColor=white)](https://wiki.mineinabyss.com/contribute)
 </div>
@@ -19,24 +20,25 @@ Geary is an Entity Component System (ECS) written in Kotlin. The engine design i
 - Persistent components and loading prefabs from files thanks to [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization/)
 - Addon system to use only what you need
 
-## Example
+## Usage
 
-A simple ssytem that iterates over all entities with a position and velocity, updating the position every engine tick.
+
+We host a WIP wiki, the best way to get up-to-date info is reading the [quickstart-guide](https://wiki.mineinabyss.com/geary/guide/quickstart/), here's an excerpt, a simple velocity system:
+
+
 ```kotlin
 data class Position(var x: Double, var y: Double)
 data class Velocity(var x: Double, var y: Double)
 
-class UpdatePositionSystem : TickingSystem(interval = 20.milliseconds) {
-    // Specify all components we want (Geary also supports branched AND/OR/NOT statements for selection)
-    val Pointer.position by get<Position>()
-    val Pointer.velocity by get<Velocity>()
-
-    override fun Pointer.tick() {
-        // We can access our components like regular variables!
-        position.x += velocity.x
-        position.y += velocity.y
-    }
+fun GearyModule.updatePositionSystem() = system(object: Query() {
+    val position by get<Position>()
+    val velocity by get<Velocity>()
+}).every(interval = 20.milliseconds).exec {
+    // We can access our components like regular variables!
+    position.x += velocity.x
+    position.y += velocity.y
 }
+
 
 fun main() {
     // Set up geary
@@ -45,18 +47,20 @@ fun main() {
         install(Prefabs)
     }
 
-    geary.pipeline.addSystem(UpdatePositionSystem())
+    val posSystem = geary.updatePositionSystem()
 
     // Create an entity the system can run on
     entity {
         setAll(Position(0.0, 0.0), Velocity(1.0, 0.0))
     }
+
+    posSystem.tick() // exec just this system
+    geary.engine.tick() // exec all registered repeating systems, interval used to calculate every n ticks to run
+    
+    val positions: List<Position> = posSystem.map { position }
 }
 
 ```
-## Usage
-
-A WIP wiki can be found at [wiki.mineinabyss.com](https://wiki.mineinabyss.com/geary/)
 
 ### Gradle
 ```kotlin
@@ -76,5 +80,4 @@ dependencies {
 As the project matures, our primary goal is to make it useful to more people. Here are a handful of features we hope to achieve:
 - Multiplatform support, with js, jvm, and native targets
 - Publish numbers for benchmarks and cover more parts of the engine with them
-- Component data migrations
-- Complex queries (including relations like parent/child)
+- Relation queries, ex. entities with a parent that has X component.

@@ -1,6 +1,8 @@
 package com.mineinabyss.geary.serialization.serializers
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -11,7 +13,10 @@ abstract class InnerSerializer<I, O>(
     val transform: (I) -> O,
     val inverseTransform: (O) -> I,
 ) : KSerializer<O> {
-    override val descriptor = SerialDescriptor(serialName, inner.descriptor)
+    override val descriptor =
+        if (inner.descriptor.kind is PrimitiveKind)
+            PrimitiveSerialDescriptor(serialName, inner.descriptor.kind as PrimitiveKind)
+        else SerialDescriptor(serialName, inner.descriptor)
 
     override fun deserialize(decoder: Decoder): O {
         return transform(inner.deserialize(decoder))

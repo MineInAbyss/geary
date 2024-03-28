@@ -1,25 +1,26 @@
 package com.mineinabyss.geary.engine.archetypes.operations
 
 import com.mineinabyss.geary.datatypes.*
-import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityReadOperations
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 
 class ArchetypeReadOperations : EntityReadOperations {
-    private val records: TypeMap get() = archetypes.records
+    private val records get() = archetypes.records
 
     override fun getComponentFor(entity: Entity, componentId: ComponentId): Component? {
-        val (archetype, row) = records[entity]
-        return archetype[row, componentId.let { if (it.hasRole(RELATION)) it else it.withRole(HOLDS_DATA) }]
+        records.runOn(entity) { archetype, row ->
+            return archetype[row, componentId.let { if (it.hasRole(RELATION)) it else it.withRole(HOLDS_DATA) }]
+        }
     }
 
     override fun getComponentsFor(entity: Entity): Array<Component> {
-        val (archetype, row) = records[entity]
-        return archetype.getComponents(row).also { array ->
-            archetype.relationsWithData.forEach { relation ->
-                val i = archetype.indexOf(relation)
-                array[i] = RelationWithData(array[i], null, Relation.of(relation))
+        records.runOn(entity) { archetype, row ->
+            return archetype.getComponents(row).also { array ->
+                archetype.relationsWithData.forEach { relation ->
+                    val i = archetype.indexOf(relation)
+                    array[i] = RelationWithData(array[i], null, Relation.of(relation))
+                }
             }
         }
     }
@@ -32,15 +33,13 @@ class ArchetypeReadOperations : EntityReadOperations {
         entity: Entity,
         kind: ComponentId,
         target: EntityId,
-    ): List<RelationWithData<*, *>> {
-        val (arc, row) = records[entity]
-
-        return arc.readRelationDataFor(row, kind, target, arc.getRelations(kind, target))
+    ): List<RelationWithData<*, *>> = records.runOn(entity) { archetype, row ->
+        return archetype.readRelationDataFor(row, kind, target, archetype.getRelations(kind, target))
     }
 
     override fun getRelationsFor(entity: Entity, kind: ComponentId, target: EntityId): List<Relation> =
-        records[entity].archetype.getRelations(kind, target)
+        records.runOn(entity) { archetype, _ -> archetype.getRelations(kind, target) }
 
     override fun hasComponentFor(entity: Entity, componentId: ComponentId): Boolean =
-        componentId in records[entity].archetype
+        records.runOn(entity) { archetype, _ -> componentId in archetype }
 }

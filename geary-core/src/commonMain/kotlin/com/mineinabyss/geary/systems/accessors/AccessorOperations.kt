@@ -1,31 +1,36 @@
 package com.mineinabyss.geary.systems.accessors
 
-import com.mineinabyss.geary.datatypes.Component
-import com.mineinabyss.geary.datatypes.HOLDS_DATA
-import com.mineinabyss.geary.datatypes.Relation
-import com.mineinabyss.geary.datatypes.withRole
+import com.mineinabyss.geary.components.events.ExtendedEntity
+import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.datatypes.family.MutableFamily
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
+import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.accessors.type.*
-import kotlin.reflect.KProperty
+import com.mineinabyss.geary.systems.query.EventQueriedEntity
+import com.mineinabyss.geary.systems.query.QueriedEntity
 
-open class AccessorOperations {
+abstract class AccessorOperations {
+    abstract val cacheAccessors: Boolean
+
     /** Accesses a component, ensuring it is on the entity. */
-    inline fun <reified T : Any> get(): ComponentAccessor<T> {
-        return NonNullComponentAccessor(componentId<T>().withRole(HOLDS_DATA))
+    protected inline fun <reified T : Any> QueriedEntity.get(): ComponentAccessor<T> {
+        return addAccessor {
+            NonNullComponentAccessor(cacheAccessors, null, this, componentId<T>().withRole(HOLDS_DATA))
+        }
     }
 
     /** Accesses a data stored in a relation with kind [K] and target type [T], ensuring it is on the entity. */
-    inline fun <reified K: Any, reified T : Any> getRelation(): ComponentAccessor<T> {
-        return NonNullComponentAccessor(Relation.of<K, T>().id)
+    protected inline fun <reified K : Any, reified T : Any> QueriedEntity.getRelation(): ComponentAccessor<T> {
+        return addAccessor { NonNullComponentAccessor(cacheAccessors, null, this, Relation.of<K, T>().id) }
     }
 
-    /**
-     * Accesses a component, allows removing it by setting to null.
-     * As a result, the type is nullable since it may be removed during system runtime.
-     */
-    fun <T: Any> ComponentAccessor<T>.removable(): RemovableComponentAccessor<T> {
-        return RemovableComponentAccessor(id)
+    inline fun <T : Accessor> QueriedEntity.addAccessor(create: () -> T): T {
+        val accessor = create()
+        accessors.add(accessor)
+        if (accessor is ComponentAccessor<*>) cachingAccessors.add(accessor)
+        if (accessor.originalAccessor != null) accessors.remove(accessor.originalAccessor)
+        return accessor
     }
 
     /**
@@ -33,23 +38,23 @@ open class AccessorOperations {
      * Default gets recalculated on every call to the accessor.
      */
     fun <T> ComponentAccessor<T & Any>.orDefault(default: () -> T): ComponentOrDefaultAccessor<T> {
-        return ComponentOrDefaultAccessor(id, default)
+        return queriedEntity.addAccessor { ComponentOrDefaultAccessor(this, queriedEntity, id, default) }
     }
 
     /** Maps an accessor, will recalculate on every call. */
     fun <T, U, A : ReadOnlyAccessor<T>> A.map(mapping: (T) -> U): ReadOnlyAccessor<U> {
-        return object : ReadOnlyAccessor<U>, FamilyMatching {
-            override val family = (this@map as? FamilyMatching)?.family
+        return queriedEntity.addAccessor {
+            when (this) {
+                is FamilyMatching -> object : ReadOnlyAccessor<U> by MappedAccessor(this, mapping),
+                    FamilyMatching by this {}
 
-            override fun getValue(thisRef: Pointer, property: KProperty<*>): U {
-                val value = this@map.getValue(thisRef, property)
-                return mapping(value)
+                else -> MappedAccessor(this, mapping)
             }
         }
     }
 
     /** Accesses a component or `null` if the entity doesn't have it. */
-    fun <T: Any> ComponentAccessor<T>.orNull(): ComponentOrDefaultAccessor<T?> {
+    fun <T : Any> ComponentAccessor<T>.orNull(): ComponentOrDefaultAccessor<T?> {
         return orDefault { null }
     }
 
@@ -65,12 +70,30 @@ open class AccessorOperations {
      * - One of [K] or [T] is [Any] => gets all relations matching the other (specified) type.
      * - Note: nullability rules are still upheld with [Any].
      */
-    inline fun <reified K : Component?, reified T : Component?> getRelations(): RelationsAccessor {
-        return RelationsAccessor(componentIdWithNullable<K>(), componentIdWithNullable<T>())
+    protected inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelations(): RelationsAccessor {
+        return addAccessor { RelationsAccessor(null, this, componentIdWithNullable<K>(), componentIdWithNullable<T>()) }
     }
 
     /** @see getRelations */
-    inline fun <reified K : Component?, reified T : Component?> getRelationsWithData(): RelationsWithDataAccessor<K, T> {
-        return RelationsWithDataAccessor(componentIdWithNullable<K>(), componentIdWithNullable<T>())
+    protected inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelationsWithData(): RelationsWithDataAccessor<K, T> {
+        return addAccessor {
+            RelationsWithDataAccessor(
+                null,
+                this,
+                componentIdWithNullable<K>(),
+                componentIdWithNullable<T>()
+            )
+        }
+    }
+
+    protected operator fun QueriedEntity.invoke(init: MutableFamily.Selector.And.() -> Unit) {
+        val family = com.mineinabyss.geary.datatypes.family.family(init)
+        extraFamilies.add(family)
+    }
+
+    /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
+    protected fun EventQueriedEntity.extendedEntity(): ReadOnlyAccessor<Entity> {
+        invoke { onExtendedEntity() }
+        return getRelations<ExtendedEntity?, Any?>().map { it.single().target.toGeary() }
     }
 }

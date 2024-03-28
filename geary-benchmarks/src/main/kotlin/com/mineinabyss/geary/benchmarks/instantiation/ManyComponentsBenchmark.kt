@@ -27,7 +27,7 @@ class ManyComponentsBenchmark {
     }
 
     @Benchmark
-    fun create1MilEntitiesWithUniqueComponentEach() {
+    fun createTenThousandEntitiesWithUniqueComponentEach() {
         repeat(10000) {
             entity {
                 addRelation<String>(it.toLong().toGeary())
@@ -38,5 +38,5 @@ class ManyComponentsBenchmark {
 
 fun main() {
     geary(TestEngineModule)
-    ManyComponentsBenchmark().create1MilEntitiesWithUniqueComponentEach()
+    ManyComponentsBenchmark().createTenThousandEntitiesWithUniqueComponentEach()
 }

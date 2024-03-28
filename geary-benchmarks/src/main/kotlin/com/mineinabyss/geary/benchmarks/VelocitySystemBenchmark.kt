@@ -2,12 +2,11 @@ package com.mineinabyss.geary.benchmarks
 
 import com.mineinabyss.geary.benchmarks.helpers.oneMil
 import com.mineinabyss.geary.benchmarks.helpers.tenMil
-import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.RepeatingSystem
-import com.mineinabyss.geary.systems.accessors.Pointer
+import com.mineinabyss.geary.systems.query.Query
+import com.mineinabyss.geary.systems.builders.system
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Scope
 import org.openjdk.jmh.annotations.Setup
@@ -18,32 +17,19 @@ class VelocitySystemBenchmark {
     data class Velocity(val x: Float, val y: Float)
     data class Position(var x: Float, var y: Float)
 
-    object VelocitySystem : RepeatingSystem() {
-        private val Pointer.velocity by get<Velocity>()
-        private var Pointer.position by get<Position>()
-
-        override fun Pointer.tick() {
-            position.x += velocity.x
-            position.y += velocity.y
-        }
+    fun createVelocitySystem() = geary.system(object : Query() {
+        val velocity by get<Velocity>()
+        var position by get<Position>()
+    }).exec {
+        position.x += velocity.x
+        position.y += velocity.y
     }
-
-    // sanity check that `by` and a function call is not causing slowdowns
-    object VelocitySystemNoBoxing : RepeatingSystem() {
-        private val velocity = get<Velocity>()
-        private var position = get<Position>()
-
-        val test by family {
-            hasSet<Velocity>()
-            hasSet<Position>()
-        }
-
-        override fun tickAll() {
-            forEach {
-                position[it].x += velocity[it].x
-                position[it].y += velocity[it].y
-            }
-        }
+    fun createVelocitySystemNoDelegates() = geary.system(object : Query() {
+        val velocity = get<Velocity>()
+        var position = get<Position>()
+    }).exec {
+        position().x += velocity().x
+        position().y += velocity().y
     }
 
     val velocities = Array(tenMil) { Velocity(it.toFloat() / oneMil, it.toFloat() / oneMil) }
@@ -62,24 +48,24 @@ class VelocitySystemBenchmark {
     }
 
     @Benchmark
-    fun velocitySystem() {
-        VelocitySystem.tickAll()
-    }
-
-    @Benchmark
-    fun velocitySystemNoBoxing() {
-        VelocitySystemNoBoxing.tickAll()
+    fun velocitySystemNoDelegates() {
+        createVelocitySystemNoDelegates().tick()
     }
 
     // Theoretical performance with zero ECS overhead
     @Benchmark
     fun pureArrays() {
         var i = 0
-        while(i < tenMil) {
+        while (i < tenMil) {
             positions[i].x += velocities[i].x
             positions[i].y += velocities[i].y
             i++
         }
+    }
+
+    @Benchmark
+    fun velocitySystem() {
+        createVelocitySystem().tick()
     }
 }
 
@@ -88,7 +74,7 @@ fun main() {
         setUp()
 
         repeat(400) {
-//            velocitySystem()
+            createVelocitySystem()
         }
     }
 }

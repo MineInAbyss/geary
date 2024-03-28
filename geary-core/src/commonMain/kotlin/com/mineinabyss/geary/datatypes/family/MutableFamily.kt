@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.datatypes.family
 
 import com.mineinabyss.geary.components.events.AddedComponent
+import com.mineinabyss.geary.components.events.RemovedComponent
 import com.mineinabyss.geary.components.events.SetComponent
 import com.mineinabyss.geary.components.events.UpdatedComponent
 import com.mineinabyss.geary.datatypes.*
@@ -9,7 +10,7 @@ import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.modules.geary
 
-inline fun family(init: MutableFamily.Selector.And.() -> Unit): Family {
+inline fun family(init: MutableFamily.Selector.And.() -> Unit): Family.Selector.And {
     return MutableFamily.Selector.And().apply(init)
 }
 
@@ -123,6 +124,10 @@ sealed class MutableFamily : Family {
         fun onSet(id: ComponentId) {
             onAdd.hasRelation<UpdatedComponent?>(id)
             onAdd.hasRelation<SetComponent?>(id)
+        }
+
+        fun onRemove(id: ComponentId) {
+            onAdd.hasRelation<RemovedComponent?>(id)
         }
 
         fun onFirstSet(id: ComponentId) {

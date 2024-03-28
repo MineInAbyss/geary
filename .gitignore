@@ -12,3 +12,5 @@ eclipse
 *.ipr
 *.iws
 kotlin-js-store/
+
+geary-benchmarks/.results

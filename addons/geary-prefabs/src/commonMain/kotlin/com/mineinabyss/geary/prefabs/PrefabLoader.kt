@@ -34,7 +34,11 @@ class PrefabLoader {
                     if (logger.config.minSeverity <= Severity.Debug)
                         logger.e("Could not read prefab $path:\n\u001B[37m${it.stackTraceToString()}")
                     else
-                        logger.e("Could not read prefab $path:\n\u001B[37m${it.message}")
+                        logger.e(
+                            "Could not read prefab $path:\n\u001B[37m${
+                                it.stackTraceToString().lines().take(5).joinToString("\n")
+                            }"
+                        )
                 }
             }
         }
@@ -57,6 +61,7 @@ class PrefabLoader {
         val decoded = runCatching {
             val serializer = PolymorphicListAsMapSerializer.of(PolymorphicSerializer(GearyComponent::class))
             val ext = path.name.substringAfterLast('.')
+            logger.d("Loading prefab at $path")
             formats[ext]?.decodeFromFile(serializer, path)
                 ?: throw IllegalArgumentException("Unknown file format $ext")
         }

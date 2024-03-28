@@ -4,9 +4,9 @@ import co.touchlab.kermit.Severity
 import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.modules.GearyConfiguration
+import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.dsl.serialization
-import com.mineinabyss.geary.systems.System
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.polymorphic
 import org.reflections.Reflections
@@ -15,7 +15,8 @@ import org.reflections.util.ConfigurationBuilder
 import org.reflections.util.FilterBuilder
 import kotlin.reflect.KClass
 import kotlin.reflect.full.hasAnnotation
-import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.jvm.kotlinFunction
+import kotlin.reflect.typeOf
 
 @GearyDSL
 fun GearyConfiguration.autoscan(
@@ -37,6 +38,7 @@ class AutoScannerDSL(
             ConfigurationBuilder()
                 .apply { limitTo.forEach { forPackage(it, classLoader) } }
                 .filterInputsBy(FilterBuilder().apply { limitTo.forEach { includePackage(it) } })
+                .setScanners(Scanners.SubTypes, Scanners.TypesAnnotated, Scanners.MethodsAnnotated)
         )
     }
 
@@ -96,10 +98,9 @@ class AutoScannerDSL(
      */
     fun systems() {
         val scanned = reflections
-            .get(Scanners.TypesAnnotated.with(AutoScan::class.java).asClass<Class<*>>(classLoader))
-            .asSequence()
-            .map { it.kotlin }
-            .filter { !it.hasAnnotation<ExcludeAutoScan>() && it.isSubclassOf(System::class) }
+            .get(Scanners.MethodsAnnotated.with(AutoScan::class.java))
+            .mapNotNull { reflections.forMethod(it, classLoader)?.kotlinFunction }
+            .filter { it.parameters.singleOrNull()?.type == typeOf<GearyModule>() }
 
         autoScanner.scannedSystems += scanned
     }
