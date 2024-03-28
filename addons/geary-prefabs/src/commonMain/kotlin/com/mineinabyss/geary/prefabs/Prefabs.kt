@@ -28,6 +28,7 @@ interface Prefabs {
                 createInheritPrefabsOnLoadListener()
                 createParseChildOnPrefabListener()
                 createParseChildrenOnPrefabListener()
+                createParseInstancesOnPrefabListener()
                 createParseRelationOnPrefabListener()
                 createParseRelationWithDataListener()
                 createTrackPrefabsByKeyListener()

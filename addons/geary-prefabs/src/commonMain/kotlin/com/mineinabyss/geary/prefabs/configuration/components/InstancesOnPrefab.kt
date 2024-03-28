@@ -16,14 +16,14 @@ import kotlinx.serialization.builtins.serializer
  *
  * The keys will be used to set an extra [EntityName] component.
  */
-@Serializable(with = ChildrenOnPrefab.Serializer::class)
-class ChildrenOnPrefab(
+@Serializable(with = InstancesOnPrefab.Serializer::class)
+class InstancesOnPrefab(
     val nameToComponents: Map<String, List<@Polymorphic Component>>
 ) {
-    class Serializer : InnerSerializer<Map<String, List<Component>>, ChildrenOnPrefab>(
-        "geary:children",
+    class Serializer : InnerSerializer<Map<String, List<Component>>, InstancesOnPrefab>(
+        "geary:instances",
         MapSerializer(String.serializer(), PolymorphicListAsMapSerializer.ofComponents()),
-        { ChildrenOnPrefab(it) },
+        { InstancesOnPrefab(it) },
         { it.nameToComponents },
     )
 }
