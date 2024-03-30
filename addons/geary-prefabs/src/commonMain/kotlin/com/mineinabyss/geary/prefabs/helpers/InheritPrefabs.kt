@@ -9,7 +9,7 @@ import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
  * Adds prefabs to this entity from an [InheritPrefabs] component. Will make sure parents have their prefabs
  * added from this component before trying to add it
  */
-fun Entity.inheritPrefabs(instances: Set<Entity> = setOf()) {
+fun Entity.inheritPrefabsIfNeeded(instances: Set<Entity> = setOf()) {
     if (this in instances)
         error("Circular dependency found while loading prefabs for ${get<PrefabKey>()}, chain was: $instances")
     val add = get<InheritPrefabs>() ?: return
@@ -19,7 +19,7 @@ fun Entity.inheritPrefabs(instances: Set<Entity> = setOf()) {
             if (it == null) geary.logger.w("Prefab ${get<PrefabKey>()} could not inherit prefab $key, it does not exist")
         }
     }.forEach { parent ->
-        parent.inheritPrefabs(instances + this)
+        parent.inheritPrefabsIfNeeded(instances + this)
         extend(parent)
     }
 }

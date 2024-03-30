@@ -6,12 +6,16 @@ import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
+import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
-import com.mineinabyss.geary.prefabs.helpers.inheritPrefabs
+import com.mineinabyss.geary.prefabs.helpers.inheritPrefabsIfNeeded
 import com.mineinabyss.geary.serialization.dsl.serializableComponents
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
+import com.mineinabyss.geary.systems.builders.cachedQuery
+import com.mineinabyss.geary.systems.query.Query
 import kotlinx.serialization.PolymorphicSerializer
 import okio.Path
 
@@ -23,8 +27,14 @@ class PrefabLoader {
 
     private val readFiles = mutableListOf<PrefabPath>()
 
+    private val needsInherit = geary.cachedQuery(NeedsInherit())
+
     fun addSource(path: PrefabPath) {
         readFiles.add(path)
+    }
+
+    class NeedsInherit : Query() {
+        val inheritPrefabs by get<InheritPrefabs>()
     }
 
     fun loadOrUpdatePrefabs() {
@@ -42,7 +52,9 @@ class PrefabLoader {
                 }
             }
         }
-        loaded.forEach { it.getOrNull()?.inheritPrefabs() }
+        needsInherit.entities().fastForEach {
+            it.inheritPrefabsIfNeeded()
+        }
         logger.i("Loaded ${loaded.count { it.isSuccess }}/${loaded.count()} prefabs")
     }
 
@@ -53,7 +65,7 @@ class PrefabLoader {
         val file = prefab.file ?: error("Prefab did not have a file")
         entity.clear()
         loadFromPath(key.namespace, file, entity)
-        entity.inheritPrefabs()
+        entity.inheritPrefabsIfNeeded()
     }
 
     /** Registers an entity with components defined in a [path], adding a [Prefab] component. */
