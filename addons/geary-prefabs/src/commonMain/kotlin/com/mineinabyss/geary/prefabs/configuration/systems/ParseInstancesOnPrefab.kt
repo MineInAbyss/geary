@@ -4,6 +4,7 @@ import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 import com.mineinabyss.geary.prefabs.configuration.components.InstancesOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.systems.builders.listener
@@ -19,7 +20,7 @@ fun GearyModule.createParseInstancesOnPrefabListener() = listener(object : Liste
         entity {
             set(PrefabKey.of(prefabKey.namespace, name))
             set(Prefab())
-            extend(entity)
+            set(InheritPrefabs(setOf(prefabKey)))
             addRelation<NoInherit, Prefab>()
             setAll(components)
         }
