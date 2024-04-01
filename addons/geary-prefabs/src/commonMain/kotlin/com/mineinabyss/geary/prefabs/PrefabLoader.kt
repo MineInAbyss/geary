@@ -4,7 +4,6 @@ import co.touchlab.kermit.Severity
 import com.benasher44.uuid.Uuid
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.geary
@@ -12,11 +11,15 @@ import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabsIfNeeded
+import com.mineinabyss.geary.serialization.ProvidedConfig
+import com.mineinabyss.geary.serialization.ProvidedNamespaces
 import com.mineinabyss.geary.serialization.dsl.serializableComponents
+import com.mineinabyss.geary.serialization.formats.Format.ConfigType.NON_STRICT
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.systems.builders.cachedQuery
 import com.mineinabyss.geary.systems.query.Query
-import kotlinx.serialization.PolymorphicSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.modules.SerializersModule
 import okio.Path
 
 class PrefabLoader {
@@ -68,14 +71,30 @@ class PrefabLoader {
         entity.inheritPrefabsIfNeeded()
     }
 
+    @Serializable
+    class PrefabFileProperties(val namespaces: List<String> = listOf())
+
     /** Registers an entity with components defined in a [path], adding a [Prefab] component. */
     fun loadFromPath(namespace: String, path: Path, writeTo: Entity? = null): Entity {
+        var hadMalformed = false
         val decoded = runCatching {
-            val serializer = PolymorphicListAsMapSerializer.of(PolymorphicSerializer(GearyComponent::class))
+            val config = PolymorphicListAsMapSerializer.Config(
+                whenComponentMalformed = {
+                    if (!hadMalformed) logger.w("Problems reading $path:")
+                    hadMalformed = true
+                }
+            )
+            val serializer = PolymorphicListAsMapSerializer.ofComponents(config)
             val ext = path.name.substringAfterLast('.')
+
             logger.d("Loading prefab at $path")
-            formats[ext]?.decodeFromFile(serializer, path)
-                ?: throw IllegalArgumentException("Unknown file format $ext")
+            val format = formats[ext] ?: throw IllegalArgumentException("Unknown file format $ext")
+            val fileProperties = format.decodeFromFile(PrefabFileProperties.serializer(), path, configType = NON_STRICT)
+            format.decodeFromFile(serializer, path, overrideSerializersModule = SerializersModule {
+                contextual(ProvidedNamespaces::class, ProvidedNamespaces(fileProperties.namespaces))
+                contextual(ProvidedConfig::class, ProvidedConfig(config))
+            })
+
         }
         // Stop here if we need to make a new entity
         // For existing prefabs, add all tags except decoded on fail to keep them tracked
