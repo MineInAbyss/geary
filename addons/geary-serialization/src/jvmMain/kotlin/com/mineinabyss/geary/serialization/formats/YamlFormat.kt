@@ -2,10 +2,8 @@ package com.mineinabyss.geary.serialization.formats
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
-import com.mineinabyss.geary.serialization.ProvidedNamespaces
-import com.mineinabyss.geary.serialization.formats.Format
+import com.mineinabyss.geary.serialization.formats.Format.ConfigType
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.overwriteWith
@@ -18,41 +16,58 @@ class YamlFormat(
 ) : Format {
     override val ext = "yml"
 
-    private val propertiesYaml = Yaml(
+    private val nonStrictYaml = Yaml(
         configuration = YamlConfiguration(
             encodeDefaults = false,
             strictMode = false,
         )
     )
 
-    val readingYaml = Yaml(
+    val regularYaml = Yaml(
         serializersModule = module,
         configuration = YamlConfiguration(
             encodeDefaults = false,
         )
     )
 
-
-    @Serializable
-    class YamlFileProperties(val namespaces: List<String> = listOf())
-
-    override fun <T> decodeFromFile(deserializer: DeserializationStrategy<T>, path: Path): T {
-        return decodeFromStream(deserializer) { path.toFile().inputStream() }
+    override fun <T> decodeFromFile(
+        deserializer: DeserializationStrategy<T>,
+        path: Path,
+        overrideSerializersModule: SerializersModule?,
+        configType: ConfigType,
+    ): T {
+        return decodeFromStream(deserializer, overrideSerializersModule, configType) { path.toFile().inputStream() }
     }
 
-    fun <T> decodeFromStream(deserializer: DeserializationStrategy<T>, inputStream: () -> InputStream): T {
-        val fileProperties = propertiesYaml.decodeFromStream(YamlFileProperties.serializer(), inputStream())
-        val newModule = readingYaml.serializersModule.overwriteWith(SerializersModule {
-            contextual(ProvidedNamespaces::class, ProvidedNamespaces(fileProperties.namespaces))
-        })
-        return Yaml(newModule, readingYaml.configuration).decodeFromStream(deserializer, inputStream())
+    fun <T> decodeFromStream(
+        deserializer: DeserializationStrategy<T>,
+        overrideSerializersModule: SerializersModule? = null,
+        configType: ConfigType,
+        inputStream: () -> InputStream,
+    ): T {
+        val module = overrideSerializersModule
+            ?.let { regularYaml.serializersModule.overwriteWith(it) }
+            ?: regularYaml.serializersModule
+        val config = getConfig(configType).configuration
+        return Yaml(module, config).decodeFromStream(deserializer, inputStream())
     }
 
     fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, @Language("yaml") string: String): T {
-        return decodeFromStream(deserializer) { string.byteInputStream() }
+        return decodeFromStream(deserializer, configType = ConfigType.REGULAR) { string.byteInputStream() }
     }
 
-    override fun <T> encodeToFile(serializer: SerializationStrategy<T>, value: T, path: Path) {
-        readingYaml.encodeToStream(serializer, value, path.toFile().outputStream())
+    override fun <T> encodeToFile(
+        serializer: SerializationStrategy<T>,
+        value: T,
+        path: Path,
+        overrideSerializersModule: SerializersModule?,
+        configType: ConfigType
+    ) {
+        getConfig(configType).encodeToStream(serializer, value, path.toFile().outputStream())
+    }
+
+    fun getConfig(configType: ConfigType): Yaml = when (configType) {
+        ConfigType.REGULAR -> regularYaml
+        ConfigType.NON_STRICT -> nonStrictYaml
     }
 }

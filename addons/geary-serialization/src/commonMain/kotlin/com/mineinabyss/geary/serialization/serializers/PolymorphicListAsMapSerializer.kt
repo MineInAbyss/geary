@@ -4,6 +4,7 @@ import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.fromCamelCaseToSnakeCase
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.hasNamespace
+import com.mineinabyss.geary.serialization.ProvidedConfig
 import com.mineinabyss.geary.serialization.ProvidedNamespaces
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ListSerializer
@@ -16,14 +17,12 @@ import kotlinx.serialization.modules.SerializersModule
 
 typealias SerializedComponents = @Serializable(with = PolymorphicListAsMapSerializer::class) List<@Polymorphic GearyComponent>
 
+
 open class PolymorphicListAsMapSerializer<T : Any>(
     serializer: KSerializer<T>,
 ) : KSerializer<List<T>> {
     // We need primary constructor to be a single serializer for generic serialization to work, use of() if manually creating
-    private var prefix: String = ""
-    private var onMissingSerializer: OnMissing = OnMissing.WARN
-    private var skipMalformedComponents: Boolean = true
-
+    private var config: Config = Config()
 
     val polymorphicSerializer = serializer as? PolymorphicSerializer<T> ?: error("Serializer is not polymorphic")
 
@@ -35,6 +34,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         val mapSerializer = object : CustomMapSerializer() {
             override fun decode(key: String, compositeDecoder: CompositeDecoder) {
                 val namespaces = getNamespaces(decoder.serializersModule)
+                val parentConfig = getParentConfig(decoder.serializersModule)
                 when {
                     key == "namespaces" -> {
                         // Ignore namespaces component, it's parsed as a file-wide property
@@ -42,7 +42,10 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                     }
 
                     key.endsWith("*") -> {
-                        val innerSerializer = of(polymorphicSerializer, key.removeSuffix("*"))
+                        val innerSerializer = of(
+                            polymorphicSerializer,
+                            config.copy(prefix = key.removeSuffix("*"))
+                        )
                         components.addAll(compositeDecoder.decodeMapValue(innerSerializer))
                     }
 
@@ -57,7 +60,9 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                             runCatching {
                                 compositeDecoder.decodeMapValue(componentSerializer)
                             }.onSuccess { components += it }.onFailure {
-                                if (skipMalformedComponents) {
+                                config.whenComponentMalformed(key)
+                                parentConfig?.whenComponentMalformed?.invoke(key)
+                                if (config.skipMalformedComponents) {
                                     geary.logger.w(
                                         "Malformed component $key, ignoring:\n" +
                                                 it.stackTraceToString()
@@ -67,7 +72,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                                 } else throw it
                             }
                         }.onFailure {
-                            when (onMissingSerializer) {
+                            when (config.onMissingSerializer) {
                                 OnMissing.ERROR -> throw it
                                 OnMissing.WARN -> geary.logger.w("No serializer found for $key in namespaces $namespaces, ignoring")
                                 OnMissing.IGNORE -> Unit
@@ -89,6 +94,10 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         }
     }
 
+    fun getParentConfig(serializersModule: SerializersModule): Config? {
+        return (serializersModule.getContextual(ProvidedConfig::class) as? ProvidedConfig)?.config
+    }
+
     fun findSerializerFor(
         serializersModule: SerializersModule,
         namespaces: List<String>,
@@ -97,7 +106,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         if (key.startsWith("kotlin.")) {
             return serializersModule.getPolymorphic(polymorphicSerializer.baseClass, key) as KSerializer<T>
         }
-        val parsedKey = "$prefix$key".fromCamelCaseToSnakeCase()
+        val parsedKey = "${config.prefix}$key".fromCamelCaseToSnakeCase()
         return (if (parsedKey.hasNamespace())
             serializersModule.getPolymorphic(polymorphicSerializer.baseClass, parsedKey)
         else namespaces.firstNotNullOfOrNull { namespace ->
@@ -114,18 +123,27 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         ERROR, WARN, IGNORE
     }
 
+    data class Config(
+        val prefix: String = "",
+        val onMissingSerializer: OnMissing = OnMissing.WARN,
+        val skipMalformedComponents: Boolean = true,
+        val whenComponentMalformed: (String) -> Unit = {},
+    )
+
     companion object {
         fun <T : Any> of(
             serializer: PolymorphicSerializer<T>,
-            prefix: String = "",
-            onMissingSerializer: OnMissing = OnMissing.WARN,
+            config: Config = Config(),
         ): PolymorphicListAsMapSerializer<T> {
             return PolymorphicListAsMapSerializer(serializer).apply {
-                this.prefix = prefix
-                this.onMissingSerializer = onMissingSerializer
+                this.config = config
             }
         }
 
-        fun ofComponents() = of(PolymorphicSerializer(GearyComponent::class))
+        fun ofComponents(
+            config: Config = Config(),
+        ) = of(PolymorphicSerializer(GearyComponent::class)).apply {
+            this.config = config
+        }
     }
 }
