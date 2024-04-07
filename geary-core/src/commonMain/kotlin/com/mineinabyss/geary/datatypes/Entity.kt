@@ -367,6 +367,33 @@ value class Entity(val id: EntityId) {
         eventRunner.callEvent(this, event, source)
     }
 
+    // Prefabs
+
+    /** @return All prefabs this entity is a deep instance of */
+    fun collectPrefabs(): Set<GearyEntity> {
+        return collectPrefabs(mutableSetOf(), listOf(this))
+    }
+
+    /** Checks whether this entity, or any depth of its prefabs is an instance of [prefab]. */
+    fun deepInstanceOf(prefab: Entity): Boolean {
+        return if (instanceOf(prefab)) return true
+        else deepInstanceOf(mutableSetOf(), prefabs, prefab)
+    }
+
+    private tailrec fun collectPrefabs(collected: MutableSet<Entity>, search: List<Entity>): Set<GearyEntity> {
+        if (search.isEmpty()) return collected
+        val new = search.flatMap { it.prefabs } - collected
+        collected.addAll(new)
+        return collectPrefabs(collected, new)
+    }
+
+    private tailrec fun deepInstanceOf(seen: MutableSet<Entity>, search: List<Entity>, prefab: Entity): Boolean {
+        if (search.isEmpty()) return false
+        if (search.any { it.instanceOf(prefab) }) return true
+        seen.addAll(search)
+        return deepInstanceOf(seen, search.flatMap { it.prefabs } - seen, prefab)
+    }
+
     // Other
 
     fun lookup(query: String): GearyEntity? {

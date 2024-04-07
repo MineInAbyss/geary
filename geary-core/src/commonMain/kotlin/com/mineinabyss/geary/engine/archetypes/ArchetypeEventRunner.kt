@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import com.mineinabyss.geary.components.KeepArchetype
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.engine.EventRunner
 import com.mineinabyss.geary.helpers.fastForEach
@@ -11,13 +12,7 @@ class ArchetypeEventRunner : EventRunner {
     private val records get() = archetypes.records
 
     override fun callEvent(target: Entity, event: Entity, source: Entity?) {
-//        records.runOn(target) { targetArc, targetRow ->
-//            records.runOn(event) { eventArc, eventRow ->
-//                if(source != null) records.runOn(source) { sourceArc, sourceRow ->
-//                    callEvent(targetArc, targetRow, eventArc, eventRow, sourceArc, sourceRow)
-//                } else callEvent(targetArc, targetRow, eventArc, eventRow, null, null)
-//            }
-//        }
+        event.add<KeepArchetype>()
 
         var targetArc: Archetype = archetypes.archetypeProvider.rootArchetype
         var targetRow: Int = -1
