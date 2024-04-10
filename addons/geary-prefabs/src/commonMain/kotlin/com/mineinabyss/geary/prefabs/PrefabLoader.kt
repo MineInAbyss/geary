@@ -11,11 +11,10 @@ import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabsIfNeeded
-import com.mineinabyss.geary.serialization.ProvidedConfig
-import com.mineinabyss.geary.serialization.ProvidedNamespaces
 import com.mineinabyss.geary.serialization.dsl.serializableComponents
 import com.mineinabyss.geary.serialization.formats.Format.ConfigType.NON_STRICT
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
+import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer.Companion.provideConfig
 import com.mineinabyss.geary.systems.builders.cachedQuery
 import com.mineinabyss.geary.systems.query.Query
 import kotlinx.serialization.Serializable
@@ -91,11 +90,10 @@ class PrefabLoader {
             val format = formats[ext] ?: throw IllegalArgumentException("Unknown file format $ext")
             val fileProperties = format.decodeFromFile(PrefabFileProperties.serializer(), path, configType = NON_STRICT)
             format.decodeFromFile(serializer, path, overrideSerializersModule = SerializersModule {
-                contextual(ProvidedNamespaces::class, ProvidedNamespaces(fileProperties.namespaces))
-                contextual(ProvidedConfig::class, ProvidedConfig(config))
+                provideConfig(config.copy(namespaces = fileProperties.namespaces))
             })
-
         }
+
         // Stop here if we need to make a new entity
         // For existing prefabs, add all tags except decoded on fail to keep them tracked
         if (writeTo == null && decoded.isFailure) decoded.getOrThrow()
