@@ -10,6 +10,7 @@ import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Scope
 import org.openjdk.jmh.annotations.Setup
 import org.openjdk.jmh.annotations.State
+import kotlin.reflect.typeOf
 
 @State(Scope.Benchmark)
 class ComponentIdTest {
@@ -17,6 +18,20 @@ class ComponentIdTest {
     fun setup() {
         Logger.setMinSeverity(Severity.Warn)
         geary(TestEngineModule)
+    }
+
+    @Benchmark
+    fun getKType() {
+        repeat(tenMil) {
+            typeOf<Comp1>()
+        }
+    }
+
+    @Benchmark
+    fun getKClass() {
+        repeat(tenMil) {
+            typeOf<Comp1>().classifier
+        }
     }
 
     @Benchmark

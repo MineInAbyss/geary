@@ -5,7 +5,6 @@ import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.components.RequestCheck
 import com.mineinabyss.geary.components.events.AddedComponent
 import com.mineinabyss.geary.components.events.FailedCheck
-import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Engine
@@ -48,7 +47,7 @@ value class Entity(val id: EntityId) {
         })
 
     val prefabs: List<Entity>
-        get() = getRelations<InstanceOf?, Any?>().map { it.target.toGeary() }
+        get() = getRelations(geary.components.instanceOf, geary.components.any).map { it.target.toGeary() }
 
     /** Remove this entity from the ECS. */
     fun removeEntity() {
@@ -207,8 +206,7 @@ value class Entity(val id: EntityId) {
      * Checks whether this entity is an instance of another [entity]
      * (the other is the prefab this entity was made from).
      */
-    fun instanceOf(entity: Entity): Boolean =
-        hasRelation<InstanceOf?>(entity)
+    fun instanceOf(entity: Entity): Boolean = has(Relation.of(geary.components.instanceOf, entity.id).id)
 
     /** Checks whether this entity has a component of type [T], regardless of it holding data. */
     inline fun <reified T : Component> has(): Boolean = has(T::class)
@@ -235,7 +233,7 @@ value class Entity(val id: EntityId) {
 
     /** Adds a [prefab] entity to this entity.  */
     fun Entity.removePrefab(prefab: Entity) {
-        removeRelation<InstanceOf>(prefab)
+        remove(Relation.of(geary.components.instanceOf, prefab.id).id)
     }
 
     // Relations
