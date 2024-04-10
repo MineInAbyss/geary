@@ -5,7 +5,6 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.fromCamelCaseToSnakeCase
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.hasNamespace
 import com.mineinabyss.geary.serialization.ProvidedConfig
-import com.mineinabyss.geary.serialization.ProvidedNamespaces
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
@@ -14,6 +13,7 @@ import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.SerializersModuleBuilder
 
 typealias SerializedComponents = @Serializable(with = PolymorphicListAsMapSerializer::class) List<@Polymorphic GearyComponent>
 
@@ -33,8 +33,8 @@ open class PolymorphicListAsMapSerializer<T : Any>(
 
         val mapSerializer = object : CustomMapSerializer() {
             override fun decode(key: String, compositeDecoder: CompositeDecoder) {
-                val namespaces = getNamespaces(decoder.serializersModule)
                 val parentConfig = getParentConfig(decoder.serializersModule)
+                val namespaces = parentConfig?.namespaces ?: emptyList()
                 when {
                     key == "namespaces" -> {
                         // Ignore namespaces component, it's parsed as a file-wide property
@@ -87,13 +87,6 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         return components
     }
 
-    fun getNamespaces(serializersModule: SerializersModule): List<String> {
-        return mutableListOf<String>().apply {
-            (serializersModule.getContextual(ProvidedNamespaces::class) as? ProvidedNamespaces)?.namespaces
-                ?.let { addAll(it) }
-        }
-    }
-
     fun getParentConfig(serializersModule: SerializersModule): Config? {
         return (serializersModule.getContextual(ProvidedConfig::class) as? ProvidedConfig)?.config
     }
@@ -124,6 +117,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
     }
 
     data class Config(
+        val namespaces: List<String> = listOf(),
         val prefix: String = "",
         val onMissingSerializer: OnMissing = OnMissing.WARN,
         val skipMalformedComponents: Boolean = true,
@@ -144,6 +138,10 @@ open class PolymorphicListAsMapSerializer<T : Any>(
             config: Config = Config(),
         ) = of(PolymorphicSerializer(GearyComponent::class)).apply {
             this.config = config
+        }
+
+        fun SerializersModuleBuilder.provideConfig(config: Config) {
+            contextual(ProvidedConfig::class, ProvidedConfig(config))
         }
     }
 }

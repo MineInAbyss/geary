@@ -1,7 +1,9 @@
 package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.serialization.formats.YamlFormat
+import com.mineinabyss.geary.serialization.serializers.GearyEntitySerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
+import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer.Companion.provideConfig
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.PolymorphicSerializer
@@ -38,6 +40,7 @@ class SerializerTest {
                 subclass(B::class)
                 subclass(SubSerializers::class)
             }
+            provideConfig(PolymorphicListAsMapSerializer.Config(namespaces = listOf("test")))
         })
 
     val mapSerializer = PolymorphicListAsMapSerializer(PolymorphicSerializer(Components::class))
@@ -67,7 +70,6 @@ class SerializerTest {
     fun `should support importing namespaces`() {
         val file =
             """
-            namespaces: ["test"]
             thing.a: {}
             thing.b: {}
             """.trimIndent()
@@ -78,7 +80,6 @@ class SerializerTest {
     fun `should pass namespaces to child serializers`() {
         val file =
             """
-            "namespaces": ["test"]
             "subserializers":
                 "components":
                     "thing.a": {}

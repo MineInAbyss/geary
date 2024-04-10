@@ -6,10 +6,13 @@ import com.mineinabyss.geary.serialization.dsl.serializableComponents
 import com.mineinabyss.geary.serialization.dsl.serialization
 import com.mineinabyss.geary.serialization.formats.YamlFormat
 import com.mineinabyss.geary.serialization.serializers.GearyEntitySerializer
+import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
+import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer.Companion.provideConfig
 import com.mineinabyss.idofront.di.DI
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.modules.SerializersModule
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -38,12 +41,14 @@ class GearyEntitySerializerTest {
         val format = YamlFormat(serializableComponents.serializers.module)
         val file =
             """
-            namespaces: ["test"]
             thing.a: {}
             """.trimIndent()
 
         // act
-        val entity = format.decodeFromString(GearyEntitySerializer, file)
+        val entity =
+            format.decodeFromString(GearyEntitySerializer, file, overrideSerializersModule = SerializersModule {
+                provideConfig(PolymorphicListAsMapSerializer.Config(namespaces = listOf("test")))
+            })
 
         // assert
         entity.getAll() shouldContainExactly listOf(A)
