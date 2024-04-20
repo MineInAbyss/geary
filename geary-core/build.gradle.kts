@@ -14,13 +14,6 @@ buildscript {
 
 apply(plugin = "kotlinx-atomicfu")
 
-//TODO dev options to only build for one target at a time
-fun KotlinTarget.disableCompilations() {
-    compilations.configureEach {
-        compileKotlinTask.enabled = false
-    }
-}
-
 kotlin {
     sourceSets {
         val commonMain by getting {
@@ -52,11 +45,6 @@ kotlin {
                 implementation(idofrontLibs.kotlinx.serialization.kaml)
                 implementation(idofrontLibs.fastutil)
                 implementation(libs.roaringbitmap)
-            }
-        }
-        val jsMain by getting {
-            dependencies {
-                //TODO library for js bitsets
             }
         }
     }
