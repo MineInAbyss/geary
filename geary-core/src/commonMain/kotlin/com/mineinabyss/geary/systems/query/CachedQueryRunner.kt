@@ -17,6 +17,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
      *
      * Use [apply] on the query to use its accessors.
      * */
+    @OptIn(UnsafeAccessors::class)
     inline fun forEach(crossinline run: T.(T) -> Unit) {
         val matched = matchedArchetypes
         var n = 0
@@ -30,12 +31,11 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
             // These will always end up at the end of the archetype list so we just don't iterate over them.
             val upTo = archetype.size
             var row = 0
-            query.originalArchetype = archetype
+            query.archetype = archetype
             accessors.fastForEach { it.updateCache(archetype) }
             try {
                 while (row < upTo) {
-                    query.originalRow = row
-                    query.delegated = false
+                    query.row = row
                     run(query, query)
                     row++
                 }
@@ -60,6 +60,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
      * - You **MUST NOT** swap threads, the sequence must run on the sync engine thread or data may be jumbled.
      */
     @ExperimentalGearyApi
+    @OptIn(UnsafeAccessors::class)
     fun <R> collect(collector: Sequence<T>.() -> R): R {
         val matched = matchedArchetypes
         var n = 0
@@ -72,13 +73,12 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
 
         // current entity
         var row = 0
-        query.originalArchetype = archetype
+        query.archetype = archetype
         accessors.fastForEach { it.updateCache(archetype) }
 
         fun prepareRow(): Boolean {
             if (row >= upTo) return false
-            query.originalRow = row
-            query.delegated = false
+            query.row = row
             return true
         }
 
@@ -86,7 +86,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
             if (n >= size) return false
             archetype = matched[n]
             upTo = archetype.size
-            query.originalArchetype = archetype
+            query.archetype = archetype
             accessors.fastForEach { it.updateCache(archetype) }
             archetype.isIterating = true
             return true

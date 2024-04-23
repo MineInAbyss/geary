@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.events
 
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
@@ -46,12 +47,8 @@ class ArchetypeEventRunner : EventRunner {
                 if (observer.mustHoldData && eventData == null) return@runOn
                 if (observer.family.contains(archetype.type)) {
                     observer.queries.fastForEach { query ->
-                        query.apply {
-                            originalArchetype = archetype
-                            originalRow = row
-                            delegated = false
-                            cachingAccessors.forEach { it.updateCache(archetype) }
-                        }
+                        @OptIn(UnsafeAccessors::class)
+                        query.reset(row, archetype)
                     }
                     observer.run(entity, eventData, involvedComponent)
                 }

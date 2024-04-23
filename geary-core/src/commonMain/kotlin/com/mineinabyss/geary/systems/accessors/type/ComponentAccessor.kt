@@ -15,7 +15,6 @@ import kotlin.reflect.KProperty
 abstract class ComponentAccessor<T>(
     val cacheArchetypeInfo: Boolean,
     override val originalAccessor: Accessor?,
-    final override val queriedEntity: QueriedEntity,
     val id: ComponentId
 ) : ReadWriteAccessor<T>, FamilyMatching {
     override val family = family { hasSet(id) }
@@ -29,31 +28,26 @@ abstract class ComponentAccessor<T>(
         if (cachedIndex != -1) cachedDataArray = archetype.componentData[cachedIndex] as MutableList<T>
     }
 
-    abstract fun get(thisRef: Query): T
-
-    internal inline fun get(query: Query, beforeRead: () -> Unit): T {
-        beforeRead()
-        if (!cacheArchetypeInfo) {
-            updateCache(queriedEntity.archetype)
-            return cachedDataArray[queriedEntity.row]
-        }
+    fun get(query: Query): T {
+//        if (!cacheArchetypeInfo) {
+//            updateCache(query.archetype)
+//            return cachedDataArray[query.row]
+//        }
         return cachedDataArray[query.row]
     }
 
-    abstract fun set(query: Query, value: T)
-
-    internal inline fun set(query: Query, value: T, beforeWrite: () -> Unit) {
-        beforeWrite()
-        if (!cacheArchetypeInfo) {
-            updateCache(query.archetype)
-            if (value == null) {
-                queriedEntity.unsafeEntity.remove(id)
-                return
-            }
-            if (cachedIndex == -1) queriedEntity.unsafeEntity.set(value, id)
-            else cachedDataArray[queriedEntity.row] = value
-            return
-        }
+    fun set(query: Query, value: T) {
+//        if (!cacheArchetypeInfo) {
+//            updateCache(query.archetype)
+//            if (value == null) {
+//                query.unsafeEntity.remove(id)
+//                return
+//            }
+//            if (cachedIndex == -1) query.unsafeEntity.set(value, id)
+//            cachedDataArray[query.row] = value
+//            return
+//        }
+        if(value == null) TODO("Nullable case not implemented")
         cachedDataArray[query.row] = value
     }
 

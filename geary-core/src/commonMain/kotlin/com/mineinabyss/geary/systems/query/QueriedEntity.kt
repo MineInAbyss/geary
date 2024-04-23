@@ -20,12 +20,6 @@ open class QueriedEntity(
 
     internal val props: MutableMap<String, Accessor> = mutableMapOf()
 
-    @PublishedApi
-    internal val accessors: MutableSet<Accessor> = mutableSetOf()
-
-    @PublishedApi
-    internal val cachingAccessors: MutableSet<ComponentAccessor<*>> = mutableSetOf()
-
     fun buildFamily(): Family.Selector.And = family {
         accessors
             .filterIsInstance<FamilyMatching>()
@@ -34,35 +28,24 @@ open class QueriedEntity(
             .forEach(::add)
     }
 
-    @PublishedApi
-    internal var originalArchetype = archetypes.archetypeProvider.rootArchetype
-
-    @PublishedApi
-    internal var originalRow = 0
-
     @UnsafeAccessors
-    val archetype: Archetype
-        get() = if (delegated)
-            archetypes.records.runOn(delegate!!) { archetype, _ -> archetype }
-        else originalArchetype
-    val row: Int
-        get() = if (delegated)
-            archetypes.records.runOn(delegate!!) { _, row -> row }
-        else originalRow
+    internal inline fun reset(row: Int, archetype: Archetype) {
+        this.row = row
+        this.archetype = archetype
+        cachingAccessors.forEach { it.updateCache(archetype) }
+    }
+
+    @PublishedApi
+    @UnsafeAccessors
+    internal var archetype = archetypes.archetypeProvider.rootArchetype
+
+    @PublishedApi
+    @UnsafeAccessors
+    internal var row = 0
 
     private var delegate: GearyEntity? = null
 
-    @PublishedApi
-    internal var delegated = false
-
     @UnsafeAccessors
     val unsafeEntity: Entity
-        get() {
-            val entity = archetype.getEntity(row)
-            if (!delegated) {
-                delegate = entity
-            }
-            delegated = true
-            return entity
-        }
+        get() = this.archetype.getEntity(row)
 }

@@ -10,7 +10,7 @@ abstract class Query : QueriedEntity(cacheAccessors = true) {
         thisRef: Any,
         prop: KProperty<*>
     ): T {
-        queriedEntity.props[prop.name] = this
+        props[prop.name] = this
         return this
     }
 

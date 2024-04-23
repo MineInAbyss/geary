@@ -8,13 +8,5 @@ import com.mineinabyss.geary.systems.query.Query
 class NonNullComponentAccessor<T : Any>(
     cacheArchetypeInfo: Boolean,
     originalAccessor: Accessor?,
-    entity: QueriedEntity,
     id: ComponentId,
-) : ComponentAccessor<T>(cacheArchetypeInfo, originalAccessor, entity, id) {
-    override fun get(thisRef: Query): T =
-        get(thisRef, beforeRead = {})
-
-    override fun set(query: Query, value: T) {
-        set(query, value, beforeWrite = {})
-    }
-}
+) : ComponentAccessor<T>(cacheArchetypeInfo, originalAccessor, id)

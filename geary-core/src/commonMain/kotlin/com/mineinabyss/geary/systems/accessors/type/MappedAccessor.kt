@@ -11,7 +11,6 @@ class MappedAccessor<T, U>(
     override val originalAccessor: ReadOnlyAccessor<T>,
     val mapping: (T) -> U,
 ) : ReadOnlyAccessor<U> {
-    override val queriedEntity: QueriedEntity = originalAccessor.queriedEntity
     override fun getValue(thisRef: Query, property: KProperty<*>): U {
         val value = originalAccessor.getValue(thisRef, property)
         return mapping(value)
