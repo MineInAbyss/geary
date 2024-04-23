@@ -21,9 +21,9 @@ class ObserverList {
         }
     }
 
-    operator fun get(componentId: ComponentId?): List<Observer> = buildList {
-        addAll(observersByInvolvedComponent[0uL] ?: emptyList())
-        if (componentId != null) addAll(observersByInvolvedComponent[componentId] ?: emptyList())
+    inline fun forEach(componentId: ComponentId?, exec: (Observer) -> Unit) {
+        observersByInvolvedComponent[0uL]?.fastForEach { exec(it) }
+        if (componentId != null) observersByInvolvedComponent[componentId]?.fastForEach { exec(it) }
     }
 }
 
@@ -42,7 +42,7 @@ class ArchetypeEventRunner : EventRunner {
         involvedComponent: ComponentId?,
         entity: Entity,
     ) {
-        observerMap[eventType]?.get(involvedComponent?.withoutRole(HOLDS_DATA))?.forEach { observer ->
+        observerMap[eventType]?.forEach(involvedComponent?.withoutRole(HOLDS_DATA)) { observer ->
             archetypes.records.runOn(entity) { archetype, row ->
                 if (observer.mustHoldData && eventData == null) return@runOn
                 if (observer.family.contains(archetype.type)) {

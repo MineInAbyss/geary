@@ -19,6 +19,7 @@ class EventCalls {
     fun setupPerInvocation() {
         geary(TestEngineModule)
         targets = (1..oneMil).map { entity { set(it) } }
+        createListener()
     }
 
     @TearDown(Level.Invocation)
@@ -34,7 +35,6 @@ class EventCalls {
 
     @Benchmark
     fun callEventOn1MillionEntities() {
-        createListener()
         repeat(oneMil) {
             targets[it].emit<TestEvent>()
         }
