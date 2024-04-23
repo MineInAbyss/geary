@@ -89,3 +89,8 @@ class EntityType private constructor(
     override fun toString(): String =
         inner.joinToString(", ", prefix = "[", postfix = "]") { it.readableString() }
 }
+
+
+fun entityTypeOf(vararg ids: ComponentId): EntityType {
+    return EntityType(ids.toList())
+}

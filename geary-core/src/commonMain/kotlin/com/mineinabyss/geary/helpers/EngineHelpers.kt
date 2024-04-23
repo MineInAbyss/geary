@@ -55,3 +55,5 @@ fun componentId(kClass: KClass<out ComponentId>): Nothing =
 /** Gets the [ComponentInfo] component from a component's id. */
 fun ComponentId.getComponentInfo(): ComponentInfo? =
     this.toGeary().get()
+
+inline fun <reified T> cId(): ComponentId = componentId<T>()

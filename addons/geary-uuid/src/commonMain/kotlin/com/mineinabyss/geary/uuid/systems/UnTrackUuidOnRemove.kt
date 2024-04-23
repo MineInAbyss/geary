@@ -5,9 +5,9 @@ import com.mineinabyss.geary.events.types.OnRemove
 import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.Query
+import com.mineinabyss.geary.systems.query.query
 import com.mineinabyss.geary.uuid.uuid2Geary
 
 fun GearyModule.untrackUuidOnRemove() = observe<OnRemove>()
-    .involving<Uuid>()
-    .exec { (uuid) -> uuid2Geary.remove(uuid) }
+    .involving(query<Uuid>()).exec { (uuid) -> uuid2Geary.remove(uuid) }
 

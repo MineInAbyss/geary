@@ -28,6 +28,4 @@ abstract class Query : QueriedEntity(cacheAccessors = true) {
 
     @Suppress("NOTHING_TO_INLINE")
     inline fun <T> ComponentAccessor<T>.set(value: T) = set(this@Query, value)
-
-    companion object: QueryShorthands()
 }

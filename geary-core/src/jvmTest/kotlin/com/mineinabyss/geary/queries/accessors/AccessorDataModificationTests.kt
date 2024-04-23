@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.systems.accessors
+package com.mineinabyss.geary.queries.accessors
 
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.helpers.Comp1
@@ -10,7 +10,7 @@ import com.mineinabyss.geary.systems.query.Query
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
-class ObserverLiveEntityModificationTests : GearyTest() {
+class AccessorDataModificationTests : GearyTest() {
     private fun registerQuery() = geary.cache(object : Query() {
         var data by get<Comp1>()
     })

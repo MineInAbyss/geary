@@ -12,7 +12,6 @@ import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import com.mineinabyss.geary.systems.accessors.type.ComponentAccessor
 
-open class EventQueriedEntity : QueriedEntity(cacheAccessors = false)
 open class QueriedEntity(
     override val cacheAccessors: Boolean
 ) : AccessorOperations() {

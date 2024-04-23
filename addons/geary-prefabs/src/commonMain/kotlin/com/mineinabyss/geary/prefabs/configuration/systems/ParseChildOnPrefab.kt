@@ -10,10 +10,11 @@ import com.mineinabyss.geary.prefabs.configuration.components.ChildOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.ChildrenOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.systems.builders.observe
+import com.mineinabyss.geary.systems.query.query
 
 
 fun GearyModule.createParseChildOnPrefabListener() = observe<OnSet>()
-    .involving<ChildOnPrefab>()
+    .involving(query<ChildOnPrefab>())
     .exec { (child) ->
         entity {
             addParent(entity)
@@ -23,7 +24,7 @@ fun GearyModule.createParseChildOnPrefabListener() = observe<OnSet>()
     }
 
 fun GearyModule.createParseChildrenOnPrefabListener() = observe<OnSet>()
-    .involving<ChildrenOnPrefab>()
+    .involving(query<ChildrenOnPrefab>())
     .exec { (children) ->
         children.nameToComponents.forEach { (name, components) ->
             entity {

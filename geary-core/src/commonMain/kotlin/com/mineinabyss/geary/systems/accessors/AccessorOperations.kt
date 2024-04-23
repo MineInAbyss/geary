@@ -90,10 +90,4 @@ abstract class AccessorOperations {
         val family = com.mineinabyss.geary.datatypes.family.family(init)
         extraFamilies.add(family)
     }
-
-    /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
-    protected fun EventQueriedEntity.extendedEntity(): ReadOnlyAccessor<Entity> {
-        invoke { onExtendedEntity() }
-        return getRelations<OnExtend?, Any?>().map { it.single().target.toGeary() }
-    }
 }

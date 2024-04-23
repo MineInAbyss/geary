@@ -9,10 +9,10 @@ import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 import com.mineinabyss.geary.prefabs.configuration.components.InstancesOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.systems.builders.observe
+import com.mineinabyss.geary.systems.query.query
 
 fun GearyModule.createParseInstancesOnPrefabListener() = observe<OnSet>()
-    .involving<InstancesOnPrefab, PrefabKey>()
-    .exec { (instances, prefabKey) ->
+    .involving(query<InstancesOnPrefab, PrefabKey>()).exec { (instances, prefabKey) ->
         entity.addRelation<NoInherit, InstancesOnPrefab>()
         instances.nameToComponents.forEach { (name, components) ->
             entity {

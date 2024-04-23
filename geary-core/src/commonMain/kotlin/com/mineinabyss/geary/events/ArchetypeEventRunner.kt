@@ -2,6 +2,8 @@ package com.mineinabyss.geary.events
 
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.datatypes.HOLDS_DATA
+import com.mineinabyss.geary.datatypes.withoutRole
 import com.mineinabyss.geary.events.queries.Observer
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.fastForEach
@@ -18,8 +20,10 @@ class ObserverList {
         }
     }
 
-    operator fun get(componentId: ComponentId?): List<Observer> =
-        observersByInvolvedComponent[componentId ?: 0uL] ?: emptyList()
+    operator fun get(componentId: ComponentId?): List<Observer> = buildList {
+        addAll(observersByInvolvedComponent[0uL] ?: emptyList())
+        if (componentId != null) addAll(observersByInvolvedComponent[componentId] ?: emptyList())
+    }
 }
 
 class ArchetypeEventRunner : EventRunner {
@@ -37,8 +41,9 @@ class ArchetypeEventRunner : EventRunner {
         involvedComponent: ComponentId?,
         entity: Entity,
     ) {
-        observerMap[eventType]?.get(involvedComponent)?.forEach { observer ->
+        observerMap[eventType]?.get(involvedComponent?.withoutRole(HOLDS_DATA))?.forEach { observer ->
             archetypes.records.runOn(entity) { archetype, row ->
+                if (observer.mustHoldData && eventData == null) return@runOn
                 if (observer.family.contains(archetype.type)) {
                     observer.queries.fastForEach { query ->
                         query.apply {

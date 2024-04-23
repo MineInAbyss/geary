@@ -6,10 +6,10 @@ import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.prefabs.configuration.components.RelationOnPrefab
 import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.Query
+import com.mineinabyss.geary.systems.query.query
 
 fun GearyModule.createParseRelationOnPrefabListener() = observe<OnSet>()
-    .involving<RelationOnPrefab>()
-    .exec { (relation) ->
+    .involving(query<RelationOnPrefab>()).exec { (relation) ->
         try {
             val target = entity.lookup(relation.target)?.id ?: return@exec
             entity.setRelation(componentId(relation.data::class), target, relation.data)

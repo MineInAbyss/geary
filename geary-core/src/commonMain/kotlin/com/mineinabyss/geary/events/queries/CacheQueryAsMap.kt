@@ -27,10 +27,10 @@ abstract class ObserveQueryAssociatedBy<T, Q : Query>(private val query: Q, gear
     }
 
     init {
-        geary.observe<OnAdd>().filter(query).exec {
+        geary.observe<OnAdd>().exec(query) {
             map[associateBy(it)] = entity
         }
-        geary.observe<OnRemove>().filter(query).exec {
+        geary.observe<OnRemove>().exec(query) {
             map.remove(associateBy(it))
         }
     }

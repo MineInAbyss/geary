@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.systems.accessors
+package com.mineinabyss.geary.queries.accessors
 
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest

@@ -6,10 +6,11 @@ import com.mineinabyss.geary.events.types.OnSet
 import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.Query
+import com.mineinabyss.geary.systems.query.query
 import com.mineinabyss.geary.uuid.components.RegenerateUUIDOnClash
 import com.mineinabyss.geary.uuid.uuid2Geary
 
-fun GearyModule.trackUUIDOnAdd() = observe<OnSet>().involving<Uuid>().exec { (uuid) ->
+fun GearyModule.trackUUIDOnAdd() = observe<OnSet>().involving(query<Uuid>()).exec { (uuid) ->
     val regenerateUUIDOnClash = entity.get<RegenerateUUIDOnClash>()
     if (uuid in uuid2Geary)
         if (regenerateUUIDOnClash != null) {
