@@ -3,7 +3,6 @@ package com.mineinabyss.geary.engine
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.Listener
 import com.mineinabyss.geary.systems.System
 import com.mineinabyss.geary.systems.TrackedSystem
 import com.mineinabyss.geary.systems.query.Query
@@ -13,7 +12,6 @@ class PipelineImpl : Pipeline {
 
     private val onSystemAdd = mutableListOf<(System<*>) -> Unit>()
     private val repeatingSystems: MutableSet<TrackedSystem<*>> = mutableSetOf()
-    private val registeredListeners: MutableSet<Listener<*>> = mutableSetOf()
 
     private val scheduled = Array(GearyPhase.entries.size) { mutableListOf<() -> Unit>() }
     private var currentPhase = GearyPhase.entries.first()
@@ -45,13 +43,6 @@ class PipelineImpl : Pipeline {
 
     override fun addSystems(vararg systems: System<*>) {
         systems.fastForEach { addSystem(it) }
-    }
-
-    override fun addListener(listener: Listener<*>): Listener<*> {
-        if (listener in registeredListeners) return listener
-        queryManager.trackEventListener(listener)
-        registeredListeners.add(listener)
-        return listener
     }
 
     override fun getRepeatingInExecutionOrder(): Iterable<TrackedSystem<*>> {

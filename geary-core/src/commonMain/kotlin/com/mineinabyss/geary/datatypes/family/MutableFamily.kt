@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.datatypes.family
 
-import com.mineinabyss.geary.components.events.AddedComponent
-import com.mineinabyss.geary.components.events.RemovedComponent
-import com.mineinabyss.geary.components.events.SetComponent
-import com.mineinabyss.geary.components.events.UpdatedComponent
+import com.mineinabyss.geary.events.types.OnAdd
+import com.mineinabyss.geary.events.types.OnRemove
+import com.mineinabyss.geary.events.types.OnSet
+import com.mineinabyss.geary.events.types.OnUpdate
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.componentId
@@ -118,20 +118,20 @@ sealed class MutableFamily : Family {
         inline fun <reified K> hasRelation(target: Entity): Unit = hasRelation<K>(target.id)
 
         fun onAdd(id: ComponentId) {
-            onAdd.hasRelation<AddedComponent?>(id)
+            onAdd.hasRelation<OnAdd?>(id)
         }
 
         fun onSet(id: ComponentId) {
-            onAdd.hasRelation<UpdatedComponent?>(id)
-            onAdd.hasRelation<SetComponent?>(id)
+            onAdd.hasRelation<OnUpdate?>(id)
+            onAdd.hasRelation<OnSet?>(id)
         }
 
         fun onRemove(id: ComponentId) {
-            onAdd.hasRelation<RemovedComponent?>(id)
+            onAdd.hasRelation<OnRemove?>(id)
         }
 
         fun onFirstSet(id: ComponentId) {
-            onAdd.hasRelation<SetComponent?>(id)
+            onAdd.hasRelation<OnSet?>(id)
         }
 
         fun onExtendedEntity() {

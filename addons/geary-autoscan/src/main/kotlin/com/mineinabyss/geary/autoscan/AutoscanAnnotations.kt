@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.autoscan
 
 import com.mineinabyss.geary.systems.GearySystem
-import com.mineinabyss.geary.systems.Listener
+import com.mineinabyss.geary.events.queries.Observer
 import com.mineinabyss.geary.systems.query.GearyQuery
 
 /**
@@ -11,7 +11,7 @@ import com.mineinabyss.geary.systems.query.GearyQuery
 annotation class ExcludeAutoScan
 
 /**
- * Indicates this [GearySystem], such as [RepeatingSystem], [Listener], or [GearyQuery] be registered automatically
+ * Indicates this [GearySystem], such as [RepeatingSystem], [Observer], or [GearyQuery] be registered automatically
  * on startup by the AutoScanner.
  */
 annotation class AutoScan

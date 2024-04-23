@@ -17,7 +17,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
      *
      * Use [apply] on the query to use its accessors.
      * */
-    inline fun forEach(crossinline run: T.() -> Unit) {
+    inline fun forEach(crossinline run: T.(T) -> Unit) {
         val matched = matchedArchetypes
         var n = 0
         val size = matched.size // Get size ahead of time to avoid rerunning on entities that end up in new archetypes
@@ -36,7 +36,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
                 while (row < upTo) {
                     query.originalRow = row
                     query.delegated = false
-                    run(query)
+                    run(query, query)
                     row++
                 }
                 n++
@@ -123,24 +123,24 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
         return collected
     }
 
-    inline fun <R> map(crossinline run: T.() -> R): List<R> {
+    inline fun <R> map(crossinline run: (T) -> R): List<R> {
         val deferred = mutableListOf<R>()
-        forEach { deferred.add(run()) }
+        forEach { deferred.add(run(it)) }
         return deferred
     }
 
-    inline fun <R> mapNotNull(crossinline run: T.() -> R?): List<R> {
+    inline fun <R> mapNotNull(crossinline run: (T) -> R?): List<R> {
         val deferred = mutableListOf<R>()
-        forEach { run().let { if (it != null) deferred.add(it) } }
+        forEach { run(it).let { if (it != null) deferred.add(it) } }
         return deferred
     }
 
     @PublishedApi
     internal class FoundValue : Throwable()
 
-    inline fun any(crossinline predicate: T.() -> Boolean): Boolean {
+    inline fun any(crossinline predicate: T.(T) -> Boolean): Boolean {
         try {
-            forEach { if (predicate()) throw FoundValue() }
+            forEach { if (predicate(it)) throw FoundValue() }
         } catch (e: FoundValue) {
             return true
         }
@@ -148,12 +148,12 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
         return false
     }
 
-    inline fun <R> find(crossinline map: T.() -> R, crossinline predicate: T.() -> Boolean): R? {
+    inline fun <R> find(crossinline map: T.(T) -> R, crossinline predicate: T.(T) -> Boolean): R? {
         var found: R? = null
         try {
             forEach {
-                if (predicate()) {
-                    found = this.map()
+                if (predicate(it)) {
+                    found = map(it)
                     throw FoundValue()
                 }
             }
@@ -174,7 +174,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
     inline fun <R> mapWithEntity(crossinline run: T.() -> R): List<Deferred<R>> {
         val deferred = mutableListOf<Deferred<R>>()
         forEach {
-            deferred.add(Deferred(run(), unsafeEntity))
+            deferred.add(Deferred(run(it), it.unsafeEntity))
         }
         return deferred
     }
@@ -182,7 +182,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
     @OptIn(UnsafeAccessors::class)
     fun entities(): List<GearyEntity> {
         val entities = mutableListOf<GearyEntity>()
-        forEach { entities.add(unsafeEntity) }
+        forEach { entities.add(it.unsafeEntity) }
         return entities
     }
 }

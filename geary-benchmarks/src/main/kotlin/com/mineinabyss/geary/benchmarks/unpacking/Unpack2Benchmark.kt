@@ -29,15 +29,15 @@ class Unpack2Benchmark {
     @Benchmark
     fun unpack1of2Comp() {
         systemOf1().forEach {
-            comp1
+            it.comp1
         }
     }
 
     @Benchmark
     fun unpack2of2Comp() {
         systemOf2().forEach {
-            comp1
-            comp2
+            it.comp1
+            it.comp2
         }
     }
 }

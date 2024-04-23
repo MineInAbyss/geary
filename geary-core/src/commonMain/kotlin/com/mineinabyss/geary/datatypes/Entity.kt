@@ -2,9 +2,7 @@ package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.annotations.optin.DangerousComponentOperation
 import com.mineinabyss.geary.components.EntityName
-import com.mineinabyss.geary.components.RequestCheck
-import com.mineinabyss.geary.components.events.AddedComponent
-import com.mineinabyss.geary.components.events.FailedCheck
+import com.mineinabyss.geary.events.types.OnAdd
 import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Engine
@@ -60,7 +58,7 @@ value class Entity(val id: EntityId) {
     /**
      * Sets a component that holds data for this entity
      *
-     * @param noEvent If true, will not fire a [AddedComponent].
+     * @param noEvent If true, will not fire a [OnAdd].
      */
     inline fun <reified T : Component> set(
         component: T,
@@ -84,7 +82,7 @@ value class Entity(val id: EntityId) {
     /**
      * Adds a [component] to this entity's type, setting no data.
      *
-     * @param noEvent If true, will not fire an [AddedComponent] event.
+     * @param noEvent If true, will not fire an [OnAdd] event.
      */
     fun add(component: ComponentId, noEvent: Boolean = false) {
         write.addComponentFor(this, component, noEvent)
@@ -93,7 +91,7 @@ value class Entity(val id: EntityId) {
     /**
      * Adds the type [T] to this entity's type, setting no data.
      *
-     * @param noEvent If true, will not fire an [AddedComponent] event.
+     * @param noEvent If true, will not fire an [OnAdd] event.
      */
     inline fun <reified T : Component> add(noEvent: Boolean = false) {
         add(componentId<T>(), noEvent)
@@ -102,7 +100,7 @@ value class Entity(val id: EntityId) {
     /**
      * Adds a list of [components] to this entity's type, setting no data.
      *
-     * @param noEvent If true, will not fire an [AddedComponent] event.
+     * @param noEvent If true, will not fire an [OnAdd] event.
      */
     fun addAll(components: Collection<ComponentId>, noEvent: Boolean = false) {
         components.forEach { add(it, noEvent) }
@@ -111,7 +109,7 @@ value class Entity(val id: EntityId) {
     /**
      * Sets a persisting [component] on this entity, which will be serialized if possible.
      *
-     * @param noEvent If true, will not fire an [AddedComponent] event.
+     * @param noEvent If true, will not fire an [OnAdd] event.
      */
     inline fun <reified T : Component> setPersisting(
         component: T,
@@ -126,7 +124,7 @@ value class Entity(val id: EntityId) {
     /**
      * Sets a list of persisting [components] on this entity.
      *
-     * @param noEvent If true, will not fire an [AddedComponent] event.
+     * @param noEvent If true, will not fire an [OnAdd] event.
      * @see setPersisting
      */
     fun setAllPersisting(
@@ -303,66 +301,8 @@ value class Entity(val id: EntityId) {
     }
 
     // Events
-
-    /**
-     * Calls an event with [components] attached to it and this entity as the target,
-     * calculating a [result] after all handlers have run.
-     */
-    inline fun <T> callEvent(
-        vararg components: Any,
-        source: Entity? = null,
-        crossinline result: (event: Entity) -> T
-    ): T = callEvent({
-        setAll(components.toList())
-    }, source = source, result = result)
-
-    /** Calls an event with [components] attached to it and this entity as the target. */
-    fun callEvent(vararg components: Any, source: Entity? = null): Unit =
-        callEvent(source = source) {
-            setAll(components.toList())
-        }
-
-    /** Calls an event on this entity using a temporary entity that can be configured with [initEvent]. */
-    inline fun callEvent(
-        source: Entity? = null,
-        crossinline initEvent: Entity.() -> Unit,
-    ): Unit = callEvent(initEvent, source) {}
-
-    /**
-     * Calls an event on this entity using a temporary entity that can be configured with [init],
-     * calculating a [result] after all handlers have run.
-     */
-    inline fun <T> callEvent(
-        crossinline init: Entity.() -> Unit,
-        source: Entity? = null,
-        crossinline result: (event: Entity) -> T,
-    ): T = temporaryEntity { event ->
-        init(event)
-        callEvent(event, source)
-        result(event)
-    }
-
-    fun callCheck(
-        source: Entity? = null,
-    ): Boolean {
-        return callEvent({
-            add<RequestCheck>()
-        }, source) { !it.has<FailedCheck>() }
-    }
-
-    inline fun callCheck(
-        crossinline init: Entity.() -> Unit,
-        source: Entity? = null,
-    ): Boolean {
-        return callEvent({
-            init()
-            add<RequestCheck>()
-        }, source) { it.has<FailedCheck>() }
-    }
-
-    /** Calls an event using a specific [entity][event] on this entity. */
-    fun callEvent(event: Entity, source: Entity? = null) {
-        eventRunner.callEvent(this, event, source)
+    inline fun <reified T: Any> emit(data: T? = null, involving: ComponentId? = null) {
+        geary.eventRunner.callEvent(componentId<T>(), data, involving, this)
     }
 
     // Prefabs

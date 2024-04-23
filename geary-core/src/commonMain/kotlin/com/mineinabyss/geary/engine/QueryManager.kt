@@ -2,13 +2,11 @@ package com.mineinabyss.geary.engine
 
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.systems.Listener
+import com.mineinabyss.geary.events.queries.Observer
 import com.mineinabyss.geary.systems.query.CachedQueryRunner
-import com.mineinabyss.geary.systems.query.GearyQuery
 import com.mineinabyss.geary.systems.query.Query
 
 interface QueryManager {
-    fun trackEventListener(listener: Listener<*>)
     fun <T: Query> trackQuery(query: T): CachedQueryRunner<T>
 
     /** Returns a list of entities matching the given family. */

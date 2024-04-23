@@ -2,40 +2,37 @@ package com.mineinabyss.geary.prefabs.configuration.systems
 
 import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.components.relations.NoInherit
+import com.mineinabyss.geary.events.types.OnSet
 import com.mineinabyss.geary.helpers.addParent
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.GearyModule
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.configuration.components.ChildOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.ChildrenOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
-import com.mineinabyss.geary.systems.builders.listener
-import com.mineinabyss.geary.systems.query.ListenerQuery
+import com.mineinabyss.geary.systems.builders.observe
 
 
-fun GearyModule.createParseChildOnPrefabListener() = listener(object : ListenerQuery() {
-    val child by get<ChildOnPrefab>()
-    override fun ensure() = event.anySet(::child)
-}).exec {
-    entity {
-        addParent(entity)
-        setAll(child.components)
-    }
-    entity.remove<ChildOnPrefab>()
-}
-
-fun GearyModule.createParseChildrenOnPrefabListener() = listener(object : ListenerQuery() {
-    var children by get<ChildrenOnPrefab>()
-    override fun ensure() = event.anySet(::children)
-}).exec {
-    children.nameToComponents.forEach { (name, components) ->
+fun GearyModule.createParseChildOnPrefabListener() = observe<OnSet>()
+    .involving<ChildOnPrefab>()
+    .exec { (child) ->
         entity {
-            set(EntityName(name))
-            set(Prefab())
             addParent(entity)
-            addRelation<NoInherit, Prefab>()
-            setAll(components)
+            setAll(child.components)
         }
+        entity.remove<ChildOnPrefab>()
     }
-    entity.remove<ChildrenOnPrefab>()
-}
+
+fun GearyModule.createParseChildrenOnPrefabListener() = observe<OnSet>()
+    .involving<ChildrenOnPrefab>()
+    .exec { (children) ->
+        children.nameToComponents.forEach { (name, components) ->
+            entity {
+                set(EntityName(name))
+                set(Prefab())
+                addParent(entity)
+                addRelation<NoInherit, Prefab>()
+                setAll(components)
+            }
+        }
+        entity.remove<ChildrenOnPrefab>()
+    }

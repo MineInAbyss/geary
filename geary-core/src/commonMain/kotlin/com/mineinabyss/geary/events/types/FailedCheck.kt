@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.components.events
+package com.mineinabyss.geary.events.types
 
 /**
  * A component that gets added to events that failed a check.

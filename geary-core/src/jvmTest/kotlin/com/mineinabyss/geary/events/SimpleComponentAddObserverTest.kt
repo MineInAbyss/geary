@@ -1,19 +1,18 @@
 package com.mineinabyss.geary.events
 
+import com.mineinabyss.geary.events.types.OnEntityRemoved
+import com.mineinabyss.geary.events.types.OnSet
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.listener
-import com.mineinabyss.geary.systems.query.ListenerQuery
+import com.mineinabyss.geary.systems.builders.observe
+import com.mineinabyss.geary.systems.query.Query
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
-class SimpleComponentAddListenerTest : GearyTest() {
+class SimpleComponentAddObserverTest : GearyTest() {
     var called = 0
-    fun myListener() = geary.listener(object : ListenerQuery() {
-        val data by get<Int>()
-        override fun ensure() = event.anySet(::data)
-    }).exec { called += 1 }
+    fun myListener() = geary.observe<OnSet>().involving<Int>().exec { called += 1 }
 
     @Test
     fun `simple event listener`() {

@@ -15,7 +15,7 @@ import com.mineinabyss.geary.serialization.dsl.serializableComponents
 import com.mineinabyss.geary.serialization.formats.Format.ConfigType.NON_STRICT
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer.Companion.provideConfig
-import com.mineinabyss.geary.systems.builders.cachedQuery
+import com.mineinabyss.geary.systems.builders.cache
 import com.mineinabyss.geary.systems.query.Query
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
@@ -29,7 +29,7 @@ class PrefabLoader {
 
     private val readFiles = mutableListOf<PrefabPath>()
 
-    private val needsInherit = geary.cachedQuery(NeedsInherit())
+    private val needsInherit = geary.cache(NeedsInherit())
 
     fun addSource(path: PrefabPath) {
         readFiles.add(path)

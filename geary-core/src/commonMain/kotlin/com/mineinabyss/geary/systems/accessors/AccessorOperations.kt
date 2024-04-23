@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.systems.accessors
 
-import com.mineinabyss.geary.components.events.ExtendedEntity
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.family.MutableFamily
+import com.mineinabyss.geary.events.types.OnExtend
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.helpers.toGeary
@@ -54,7 +54,7 @@ abstract class AccessorOperations {
     }
 
     /** Accesses a component or `null` if the entity doesn't have it. */
-    fun <T : Any> ComponentAccessor<T>.orNull(): ComponentOrDefaultAccessor<T?> {
+    fun <T> ComponentAccessor<T & Any>.orNull(): ComponentOrDefaultAccessor<T?> {
         return orDefault { null }
     }
 
@@ -94,6 +94,6 @@ abstract class AccessorOperations {
     /** Fires when an entity has a component of type [T] added, updates are not considered since no data changes. */
     protected fun EventQueriedEntity.extendedEntity(): ReadOnlyAccessor<Entity> {
         invoke { onExtendedEntity() }
-        return getRelations<ExtendedEntity?, Any?>().map { it.single().target.toGeary() }
+        return getRelations<OnExtend?, Any?>().map { it.single().target.toGeary() }
     }
 }
