@@ -18,6 +18,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib-common"))
                 implementation(libs.atomicfu)
+                implementation(libs.androidx.collection)
                 implementation(idofrontLibs.kotlin.reflect)
                 implementation(idofrontLibs.kotlinx.serialization.cbor)
 

@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import androidx.collection.*
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.*
-import com.mineinabyss.geary.datatypes.maps.CompId2ArchetypeMap
 import com.mineinabyss.geary.events.types.*
 import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.modules.archetypes
@@ -26,10 +26,15 @@ class Archetype internal constructor(
     private val eventRunner = archetypes.eventRunner
     private val comps get() = geary.components
 
-    val entities: Sequence<Entity> get() = ids.getEntities()
+    val entities: Sequence<Entity>
+        get() {
+            val entities = mutableListOf<Entity>()
+            ids.forEach { entities += it.toGeary() }
+            return entities.asSequence()
+        }
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
-    private val ids: ULongArrayList = ULongArrayList()
+    private val ids = mutableLongListOf()
 
     @PublishedApi
     internal var isIterating: Boolean = false
@@ -45,14 +50,14 @@ class Archetype internal constructor(
     private val dataHoldingType: EntityType = type.filter { it.holdsData() }
 
     /** An outer list with indices for component ids, and sub-lists with data indexed by entity [ids]. */
-    internal val componentData: Array<MutableList<Component>> =
-        Array(dataHoldingType.size) { mutableListOf() }
+    internal val componentData: Array<MutableObjectList<Component>> =
+        Array(dataHoldingType.size) { mutableObjectListOf() }
 
     /** Edges to other archetypes where a single component has been added. */
-    internal val componentAddEdges = CompId2ArchetypeMap()
+    internal val componentAddEdges = LongSparseArray<Archetype>()
 
     /** Edges to other archetypes where a single component has been removed. */
-    internal val componentRemoveEdges = CompId2ArchetypeMap()
+    internal val componentRemoveEdges = LongSparseArray<Archetype>()
 
     internal val relations: EntityType = type.filter { it.isRelation() }
     internal val relationsWithData: EntityType = relations.filter { it.holdsData() }
@@ -85,7 +90,7 @@ class Archetype internal constructor(
      */
     operator fun get(row: Int, componentId: ComponentId): Component? {
         val compIndex = indexOf(componentId)
-        if (compIndex == -1) return null
+        if (compIndex < 0) return null
         return componentData[compIndex][row]
     }
 
@@ -94,7 +99,7 @@ class Archetype internal constructor(
 
     /** Returns the archetype associated with adding [componentId] to this archetype's [type]. */
     operator fun plus(componentId: ComponentId): Archetype {
-        return componentAddEdges.getOrElse(componentId) {
+        return componentAddEdges.getOrElse(componentId.toLong()) {
             val archetype = archetypeProvider.getArchetype(type + componentId)
             updateComponentEdgesFor(componentId, archetype)
             archetype
@@ -105,15 +110,15 @@ class Archetype internal constructor(
         componentId: ComponentId,
         archetype: Archetype,
     ) {
-        componentAddEdges[componentId] = archetype
-        archetype.componentRemoveEdges[componentId] = this
+        componentAddEdges[componentId.toLong()] = archetype
+        archetype.componentRemoveEdges[componentId.toLong()] = this
     }
 
     /** Returns the archetype associated with removing [componentId] to this archetype's [type]. */
     operator fun minus(componentId: ComponentId): Archetype =
-        componentRemoveEdges.getOrSet(componentId) {
+        componentRemoveEdges.getOrPut(componentId.toLong()) {
             archetypeProvider.getArchetype(type.minus(componentId))
-                .also { it.componentAddEdges[componentId] = this }
+                .also { it.componentAddEdges[componentId.toLong()] = this }
         }
 
     // ==== Entity mutation ====
@@ -163,7 +168,7 @@ class Archetype internal constructor(
         val withoutCompIndex = oldArc.indexOf(withoutComponentId)
 
         // If removing a component that's added and not set, we just copy all data
-        if (withoutCompIndex == -1) {
+        if (withoutCompIndex < 0) {
             for (i in 0..componentData.lastIndex) {
                 componentData[i].add(oldArc.componentData[i][oldRow])
             }
@@ -183,7 +188,7 @@ class Archetype internal constructor(
 
 
     internal fun createWithoutData(entity: Entity): Int {
-        ids.add(entity.id)
+        ids.add(entity.idL)
         return ids.lastIndex
     }
 
@@ -192,7 +197,7 @@ class Archetype internal constructor(
         copyData: () -> Unit
     ): Int {
         if (unregistered) error("Tried adding entity to archetype that is no longer registered. Was it referenced outside of Geary?")
-        ids.add(entity)
+        ids.add(entity.toLong())
         val row = ids.lastIndex
 
         copyData()
@@ -226,7 +231,7 @@ class Archetype internal constructor(
 
         val moveTo = this + (componentId.withoutRole(HOLDS_DATA))
 
-        val entityId = ids[row]
+        val entityId = ids[row].toULong()
         val newRow = moveTo.moveOnlyAdding(this, row, entityId)
         removeEntity(row)
 
@@ -258,7 +263,7 @@ class Archetype internal constructor(
 
         //If component already in this type, just update the data
         val addIndex = indexOf(dataComponent)
-        if (addIndex != -1) {
+        if (addIndex >= 0) {
             componentData[addIndex][row] = data
             if (callEvent) {
                 callComponentModifyEvent(comps.onUpdate, componentId, row, onUpdated)
@@ -268,7 +273,7 @@ class Archetype internal constructor(
         }
 
         //if component is not already added, add it, then set
-        val entityId = ids[row]
+        val entityId = ids[row].toULong()
         val moveTo = this + dataComponent.withoutRole(HOLDS_DATA) + dataComponent
         val newRow = moveTo.moveWithNewComponent(this, row, data, dataComponent, entityId)
         removeEntity(row)
@@ -326,7 +331,12 @@ class Archetype internal constructor(
         records.runOn(instanceEntity) { arch, row -> instanceArch = arch; instanceRow = row }
 
         if (callEvent) {
-            eventRunner.callEvent(comps.onExtend, OnExtend(baseEntity), NO_COMPONENT, instanceArch.getEntity(instanceRow))
+            eventRunner.callEvent(
+                comps.onExtend,
+                OnExtend(baseEntity),
+                NO_COMPONENT,
+                instanceArch.getEntity(instanceRow)
+            )
         }
     }
 
@@ -340,7 +350,7 @@ class Archetype internal constructor(
         component: ComponentId,
         callEvent: Boolean,
     ): Boolean {
-        val entityId = ids[row]
+        val entityId = ids[row].toULong()
 
         if (component !in type) return false
 
@@ -371,7 +381,7 @@ class Archetype internal constructor(
             archetypes.queryManager.unregisterArchetype(this)
             unregistered = true
             componentRemoveEdges.forEach { id, archetype ->
-                archetype.componentAddEdges.remove(id)
+                archetype.componentAddEdges.remove(id.toLong())
                 archetype.unregisterIfEmpty()
             }
             componentRemoveEdges.clear()
@@ -452,7 +462,9 @@ class Archetype internal constructor(
         // Delete last row's data
         // If we're the last archetype in the chain with no entities, unregister to free up memory
 
-        ids.removeLastOrNull()
+        val index = ids.lastIndex
+        if (index != -1) ids.removeAt(index)
+
         componentData.fastForEach { it.removeAt(lastIndex) }
         unregisterIfEmpty()
     }

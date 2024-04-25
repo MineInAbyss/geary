@@ -28,12 +28,10 @@ allprojects {
                 }
             }
             js(IR) {
-                // TODO JS is missing a Roaring Bitmap implementation, we don't have a use for a JS target
-                //  but would happily accept PRs. The target is here to prevent calls to JVM only functions in common
-                //  code, ex. JVM only reflection.
-                nodejs()
-//                browser()
-//                disableCompilations()
+                // TODO Other targets are missing some implementations like Roaring Bitmaps, but we hope someone
+                //  interested can add support in the future. Thus, we force a target that doesn't actually compile
+                //  so we can't accidentally use jvm-only code in the common target.
+                compilations.configureEach { compileKotlinTask.enabled = false }
             }
             sourceSets {
                 all {

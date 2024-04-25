@@ -22,6 +22,8 @@ typealias GearyEntity = Entity
  */
 @JvmInline
 value class Entity(val id: EntityId) {
+    inline val idL get() = id.toLong()
+
     private val entityProvider get() = geary.entityProvider
     private val queryManager get() = geary.queryManager
     private val read get() = geary.read

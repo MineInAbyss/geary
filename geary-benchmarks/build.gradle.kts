@@ -43,9 +43,7 @@ benchmark {
         }
 
         create("specific") {
-//            include("Unpack6Benchmark")
-            include("NewEntityBenchmark")
-            include("ManyComponentsBenchmark")
+            include("EventCalls")
             warmups = 1
             iterations = 1
             iterationTime = 3

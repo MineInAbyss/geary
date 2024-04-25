@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import androidx.collection.getOrElse
+import androidx.collection.set
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.modules.archetypes
@@ -21,8 +23,8 @@ class SimpleArchetypeProvider : ArchetypeProvider {
     private fun createArchetype(prevNode: Archetype, componentEdge: ComponentId): Archetype {
         val arc = Archetype(prevNode.type.plus(componentEdge), queryManager.archetypeCount)
 
-        arc.componentRemoveEdges[componentEdge] = prevNode
-        prevNode.componentAddEdges[componentEdge] = arc
+        arc.componentRemoveEdges[componentEdge.toLong()] = prevNode
+        prevNode.componentAddEdges[componentEdge.toLong()] = arc
         queryManager.registerArchetype(arc)
         return arc
     }
@@ -30,7 +32,7 @@ class SimpleArchetypeProvider : ArchetypeProvider {
     override fun getArchetype(entityType: EntityType): Archetype = synchronized(archetypeWriteLock) {
         var node = rootArchetype
         entityType.forEach { compId ->
-            node = node.componentAddEdges.getOrElse(compId) { createArchetype(node, compId) }
+            node = node.componentAddEdges.getOrElse(compId.toLong()) { createArchetype(node, compId) }
         }
         return node
     }

@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.datatypes.maps
 
+import androidx.collection.mutableObjectListOf
 import com.mineinabyss.geary.datatypes.BucketedULongArray
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.engine.archetypes.Archetype
@@ -7,7 +8,7 @@ import com.mineinabyss.geary.engine.archetypes.Archetype
 
 open class ArrayTypeMap : TypeMap {
     @PublishedApi
-    internal val archList = arrayListOf<Archetype>()
+    internal val archList = mutableObjectListOf<Archetype>()
 
     @PublishedApi
     internal var archAndRow = BucketedULongArray()

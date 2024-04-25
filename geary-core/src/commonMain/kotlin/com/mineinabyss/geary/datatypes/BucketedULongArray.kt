@@ -1,9 +1,11 @@
 package com.mineinabyss.geary.datatypes
 
+import androidx.collection.mutableObjectListOf
+
 private const val bucketSize: Int = 1024
 
 class BucketedULongArray {
-    private val buckets = mutableListOf<LongArray>()
+    private val buckets = mutableObjectListOf<LongArray>()
     var maxSupportedSize = 0
         private set
     var size = 0
@@ -37,17 +39,5 @@ class BucketedULongArray {
     fun add(value: ULong) {
         val index = size
         set(index, value)
-    }
-
-    fun getAll(): ULongArray {
-        return ULongArray(size) { get(it) }
-    }
-
-    fun removeLastOrNull(): ULong? {
-        if (size == 0) return null
-        return get(lastIndex).also {
-            size--
-            if (size % bucketSize == 0) buckets.removeLast()
-        }
     }
 }
