@@ -22,13 +22,13 @@ abstract class AccessorOperations {
     /** Accesses a component, ensuring it is on the entity. */
     protected inline fun <reified T : Any> QueriedEntity.get(): ComponentAccessor<T> {
         return addAccessor {
-            NonNullComponentAccessor(cacheAccessors, null, componentId<T>().withRole(HOLDS_DATA))
+            ComponentAccessor(null, componentId<T>().withRole(HOLDS_DATA))
         }
     }
 
     /** Accesses a data stored in a relation with kind [K] and target type [T], ensuring it is on the entity. */
     protected inline fun <reified K : Any, reified T : Any> QueriedEntity.getRelation(): ComponentAccessor<T> {
-        return addAccessor { NonNullComponentAccessor(cacheAccessors, null, Relation.of<K, T>().id) }
+        return addAccessor { ComponentAccessor(null, Relation.of<K, T>().id) }
     }
 
     inline fun <T : Accessor> addAccessor(create: () -> T): T {

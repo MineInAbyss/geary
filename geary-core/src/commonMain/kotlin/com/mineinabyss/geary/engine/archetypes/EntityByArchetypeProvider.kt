@@ -63,6 +63,6 @@ class EntityByArchetypeProvider(
     private fun createRecord(entity: Entity) {
         val root = root
         val row = root.createWithoutData(entity)
-        records.set(entity, root, row)
+        records[entity, root] = row
     }
 }

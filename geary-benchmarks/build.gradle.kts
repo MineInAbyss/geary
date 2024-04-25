@@ -3,8 +3,6 @@ import org.jetbrains.kotlin.allopen.gradle.AllOpenExtension
 
 plugins {
     id(idofrontLibs.plugins.mia.kotlin.jvm.get().pluginId)
-//    id(idofrontLibs.plugins.mia.publication.get().pluginId)
-//    alias(idofrontLibs.plugins.kotlinx.serialization)
     id("org.jetbrains.kotlinx.benchmark") version "0.4.9"
     kotlin("plugin.allopen") version "1.9.10"
 }

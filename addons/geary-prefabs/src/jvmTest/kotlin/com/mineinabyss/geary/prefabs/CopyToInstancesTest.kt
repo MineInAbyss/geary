@@ -14,8 +14,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class CopyToInstancesTest {
-    private val testKey = PrefabKey.of("test:1")
-
     @BeforeEach
     fun createEngine() {
         DI.clear()

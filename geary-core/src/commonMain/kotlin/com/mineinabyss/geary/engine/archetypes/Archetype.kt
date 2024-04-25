@@ -82,8 +82,6 @@ class Archetype internal constructor(
 
     /**
      * @return The data under a [componentId] for an entity at [row].
-     *
-     * @see Record
      */
     operator fun get(row: Int, componentId: ComponentId): Component? {
         val compIndex = indexOf(componentId)
@@ -119,13 +117,7 @@ class Archetype internal constructor(
         }
 
     // ==== Entity mutation ====
-    /**
-     * Adds an entity to this archetype with properly ordered [data].
-     *
-     * @param data A list of components whose indices correctly match those of this archetype's [dataHoldingType].
-     *
-     * @return The new [Record] to be associated with this entity from now on.
-     */
+    /** Moves an entity from [oldArc] to this archetype when setting a component on the entity */
     private fun moveWithNewComponent(
         oldArc: Archetype,
         oldRow: Int,
@@ -150,6 +142,7 @@ class Archetype internal constructor(
         }
     }
 
+    /** Moves an entity from [oldArc] to this archetype when adding a component on the entity */
     private fun moveOnlyAdding(
         oldArc: Archetype,
         oldRow: Int,
@@ -160,6 +153,7 @@ class Archetype internal constructor(
         }
     }
 
+    /** Moves an entity from [oldArc] to this archetype when removing a component on the entity */
     private fun moveWithoutComponent(
         oldArc: Archetype,
         oldRow: Int,
@@ -248,7 +242,7 @@ class Archetype internal constructor(
     ) = setComponent(row, componentId, data, callEvent) { _, _ -> }
 
     /**
-     * Sets [data] at a [componentId] for an [record], moving it to the appropriate archetype.
+     * Sets [data] at a [componentId] for an entity, moving it to the appropriate archetype.
      * Will ensure this component without [HOLDS_DATA] is always present.
      *
      * @return Whether the record has changed.
@@ -337,7 +331,7 @@ class Archetype internal constructor(
     }
 
     /**
-     * Removes a [component] from an [record], moving it to the appropriate archetype.
+     * Removes a [component] from an entity at [row], moving it to the appropriate archetype.
      *
      * @return Whether the record has changed.
      */

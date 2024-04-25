@@ -9,22 +9,12 @@ open class ArrayTypeMap : TypeMap {
     @PublishedApi
     internal val archList = arrayListOf<Archetype>()
 
-    //    private val map: ArrayList<Record?> = arrayListOf()
-//    private var archIndexes = IntArray(10)
-//    private var rows = IntArray(10)
     @PublishedApi
     internal var archAndRow = BucketedULongArray()
     var size = 0
 
     // We don't return nullable record to avoid boxing.
     // Accessing an entity that doesn't exist is indicative of a problem elsewhere and should be made obvious.
-//    override fun get(entity: Entity): Record {
-//        val info = archAndRow[entity.id.toInt()]
-//        return Record(
-//            archList[(info shr 32).toInt()],
-//            info.toInt()
-//        )
-//    }
     open fun getArchAndRow(entity: Entity): ULong {
         return archAndRow[entity.id.toInt()]
     }

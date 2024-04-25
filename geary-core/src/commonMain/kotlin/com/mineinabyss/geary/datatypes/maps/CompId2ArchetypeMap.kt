@@ -5,15 +5,12 @@ import com.mineinabyss.geary.datatypes.ULongArrayList
 import com.mineinabyss.geary.engine.archetypes.Archetype
 
 /**
- * Inlined class that acts as a map of components to archetypes. Uses archetype ids for better performance.
+ * ULong to Archetype map using an underlying dense ULong array to check the index of a given id.
  */
-
 class CompId2ArchetypeMap {
-    //    val inner = Long2ObjectArrayMap<Archetype>()
     val ids = ULongArrayList()
     val values = mutableListOf<Archetype>()
-    //    actual operator fun get(id: GearyComponentId): Archetype? =
-//        values[entries.indexOf(id).also { if (it == -1) return null }]
+
     operator fun set(id: GearyComponentId, archetype: Archetype) {
         val index = ids.indexOf(id)
         if (index == -1) {
@@ -39,7 +36,7 @@ class CompId2ArchetypeMap {
     }
 
     inline fun forEach(action: (ULong, Archetype) -> Unit) {
-        for(i in 0 until ids.size) {
+        for (i in 0 until ids.size) {
             action(ids[i], values[i])
         }
     }
