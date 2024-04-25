@@ -31,33 +31,33 @@ class Unpack6Benchmark {
     @Benchmark
     fun unpack1of6Comp() {
         systemOf1().forEach {
-            comp1
+            it.comp1
         }
     }
 
     @Benchmark
     fun unpack1of6CompWithUnoptimizedAccessor() {
         systemOf1Defaulting().forEach {
-            comp1
+            it.comp1
         }
     }
 
     @Benchmark
     fun unpack6of6Comp() {
         systemOf6().forEach {
-            comp1
-            comp2
-            comp3
-            comp4
-            comp5
-            comp6
+            it.comp1
+            it.comp2
+            it.comp3
+            it.comp4
+            it.comp5
+            it.comp6
         }
     }
 
     @Benchmark
     fun unpack1of6CompNoDelegate() {
         systemOf6WithoutDelegate().forEach {
-            comp1()
+            it.comp1.get(it)
         }
     }
 
@@ -65,12 +65,13 @@ class Unpack6Benchmark {
     @Benchmark
     fun unpack6of6CompNoDelegate() {
         systemOf6WithoutDelegate().forEach {
-            comp1()
-            comp2()
-            comp3()
-            comp4()
-            comp5()
-            comp6()
+
+            it.comp1.get(it)
+            it.comp2.get(it)
+            it.comp3.get(it)
+            it.comp4.get(it)
+            it.comp5.get(it)
+            it.comp6.get(it)
         }
     }
 }

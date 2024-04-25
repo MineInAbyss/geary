@@ -1,9 +1,9 @@
-package com.mineinabyss.geary.systems.accessors
+package com.mineinabyss.geary.queries.accessors
 
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.cachedQuery
+import com.mineinabyss.geary.systems.builders.cache
 import com.mineinabyss.geary.systems.query.Query
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -12,11 +12,11 @@ import org.junit.jupiter.api.Test
 internal class MappedAccessorTests : GearyTest() {
     private class Marker
 
-    private fun mappedQuery() = geary.cachedQuery(object : Query() {
+    private fun mappedQuery() = geary.cache(object : Query() {
         val mapped by get<Int>().map { it.toString() }
     })
 
-    private fun defaultingQuery() = geary.cachedQuery(object : Query() {
+    private fun defaultingQuery() = geary.cache(object : Query() {
         val default by get<String>().orDefault { "empty!" }
         override fun ensure() = this { has<Marker>() }
     })
@@ -27,7 +27,7 @@ internal class MappedAccessorTests : GearyTest() {
             set(1)
         }
         mappedQuery().forEach {
-            mapped shouldBe "1"
+            it.mapped shouldBe "1"
         }
     }
 
@@ -40,6 +40,6 @@ internal class MappedAccessorTests : GearyTest() {
         entity {
             add<Marker>()
         }
-        defaultingQuery().map { default }.shouldContainExactly("Hello", "empty!")
+        defaultingQuery().map { it.default }.shouldContainExactly("Hello", "empty!")
     }
 }

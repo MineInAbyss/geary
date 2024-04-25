@@ -1,23 +1,25 @@
 package com.mineinabyss.geary.systems.builders
 
+import com.mineinabyss.geary.events.queries.*
+import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.systems.query.CachedQueryRunner
-import com.mineinabyss.geary.systems.query.ListenerQuery
 import com.mineinabyss.geary.systems.query.Query
 
 
-fun <T : Query> GearyModule.cachedQuery(
+fun <T : Query> GearyModule.cache(
     query: T,
 ): CachedQueryRunner<T> {
     return queryManager.trackQuery(query)
 }
 
-fun <T : ListenerQuery> GearyModule.listener(
-    query: T
-): ListenerBuilder<T> {
-    return ListenerBuilder(query, pipeline)
+inline fun <reified T : Any> GearyModule.observe(): ObserverWithoutData {
+    return ObserverWithoutData(listOf(componentId<T>()), this)
 }
 
+inline fun <reified T : Any> GearyModule.observeWithData(): ObserverWithData<T> {
+    return ObserverWithData(listOf(componentId<T>()), this)
+}
 
 fun <T : Query> GearyModule.system(
     query: T

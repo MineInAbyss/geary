@@ -5,13 +5,9 @@ import com.mineinabyss.geary.datatypes.EntityStack
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
-import com.mineinabyss.geary.datatypes.maps.TypeMap
 import com.mineinabyss.geary.engine.EntityProvider
-import com.mineinabyss.geary.helpers.fastForEach
-import com.mineinabyss.geary.helpers.parents
-import com.mineinabyss.geary.helpers.removeParent
-import com.mineinabyss.geary.helpers.toGeary
-import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.events.types.OnEntityRemoved
+import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.modules.geary
 import kotlinx.atomicfu.atomic
 
@@ -19,7 +15,8 @@ class EntityByArchetypeProvider(
     private val reuseIDsAfterRemoval: Boolean = true,
 ) : EntityProvider {
     private lateinit var records: ArrayTypeMap
-//    private val archetypeProvider: ArchetypeProvider by lazy { archetypes.archetypeProvider }
+
+    //    private val archetypeProvider: ArchetypeProvider by lazy { archetypes.archetypeProvider }
     private lateinit var root: Archetype
 
     private val removedEntities: EntityStack = EntityStack()
@@ -35,9 +32,8 @@ class EntityByArchetypeProvider(
     }
 
     override fun remove(entity: Entity) {
-        if (!entity.has(geary.components.suppressRemoveEvent)) entity.callEvent {
-            add(geary.components.entityRemoved)
-        }
+        if (!entity.has(geary.components.suppressRemoveEvent))
+            entity.emit(geary.components.onEntityRemoved, OnEntityRemoved(), NO_COMPONENT)
 
         // remove all children of this entity from the ECS as well
         if (entity.has(geary.components.couldHaveChildren)) entity.apply {
@@ -67,6 +63,6 @@ class EntityByArchetypeProvider(
     private fun createRecord(entity: Entity) {
         val root = root
         val row = root.createWithoutData(entity)
-        records.set(entity, root, row)
+        records[entity, root] = row
     }
 }

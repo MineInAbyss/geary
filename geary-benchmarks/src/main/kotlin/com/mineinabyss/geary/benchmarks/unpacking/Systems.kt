@@ -2,7 +2,7 @@ package com.mineinabyss.geary.benchmarks.unpacking
 
 import com.mineinabyss.geary.benchmarks.helpers.*
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.cachedQuery
+import com.mineinabyss.geary.systems.builders.cache
 import com.mineinabyss.geary.systems.query.GearyQuery
 
 class Query1 : GearyQuery() {
@@ -47,8 +47,8 @@ class Query6WithoutDelegate : GearyQuery() {
     }
 }
 
-fun systemOf1() = geary.cachedQuery(Query1())
-fun systemOf1Defaulting() = geary.cachedQuery(Query1Defaulting())
-fun systemOf2() = geary.cachedQuery(Query2())
-fun systemOf6() = geary.cachedQuery(Query6())
-fun systemOf6WithoutDelegate() = geary.cachedQuery(Query6WithoutDelegate())
+fun systemOf1() = geary.cache(Query1())
+fun systemOf1Defaulting() = geary.cache(Query1Defaulting())
+fun systemOf2() = geary.cache(Query2())
+fun systemOf6() = geary.cache(Query6())
+fun systemOf6WithoutDelegate() = geary.cache(Query6WithoutDelegate())

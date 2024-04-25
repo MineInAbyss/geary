@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
-
 plugins {
     id(idofrontLibs.plugins.mia.kotlin.multiplatform.get().pluginId)
     id(idofrontLibs.plugins.mia.publication.get().pluginId)
@@ -14,19 +12,13 @@ buildscript {
 
 apply(plugin = "kotlinx-atomicfu")
 
-//TODO dev options to only build for one target at a time
-fun KotlinTarget.disableCompilations() {
-    compilations.configureEach {
-        compileKotlinTask.enabled = false
-    }
-}
-
 kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
                 implementation(libs.atomicfu)
+                implementation(libs.androidx.collection)
                 implementation(idofrontLibs.kotlin.reflect)
                 implementation(idofrontLibs.kotlinx.serialization.cbor)
 
@@ -52,11 +44,6 @@ kotlin {
                 implementation(idofrontLibs.kotlinx.serialization.kaml)
                 implementation(idofrontLibs.fastutil)
                 implementation(libs.roaringbitmap)
-            }
-        }
-        val jsMain by getting {
-            dependencies {
-                //TODO library for js bitsets
             }
         }
     }

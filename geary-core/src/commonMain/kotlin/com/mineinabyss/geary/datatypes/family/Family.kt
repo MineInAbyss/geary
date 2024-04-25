@@ -2,10 +2,6 @@ package com.mineinabyss.geary.datatypes.family
 
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityId
-import com.mineinabyss.geary.systems.accessors.FamilyMatching
-import com.mineinabyss.geary.systems.accessors.ReadOnlyAccessor
-import com.mineinabyss.geary.systems.query.Query
-import kotlin.reflect.KProperty
 
 sealed interface Family {
     sealed class Leaf : Family {

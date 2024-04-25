@@ -7,14 +7,12 @@ import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.accessors.*
-import com.mineinabyss.geary.systems.query.QueriedEntity
 import com.mineinabyss.geary.systems.query.Query
 import kotlin.reflect.KProperty
 
 @OptIn(UnsafeAccessors::class)
 class RelationsWithDataAccessor<K, T>(
     override val originalAccessor: Accessor?,
-    override val queriedEntity: QueriedEntity,
     val kind: ComponentId,
     val target: EntityId,
 ) : ReadOnlyAccessor<List<RelationWithData<K, T>>>, FamilyMatching {
@@ -23,8 +21,8 @@ class RelationsWithDataAccessor<K, T>(
     private var cachedRelations = emptyList<Relation>()
     private var cachedArchetype: Archetype? = null
 
-    override fun getValue(thisRef: Query, property: KProperty<*>): List<RelationWithData<K, T>> {
-        val archetype = queriedEntity.archetype
+    override fun getValue(query: Query, property: KProperty<*>): List<RelationWithData<K, T>> {
+        val archetype = query.archetype
         if (archetype != cachedArchetype) {
             cachedArchetype = archetype
             cachedRelations = archetype.getRelations(kind, target)
@@ -32,7 +30,7 @@ class RelationsWithDataAccessor<K, T>(
 
         @Suppress("UNCHECKED_CAST")
         return archetype.readRelationDataFor(
-            queriedEntity.row,
+            query.row,
             kind,
             target,
             cachedRelations

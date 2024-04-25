@@ -51,6 +51,8 @@ fun main() {
     geary(TestEngineModule)
     ComponentIdTest().apply {
         setup()
-        componentIdFor6Comp()
+        repeat(10) {
+            componentIdFor6Comp()
+        }
     }
 }

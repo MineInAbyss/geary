@@ -10,12 +10,13 @@ abstract class Query : QueriedEntity(cacheAccessors = true) {
         thisRef: Any,
         prop: KProperty<*>
     ): T {
-        queriedEntity.props[prop.name] = this
+        props[prop.name] = this
         return this
     }
 
     protected open fun ensure() {}
 
+    @PublishedApi
     internal fun initialize() {
         ensure()
     }
@@ -23,8 +24,8 @@ abstract class Query : QueriedEntity(cacheAccessors = true) {
     // Optional helpers for avoiding delegates in accessors
 
     @Suppress("NOTHING_TO_INLINE") // These functions are here for maximum speed over delegates, we can inline :)
-    inline operator fun <T> ComponentAccessor<T>.invoke(): T = get(this@Query)
+    inline operator fun <T: Any> ComponentAccessor<T>.invoke(): T = get(this@Query)
 
     @Suppress("NOTHING_TO_INLINE")
-    inline fun <T> ComponentAccessor<T>.set(value: T) = set(this@Query, value)
+    inline fun <T: Any> ComponentAccessor<T>.set(value: T) = set(this@Query, value)
 }

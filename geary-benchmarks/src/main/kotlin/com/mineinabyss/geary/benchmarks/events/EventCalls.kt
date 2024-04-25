@@ -5,13 +5,13 @@ import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.listener
-import com.mineinabyss.geary.systems.query.ListenerQuery
+import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.idofront.di.DI
 import org.openjdk.jmh.annotations.*
 
 @State(Scope.Benchmark)
 class EventCalls {
+    private class TestEvent
 
     var targets = emptyList<Entity>()
 
@@ -19,6 +19,7 @@ class EventCalls {
     fun setupPerInvocation() {
         geary(TestEngineModule)
         targets = (1..oneMil).map { entity { set(it) } }
+        createListener()
     }
 
     @TearDown(Level.Invocation)
@@ -28,22 +29,14 @@ class EventCalls {
 
     var count = 0
 
-    fun createListener() = geary.listener(object : ListenerQuery() {
-        val int by get<Int>()
-        val eventComp by event.get<Event>()
-    }).exec {
+    fun createListener() = geary.observe<TestEvent>().exec {
         count++
     }
 
-    private class Event
-
     @Benchmark
     fun callEventOn1MillionEntities() {
-        val event = entity {
-            set(Event())
-        }
         repeat(oneMil) {
-            targets[it].callEvent(event)
+            targets[it].emit<TestEvent>()
         }
     }
 }
@@ -52,7 +45,7 @@ fun main() {
     geary(TestEngineModule)
     EventCalls().apply {
         setupPerInvocation()
-        repeat(100) {
+        repeat(1000) {
             callEventOn1MillionEntities()
         }
     }
