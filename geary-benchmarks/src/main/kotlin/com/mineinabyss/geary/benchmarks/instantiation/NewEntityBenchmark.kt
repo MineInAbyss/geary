@@ -90,7 +90,7 @@ class NewEntityBenchmark {
 
 fun main() {
     geary(TestEngineModule)
-    repeat(100) {
+    repeat(10) {
         NewEntityBenchmark().create1MilEntitiesWith6ComponentsWithoutComponentIdCalls()
     }
 }

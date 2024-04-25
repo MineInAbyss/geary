@@ -59,7 +59,7 @@ class ArchetypeMutateOperations : EntityMutateOperations {
         records.runOn(entity) { archetype, row ->
             archetype.removeEntity(row)
             val newRow = archetypeProvider.rootArchetype.createWithoutData(entity)
-            records.set(entity, archetypes.archetypeProvider.rootArchetype, newRow)
+            records[entity, archetypes.archetypeProvider.rootArchetype] = newRow
         }
     }
 

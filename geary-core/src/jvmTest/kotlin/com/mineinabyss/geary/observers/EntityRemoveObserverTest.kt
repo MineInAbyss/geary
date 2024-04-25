@@ -1,32 +1,28 @@
-package com.mineinabyss.geary.events
+package com.mineinabyss.geary.observers
 
-import com.mineinabyss.geary.components.events.EntityRemoved
+import com.mineinabyss.geary.events.types.OnEntityRemoved
+import com.mineinabyss.geary.events.types.OnSet
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.listener
-import com.mineinabyss.geary.systems.query.ListenerQuery
+import com.mineinabyss.geary.systems.builders.observe
+import com.mineinabyss.geary.systems.query.Query
+import com.mineinabyss.geary.systems.query.query
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
-class EntityRemoveListenerTest : GearyTest() {
+class EntityRemoveObserverTest : GearyTest() {
     @Test
     fun `should correctly run multiple listeners on single event`() {
         var called = 0
 
-        val listener1 = geary.listener(object : ListenerQuery() {
-            val data by get<Int>()
-            override fun ensure() = event { has<EntityRemoved>() }
-        }).exec {
+        val listener1 = geary.observe<OnEntityRemoved>().exec(query<Int>()) { (data) ->
             data shouldBe 1
             entity.remove<Int>()
             called++
         }
 
-        val listener2 = geary.listener(object : ListenerQuery() {
-            val data by get<String>()
-            override fun ensure() = event { has<EntityRemoved>() }
-        }).exec {
+        val listener2 = geary.observe<OnEntityRemoved>().exec(query<String>()) { (data) ->
             data shouldBe ""
         }
 

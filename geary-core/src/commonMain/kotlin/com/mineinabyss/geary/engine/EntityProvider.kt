@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.engine
 
-import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.EntityType
 

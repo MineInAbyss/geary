@@ -4,6 +4,7 @@ import com.mineinabyss.geary.components.ComponentInfo
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.modules.geary
 import kotlin.reflect.KClass
+import kotlin.reflect.KClassifier
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -40,10 +41,10 @@ inline fun <reified T> componentIdWithNullable(): ComponentId =
 
 /** Gets or registers the id of a component by its [kType]. */
 fun componentId(kType: KType): ComponentId =
-    componentId(kType.classifier as KClass<*>)
+    componentId(kType.classifier ?: error("No classifier found for type $kType"))
 
 /** Gets or registers the id of a component by its [kClass]. */
-fun componentId(kClass: KClass<*>): ComponentId =
+inline fun componentId(kClass: KClassifier): ComponentId =
     geary.componentProvider.getOrRegisterComponentIdForClass(kClass)
 
 
@@ -55,3 +56,5 @@ fun componentId(kClass: KClass<out ComponentId>): Nothing =
 /** Gets the [ComponentInfo] component from a component's id. */
 fun ComponentId.getComponentInfo(): ComponentInfo? =
     this.toGeary().get()
+
+inline fun <reified T> cId(): ComponentId = componentId<T>()

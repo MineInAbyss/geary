@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.datatypes.maps
 
+import androidx.collection.mutableObjectListOf
 import com.mineinabyss.geary.datatypes.BucketedULongArray
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.engine.archetypes.Archetype
@@ -7,24 +8,14 @@ import com.mineinabyss.geary.engine.archetypes.Archetype
 
 open class ArrayTypeMap : TypeMap {
     @PublishedApi
-    internal val archList = arrayListOf<Archetype>()
+    internal val archList = mutableObjectListOf<Archetype>()
 
-    //    private val map: ArrayList<Record?> = arrayListOf()
-//    private var archIndexes = IntArray(10)
-//    private var rows = IntArray(10)
     @PublishedApi
     internal var archAndRow = BucketedULongArray()
     var size = 0
 
     // We don't return nullable record to avoid boxing.
     // Accessing an entity that doesn't exist is indicative of a problem elsewhere and should be made obvious.
-//    override fun get(entity: Entity): Record {
-//        val info = archAndRow[entity.id.toInt()]
-//        return Record(
-//            archList[(info shr 32).toInt()],
-//            info.toInt()
-//        )
-//    }
     open fun getArchAndRow(entity: Entity): ULong {
         return archAndRow[entity.id.toInt()]
     }

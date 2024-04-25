@@ -1,4 +1,6 @@
 package com.mineinabyss.geary.systems
 
-typealias GearyListener<T> = Listener<T>
+import com.mineinabyss.geary.events.queries.Observer
+
+typealias GearyObserver = Observer
 typealias GearySystem<T> = System<T>

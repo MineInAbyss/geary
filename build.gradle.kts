@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 plugins {
     alias(idofrontLibs.plugins.kotlin.multiplatform)
     alias(idofrontLibs.plugins.dokka)
@@ -26,8 +28,10 @@ allprojects {
                 }
             }
             js(IR) {
-                nodejs()
-                browser()
+                // TODO Other targets are missing some implementations like Roaring Bitmaps, but we hope someone
+                //  interested can add support in the future. Thus, we force a target that doesn't actually compile
+                //  so we can't accidentally use jvm-only code in the common target.
+                compilations.configureEach { compileKotlinTask.enabled = false }
             }
             sourceSets {
                 all {
@@ -40,13 +44,16 @@ allprojects {
                     }
                 }
             }
-        }
-    }
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        kotlinOptions.freeCompilerArgs += listOf(
-            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
-            "-Xexpect-actual-classes"
-        )
+            @OptIn(ExperimentalKotlinGradlePluginApi::class)
+            compilerOptions {
+                freeCompilerArgs.addAll(
+                    listOf(
+                        "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+                        "-Xexpect-actual-classes"
+                    )
+                )
+            }
+        }
     }
 }
