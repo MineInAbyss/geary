@@ -27,7 +27,7 @@ class ComponentAsEntityProvider : ComponentProvider {
 
     override fun getOrRegisterComponentIdForClass(kClass: KClass<*>): ComponentId =
         synchronized(classToComponentMapLock) {
-            val id = classToComponentMap[ kClass]
+            val id = classToComponentMap[kClass]
             if (id == (-1L).toULong()) return registerComponentIdForClass(kClass)
             return id
         }

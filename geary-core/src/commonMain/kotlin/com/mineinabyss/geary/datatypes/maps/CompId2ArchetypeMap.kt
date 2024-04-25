@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.datatypes.maps
 
 import com.mineinabyss.geary.datatypes.GearyComponentId
-import com.mineinabyss.geary.datatypes.IdList
+import com.mineinabyss.geary.datatypes.ULongArrayList
 import com.mineinabyss.geary.engine.archetypes.Archetype
 
 /**
@@ -10,7 +10,7 @@ import com.mineinabyss.geary.engine.archetypes.Archetype
 
 class CompId2ArchetypeMap {
     //    val inner = Long2ObjectArrayMap<Archetype>()
-    val ids = IdList()
+    val ids = ULongArrayList()
     val values = mutableListOf<Archetype>()
     //    actual operator fun get(id: GearyComponentId): Archetype? =
 //        values[entries.indexOf(id).also { if (it == -1) return null }]

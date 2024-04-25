@@ -1,15 +1,13 @@
 package com.mineinabyss.geary.events.types
 
-import com.mineinabyss.geary.datatypes.ComponentId
-import com.mineinabyss.geary.datatypes.EntityId
 import com.mineinabyss.geary.datatypes.GearyEntity
 
-class OnAdd(val id: ComponentId)
+class OnAdd
 
-class OnSet(val id: ComponentId)
+class OnSet
 
-class OnRemove(val id: ComponentId)
+class OnRemove
 
-class OnUpdate(val id: ComponentId)
+class OnUpdate
 
 class OnExtend(val baseEntity: GearyEntity)

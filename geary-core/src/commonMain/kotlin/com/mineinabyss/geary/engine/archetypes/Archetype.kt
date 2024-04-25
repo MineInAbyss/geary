@@ -24,11 +24,12 @@ class Archetype internal constructor(
     private val records = archetypes.records
     private val archetypeProvider = archetypes.archetypeProvider
     private val eventRunner = archetypes.eventRunner
+    private val comps get() = geary.components
 
     val entities: Sequence<Entity> get() = ids.getEntities()
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
-    private val ids: IdList = IdList()
+    private val ids: ULongArrayList = ULongArrayList()
 
     @PublishedApi
     internal var isIterating: Boolean = false
@@ -235,14 +236,7 @@ class Archetype internal constructor(
         val newRow = moveTo.moveOnlyAdding(this, row, entityId)
         removeEntity(row)
 
-        if (callEvent)
-            moveTo.callComponentModifyEvent(
-                geary.components.addedComponent,
-                OnAdd(componentId),
-                componentId,
-                newRow,
-                onUpdated
-            )
+        if (callEvent) moveTo.callComponentModifyEvent(comps.onAdd, componentId, newRow, onUpdated)
         else onUpdated(moveTo, newRow)
     }
 
@@ -273,20 +267,8 @@ class Archetype internal constructor(
         if (addIndex != -1) {
             componentData[addIndex][row] = data
             if (callEvent) {
-                callComponentModifyEvent(
-                    geary.components.updatedComponent,
-                    OnUpdate(componentId),
-                    componentId,
-                    row,
-                    onUpdated
-                )
-                callComponentModifyEvent(
-                    geary.components.setComponent,
-                    OnSet(componentId),
-                    componentId,
-                    row,
-                    onUpdated
-                )
+                callComponentModifyEvent(comps.onUpdate, componentId, row, onUpdated)
+                callComponentModifyEvent(comps.onSet, componentId, row, onUpdated)
             }
             return
         }
@@ -298,37 +280,25 @@ class Archetype internal constructor(
         removeEntity(row)
 
         // Component add listeners must query the target, this is an optimization
-        if (callEvent) moveTo.callComponentModifyEvent(
-            geary.components.setComponent,
-            OnSet(componentId),
-            componentId,
-            newRow,
-            onUpdated
-        )
+        if (callEvent) moveTo.callComponentModifyEvent(comps.onSet, componentId, newRow, onUpdated)
         else onUpdated(moveTo, newRow)
     }
 
     private inline fun callComponentModifyEvent(
         eventType: ComponentId,
-        eventData: Any,
-        involvedComp: ComponentId?,
+        involvedComp: ComponentId,
         row: Int,
         onComplete: (Archetype, row: Int) -> Unit = { _, _ -> }
     ) {
         val entity = getEntity(row)
-        callComponentModifyEvent(eventType, eventData, involvedComp, row)
+        callComponentModifyEvent(eventType, involvedComp, row)
         // Don't have any way to know final archetype and row without re-reading
         records.runOn(entity, onComplete)
     }
 
-    private fun callComponentModifyEvent(
-        eventType: ComponentId,
-        eventData: Any,
-        involvedComp: ComponentId?,
-        row: Int,
-    ) {
+    private fun callComponentModifyEvent(eventType: ComponentId, involvedComp: ComponentId, row: Int) {
         val entity = getEntity(row)
-        eventRunner.callEvent(eventType, eventData, involvedComp, entity)
+        eventRunner.callEvent(eventType, null, involvedComp, entity)
     }
 
     @Suppress("NAME_SHADOWING") // Want to make sure original arch/row is not accidentally accessed
@@ -361,12 +331,9 @@ class Archetype internal constructor(
         }
         records.runOn(instanceEntity) { arch, row -> instanceArch = arch; instanceRow = row }
 
-        if (callEvent) instanceArch.callComponentModifyEvent(
-            geary.components.extendedEntity,
-            OnExtend(baseEntity),
-            null,
-            instanceRow,
-        )
+        if (callEvent) {
+            eventRunner.callEvent(comps.onExtend, OnExtend(baseEntity), NO_COMPONENT, instanceArch.getEntity(instanceRow))
+        }
     }
 
     /**
@@ -385,12 +352,7 @@ class Archetype internal constructor(
 
         if (callEvent) {
             // Call event first, then ensure component is removed
-            callComponentModifyEvent(
-                geary.components.removedComponent,
-                OnRemove(component),
-                component,
-                row
-            ) { finalArch, finalRow ->
+            callComponentModifyEvent(comps.onRemove, component, row) { finalArch, finalRow ->
                 if (component !in finalArch.type) return true // Case where listeners manually removed component
                 val moveTo = finalArch - component
                 moveTo.moveWithoutComponent(finalArch, finalRow, component, entityId)
@@ -410,7 +372,7 @@ class Archetype internal constructor(
         if (allowUnregister == FALSE) return
         if (ids.size == 0 && type.size != 0 && componentAddEdges.size == 0) {
             if (allowUnregister == UNKNOWN) allowUnregister =
-                if (type.contains(geary.components.keepArchetype)) FALSE else TRUE
+                if (type.contains(comps.keepArchetype)) FALSE else TRUE
             if (allowUnregister == FALSE) return
             archetypes.queryManager.unregisterArchetype(this)
             unregistered = true
@@ -447,8 +409,8 @@ class Archetype internal constructor(
      * All other roles are ignored for the [target].
      */
     internal fun getRelations(kind: ComponentId, target: EntityId): List<Relation> {
-        val specificKind = kind and ENTITY_MASK != geary.components.any
-        val specificTarget = target and ENTITY_MASK != geary.components.any
+        val specificKind = kind and ENTITY_MASK != comps.any
+        val specificTarget = target and ENTITY_MASK != comps.any
         return when {
             specificKind && specificTarget -> listOf(Relation.of(kind, target))
             specificTarget -> getRelationsByTarget(target)

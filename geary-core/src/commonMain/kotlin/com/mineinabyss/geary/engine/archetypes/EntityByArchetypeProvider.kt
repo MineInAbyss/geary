@@ -7,10 +7,7 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.engine.EntityProvider
 import com.mineinabyss.geary.events.types.OnEntityRemoved
-import com.mineinabyss.geary.helpers.fastForEach
-import com.mineinabyss.geary.helpers.parents
-import com.mineinabyss.geary.helpers.removeParent
-import com.mineinabyss.geary.helpers.toGeary
+import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.modules.geary
 import kotlinx.atomicfu.atomic
 
@@ -36,7 +33,7 @@ class EntityByArchetypeProvider(
 
     override fun remove(entity: Entity) {
         if (!entity.has(geary.components.suppressRemoveEvent))
-            geary.eventRunner.callEvent(geary.components.entityRemoved, OnEntityRemoved(), null, entity)
+            entity.emit(geary.components.onEntityRemoved, OnEntityRemoved(), NO_COMPONENT)
 
         // remove all children of this entity from the ECS as well
         if (entity.has(geary.components.couldHaveChildren)) entity.apply {

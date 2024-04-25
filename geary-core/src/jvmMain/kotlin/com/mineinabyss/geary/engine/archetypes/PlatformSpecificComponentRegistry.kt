@@ -8,7 +8,7 @@ import kotlin.reflect.full.companionObject
 
 actual class PlatformSpecificComponentRegistry {
     actual fun onRegisterComponent(kClass: KClass<*>, component: ComponentId) {
-        val compDef = kClass.companionObject?.objectInstance as? ComponentDefinition ?: return
-        compDef.onCreate(component.toGeary())
+//        val compDef = kClass.companionObject?.objectInstance as? ComponentDefinition ?: return
+//        compDef.onCreate(component.toGeary())
     }
 }

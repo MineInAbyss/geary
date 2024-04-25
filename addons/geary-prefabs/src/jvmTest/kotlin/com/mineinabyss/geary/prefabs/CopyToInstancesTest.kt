@@ -7,6 +7,7 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 import com.mineinabyss.geary.serialization.dsl.serialization
 import com.mineinabyss.idofront.di.DI
+import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.builtins.serializer
 import org.junit.jupiter.api.BeforeEach
@@ -48,8 +49,10 @@ class CopyToInstancesTest {
         val instance = entity { extend(prefab) }
 
         // assert
-        instance.get<String>() shouldBe "Hello world"
-        instance.get<Int>() shouldBe 42
-        instance.getAllPersisting() shouldBe listOf("Hello world")
+        assertSoftly(instance) {
+            get<String>() shouldBe "Hello world"
+            get<Int>() shouldBe 42
+            getAllPersisting() shouldBe listOf("Hello world")
+        }
     }
 }

@@ -5,7 +5,7 @@ import com.mineinabyss.geary.helpers.toGeary
 private const val initialSize: Int = 4
 private const val growFactor: Int = 2
 
-class IdList {
+class ULongArrayList {
     var backingArr = ULongArray(initialSize)
     var size = 0
     val lastIndex get() = size - 1

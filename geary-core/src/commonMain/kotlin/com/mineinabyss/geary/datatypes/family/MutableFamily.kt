@@ -1,9 +1,5 @@
 package com.mineinabyss.geary.datatypes.family
 
-import com.mineinabyss.geary.events.types.OnAdd
-import com.mineinabyss.geary.events.types.OnRemove
-import com.mineinabyss.geary.events.types.OnSet
-import com.mineinabyss.geary.events.types.OnUpdate
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.componentId
@@ -65,8 +61,6 @@ sealed class MutableFamily : Family {
 
         val elements: MutableList<Family> = mutableListOf()
 
-        private val onAdd: Or by lazy { Or().also { add(it) } }
-
         override val components: List<ComponentId> get() = _components
         override val componentsWithData: List<ComponentId> get() = _componentsWithData
 
@@ -81,6 +75,7 @@ sealed class MutableFamily : Family {
                     _components += comp
                     if (comp.holdsData()) _componentsWithData += comp
                 }
+
                 else -> {}
             }
         }
@@ -117,26 +112,6 @@ sealed class MutableFamily : Family {
 
         inline fun <reified K> hasRelation(target: Entity): Unit = hasRelation<K>(target.id)
 
-        fun onAdd(id: ComponentId) {
-            onAdd.hasRelation<OnAdd?>(id)
-        }
-
-        fun onSet(id: ComponentId) {
-            onAdd.hasRelation<OnUpdate?>(id)
-            onAdd.hasRelation<OnSet?>(id)
-        }
-
-        fun onRemove(id: ComponentId) {
-            onAdd.hasRelation<OnRemove?>(id)
-        }
-
-        fun onFirstSet(id: ComponentId) {
-            onAdd.hasRelation<OnSet?>(id)
-        }
-
-        fun onExtendedEntity() {
-            onAdd.hasRelation(geary.components.extendedEntity, geary.components.any)
-        }
 
         inline fun or(init: Or.() -> Unit) {
             add(Or().apply(init))

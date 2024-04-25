@@ -31,7 +31,7 @@ allprojects {
                 // TODO JS is missing a Roaring Bitmap implementation, we don't have a use for a JS target
                 //  but would happily accept PRs. The target is here to prevent calls to JVM only functions in common
                 //  code, ex. JVM only reflection.
-//                nodejs()
+                nodejs()
 //                browser()
 //                disableCompilations()
             }

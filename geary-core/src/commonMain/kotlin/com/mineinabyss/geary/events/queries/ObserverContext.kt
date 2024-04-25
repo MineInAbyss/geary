@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.events.queries
 
 import com.mineinabyss.geary.datatypes.Entity
+import kotlin.jvm.JvmInline
 
-data class ObserverContext(
+interface ObserverContext {
     val entity: Entity
-)
+}
 
-data class ObserverContextWithData<R>(
-    val entity: Entity,
-    val event: R,
-)
+interface ObserverContextWithData<R>: ObserverContext {
+    val event: R
+}

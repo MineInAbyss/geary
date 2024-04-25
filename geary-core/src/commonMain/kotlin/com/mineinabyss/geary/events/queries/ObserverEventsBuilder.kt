@@ -1,9 +1,7 @@
 package com.mineinabyss.geary.events.queries
 
-import com.mineinabyss.geary.datatypes.ComponentId
-import com.mineinabyss.geary.datatypes.EntityType
-import com.mineinabyss.geary.datatypes.GearyEntity
-import com.mineinabyss.geary.datatypes.entityTypeOf
+import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.helpers.NO_ENTITY
 import com.mineinabyss.geary.helpers.cId
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.modules.GearyModule
@@ -18,7 +16,14 @@ data class ObserverWithoutData(
     override val mustHoldData: Boolean = false
     inline fun <reified R> or() = copy(listenToEvents = listenToEvents + componentId<R>())
 
-    override fun provideContext(entity: GearyEntity, data: Any?) = ObserverContext(entity)
+    private val context = object : ObserverContext {
+        override var entity: Entity = NO_ENTITY
+    }
+
+    override fun provideContext(entity: GearyEntity, data: Any?): ObserverContext {
+        context.entity = entity
+        return context
+    }
 }
 
 data class ObserverWithData<R>(
@@ -27,7 +32,17 @@ data class ObserverWithData<R>(
 ) : ObserverEventsBuilder<ObserverContextWithData<R>>() {
     override val mustHoldData: Boolean = true
 
-    override fun provideContext(entity: GearyEntity, data: Any?) = ObserverContextWithData(entity, data as R)
+    private val context = object : ObserverContextWithData<R> {
+        var data: R? = null
+        override val event: R get() = data!!
+        override var entity: Entity = NO_ENTITY
+    }
+
+    override fun provideContext(entity: GearyEntity, data: Any?): ObserverContextWithData<R> {
+        context.entity = entity
+        context.data = data as R
+        return context
+    }
 }
 
 abstract class ObserverEventsBuilder<Context> : ExecutableObserver<Context> {

@@ -301,8 +301,12 @@ value class Entity(val id: EntityId) {
     }
 
     // Events
-    inline fun <reified T: Any> emit(data: T? = null, involving: ComponentId? = null) {
-        geary.eventRunner.callEvent(componentId<T>(), data, involving, this)
+    inline fun <reified T: Any> emit(data: T? = null, involving: ComponentId = NO_COMPONENT) {
+        emit(componentId<T>(), data, involving)
+    }
+
+    fun emit(event: ComponentId, data: Any? = null, involving: ComponentId = NO_COMPONENT) {
+        geary.eventRunner.callEvent(event, data, involving, this)
     }
 
     // Prefabs

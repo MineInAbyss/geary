@@ -45,7 +45,7 @@ fun main() {
     geary(TestEngineModule)
     EventCalls().apply {
         setupPerInvocation()
-        repeat(100) {
+        repeat(1000) {
             callEventOn1MillionEntities()
         }
     }
