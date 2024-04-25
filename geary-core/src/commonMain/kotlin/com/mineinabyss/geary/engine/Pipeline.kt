@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.engine
 
 import com.mineinabyss.geary.addons.GearyPhase
-import com.mineinabyss.geary.events.queries.Observer
 import com.mineinabyss.geary.systems.System
 import com.mineinabyss.geary.systems.TrackedSystem
 import com.mineinabyss.geary.systems.query.Query

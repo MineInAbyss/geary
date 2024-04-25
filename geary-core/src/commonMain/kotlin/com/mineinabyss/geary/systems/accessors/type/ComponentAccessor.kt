@@ -17,8 +17,8 @@ class ComponentAccessor<T : Any>(
 ) : ReadWriteAccessor<T>, FamilyMatching {
     override val family = family { hasSet(id) }
 
-    protected var cachedIndex = -1
-    protected var cachedDataArray: MutableList<T> = mutableListOf()
+    private var cachedIndex = -1
+    private var cachedDataArray: MutableList<T> = mutableListOf()
 
     fun updateCache(archetype: Archetype) {
         cachedIndex = archetype.indexOf(id)

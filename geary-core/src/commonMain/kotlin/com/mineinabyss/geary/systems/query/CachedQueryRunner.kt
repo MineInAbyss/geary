@@ -28,7 +28,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
             archetype.isIterating = true
 
             // We disallow entity archetype modifications while iterating, but allow creating new entities.
-            // These will always end up at the end of the archetype list so we just don't iterate over them.
+            // These will always end up at the end of the archetype list, so we just don't iterate over them.
             val upTo = archetype.size
             var row = 0
             query.archetype = archetype
@@ -131,7 +131,7 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
 
     inline fun <R> mapNotNull(crossinline run: (T) -> R?): List<R> {
         val deferred = mutableListOf<R>()
-        forEach { run(it).let { if (it != null) deferred.add(it) } }
+        forEach { query -> run(query).let { if (it != null) deferred.add(it) } }
         return deferred
     }
 

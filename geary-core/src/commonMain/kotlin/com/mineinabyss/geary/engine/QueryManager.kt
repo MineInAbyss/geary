@@ -2,7 +2,6 @@ package com.mineinabyss.geary.engine
 
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.events.queries.Observer
 import com.mineinabyss.geary.systems.query.CachedQueryRunner
 import com.mineinabyss.geary.systems.query.Query
 

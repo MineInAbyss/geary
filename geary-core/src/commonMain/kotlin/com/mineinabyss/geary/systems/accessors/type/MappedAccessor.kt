@@ -1,9 +1,6 @@
 package com.mineinabyss.geary.systems.accessors.type
 
-import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.ReadOnlyAccessor
-import com.mineinabyss.geary.systems.query.QueriedEntity
 import com.mineinabyss.geary.systems.query.Query
 import kotlin.reflect.KProperty
 

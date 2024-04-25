@@ -46,14 +46,6 @@ class ArchetypeQueryManager : QueryManager {
         matched.fastForEach { it.matchedArchetypes -= archetype }
     }
 
-    data class MatchedQueries(
-        val queries: List<CachedQueryRunner<*>>,
-        val sourceListeners: List<Observer>,
-        val targetListeners: List<Observer>,
-        val eventListeners: List<Observer>
-    )
-
-
     fun getArchetypesMatching(family: Family): List<Archetype> {
         return archetypes.match(family)
     }

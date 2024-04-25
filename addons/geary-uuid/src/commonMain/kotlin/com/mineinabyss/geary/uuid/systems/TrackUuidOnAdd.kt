@@ -5,7 +5,6 @@ import com.benasher44.uuid.uuid4
 import com.mineinabyss.geary.events.types.OnSet
 import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.systems.builders.observe
-import com.mineinabyss.geary.systems.query.Query
 import com.mineinabyss.geary.systems.query.query
 import com.mineinabyss.geary.uuid.components.RegenerateUUIDOnClash
 import com.mineinabyss.geary.uuid.uuid2Geary

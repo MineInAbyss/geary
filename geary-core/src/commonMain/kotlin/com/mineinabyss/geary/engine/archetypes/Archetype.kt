@@ -398,7 +398,7 @@ class Archetype internal constructor(
      * When [kind] or [target] are the [Any] component, matches against any relation.
      * Both [kind] and [target] cannot be [Any].
      *
-     * The if a parameter is the [Any] component, the [HOLDS_DATA] role indicates whether other components
+     * If a parameter is the [Any] component, the [HOLDS_DATA] role indicates whether other components
      * matched must also hold data themselves.
      * All other roles are ignored for the [target].
      */
@@ -445,7 +445,7 @@ class Archetype internal constructor(
             val replacement = ids[lastIndex]
             ids[row] = replacement
             componentData.fastForEach { it[row] = it.last() }
-            records.set(replacement.toGeary(), this@Archetype, row)
+            records[replacement.toGeary(), this@Archetype] = row
         }
 
 

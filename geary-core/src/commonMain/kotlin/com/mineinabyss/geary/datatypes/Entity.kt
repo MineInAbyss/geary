@@ -26,7 +26,6 @@ value class Entity(val id: EntityId) {
     private val queryManager get() = geary.queryManager
     private val read get() = geary.read
     private val write get() = geary.write
-    private val eventRunner get() = geary.eventRunner
 
     /**
      * Gets this entity's type (the ids of components added to it)
@@ -117,7 +116,7 @@ value class Entity(val id: EntityId) {
         noEvent: Boolean = false
     ): T {
         set(component, kClass, noEvent)
-        setRelation(Persists(), component(kClass), noEvent)
+        setRelation(geary.components.persists, componentId(kClass), Persists(), noEvent)
         return component
     }
 

@@ -10,7 +10,6 @@ import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
-import com.mineinabyss.geary.systems.accessors.type.ComponentAccessor
 
 open class QueriedEntity(
     override val cacheAccessors: Boolean

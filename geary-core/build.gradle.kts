@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
-
 plugins {
     id(idofrontLibs.plugins.mia.kotlin.multiplatform.get().pluginId)
     id(idofrontLibs.plugins.mia.publication.get().pluginId)

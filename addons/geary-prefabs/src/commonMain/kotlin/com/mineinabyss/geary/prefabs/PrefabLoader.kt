@@ -22,7 +22,6 @@ import kotlinx.serialization.modules.SerializersModule
 import okio.Path
 
 class PrefabLoader {
-    private val manager get() = prefabs.manager
     private val formats get() = serializableComponents.formats
 
     private val logger get() = geary.logger

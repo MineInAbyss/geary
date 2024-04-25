@@ -2,7 +2,7 @@ package com.mineinabyss.geary.datatypes
 
 private const val bucketSize: Int = 1024
 
-class BucketedULongArray() {
+class BucketedULongArray {
     private val buckets = mutableListOf<LongArray>()
     var maxSupportedSize = 0
         private set

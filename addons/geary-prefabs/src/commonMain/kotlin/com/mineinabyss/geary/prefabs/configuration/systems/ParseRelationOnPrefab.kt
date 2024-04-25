@@ -5,7 +5,6 @@ import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.prefabs.configuration.components.RelationOnPrefab
 import com.mineinabyss.geary.systems.builders.observe
-import com.mineinabyss.geary.systems.query.Query
 import com.mineinabyss.geary.systems.query.query
 
 fun GearyModule.createParseRelationOnPrefabListener() = observe<OnSet>()

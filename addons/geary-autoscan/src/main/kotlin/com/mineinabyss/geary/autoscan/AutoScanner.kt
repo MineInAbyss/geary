@@ -4,11 +4,9 @@ import co.touchlab.kermit.Severity
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.addons.dsl.GearyAddonWithDefault
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.System
 import com.mineinabyss.idofront.di.DI
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
-import kotlin.reflect.full.createInstance
 
 val autoScanner by DI.observe<AutoScanner>()
 

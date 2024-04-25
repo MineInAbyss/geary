@@ -5,7 +5,7 @@ import com.mineinabyss.geary.engine.archetypes.Archetype
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 
-class SynchronizedArrayTypeMap() : ArrayTypeMap() {
+class SynchronizedArrayTypeMap : ArrayTypeMap() {
     private val lock = SynchronizedObject()
 
     override fun getArchAndRow(entity: Entity): ULong {
