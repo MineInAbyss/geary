@@ -6,6 +6,8 @@ class OnAdd
 
 class OnSet
 
+class OnFirstSet
+
 class OnRemove
 
 class OnUpdate

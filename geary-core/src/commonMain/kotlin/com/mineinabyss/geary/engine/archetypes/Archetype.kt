@@ -266,8 +266,10 @@ class Archetype internal constructor(
         if (addIndex >= 0) {
             componentData[addIndex][row] = data
             if (callEvent) {
-                callComponentModifyEvent(comps.onUpdate, componentId, row, onUpdated)
-                callComponentModifyEvent(comps.onSet, componentId, row, onUpdated)
+                callComponentModifyEvent(comps.onUpdate, componentId, row) { arch, row ->
+                    // Potential archetype modification can occur after event
+                    arch.callComponentModifyEvent(comps.onSet, componentId, row, onUpdated)
+                }
             }
             return
         }
@@ -279,7 +281,11 @@ class Archetype internal constructor(
         removeEntity(row)
 
         // Component add listeners must query the target, this is an optimization
-        if (callEvent) moveTo.callComponentModifyEvent(comps.onSet, componentId, newRow, onUpdated)
+        if (callEvent) {
+            moveTo.callComponentModifyEvent(comps.onSet, componentId, newRow) { arch, row ->
+                arch.callComponentModifyEvent(comps.onFirstSet, componentId, row, onUpdated)
+            }
+        }
         else onUpdated(moveTo, newRow)
     }
 
