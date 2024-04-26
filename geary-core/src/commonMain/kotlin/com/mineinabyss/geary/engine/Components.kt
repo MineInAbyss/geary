@@ -16,6 +16,7 @@ class Components {
     val couldHaveChildren = componentId<CouldHaveChildren>()
     val onAdd = componentId<OnAdd>()
     val onSet = componentId<OnSet>()
+    val onFirstSet = componentId<OnFirstSet>()
     val onUpdate = componentId<OnUpdate>()
     val onRemove = componentId<OnRemove>()
     val onExtend = componentId<OnExtend>()

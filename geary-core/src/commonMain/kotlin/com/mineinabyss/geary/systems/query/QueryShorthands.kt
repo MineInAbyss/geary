@@ -32,14 +32,19 @@ fun query(match: MutableFamily.Selector.And.() -> Unit) = object : Query() {
     override fun ensure() = this { add(family(match)) }
 }
 
-inline fun <reified A : Any> query(size1: QueryShorthands.Size1? = null) =
-    object : ShorthandQuery1<A>() {
-        override val involves = entityTypeOf(cId<A>())
-
-        val comp1 by get<A>()
-
-        override fun component1() = comp1
+inline fun <reified A : Any> query(
+    size1: QueryShorthands.Size1? = null,
+    noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null
+) = object : ShorthandQuery1<A>() {
+    override val involves = entityTypeOf(cId<A>())
+    override fun ensure() {
+        filterFamily?.let { this { it() } }
     }
+
+    val comp1 by get<A>()
+
+    override fun component1() = comp1
+}
 
 inline fun <reified A : Any, reified B : Any> query(size2: QueryShorthands.Size2? = null) =
     object : ShorthandQuery2<A, B>() {

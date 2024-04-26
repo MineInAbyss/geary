@@ -27,12 +27,11 @@ allprojects {
                     useJUnitPlatform()
                 }
             }
-            js(IR) {
-                // TODO Other targets are missing some implementations like Roaring Bitmaps, but we hope someone
-                //  interested can add support in the future. Thus, we force a target that doesn't actually compile
-                //  so we can't accidentally use jvm-only code in the common target.
-                compilations.configureEach { compileKotlinTask.enabled = false }
-            }
+            // TODO Other targets are missing some implementations like Roaring Bitmaps, but we hope someone
+            //  interested can add support in the future. Thus, we force a target that doesn't actually compile
+            //  so we can't accidentally use jvm-only code in the common target.
+            linuxX64()
+
             sourceSets {
                 all {
                     languageSettings {

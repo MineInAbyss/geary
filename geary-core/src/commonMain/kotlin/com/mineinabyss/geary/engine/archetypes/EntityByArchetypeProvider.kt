@@ -44,6 +44,11 @@ class EntityByArchetypeProvider(
             }
         }
 
+        // Emit remove events for each component (they get cleared all at once after this)
+        entity.type.forEach { compId ->
+            if (entity.has(compId)) entity.emit(event = geary.components.onRemove, involving = compId)
+        }
+
         records.runOn(entity) { archetype, row ->
             archetype.removeEntity(row)
             records.remove(entity)
