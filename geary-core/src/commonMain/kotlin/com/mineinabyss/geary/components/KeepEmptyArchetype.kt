@@ -2,6 +2,6 @@ package com.mineinabyss.geary.components
 
 /**
  * An entity's archetype with this component may stay even if empty.
- * Useful for entities that are created and removed often, ex events.
+ * Useful for entities that are created and removed often.
  */
-sealed class KeepArchetype
+sealed class KeepEmptyArchetype

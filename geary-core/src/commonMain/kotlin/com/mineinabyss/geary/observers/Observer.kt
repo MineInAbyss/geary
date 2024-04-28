@@ -6,12 +6,15 @@ import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.systems.query.Query
 
-abstract class Observer(
+data class Observer(
     val queries: List<Query>,
     val family: Family,
     val involvedComponents: EntityType,
     val listenToEvents: EntityType,
     val mustHoldData: Boolean,
-) {
-    abstract fun run(entity: Entity, data: Any?, involvedComponent: ComponentId?)
+    val handle: ObserverHandle,
+)
+
+fun interface ObserverHandle {
+    fun run(entity: Entity, data: Any?, involvedComponent: ComponentId?)
 }

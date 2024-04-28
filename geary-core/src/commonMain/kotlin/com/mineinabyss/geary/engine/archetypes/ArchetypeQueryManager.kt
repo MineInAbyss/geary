@@ -6,13 +6,10 @@ import com.mineinabyss.geary.datatypes.maps.Family2ObjectArrayMap
 import com.mineinabyss.geary.engine.QueryManager
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.fastForEach
-import com.mineinabyss.geary.observers.Observer
 import com.mineinabyss.geary.systems.query.CachedQueryRunner
 import com.mineinabyss.geary.systems.query.Query
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
-
-typealias Observer = Observer
 
 class ArchetypeQueryManager : QueryManager {
     private val queries = mutableListOf<CachedQueryRunner<*>>()

@@ -17,14 +17,14 @@ class ComponentOrDefaultAccessor<T>(
     private var cachedArchetype: Archetype? = null
 
     @OptIn(UnsafeAccessors::class)
-    override fun getValue(query: Query, property: KProperty<*>): T {
-        val archetype = query.archetype
+    override fun getValue(thisRef: Query, property: KProperty<*>): T {
+        val archetype = thisRef.archetype
         if (archetype !== cachedArchetype) {
             cachedArchetype = archetype
             cachedIndex = archetype.indexOf(id)
         }
         if (cachedIndex == -1) return default()
         @Suppress("UNCHECKED_CAST")
-        return archetype.componentData[cachedIndex][query.row] as T
+        return archetype.componentData[cachedIndex][thisRef.row] as T
     }
 }

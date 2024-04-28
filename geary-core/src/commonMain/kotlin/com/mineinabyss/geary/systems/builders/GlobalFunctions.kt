@@ -15,11 +15,15 @@ fun <T : Query> GearyModule.cache(
 }
 
 inline fun <reified T : Any> GearyModule.observe(): ObserverWithoutData {
-    return ObserverWithoutData(listOf(componentId<T>()), this)
+    return ObserverWithoutData(listOf(componentId<T>()), this) {
+        eventRunner.addObserver(it)
+    }
 }
 
 inline fun <reified T : Any> GearyModule.observeWithData(): ObserverWithData<T> {
-    return ObserverWithData(listOf(componentId<T>()), this)
+    return ObserverWithData(listOf(componentId<T>()), this) {
+        eventRunner.addObserver(it)
+    }
 }
 
 fun <T : Query> GearyModule.system(

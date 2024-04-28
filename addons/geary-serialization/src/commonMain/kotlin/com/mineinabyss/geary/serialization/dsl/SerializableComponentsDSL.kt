@@ -56,6 +56,10 @@ class SerializableComponentsDSL(
         subclass(subclass, serializer)
     }
 
+    inline fun <reified T : Any> namedComponent(name: String) {
+        serializers.serialNameToClass[name] = T::class
+    }
+
     /** Adds a [SerializersModule] to be used for polymorphic serialization within the ECS. */
     inline fun module(init: SerializersModuleBuilder.() -> Unit) {
         serializers.modules += SerializersModule { init() }

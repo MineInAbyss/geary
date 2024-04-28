@@ -1,7 +1,5 @@
 package com.mineinabyss.geary.observers.builders
 
-import com.mineinabyss.geary.datatypes.ComponentId
-import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.GearyEntityType
 import com.mineinabyss.geary.datatypes.family.family
@@ -15,24 +13,26 @@ interface ExecutableObserver<Context> {
 
     fun exec(handle: Context.() -> Unit): Observer
 
-    fun <Q1: Query> exec(query: Q1, handle: Context.(Q1) -> Unit): Observer {
+    fun <Q1 : Query> exec(query: Q1, handle: Context.(Q1) -> Unit): Observer {
         return filter(query).exec {
             handle(query)
         }
     }
 }
 
-data class QueryInvolvingObserverBuilder<Context, Q: ShorthandQuery>(
+data class QueryInvolvingObserverBuilder<Context, Q : ShorthandQuery>(
     val involvingQuery: Q,
     val inner: ObserverBuilder<Context>
 ) {
     fun exec(handle: Context.(Q) -> Unit): Observer {
         return inner.exec { handle(involvingQuery) }
     }
-    fun <Q1: Query> exec(query: Q1, handle: Context.(Q, Q1) -> Unit): Observer {
+
+    fun <Q1 : Query> exec(query: Q1, handle: Context.(Q, Q1) -> Unit): Observer {
         return inner.exec { handle(involvingQuery, query) }
     }
 }
+
 data class ObserverBuilder<Context>(
     val events: ObserverEventsBuilder<Context>,
     val involvedComponents: EntityType,
@@ -45,19 +45,17 @@ data class ObserverBuilder<Context>(
 
 
     override fun exec(handle: Context.() -> Unit): Observer {
-        val observer = object : Observer(
+        val observer = Observer(
             matchQueries,
             family { matchQueries.forEach { add(it.buildFamily()) } },
             involvedComponents,
             GearyEntityType(events.listenToEvents),
             events.mustHoldData,
-        ) {
-            override fun run(entity: Entity, data: Any?, involvedComponent: ComponentId?) {
+            handle = { entity, data, _ ->
                 events.provideContext(entity, data).handle()
             }
-        }
-
-        events.module.eventRunner.addObserver(observer)
+        )
+        events.onBuild(observer)
         return observer
     }
 }
