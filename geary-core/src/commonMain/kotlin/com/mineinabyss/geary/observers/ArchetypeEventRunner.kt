@@ -1,33 +1,11 @@
-package com.mineinabyss.geary.events
+package com.mineinabyss.geary.observers
 
 import androidx.collection.LongSparseArray
-import androidx.collection.MutableObjectList
-import androidx.collection.mutableObjectListOf
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.*
-import com.mineinabyss.geary.events.queries.Observer
-import com.mineinabyss.geary.helpers.NO_COMPONENT
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.archetypes
-
-class ObserverList {
-    val involved2Observer = LongSparseArray<MutableObjectList<Observer>>()
-
-    fun add(observer: Observer) {
-        if (observer.involvedComponents.size == 0) {
-            involved2Observer.getOrPut(0L) { mutableObjectListOf() }.add(observer)
-        } else observer.involvedComponents.forEach { componentId ->
-            involved2Observer.getOrPut(componentId.toLong()) { mutableObjectListOf() }.add(observer)
-        }
-    }
-
-    inline fun forEach(componentId: ComponentId, exec: (Observer) -> Unit) {
-        involved2Observer[0L]?.forEach(exec)
-        if (componentId != NO_COMPONENT)
-            involved2Observer[componentId.toLong()]?.forEach(exec)
-    }
-}
 
 class ArchetypeEventRunner : EventRunner {
     private val observerMap = LongSparseArray<ObserverList>()

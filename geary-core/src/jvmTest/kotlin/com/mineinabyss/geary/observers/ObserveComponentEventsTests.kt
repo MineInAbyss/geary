@@ -1,19 +1,16 @@
 package com.mineinabyss.geary.observers
 
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.events.types.OnAdd
-import com.mineinabyss.geary.events.types.OnRemove
-import com.mineinabyss.geary.events.types.OnSet
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.observers.events.OnAdd
+import com.mineinabyss.geary.observers.events.OnRemove
+import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.query
-import io.kotest.assertions.asClue
 import io.kotest.assertions.assertSoftly
-import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.BeforeEach

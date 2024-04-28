@@ -10,8 +10,8 @@ import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabsIfNeeded
-import com.mineinabyss.geary.serialization.dsl.serializableComponents
 import com.mineinabyss.geary.serialization.formats.Format.ConfigType.NON_STRICT
+import com.mineinabyss.geary.serialization.serializableComponents
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer.Companion.provideConfig
 import com.mineinabyss.geary.systems.builders.cache

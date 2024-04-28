@@ -8,7 +8,7 @@ import com.mineinabyss.geary.engine.PipelineImpl
 import com.mineinabyss.geary.engine.archetypes.*
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeMutateOperations
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeReadOperations
-import com.mineinabyss.geary.events.ArchetypeEventRunner
+import com.mineinabyss.geary.observers.ArchetypeEventRunner
 import com.mineinabyss.idofront.di.DI
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds

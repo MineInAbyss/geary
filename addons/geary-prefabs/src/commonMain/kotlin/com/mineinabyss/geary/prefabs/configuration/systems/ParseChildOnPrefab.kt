@@ -2,10 +2,10 @@ package com.mineinabyss.geary.prefabs.configuration.systems
 
 import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.components.relations.NoInherit
-import com.mineinabyss.geary.events.types.OnSet
 import com.mineinabyss.geary.helpers.addParent
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.prefabs.configuration.components.ChildOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.ChildrenOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab

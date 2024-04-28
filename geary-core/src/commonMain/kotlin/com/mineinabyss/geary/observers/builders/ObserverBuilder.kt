@@ -1,10 +1,11 @@
-package com.mineinabyss.geary.events.queries
+package com.mineinabyss.geary.observers.builders
 
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.GearyEntityType
 import com.mineinabyss.geary.datatypes.family.family
+import com.mineinabyss.geary.observers.Observer
 import com.mineinabyss.geary.systems.query.Query
 import com.mineinabyss.geary.systems.query.ShorthandQuery
 

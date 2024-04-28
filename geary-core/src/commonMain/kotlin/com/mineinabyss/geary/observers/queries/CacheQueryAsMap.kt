@@ -1,9 +1,10 @@
-package com.mineinabyss.geary.events.queries
+package com.mineinabyss.geary.observers.queries
 
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.events.types.OnFirstSet
-import com.mineinabyss.geary.events.types.OnRemove
 import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.observers.builders.ObserverContext
+import com.mineinabyss.geary.observers.events.OnFirstSet
+import com.mineinabyss.geary.observers.events.OnRemove
 import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.ShorthandQuery
 

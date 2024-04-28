@@ -20,12 +20,10 @@ kotlin {
                 implementation(libs.atomicfu)
                 implementation(libs.androidx.collection)
                 implementation(idofrontLibs.kotlin.reflect)
-                implementation(idofrontLibs.kotlinx.serialization.cbor)
 
                 api(idofrontLibs.idofront.di)
                 api(libs.kermit)
                 api(idofrontLibs.kotlinx.coroutines)
-                api(idofrontLibs.kotlinx.serialization.json)
             }
 
         }

@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.components.relations.InstanceOf
-import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.archetypes
@@ -13,6 +12,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class GearyEntityTests : GearyTest() {
+    private data class RelatesTo(val data: Int = 0)
+
     @Test
     fun `adding component to entity`() {
         entity {
@@ -100,7 +101,7 @@ internal class GearyEntityTests : GearyTest() {
         val entity = entity {
             set("Test")
             add<Int>()
-            addRelation<Persists, String>()
+            addRelation<RelatesTo, String>()
         }
         entity.clear()
         entity.getAll().isEmpty() shouldBe true
@@ -135,26 +136,13 @@ internal class GearyEntityTests : GearyTest() {
         val prefab = entity()
         val entity = entity {
             set("Test")
-            setRelation<Persists, String>(Persists())
+            setRelation<RelatesTo, String>(RelatesTo())
             addRelation<InstanceOf>(prefab)
         }
         entity.getAll().shouldContainExactlyInAnyOrder(
             "Test",
-            RelationWithData(Persists(), null, relation = Relation.of<Persists, String>().withRole(HOLDS_DATA)),
+            RelationWithData(RelatesTo(), null, relation = Relation.of<RelatesTo, String>().withRole(HOLDS_DATA)),
         )
-    }
-
-    @Test
-    fun setPersisting() {
-        val entity = entity {
-            setPersisting("Test")
-        }
-        val relations = entity.type.getArchetype()
-            .getRelationsByKind(componentId<Persists>())
-
-        relations.size shouldBe 1 // one for persisting
-        relations.first().target shouldBe componentId<String>()
-        entity.getAllPersisting().shouldContainExactly("Test")
     }
 
     @Test
@@ -184,14 +172,14 @@ internal class GearyEntityTests : GearyTest() {
     inner class RelationTest {
         @Test
         fun `getRelation reified`() {
-            val persists = Persists()
+            val relatesTo = RelatesTo()
             val entity = entity {
-                setRelation<Persists, String>(persists)
-                set(Persists(100))
+                setRelation<RelatesTo, String>(relatesTo)
+                set(RelatesTo(100))
                 add<String>()
             }
 
-            entity.getRelation<Persists, String>() shouldBe persists
+            entity.getRelation<RelatesTo, String>() shouldBe relatesTo
         }
     }
 }

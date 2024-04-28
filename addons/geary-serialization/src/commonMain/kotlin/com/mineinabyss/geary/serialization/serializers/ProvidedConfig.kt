@@ -1,6 +1,5 @@
-package com.mineinabyss.geary.serialization
+package com.mineinabyss.geary.serialization.serializers
 
-import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PolymorphicKind

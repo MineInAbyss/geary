@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.addons.dsl
+package com.mineinabyss.geary.serialization.dsl
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.modules.PolymorphicModuleBuilder

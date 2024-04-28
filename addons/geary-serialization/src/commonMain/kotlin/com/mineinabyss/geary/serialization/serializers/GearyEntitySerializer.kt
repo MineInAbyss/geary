@@ -2,6 +2,7 @@ package com.mineinabyss.geary.serialization.serializers
 
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.serialization.getAllPersisting
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor

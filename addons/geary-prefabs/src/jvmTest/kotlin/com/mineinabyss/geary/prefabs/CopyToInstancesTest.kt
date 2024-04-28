@@ -6,6 +6,7 @@ import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 import com.mineinabyss.geary.serialization.dsl.serialization
+import com.mineinabyss.geary.serialization.getAllPersisting
 import com.mineinabyss.idofront.di.DI
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe

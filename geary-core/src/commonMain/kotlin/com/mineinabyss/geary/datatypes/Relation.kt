@@ -3,7 +3,6 @@ package com.mineinabyss.geary.datatypes
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.helpers.readableString
-import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
 
@@ -19,7 +18,6 @@ import kotlin.reflect.KClass
  * except the [RELATION] role.
  * @property target The part of the relation that points to another entity.
  */
-@Serializable
 @JvmInline
 value class Relation private constructor(
     val id: ComponentId

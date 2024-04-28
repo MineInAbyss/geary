@@ -6,9 +6,9 @@ import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.engine.EntityProvider
-import com.mineinabyss.geary.events.types.OnEntityRemoved
 import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.observers.events.OnEntityRemoved
 import kotlinx.atomicfu.atomic
 
 class EntityByArchetypeProvider(

@@ -2,7 +2,7 @@ package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.GearyDSL
-import com.mineinabyss.geary.serialization.dsl.fileSystem
+import com.mineinabyss.geary.serialization.fileSystem
 import okio.Path
 
 @GearyDSL

@@ -2,9 +2,9 @@ package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.serialization.dsl.serializableComponents
 import com.mineinabyss.geary.serialization.dsl.serialization
 import com.mineinabyss.geary.serialization.formats.YamlFormat
+import com.mineinabyss.geary.serialization.serializableComponents
 import com.mineinabyss.geary.serialization.serializers.GearyEntitySerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer.Companion.provideConfig

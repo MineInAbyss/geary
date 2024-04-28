@@ -9,12 +9,12 @@ kotlin {
         commonMain {
             dependencies {
                 compileOnly(project(":geary-core"))
-                compileOnly(idofrontLibs.kotlinx.serialization.json)
-                compileOnly(idofrontLibs.kotlinx.serialization.cbor)
 
                 implementation(libs.uuid)
                 implementation(idofrontLibs.idofront.di)
 
+                api(idofrontLibs.kotlinx.serialization.cbor)
+                api(idofrontLibs.kotlinx.serialization.json)
                 api(libs.okio)
             }
         }

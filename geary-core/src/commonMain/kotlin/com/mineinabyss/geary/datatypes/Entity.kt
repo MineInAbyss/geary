@@ -2,12 +2,11 @@ package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.annotations.optin.DangerousComponentOperation
 import com.mineinabyss.geary.components.EntityName
-import com.mineinabyss.geary.events.types.OnAdd
-import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.observers.events.OnAdd
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import kotlin.jvm.JvmInline
@@ -108,37 +107,6 @@ value class Entity(val id: EntityId) {
     }
 
     /**
-     * Sets a persisting [component] on this entity, which will be serialized if possible.
-     *
-     * @param noEvent If true, will not fire an [OnAdd] event.
-     */
-    inline fun <reified T : Component> setPersisting(
-        component: T,
-        kClass: KClass<out T> = T::class,
-        noEvent: Boolean = false
-    ): T {
-        set(component, kClass, noEvent)
-        setRelation(geary.components.persists, componentId(kClass), Persists(), noEvent)
-        return component
-    }
-
-    /**
-     * Sets a list of persisting [components] on this entity.
-     *
-     * @param noEvent If true, will not fire an [OnAdd] event.
-     * @see setPersisting
-     */
-    fun setAllPersisting(
-        components: Collection<Component>,
-        override: Boolean = true,
-        noEvent: Boolean = false
-    ) {
-        components.forEach {
-            if (override || !has(it::class)) setPersisting(it, it::class, noEvent)
-        }
-    }
-
-    /**
      * Removes a component of type [T] from this entity.
      *
      * @return Whether the component was present before removal.
@@ -184,22 +152,8 @@ value class Entity(val id: EntityId) {
         default: () -> T
     ): T = get(kClass) ?: default().also { set(it) }
 
-    /** Gets a persisting component of type [T] or adds a [default] if no component was present. */
-    inline fun <reified T : Component> getOrSetPersisting(
-        kClass: KClass<out T> = T::class,
-        default: () -> T
-    ): T = get(kClass) ?: default().also { setPersisting(it, kClass) }
-
     /** Gets all the components on this entity, as well as relations in the form of [RelationComponent]. */
     fun getAll(): Set<Component> = read.getComponentsFor(this).toSet()
-
-    /** Gets all persisting components on this entity. */
-    fun getAllPersisting(): Set<Component> =
-        getRelationsWithData<Persists, Any>().mapTo(mutableSetOf()) { it.targetData }
-
-    /** Gets all non-persisting components on this entity. */
-    fun getAllNotPersisting(): Set<Component> =
-        getAll() - getAllPersisting()
 
     /**
      * Checks whether this entity is an instance of another [entity]
@@ -356,10 +310,6 @@ value class Entity(val id: EntityId) {
     @DangerousComponentOperation
     fun set(components: Collection<Component>): Unit =
         set(component = components)
-
-    @DangerousComponentOperation
-    fun setPersisting(components: Collection<Component>): Collection<Component> =
-        setPersisting(component = components)
 
     // Marked for removal. Avoid breaking changes from adding the remove event.
     fun remove(kClass: KClass<*>): Boolean = remove(kClass, false)

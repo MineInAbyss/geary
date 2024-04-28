@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.systems
 
 import com.mineinabyss.geary.components.relations.InstanceOf
-import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.getArchetype
@@ -19,6 +18,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.test.Test
 
 class RelationMatchingSystemTest : GearyTest() {
+    private class Persists
+
     @Test
     fun relations() {
         var ran = 0

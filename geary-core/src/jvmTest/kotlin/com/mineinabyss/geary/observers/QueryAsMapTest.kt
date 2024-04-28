@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.observers
 
-import com.mineinabyss.geary.events.queries.cacheAssociatedBy
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.observers.queries.cacheAssociatedBy
 import com.mineinabyss.geary.systems.query.query
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test

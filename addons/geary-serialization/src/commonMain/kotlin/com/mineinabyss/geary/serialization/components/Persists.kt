@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.components.relations
+package com.mineinabyss.geary.serialization.components
 
 /**
  * When related to another component, ensures it will be persisted if possible.
