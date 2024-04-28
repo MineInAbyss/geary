@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.prefabs
 
-import co.touchlab.kermit.Severity
 import com.benasher44.uuid.Uuid
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.Entity
@@ -39,24 +38,30 @@ class PrefabLoader {
     }
 
     fun loadOrUpdatePrefabs() {
-        val loaded = readFiles.flatMap { read ->
-            read.get().map { path ->
-                runCatching { loadFromPathOrReloadExisting(read.namespace, path) }.onFailure {
-                    if (logger.config.minSeverity <= Severity.Debug)
-                        logger.e("Could not read prefab $path:\n\u001B[37m${it.stackTraceToString()}")
-                    else
-                        logger.e(
-                            "Could not read prefab $path:\n\u001B[37m${
-                                it.stackTraceToString().lines().take(5).joinToString("\n")
-                            }"
-                        )
-                }
+        val results = mutableListOf<String>()
+        readFiles.forEach { prefabsPath ->
+            logger.i("Loading prefabs for namespace '${prefabsPath.namespace}'")
+            val loaded = prefabsPath.get()
+                .map { path -> loadFromPathOrReloadExisting(prefabsPath.namespace, path) }
+                .toList()
+
+            val success = loaded.count { it is PrefabLoadResult.Success }
+            val warn = loaded.count { it is PrefabLoadResult.Warn }
+            val fail = loaded.count { it is PrefabLoadResult.Failure }
+            val total = loaded.count()
+
+            results += buildString {
+                append("Loaded prefabs in '${prefabsPath.namespace}':")
+                if (success > 0) append(" success: $success,")
+                if (warn > 0) append(" warn: $warn,")
+                if (fail > 0) append(" fail: $fail,")
+                append(" total: $total")
             }
         }
+        results.forEach { logger.i(it) }
         needsInherit.entities().fastForEach {
             it.inheritPrefabsIfNeeded()
         }
-        logger.i("Loaded ${loaded.count { it.isSuccess }}/${loaded.count()} prefabs")
     }
 
     /** If this entity has a [Prefab] component, clears it and loads components from its file. */
@@ -72,13 +77,20 @@ class PrefabLoader {
     @Serializable
     class PrefabFileProperties(val namespaces: List<String> = listOf())
 
+    sealed class PrefabLoadResult {
+        data class Success(val entity: Entity) : PrefabLoadResult()
+        data class Warn(val entity: Entity) : PrefabLoadResult()
+        data class Failure(val error: Throwable) : PrefabLoadResult()
+    }
+
     /** Registers an entity with components defined in a [path], adding a [Prefab] component. */
-    fun loadFromPath(namespace: String, path: Path, writeTo: Entity? = null): Entity {
+    fun loadFromPath(namespace: String, path: Path, writeTo: Entity? = null): PrefabLoadResult {
         var hadMalformed = false
+        val key = PrefabKey.of(namespace, path.name.substringBeforeLast('.'))
         val decoded = runCatching {
             val config = PolymorphicListAsMapSerializer.Config(
                 whenComponentMalformed = {
-                    if (!hadMalformed) logger.w("Problems reading $path:")
+                    if (!hadMalformed) logger.e("[$key] Problems reading components")
                     hadMalformed = true
                 }
             )
@@ -95,9 +107,12 @@ class PrefabLoader {
 
         // Stop here if we need to make a new entity
         // For existing prefabs, add all tags except decoded on fail to keep them tracked
-        if (writeTo == null && decoded.isFailure) decoded.getOrThrow()
+        if (writeTo == null) decoded.onFailure { exception ->
+            logger.e("[$key] Failed to load prefab")
+            exception.printStackTrace()
+            return PrefabLoadResult.Failure(exception)
+        }
 
-        val key = PrefabKey.of(namespace, path.name.substringBeforeLast('.'))
         val entity = writeTo ?: entity()
         entity.addRelation<NoInherit, Prefab>()
         entity.addRelation<NoInherit, Uuid>()
@@ -105,12 +120,15 @@ class PrefabLoader {
         entity.set(Prefab(path))
         decoded.getOrNull()?.let { entity.setAll(it) }
         entity.set(key)
-        decoded.getOrThrow()
-        return entity
+        return when {
+            hadMalformed -> PrefabLoadResult.Warn(entity)
+            else -> PrefabLoadResult.Success(entity)
+        }
     }
 
-    fun loadFromPathOrReloadExisting(namespace: String, path: Path): Entity {
-        val existing = prefabs.manager[PrefabKey.of(namespace, path.name.substringBeforeLast('.'))]
+    fun loadFromPathOrReloadExisting(namespace: String, path: Path): PrefabLoadResult {
+        val key = PrefabKey.of(namespace, path.name.substringBeforeLast('.'))
+        val existing = prefabs.manager[key]
         existing?.clear()
         return loadFromPath(namespace, path, existing)
     }
