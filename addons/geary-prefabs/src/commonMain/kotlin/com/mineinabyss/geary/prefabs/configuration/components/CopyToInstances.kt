@@ -2,8 +2,9 @@ package com.mineinabyss.geary.prefabs.configuration.components
 
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.serialization.dsl.serializableComponents
+import com.mineinabyss.geary.serialization.serializableComponents
 import com.mineinabyss.geary.serialization.serializers.SerializedComponents
+import com.mineinabyss.geary.serialization.setAllPersisting
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

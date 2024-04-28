@@ -2,12 +2,11 @@ package com.mineinabyss.geary.instancing
 
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.Relation
-import com.mineinabyss.geary.events.types.OnSet
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.systems.builders.observe
-import com.mineinabyss.geary.systems.query.Query
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.BeforeEach

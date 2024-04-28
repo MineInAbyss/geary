@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.serialization.dsl
+package com.mineinabyss.geary.serialization
 
 import com.mineinabyss.geary.addons.dsl.GearyAddon
 import com.mineinabyss.idofront.di.DI

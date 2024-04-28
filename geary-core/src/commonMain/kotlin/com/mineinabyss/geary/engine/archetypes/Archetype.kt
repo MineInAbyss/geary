@@ -4,10 +4,10 @@ import androidx.collection.*
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.*
-import com.mineinabyss.geary.events.types.*
 import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.observers.events.*
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 
 /**

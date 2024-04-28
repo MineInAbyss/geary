@@ -4,7 +4,6 @@ import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.fromCamelCaseToSnakeCase
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.hasNamespace
-import com.mineinabyss.geary.serialization.ProvidedConfig
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer

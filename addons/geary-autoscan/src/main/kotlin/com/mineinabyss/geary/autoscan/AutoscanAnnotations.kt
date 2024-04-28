@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.autoscan
 
+import com.mineinabyss.geary.observers.Observer
 import com.mineinabyss.geary.systems.GearySystem
-import com.mineinabyss.geary.events.queries.Observer
 import com.mineinabyss.geary.systems.query.GearyQuery
 
 /**

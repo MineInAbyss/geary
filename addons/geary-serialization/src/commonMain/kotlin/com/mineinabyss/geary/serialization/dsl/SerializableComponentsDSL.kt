@@ -3,6 +3,7 @@ package com.mineinabyss.geary.serialization.dsl
 import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.modules.GearyConfiguration
+import com.mineinabyss.geary.serialization.SerializableComponents
 import com.mineinabyss.geary.serialization.formats.Format
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer

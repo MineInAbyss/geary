@@ -2,8 +2,8 @@ package com.mineinabyss.geary.uuid.systems
 
 import com.benasher44.uuid.Uuid
 import com.benasher44.uuid.uuid4
-import com.mineinabyss.geary.events.types.OnSet
 import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.query
 import com.mineinabyss.geary.uuid.components.RegenerateUUIDOnClash

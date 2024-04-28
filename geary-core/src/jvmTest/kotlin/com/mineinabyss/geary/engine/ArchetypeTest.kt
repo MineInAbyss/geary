@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.engine
 
 import com.mineinabyss.geary.components.relations.InstanceOf
-import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.engine.archetypes.Archetype
@@ -16,6 +15,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class ArchetypeTest : GearyTest() {
+    private sealed class RelatesTo
+
     @Nested
     inner class ArchetypeNavigation {
         val root = archetypes.archetypeProvider.rootArchetype
@@ -50,11 +51,11 @@ internal class ArchetypeTest : GearyTest() {
     fun matchedRelations() {
         val target = entity()
         val target2 = entity()
-        val persists = Relation.of<Persists>(target)
+        val relatesTo = Relation.of<RelatesTo>(target)
         val instanceOf = Relation.of<InstanceOf?>(target)
         val instanceOf2 = Relation.of<InstanceOf?>(target2)
-        val arc = Archetype(EntityType(listOf(persists.id, instanceOf.id, instanceOf2.id)), 0)
-        arc.getRelationsByTarget(target.id).shouldContainExactlyInAnyOrder(persists, instanceOf)
+        val arc = Archetype(EntityType(listOf(relatesTo.id, instanceOf.id, instanceOf2.id)), 0)
+        arc.getRelationsByTarget(target.id).shouldContainExactlyInAnyOrder(relatesTo, instanceOf)
         arc.getRelationsByKind(componentId<InstanceOf>()).shouldContainExactlyInAnyOrder(instanceOf, instanceOf2)
     }
 }

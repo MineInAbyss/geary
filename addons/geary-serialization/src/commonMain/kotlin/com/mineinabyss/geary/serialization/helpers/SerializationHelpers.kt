@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.helpers
+package com.mineinabyss.geary.serialization.helpers
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

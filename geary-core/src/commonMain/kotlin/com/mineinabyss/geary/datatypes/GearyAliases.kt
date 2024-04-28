@@ -1,7 +1,5 @@
 package com.mineinabyss.geary.datatypes
 
-import kotlinx.serialization.Polymorphic
-
 typealias GearyEntityType = EntityType
 typealias GearyRelation = Relation
 

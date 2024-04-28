@@ -1,4 +1,4 @@
-package com.mineinabyss.geary.events.queries
+package com.mineinabyss.geary.observers
 
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.Entity

@@ -11,13 +11,10 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                compileOnly(libs.okio)
-                compileOnly(libs.uuid)
-                compileOnly(idofrontLibs.kotlinx.serialization.json)
-                compileOnly(idofrontLibs.kotlinx.serialization.cbor)
-
                 compileOnly(project(":geary-core"))
                 compileOnly(project(":geary-serialization"))
+
+                implementation(libs.uuid)
                 implementation(idofrontLibs.idofront.di)
             }
         }

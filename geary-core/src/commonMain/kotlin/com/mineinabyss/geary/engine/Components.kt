@@ -4,14 +4,12 @@ import com.mineinabyss.geary.components.CouldHaveChildren
 import com.mineinabyss.geary.components.KeepArchetype
 import com.mineinabyss.geary.components.relations.ChildOf
 import com.mineinabyss.geary.components.relations.InstanceOf
-import com.mineinabyss.geary.components.relations.Persists
 import com.mineinabyss.geary.datatypes.ComponentId
-import com.mineinabyss.geary.events.types.*
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.observers.events.*
 
 class Components {
     val any: ComponentId = componentId<Any>()
-    val persists: ComponentId = componentId<Persists>()
     val suppressRemoveEvent = componentId<SuppressRemoveEvent>()
     val couldHaveChildren = componentId<CouldHaveChildren>()
     val onAdd = componentId<OnAdd>()
