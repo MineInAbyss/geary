@@ -23,8 +23,8 @@ class RelationsAccessor(
     private var cachedArchetype: Archetype? = null
 
     @OptIn(UnsafeAccessors::class)
-    override fun getValue(query: Query, property: KProperty<*>): List<Relation> {
-        val archetype = query.archetype
+    override fun getValue(thisRef: Query, property: KProperty<*>): List<Relation> {
+        val archetype = thisRef.archetype
         if (archetype != cachedArchetype) {
             cachedArchetype = archetype
             cachedRelations = archetype.getRelations(kind, target)

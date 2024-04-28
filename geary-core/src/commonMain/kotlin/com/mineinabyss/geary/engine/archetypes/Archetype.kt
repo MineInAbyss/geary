@@ -62,12 +62,12 @@ class Archetype internal constructor(
     internal val relations: EntityType = type.filter { it.isRelation() }
     internal val relationsWithData: EntityType = relations.filter { it.holdsData() }
 
-    fun getRelationsByTarget(target: EntityId): List<Relation> {
-        return relations.filter { Relation.of(it).target.toLong() == target.toLong() }.map { Relation.of(it) }
+    fun getRelationsByTarget(target: EntityId): EntityType {
+        return relations.filter { Relation.of(it).target.toLong() == target.toLong() }
     }
 
-    fun getRelationsByKind(kind: ComponentId): List<Relation> {
-        return relations.filter { Relation.of(it).kind.toLong() == kind.toLong() }.map { Relation.of(it) }
+    fun getRelationsByKind(kind: ComponentId): EntityType {
+        return relations.filter { Relation.of(it).kind.toLong() == kind.toLong() }
     }
 
     /** The amount of entities stored in this archetype. */
@@ -91,6 +91,11 @@ class Archetype internal constructor(
     operator fun get(row: Int, componentId: ComponentId): Component? {
         val compIndex = indexOf(componentId)
         if (compIndex < 0) return null
+        return componentData[compIndex][row]
+    }
+
+    private fun getUnsafe(row: Int, componentId: ComponentId): Component {
+        val compIndex = indexOf(componentId)
         return componentData[compIndex][row]
     }
 
@@ -321,13 +326,13 @@ class Archetype internal constructor(
             instanceArch = arch; instanceRow = row
         }
 
-        val noInheritComponents = EntityType(getRelationsByKind(componentId<NoInherit>()).map { it.target })
+        val noInheritComponents = getRelationsByKind(componentId<NoInherit>()).map { Relation.of(it).target }
         type.filter { !it.holdsData() && it !in noInheritComponents }.forEach {
             instanceArch.addComponent(instanceRow, it, true) { arch, row -> instanceArch = arch; instanceRow = row }
         }
         dataHoldingType.forEach {
             if (it.withoutRole(HOLDS_DATA) in noInheritComponents) return@forEach
-            instanceArch.setComponent(instanceRow, it, get(baseRow, it)!!, true) { arch, row ->
+            instanceArch.setComponent(instanceRow, it, getUnsafe(baseRow, it), true) { arch, row ->
                 instanceArch = arch; instanceRow = row
             }
         }
@@ -382,7 +387,7 @@ class Archetype internal constructor(
         if (allowUnregister == FALSE) return
         if (ids.size == 0 && type.size != 0 && componentAddEdges.size == 0) {
             if (allowUnregister == UNKNOWN) allowUnregister =
-                if (type.contains(comps.keepArchetype)) FALSE else TRUE
+                if (type.contains(comps.keepEmptyArchetype)) FALSE else TRUE
             if (allowUnregister == FALSE) return
             archetypes.queryManager.unregisterArchetype(this)
             unregistered = true
@@ -423,8 +428,8 @@ class Archetype internal constructor(
         val specificTarget = target and ENTITY_MASK != comps.any
         return when {
             specificKind && specificTarget -> listOf(Relation.of(kind, target))
-            specificTarget -> getRelationsByTarget(target)
-            specificKind -> getRelationsByKind(kind)
+            specificTarget -> getRelationsByTarget(target).map { Relation.of(it) }
+            specificKind -> getRelationsByKind(kind).map { Relation.of(it) }
             else -> relations.map { Relation.of(it) }
         }.run { //TODO this technically doesnt need to run when specificKind is set
             if (kind.hasRole(HOLDS_DATA)) filter { it.hasRole(HOLDS_DATA) } else this

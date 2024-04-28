@@ -33,6 +33,7 @@ interface Prefabs {
                 createParseRelationWithDataListener()
                 createTrackPrefabsByKeyListener()
                 createCopyToInstancesSystem()
+                bindEntityObservers()
             }
             geary.pipeline.runOnOrAfter(GearyPhase.INIT_ENTITIES) {
                 loader.loadOrUpdatePrefabs()

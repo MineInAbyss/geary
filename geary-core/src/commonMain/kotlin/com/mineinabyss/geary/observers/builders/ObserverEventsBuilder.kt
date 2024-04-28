@@ -5,6 +5,7 @@ import com.mineinabyss.geary.helpers.NO_ENTITY
 import com.mineinabyss.geary.helpers.cId
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.observers.Observer
 import com.mineinabyss.geary.systems.query.Query
 import com.mineinabyss.geary.systems.query.QueryShorthands
 import com.mineinabyss.geary.systems.query.ShorthandQuery
@@ -12,6 +13,7 @@ import com.mineinabyss.geary.systems.query.ShorthandQuery
 data class ObserverWithoutData(
     override val listenToEvents: List<ComponentId>,
     override val module: GearyModule,
+    override val onBuild: (Observer) -> Unit,
 ) : ObserverEventsBuilder<ObserverContext>() {
     override val mustHoldData: Boolean = false
     inline fun <reified R> or() = copy(listenToEvents = listenToEvents + componentId<R>())
@@ -29,6 +31,7 @@ data class ObserverWithoutData(
 data class ObserverWithData<R>(
     override val listenToEvents: List<ComponentId>,
     override val module: GearyModule,
+    override val onBuild: (Observer) -> Unit,
 ) : ObserverEventsBuilder<ObserverContextWithData<R>>() {
     override val mustHoldData: Boolean = true
 
@@ -49,6 +52,7 @@ abstract class ObserverEventsBuilder<Context> : ExecutableObserver<Context> {
     abstract val listenToEvents: List<ComponentId>
     abstract val module: GearyModule
     abstract val mustHoldData: Boolean
+    abstract val onBuild: (Observer) -> Unit
 
     abstract fun provideContext(entity: GearyEntity, data: Any?): Context
 
