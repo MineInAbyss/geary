@@ -44,7 +44,7 @@ fun componentId(kType: KType): ComponentId =
     componentId(kType.classifier ?: error("No classifier found for type $kType"))
 
 /** Gets or registers the id of a component by its [kClass]. */
-inline fun componentId(kClass: KClassifier): ComponentId =
+fun componentId(kClass: KClassifier): ComponentId =
     geary.componentProvider.getOrRegisterComponentIdForClass(kClass)
 
 

@@ -50,16 +50,24 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                     }
 
                     else -> {
-                        runCatching {
-                            findSerializerFor(
-                                compositeDecoder.serializersModule,
-                                namespaces,
-                                key
-                            )
-                        }.onSuccess { componentSerializer ->
-                            runCatching {
-                                compositeDecoder.decodeMapValue(componentSerializer)
-                            }.onSuccess { components += it }.onFailure {
+                        val componentSerializer = findSerializerFor(compositeDecoder.serializersModule, namespaces, key)
+                            .getOrElse {
+                                if (config.onMissingSerializer != OnMissing.IGNORE) {
+                                    config.whenComponentMalformed(key)
+                                    parentConfig?.whenComponentMalformed?.invoke(key)
+                                }
+                                when (config.onMissingSerializer) {
+                                    OnMissing.ERROR -> throw it
+                                    OnMissing.WARN -> geary.logger.w("No serializer found for $key in namespaces $namespaces, ignoring")
+                                    OnMissing.IGNORE -> Unit
+                                }
+                                compositeDecoder.skipMapValue()
+                                return
+                            }
+
+                        runCatching { compositeDecoder.decodeMapValue(componentSerializer) }
+                            .onSuccess { components += it }
+                            .onFailure {
                                 config.whenComponentMalformed(key)
                                 parentConfig?.whenComponentMalformed?.invoke(key)
                                 if (config.skipMalformedComponents) {
@@ -69,16 +77,9 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                                                     .lineSequence()
                                                     .joinToString("\n", limit = 10, truncated = "...")
                                     )
+                                    compositeDecoder.skipMapValue()
                                 } else throw it
                             }
-                        }.onFailure {
-                            when (config.onMissingSerializer) {
-                                OnMissing.ERROR -> throw it
-                                OnMissing.WARN -> geary.logger.w("No serializer found for $key in namespaces $namespaces, ignoring")
-                                OnMissing.IGNORE -> Unit
-                            }
-                            compositeDecoder.skipMapValue()
-                        }
                     }
                 }
             }
@@ -95,12 +96,12 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         serializersModule: SerializersModule,
         namespaces: List<String>,
         key: String,
-    ): KSerializer<T> {
+    ): Result<KSerializer<T>> = runCatching {
         if (key.startsWith("kotlin.")) {
-            return serializersModule.getPolymorphic(polymorphicSerializer.baseClass, key) as KSerializer<T>
+            return@runCatching serializersModule.getPolymorphic(polymorphicSerializer.baseClass, key) as KSerializer<T>
         }
         val parsedKey = "${config.prefix}$key".fromCamelCaseToSnakeCase()
-        return (if (parsedKey.hasNamespace())
+        return@runCatching (if (parsedKey.hasNamespace())
             serializersModule.getPolymorphic(polymorphicSerializer.baseClass, parsedKey)
         else namespaces.firstNotNullOfOrNull { namespace ->
             serializersModule.getPolymorphic(polymorphicSerializer.baseClass, "$namespace:$parsedKey")
