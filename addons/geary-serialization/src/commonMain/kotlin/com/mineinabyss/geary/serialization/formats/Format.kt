@@ -8,6 +8,13 @@ import okio.Path
 interface Format {
     val ext: String
 
+    fun <T> decodeFromString(
+        deserializer: DeserializationStrategy<T>,
+        string: String,
+        overrideSerializersModule: SerializersModule? = null,
+        configType: ConfigType = ConfigType.REGULAR,
+    ): T
+
     fun <T> decodeFromFile(
         deserializer: DeserializationStrategy<T>,
         path: Path,
