@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.observers
 
-import androidx.collection.LongSparseArray
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
@@ -11,14 +10,10 @@ import com.mineinabyss.geary.modules.archetypes
 import com.mineinabyss.geary.modules.geary
 
 class ArchetypeEventRunner : EventRunner {
-    private val eventToObserverMap = LongSparseArray<ObserverList>()
-
+    private val eventToObserversMap = EventToObserversMap()
     override fun addObserver(observer: Observer) {
-        observer.listenToEvents.forEach { event ->
-            eventToObserverMap.getOrPut(event.toLong()) { ObserverList() }.add(observer)
-        }
+        eventToObserversMap.addObserver(observer)
     }
-
 
     private inline fun matchObservers(
         eventType: ComponentId,
@@ -32,12 +27,12 @@ class ArchetypeEventRunner : EventRunner {
 
         // Run entity observers
         records.runOn(entity) { archetype, _ -> archetype.getRelationsByKind(observerComp) }.forEach { relation ->
-            val observerList = Relation.of(relation).target.toGeary().get<ObserverList>() ?: return@forEach
-            observerList.forEach(involved, entity, exec)
+            val observerList = Relation.of(relation).target.toGeary().get<EventToObserversMap>() ?: return@forEach
+            observerList[eventType]?.forEach(involved, entity, exec)
         }
 
         // Run global observers
-        eventToObserverMap[eventType.toLong()]?.forEach(involved, entity, exec)
+        eventToObserversMap[eventType]?.forEach(involved, entity, exec)
     }
 
     override fun callEvent(

@@ -6,8 +6,8 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.observers.EventToObserversMap
 import com.mineinabyss.geary.observers.Observer
-import com.mineinabyss.geary.observers.ObserverList
 import com.mineinabyss.geary.observers.builders.*
 
 inline fun <reified T : Any> GearyEntity.observe(): ObserverEventsBuilder<ObserverContext> {
@@ -20,9 +20,11 @@ inline fun <reified T : Any> GearyEntity.observeWithData(): ObserverEventsBuilde
 
 fun GearyEntity.attachObserver(observer: Observer) {
     val observerEntity = entity {
-        set(ObserverList().apply { add(observer) })
+        set(EventToObserversMap().apply { addObserver(observer) })
         addRelation<ChildOf>(this@attachObserver) // Remove entity when original is removed
     }
+    //TODO remove when prefabs auto propagate component adds down
+    instances.forEach { it.addRelation<Observer>(observerEntity) }
     addRelation<Observer>(observerEntity)
 }
 
