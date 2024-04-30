@@ -1,8 +1,11 @@
 package com.mineinabyss.geary.prefabs.configuration.components
 
+import com.mineinabyss.geary.datatypes.ComponentId
+import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.SerializedComponents
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.ListSerializer
 
 @Serializable(with = EntityObservers.Serializer::class)
@@ -18,6 +21,14 @@ class EntityObservers(val observers: List<EventBind>) {
 @Serializable
 class EventBind(
     val event: SerializableComponentId,
+    val using: SerializableComponentId? = null,
     val involving: List<SerializableComponentId> = listOf(),
-    val emit: SerializedComponents
-)
+    private val emit: List<SerializedComponents>
+) {
+    class CachedEvent(val componentId: ComponentId, val data: Any?)
+
+    @Transient
+    val emitEvents = emit.map {
+        if (using != null) ReEmitEvent(SerializableComponentId(using.id), it) else it
+    }.map { CachedEvent(componentId(it::class), it) }
+}

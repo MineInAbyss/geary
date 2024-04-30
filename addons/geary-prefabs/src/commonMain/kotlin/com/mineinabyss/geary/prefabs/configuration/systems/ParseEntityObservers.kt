@@ -13,7 +13,9 @@ fun GearyModule.bindEntityObservers() = observe<OnSet>()
     .exec { (observers) ->
         observers.observers.forEach { observer ->
             entity.observe(observer.event.id).involving(EntityType(observer.involving.map { it.id })).exec {
-                observer.emit.forEach { event -> entity.emit(event) }
+                observer.emitEvents.forEach { event ->
+                    entity.emit(event = event.componentId, data = event.data)
+                }
             }
         }
         entity.remove<EntityObservers>()
