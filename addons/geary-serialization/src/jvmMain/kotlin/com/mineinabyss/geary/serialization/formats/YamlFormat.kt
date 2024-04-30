@@ -52,11 +52,12 @@ class YamlFormat(
         return Yaml(module, config).decodeFromStream(deserializer, inputStream())
     }
 
-    fun <T> decodeFromString(
+
+    override fun <T> decodeFromString(
         deserializer: DeserializationStrategy<T>,
         @Language("yaml") string: String,
-        overrideSerializersModule: SerializersModule? = null,
-        configType: ConfigType = ConfigType.REGULAR,
+        overrideSerializersModule: SerializersModule?,
+        configType: ConfigType
     ): T {
         return decodeFromStream(deserializer, overrideSerializersModule, configType) { string.byteInputStream() }
     }
