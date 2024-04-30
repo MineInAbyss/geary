@@ -34,6 +34,7 @@ interface Prefabs {
                 createTrackPrefabsByKeyListener()
                 createCopyToInstancesSystem()
                 bindEntityObservers()
+                reEmitEvent()
             }
             geary.pipeline.runOnOrAfter(GearyPhase.INIT_ENTITIES) {
                 loader.loadOrUpdatePrefabs()

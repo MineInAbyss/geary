@@ -210,6 +210,9 @@ value class Entity(val id: EntityId) {
             componentIdWithNullable<T>()
         ) as List<RelationWithData<K, T>>
 
+    fun getRelationsByKind(kind: ComponentId): List<Relation> =
+        getRelations(kind, geary.components.any)
+
     /** Queries for relations using the same format as [AccessorOperations.getRelations]. */
     inline fun <reified K : Component?, reified T : Component?> getRelations(): List<Relation> =
         getRelations(componentIdWithNullable<K>(), componentIdWithNullable<T>())
