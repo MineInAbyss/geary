@@ -4,13 +4,13 @@ import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.observers.builders.ObserverWithData
 import com.mineinabyss.geary.observers.builders.ObserverWithoutData
-import com.mineinabyss.geary.systems.query.CachedQueryRunner
+import com.mineinabyss.geary.systems.query.CachedQuery
 import com.mineinabyss.geary.systems.query.Query
 
 
 fun <T : Query> GearyModule.cache(
     query: T,
-): CachedQueryRunner<T> {
+): CachedQuery<T> {
     return queryManager.trackQuery(query)
 }
 

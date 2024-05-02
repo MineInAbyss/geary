@@ -1,5 +1,5 @@
 [versions]
-atomicfu = "0.23.1"
+atomicfu = "0.24.0"
 
 [libraries]
 atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }

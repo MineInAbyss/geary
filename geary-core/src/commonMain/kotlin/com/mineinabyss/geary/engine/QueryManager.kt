@@ -2,11 +2,11 @@ package com.mineinabyss.geary.engine
 
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.family.Family
-import com.mineinabyss.geary.systems.query.CachedQueryRunner
+import com.mineinabyss.geary.systems.query.CachedQuery
 import com.mineinabyss.geary.systems.query.Query
 
 interface QueryManager {
-    fun <T: Query> trackQuery(query: T): CachedQueryRunner<T>
+    fun <T: Query> trackQuery(query: T): CachedQuery<T>
 
     /** Returns a list of entities matching the given family. */
     fun getEntitiesMatching(family: Family): List<Entity>
