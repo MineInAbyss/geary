@@ -4,17 +4,11 @@ plugins {
     alias(idofrontLibs.plugins.kotlinx.serialization)
 }
 
-buildscript {
-    dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${libs.versions.atomicfu.get()}")
-    }
-}
-
 kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(libs.atomicfu)
+                implementation(libs.stately.concurrency)
                 implementation(libs.androidx.collection)
                 implementation(idofrontLibs.kotlin.reflect)
 

@@ -5,9 +5,6 @@ plugins {
 }
 
 kotlin {
-    targets {
-
-    }
     sourceSets {
         val commonMain by getting {
             dependencies {
