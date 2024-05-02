@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import co.touchlab.stately.concurrency.AtomicLong
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.EntityStack
 import com.mineinabyss.geary.datatypes.EntityType
@@ -9,7 +10,6 @@ import com.mineinabyss.geary.engine.EntityProvider
 import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.observers.events.OnEntityRemoved
-import kotlinx.atomicfu.atomic
 
 class EntityByArchetypeProvider(
     private val reuseIDsAfterRemoval: Boolean = true,
@@ -20,12 +20,12 @@ class EntityByArchetypeProvider(
     private lateinit var root: Archetype
 
     private val removedEntities: EntityStack = EntityStack()
-    private val currId = atomic(0L)
+    private val currId = AtomicLong(0L)
 
     override fun create(): GearyEntity {
         val entity: GearyEntity = if (reuseIDsAfterRemoval) {
-            removedEntities.pop() ?: currId.getAndIncrement().toGeary()
-        } else currId.getAndIncrement().toGeary()
+            removedEntities.popOrElse { (currId.incrementAndGet() - 1).toGeary() }
+        } else (currId.incrementAndGet() - 1).toGeary()
 
         createRecord(entity)
         return entity

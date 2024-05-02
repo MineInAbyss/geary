@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import co.touchlab.stately.concurrency.Synchronizable
+import co.touchlab.stately.concurrency.synchronize
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.maps.Family2ObjectArrayMap
@@ -8,8 +10,6 @@ import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.systems.query.CachedQuery
 import com.mineinabyss.geary.systems.query.Query
-import kotlinx.atomicfu.locks.SynchronizedObject
-import kotlinx.atomicfu.locks.synchronized
 
 class ArchetypeQueryManager : QueryManager {
     private val queries = mutableListOf<CachedQuery<*>>()
@@ -19,7 +19,7 @@ class ArchetypeQueryManager : QueryManager {
         setIndex = { it, index -> it.id = index }
     )
 
-    private val archetypeRegistryLock = SynchronizedObject()
+    private val archetypeRegistryLock = Synchronizable()
 
     val archetypeCount get() = archetypes.elements.size
 
@@ -32,13 +32,13 @@ class ArchetypeQueryManager : QueryManager {
         return queryRunner
     }
 
-    internal fun registerArchetype(archetype: Archetype) = synchronized(archetypeRegistryLock) {
+    internal fun registerArchetype(archetype: Archetype) = archetypeRegistryLock.synchronize {
         archetypes.add(archetype, archetype.type)
         val matched = queries.filter { archetype.type in it.family }
         matched.fastForEach { it.matchedArchetypes += archetype }
     }
 
-    internal fun unregisterArchetype(archetype: Archetype) = synchronized(archetypeRegistryLock) {
+    internal fun unregisterArchetype(archetype: Archetype) = archetypeRegistryLock.synchronize {
         archetypes.remove(archetype)
         val matched = queries.filter { archetype.type in it.family }
         matched.fastForEach { it.matchedArchetypes -= archetype }

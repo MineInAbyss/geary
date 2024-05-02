@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.allopen.gradle.AllOpenExtension
 plugins {
     id(idofrontLibs.plugins.mia.kotlin.jvm.get().pluginId)
     id("org.jetbrains.kotlinx.benchmark") version "0.4.9"
-    kotlin("plugin.allopen") version "1.9.10"
+    kotlin("plugin.allopen") version idofrontLibs.versions.kotlin.get()
 }
 
 configure<AllOpenExtension> {

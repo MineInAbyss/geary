@@ -1,11 +1,11 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import co.touchlab.stately.concurrency.Synchronizable
+import co.touchlab.stately.concurrency.synchronize
 import com.mineinabyss.geary.components.ComponentInfo
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.engine.ComponentProvider
 import com.mineinabyss.geary.modules.geary
-import kotlinx.atomicfu.locks.SynchronizedObject
-import kotlinx.atomicfu.locks.synchronized
 import kotlin.reflect.KClassifier
 
 class ComponentAsEntityProvider : ComponentProvider {
@@ -13,7 +13,7 @@ class ComponentAsEntityProvider : ComponentProvider {
     private val logger get() = geary.logger
 
     private val classToComponentMap = mutableMapOf<KClassifier, Long>()
-    private val classToComponentMapLock = SynchronizedObject()
+    private val classToComponentMapLock = Synchronizable()
 
     internal fun createComponentInfo() {
         logger.v("Registering ComponentInfo component")
@@ -24,11 +24,11 @@ class ComponentAsEntityProvider : ComponentProvider {
     }
 
     override fun getOrRegisterComponentIdForClass(kClass: KClassifier): ComponentId =
-        synchronized(classToComponentMapLock) {
+        classToComponentMapLock.synchronize {
             val id = classToComponentMap.getOrElse(kClass) {
-                return registerComponentIdForClass(kClass)
+                return@synchronize registerComponentIdForClass(kClass)
             }
-            return id.toULong()
+            return@synchronize id.toULong()
         }
 
     private fun registerComponentIdForClass(kClass: KClassifier): ComponentId {

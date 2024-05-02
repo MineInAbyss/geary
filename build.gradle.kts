@@ -23,6 +23,7 @@ allprojects {
     pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
         kotlin {
             jvm {
+                withJava()
                 testRuns["test"].executionTask.configure {
                     useJUnitPlatform()
                 }
