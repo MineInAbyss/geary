@@ -2,6 +2,8 @@ package com.mineinabyss.geary.serialization.formats
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
+import com.charleskorn.kaml.decodeFromStream
+import com.charleskorn.kaml.encodeToStream
 import com.mineinabyss.geary.serialization.formats.Format.ConfigType
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy

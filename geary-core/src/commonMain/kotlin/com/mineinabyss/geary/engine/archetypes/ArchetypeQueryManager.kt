@@ -6,13 +6,13 @@ import com.mineinabyss.geary.datatypes.maps.Family2ObjectArrayMap
 import com.mineinabyss.geary.engine.QueryManager
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.fastForEach
-import com.mineinabyss.geary.systems.query.CachedQueryRunner
+import com.mineinabyss.geary.systems.query.CachedQuery
 import com.mineinabyss.geary.systems.query.Query
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 
 class ArchetypeQueryManager : QueryManager {
-    private val queries = mutableListOf<CachedQueryRunner<*>>()
+    private val queries = mutableListOf<CachedQuery<*>>()
 
     private val archetypes = Family2ObjectArrayMap<Archetype>(
         getIndex = { it.id },
@@ -23,9 +23,9 @@ class ArchetypeQueryManager : QueryManager {
 
     val archetypeCount get() = archetypes.elements.size
 
-    override fun <T : Query> trackQuery(query: T): CachedQueryRunner<T> {
+    override fun <T : Query> trackQuery(query: T): CachedQuery<T> {
         query.initialize()
-        val queryRunner = CachedQueryRunner(query)
+        val queryRunner = CachedQuery(query)
         val matched = archetypes.match(queryRunner.family)
         queryRunner.matchedArchetypes += matched
         queries.add(queryRunner)

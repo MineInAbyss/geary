@@ -10,13 +10,10 @@ buildscript {
     }
 }
 
-apply(plugin = "kotlinx-atomicfu")
-
 kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(kotlin("stdlib-common"))
                 implementation(libs.atomicfu)
                 implementation(libs.androidx.collection)
                 implementation(idofrontLibs.kotlin.reflect)

@@ -82,10 +82,10 @@ inline fun <reified A : Any, reified B : Any, reified C : Any> query(size3: Quer
     }
 
 @JvmName("toList1")
-inline fun <T> CachedQueryRunner<ShorthandQuery1<T>>.toList(): List<T> = map { it.component1() }
+inline fun <T> CachedQuery<ShorthandQuery1<T>>.toList(): List<T> = map { it.component1() }
 
 @JvmName("toList2")
-inline fun <T, R> CachedQueryRunner<ShorthandQuery2<T, R>>.toList(): List<Pair<T, R>> =
+inline fun <T, R> CachedQuery<ShorthandQuery2<T, R>>.toList(): List<Pair<T, R>> =
     map { it.component1() to it.component2() }
 
 

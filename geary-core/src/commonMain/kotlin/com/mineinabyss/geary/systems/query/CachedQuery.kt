@@ -7,7 +7,7 @@ import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.archetypes
 
-class CachedQueryRunner<T : Query> internal constructor(val query: T) {
+class CachedQuery<T : Query> internal constructor(val query: T) {
     val matchedArchetypes: MutableList<Archetype> = mutableListOf()
     val family = query.buildFamily()
     val cachingAccessors = query.cachingAccessors.toTypedArray()
@@ -187,6 +187,6 @@ class CachedQueryRunner<T : Query> internal constructor(val query: T) {
     }
 }
 
-inline fun <R> List<CachedQueryRunner.Deferred<R>>.execOnFinish(run: (data: R, entity: GearyEntity) -> Unit) {
+inline fun <R> List<CachedQuery.Deferred<R>>.execOnFinish(run: (data: R, entity: GearyEntity) -> Unit) {
     fastForEach { run(it.data, it.entity) }
 }
