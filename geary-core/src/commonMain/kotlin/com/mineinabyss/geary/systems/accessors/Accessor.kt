@@ -8,6 +8,6 @@ interface Accessor {
     val originalAccessor: Accessor?
 }
 
-interface ReadOnlyAccessor<T> : Accessor, ReadOnlyProperty<Query, T>
+interface ReadOnlyAccessor<out T> : Accessor, ReadOnlyProperty<Query, T>
 
 interface ReadWriteAccessor<T> : ReadOnlyAccessor<T>, ReadWriteProperty<Query, T>

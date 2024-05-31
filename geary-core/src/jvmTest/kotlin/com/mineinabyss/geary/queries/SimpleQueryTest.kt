@@ -5,7 +5,14 @@ import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.query.Query
+import com.mineinabyss.geary.systems.query.query
+import com.mineinabyss.geary.systems.query.toList
+import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.BeforeAll
 import kotlin.test.Test
@@ -92,6 +99,26 @@ class SimpleQueryTest : GearyTest() {
             query.collect {
                 filter { it.int % 2 == 0 }
             }.map { it.int.toString() }.toList()
+        }
+    }
+
+    @Test
+    fun `should allow querying nullable types as optional in shorthand queries`() {
+        entity {
+            set<Int>(1)
+            set("Both")
+        }
+        entity {
+            set("Only string")
+        }
+        val query = geary.queryManager.trackQuery(query<Int, String?>())
+        val matched = query.toList()
+        assertSoftly(matched) {
+            shouldContainAll((0..9 step 2).map { it to null })
+            shouldContain(1 to "Both")
+            withClue("Should not include anything else") {
+                shouldHaveSize(11)
+            }
         }
     }
 }

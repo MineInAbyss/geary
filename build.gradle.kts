@@ -4,6 +4,8 @@ plugins {
     alias(idofrontLibs.plugins.kotlin.multiplatform)
     alias(idofrontLibs.plugins.dokka)
     alias(idofrontLibs.plugins.mia.autoversion)
+    alias(idofrontLibs.plugins.dependencyversions)
+    alias(idofrontLibs.plugins.version.catalog.update)
 }
 
 allprojects {

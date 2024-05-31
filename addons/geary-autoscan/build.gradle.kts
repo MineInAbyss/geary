@@ -5,8 +5,8 @@ plugins {
 }
 
 dependencies {
-    compileOnly(project(":geary-core"))
-    compileOnly(project(":geary-serialization"))
+    implementation(project(":geary-core"))
+    implementation(project(":geary-serialization"))
 
     implementation(idofrontLibs.reflections)
     implementation(idofrontLibs.kotlin.reflect)

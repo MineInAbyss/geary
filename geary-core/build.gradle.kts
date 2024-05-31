@@ -13,7 +13,7 @@ kotlin {
                 implementation(idofrontLibs.kotlin.reflect)
 
                 api(idofrontLibs.idofront.di)
-                api(libs.kermit)
+                api(idofrontLibs.kermit)
                 api(idofrontLibs.kotlinx.coroutines)
             }
 
