@@ -28,19 +28,11 @@ class ComponentAccessor<T : Any>(
         if (cachedIndex != -1) cachedDataArray = archetype.componentData[cachedIndex] as MutableObjectList<T>
     }
 
-    fun get(query: Query): T {
+    override fun get(query: Query): T {
         return cachedDataArray[query.row]
     }
 
-    fun set(query: Query, value: T) {
+    override fun set(query: Query, value: T) {
         cachedDataArray[query.row] = value
-    }
-
-    override fun getValue(thisRef: Query, property: KProperty<*>): T {
-        return get(thisRef)
-    }
-
-    override fun setValue(thisRef: Query, property: KProperty<*>, value: T) {
-        return set(thisRef, value)
     }
 }

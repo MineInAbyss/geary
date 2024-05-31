@@ -23,7 +23,7 @@ class FamilyMatchingTest : GearyTest() {
     val system = geary.system(object : Query() {
         val string by get<String>()
         override fun ensure() = this { has<Int>() }
-    }).defer { string }.onFinish { data, entity ->
+    }).defer { it.string }.onFinish { data, entity ->
         data shouldBe entity.get<String>()
         entity.has<Int>() shouldBe true
     }

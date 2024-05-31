@@ -7,6 +7,7 @@ import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.query.Query
 import com.mineinabyss.geary.systems.builders.system
+import com.mineinabyss.geary.systems.query.query
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Scope
 import org.openjdk.jmh.annotations.Setup
@@ -21,15 +22,14 @@ class VelocitySystemBenchmark {
         val velocity by get<Velocity>()
         var position by get<Position>()
     }).exec {
+        it.position.x += it.velocity.x
+        it.position.y += it.velocity.y
+    }
+    fun createVelocitySystemNoDelegates() = geary.system(
+        query<Velocity, Position>()
+    ).exec { (velocity, position) ->
         position.x += velocity.x
         position.y += velocity.y
-    }
-    fun createVelocitySystemNoDelegates() = geary.system(object : Query() {
-        val velocity = get<Velocity>()
-        var position = get<Position>()
-    }).exec {
-        position().x += velocity().x
-        position().y += velocity().y
     }
 
     val velocities = Array(tenMil) { Velocity(it.toFloat() / oneMil, it.toFloat() / oneMil) }
