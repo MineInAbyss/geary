@@ -33,6 +33,27 @@ class GearyConfiguration(
         Namespaced(namespace, this).configure()
     }
 
+    /** Runs a block during [GearyPhase.INIT_COMPONENTS] */
+    fun components(configure: GearyModule.() -> Unit) {
+        on(GearyPhase.INIT_COMPONENTS) {
+            module.configure()
+        }
+    }
+
+    /** Runs a block during [GearyPhase.INIT_SYSTEMS] */
+    fun systems(configure: GearyModule.() -> Unit) {
+        on(GearyPhase.INIT_SYSTEMS) {
+            module.configure()
+        }
+    }
+
+    /** Runs a block during [GearyPhase.INIT_ENTITIES] */
+    fun entities(configure: GearyModule.() -> Unit) {
+        on(GearyPhase.INIT_ENTITIES) {
+            module.configure()
+        }
+    }
+
     /**
      * Allows defining actions that should run at a specific phase during startup
      *

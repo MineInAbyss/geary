@@ -1,7 +1,6 @@
 <div align="center">
 
 # Geary
-[![Java CI with Gradle](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml/badge.svg)](https://github.com/MineInAbyss/Geary/actions/workflows/gradle-ci.yml)
 [![Package](https://img.shields.io/maven-metadata/v?metadataUrl=https://repo.mineinabyss.com/releases/com/mineinabyss/geary-core/maven-metadata.xml&color=light_green)](https://repo.mineinabyss.com/#/releases/com/mineinabyss/geary-core)
 [![Package](https://img.shields.io/maven-metadata/v?metadataUrl=https://repo.mineinabyss.com/snapshots/com/mineinabyss/geary-core/maven-metadata.xml&label=prerelease)](https://repo.mineinabyss.com/#/snapshots/com/mineinabyss/geary-core)
 [![Wiki](https://img.shields.io/badge/-Project%20Wiki-blueviolet?logo=Wikipedia&labelColor=gray)](https://wiki.mineinabyss.com/geary)
@@ -10,40 +9,40 @@
 
 ## Overview
 
-Geary is an Entity Component System (ECS) written in Kotlin. The engine design is inspired by [flecs](https://github.com/SanderMertens/flecs). Core parts of the engine (ex. system iteration, entity creation) are quite optimized, with the main exception being our event system. We use Geary internally for our Minecraft plugins, see [geary-papermc](https://github.com/MineInAbyss/geary-papermc) for more info.
+Geary is an Entity Component System (ECS) written in Kotlin. The engine design is inspired by [flecs](https://github.com/SanderMertens/flecs). Core parts of the engine like system iteration and entity creation are quite optimized, the main exception being our observer system. We use Geary internally for our Minecraft plugins, see [geary-papermc](https://github.com/MineInAbyss/geary-papermc) for more info.
 
 ## Features
+- Archetype based engine optimized for many entities with similar components
+- Type safe systems, queries, and event listeners
 - Null safe component access
 - Flecs-style entity relationships `alice.addRelation<FriendsWith>(bob)`
-- Fully type safe system definition
+- Observers for listening to component changes and custom events
 - Prefabs that reuse components across entities
 - Persistent components and loading prefabs from files thanks to [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization/)
 - Addon system to use only what you need
 
 ## Usage
 
-
-We host a WIP wiki, the best way to get up-to-date info is reading the [quickstart-guide](https://wiki.mineinabyss.com/geary/guide/quickstart/), here's an excerpt, a simple velocity system:
+Read our [Quickstart guide](https://wiki.mineinabyss.com/geary/quickstart/) to see Geary in action, here's an excerpt, a simple velocity system:
 
 
 ```kotlin
 data class Position(var x: Double, var y: Double)
 data class Velocity(var x: Double, var y: Double)
 
-fun GearyModule.updatePositionSystem() = system(object: Query() {
-    val position by get<Position>()
-    val velocity by get<Velocity>()
-}).every(interval = 20.milliseconds).exec {
-    // We can access our components like regular variables!
-    position.x += velocity.x
-    position.y += velocity.y
-}
+fun GearyModule.updatePositionSystem() = system(query<Position, Velocity>())
+    .every(interval = 20.milliseconds)
+    .exec { (position, velocity) ->
+        // We can access our components like regular variables!
+        position.x += velocity.x
+        position.y += velocity.y
+    }
 
 
 fun main() {
     // Set up geary
     geary(ArchetypeEngineModule) {
-        // configure engine here
+        // example engine configuration
         install(Prefabs)
     }
 
@@ -53,11 +52,11 @@ fun main() {
     entity {
         setAll(Position(0.0, 0.0), Velocity(1.0, 0.0))
     }
-
+    
     posSystem.tick() // exec just this system
     geary.engine.tick() // exec all registered repeating systems, interval used to calculate every n ticks to run
     
-    val positions: List<Position> = posSystem.map { position }
+    val positions: List<Position> = posSystem.map { (pos) -> pos }
 }
 
 ```
