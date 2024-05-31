@@ -22,14 +22,14 @@ data class SystemBuilder<T : Query>(
     }
 
     inline fun exec(crossinline run: T.(T) -> Unit): TrackedSystem<*> {
-        val onTick: CachedQuery<T>.() -> Unit = { forEach(run) }
+        val onTick: CachedQuery<T>.() -> Unit = { forEach { run(it) } }
         val system = System(name, query, onTick, interval)
         return pipeline.addSystem(system)
     }
 
-    inline fun <R> defer(crossinline run: T.() -> R): DeferredSystemBuilder<T, R> {
+    inline fun <R> defer(crossinline run: T.(T) -> R): DeferredSystemBuilder<T, R> {
         val onTick: CachedQuery<T>.() -> List<CachedQuery.Deferred<R>> = {
-            mapWithEntity { run() }
+            mapWithEntity { run(it) }
         }
         val system = DeferredSystemBuilder(this, onTick)
         return system

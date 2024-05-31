@@ -13,23 +13,23 @@ abstract class ShorthandQuery : Query() {
 }
 
 abstract class ShorthandQuery1<A> : ShorthandQuery() {
-    abstract val comp1: A
+    val comp1 get() = component1()
 
     abstract operator fun component1(): A
 }
 
 abstract class ShorthandQuery2<A, B> : ShorthandQuery() {
-    abstract val comp1: A
-    abstract val comp2: B
+    val comp1 get() = component1()
+    val comp2 get() = component2()
 
     abstract operator fun component1(): A
     abstract operator fun component2(): B
 }
 
 abstract class ShorthandQuery3<A, B, C> : ShorthandQuery() {
-    abstract val comp1: A
-    abstract val comp2: B
-    abstract val comp3: C
+    val comp1 get() = component1()
+    val comp2 get() = component2()
+    val comp3 get() = component3()
 
     abstract operator fun component1(): A
     abstract operator fun component2(): B
@@ -37,10 +37,10 @@ abstract class ShorthandQuery3<A, B, C> : ShorthandQuery() {
 }
 
 abstract class ShorthandQuery4<A, B, C, D> : ShorthandQuery() {
-    abstract val comp1: A
-    abstract val comp2: B
-    abstract val comp3: C
-    abstract val comp4: D
+    val comp1 get() = component1()
+    val comp2 get() = component2()
+    val comp3 get() = component3()
+    val comp4 get() = component4()
 
     abstract operator fun component1(): A
     abstract operator fun component2(): B
@@ -49,11 +49,11 @@ abstract class ShorthandQuery4<A, B, C, D> : ShorthandQuery() {
 }
 
 abstract class ShorthandQuery5<A, B, C, D, E> : ShorthandQuery() {
-    abstract val comp1: A
-    abstract val comp2: B
-    abstract val comp3: C
-    abstract val comp4: D
-    abstract val comp5: E
+    val comp1 get() = component1()
+    val comp2 get() = component2()
+    val comp3 get() = component3()
+    val comp4 get() = component4()
+    val comp5 get() = component5()
 
     abstract operator fun component1(): A
     abstract operator fun component2(): B
@@ -78,9 +78,9 @@ inline fun <reified A> query(
         filterFamily?.let { this { it() } }
     }
 
-    override val comp1 by getPotentiallyNullable<A>()
+    private val accessor1 = getPotentiallyNullable<A>()
 
-    override fun component1() = comp1
+    override fun component1() = accessor1.get(this)
 }
 
 inline fun <reified A, reified B> query(
@@ -92,11 +92,11 @@ inline fun <reified A, reified B> query(
         filterFamily?.let { this { it() } }
     }
 
-    override val comp1 by getPotentiallyNullable<A>()
-    override val comp2 by getPotentiallyNullable<B>()
+    private val accessor1 = getPotentiallyNullable<A>()
+    private val accessor2 = getPotentiallyNullable<B>()
 
-    override fun component1(): A = comp1
-    override fun component2(): B = comp2
+    override fun component1(): A = accessor1.get(this)
+    override fun component2(): B = accessor2.get(this)
 }
 
 
@@ -109,13 +109,13 @@ inline fun <reified A, reified B, reified C> query(
         filterFamily?.let { this { it() } }
     }
 
-    override val comp1 by getPotentiallyNullable<A>()
-    override val comp2 by getPotentiallyNullable<B>()
-    override val comp3 by getPotentiallyNullable<C>()
+    private val accessor1 = getPotentiallyNullable<A>()
+    private val accessor2 = getPotentiallyNullable<B>()
+    private val accessor3 = getPotentiallyNullable<C>()
 
-    override fun component1(): A = comp1
-    override fun component2(): B = comp2
-    override fun component3(): C = comp3
+    override fun component1(): A = accessor1.get(this)
+    override fun component2(): B = accessor2.get(this)
+    override fun component3(): C = accessor3.get(this)
 }
 
 inline fun <reified A, reified B, reified C, reified D> query(
@@ -127,15 +127,15 @@ inline fun <reified A, reified B, reified C, reified D> query(
         filterFamily?.let { this { it() } }
     }
 
-    override val comp1 by getPotentiallyNullable<A>()
-    override val comp2 by getPotentiallyNullable<B>()
-    override val comp3 by getPotentiallyNullable<C>()
-    override val comp4 by getPotentiallyNullable<D>()
+    private val accessor1 = getPotentiallyNullable<A>()
+    private val accessor2 = getPotentiallyNullable<B>()
+    private val accessor3 = getPotentiallyNullable<C>()
+    private val accessor4 = getPotentiallyNullable<D>()
 
-    override fun component1(): A = comp1
-    override fun component2(): B = comp2
-    override fun component3(): C = comp3
-    override fun component4(): D = comp4
+    override fun component1(): A = accessor1.get(this)
+    override fun component2(): B = accessor2.get(this)
+    override fun component3(): C = accessor3.get(this)
+    override fun component4(): D = accessor4.get(this)
 }
 
 inline fun <reified A, reified B, reified C, reified D, reified E> query(
@@ -147,17 +147,17 @@ inline fun <reified A, reified B, reified C, reified D, reified E> query(
         filterFamily?.let { this { it() } }
     }
 
-    override val comp1 by getPotentiallyNullable<A>()
-    override val comp2 by getPotentiallyNullable<B>()
-    override val comp3 by getPotentiallyNullable<C>()
-    override val comp4 by getPotentiallyNullable<D>()
-    override val comp5 by getPotentiallyNullable<E>()
+    private val accessor1 = getPotentiallyNullable<A>()
+    private val accessor2 = getPotentiallyNullable<B>()
+    private val accessor3 = getPotentiallyNullable<C>()
+    private val accessor4 = getPotentiallyNullable<D>()
+    private val accessor5 = getPotentiallyNullable<E>()
 
-    override fun component1(): A = comp1
-    override fun component2(): B = comp2
-    override fun component3(): C = comp3
-    override fun component4(): D = comp4
-    override fun component5(): E = comp5
+    override fun component1(): A = accessor1.get(this)
+    override fun component2(): B = accessor2.get(this)
+    override fun component3(): C = accessor3.get(this)
+    override fun component4(): D = accessor4.get(this)
+    override fun component5(): E = accessor5.get(this)
 }
 
 @JvmName("toList1")

@@ -10,7 +10,6 @@ import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import com.mineinabyss.geary.systems.accessors.ReadOnlyAccessor
 import com.mineinabyss.geary.systems.query.Query
-import kotlin.reflect.KProperty
 
 class RelationsAccessor(
     override val originalAccessor: Accessor?,
@@ -23,8 +22,8 @@ class RelationsAccessor(
     private var cachedArchetype: Archetype? = null
 
     @OptIn(UnsafeAccessors::class)
-    override fun getValue(thisRef: Query, property: KProperty<*>): List<Relation> {
-        val archetype = thisRef.archetype
+    override fun get(query: Query): List<Relation> {
+        val archetype = query.archetype
         if (archetype != cachedArchetype) {
             cachedArchetype = archetype
             cachedRelations = archetype.getRelations(kind, target)

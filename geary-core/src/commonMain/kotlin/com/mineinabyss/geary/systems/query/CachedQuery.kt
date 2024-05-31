@@ -123,13 +123,13 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
         return collected
     }
 
-    inline fun <R> map(crossinline run: (T) -> R): List<R> {
+    inline fun <R> map(crossinline run: T.(T) -> R): List<R> {
         val deferred = mutableListOf<R>()
         forEach { deferred.add(run(it)) }
         return deferred
     }
 
-    inline fun <R> mapNotNull(crossinline run: (T) -> R?): List<R> {
+    inline fun <R> mapNotNull(crossinline run: T.(T) -> R?): List<R> {
         val deferred = mutableListOf<R>()
         forEach { query -> run(query).let { if (it != null) deferred.add(it) } }
         return deferred
@@ -171,7 +171,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
     )
 
     @OptIn(UnsafeAccessors::class)
-    inline fun <R> mapWithEntity(crossinline run: T.() -> R): List<Deferred<R>> {
+    inline fun <R> mapWithEntity(crossinline run: T.(T) -> R): List<Deferred<R>> {
         val deferred = mutableListOf<Deferred<R>>()
         forEach {
             deferred.add(Deferred(run(it), it.unsafeEntity))

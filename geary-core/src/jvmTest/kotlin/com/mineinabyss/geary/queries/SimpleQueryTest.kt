@@ -19,9 +19,7 @@ import kotlin.test.Test
 
 @OptIn(ExperimentalGearyApi::class)
 class SimpleQueryTest : GearyTest() {
-    class MyQuery : Query() {
-        val int by get<Int>()
-    }
+    val myQuery = query<Int>()
 
     @BeforeAll
     fun ensureTestEntitiesExist() {
@@ -37,10 +35,10 @@ class SimpleQueryTest : GearyTest() {
 
     @Test
     fun `forEach should allow reading data`() {
-        val query = geary.queryManager.trackQuery(MyQuery())
+        val query = geary.queryManager.trackQuery(myQuery)
 
         val nums = mutableListOf<Int>()
-        query.forEach {
+        query.forEach { (int) ->
             nums.add(int)
         }
         nums.sorted() shouldBe (0..9).toList()
@@ -48,7 +46,7 @@ class SimpleQueryTest : GearyTest() {
 
     @Test
     fun `entities should return matched entities correctly`() {
-        val query = geary.queryManager.trackQuery(MyQuery())
+        val query = geary.queryManager.trackQuery(myQuery)
 
         val nums = mutableListOf<Int>()
         query.entities().forEach {
@@ -60,45 +58,45 @@ class SimpleQueryTest : GearyTest() {
 
     @Test
     fun `first should correctly return first matched entity`() {
-        val query = geary.queryManager.trackQuery(MyQuery())
+        val query = geary.queryManager.trackQuery(myQuery)
 
-        query.find({ int }, { int == 5 }) shouldBe 5
+        query.find({ it.comp1 }, { it.comp1 == 5 }) shouldBe 5
     }
 
     @Test
     fun `any should correctly check for matches if matched`() {
-        val query = geary.queryManager.trackQuery(MyQuery())
+        val query = geary.queryManager.trackQuery(myQuery)
 
-        query.any { int == 5 } shouldBe true
-        query.any { int == 100 } shouldBe false
+        query.any { it.comp1 == 5 } shouldBe true
+        query.any { it.comp1 == 100 } shouldBe false
     }
 
     @Test
     fun `should be able to collect query as sequence`() {
-        val query = geary.queryManager.trackQuery(MyQuery())
+        val query = geary.queryManager.trackQuery(myQuery)
 
         query.collect {
-            filter { it.int % 2 == 0 }.map { it.int.toString() }.toList()
+            filter { it.comp1 % 2 == 0 }.map { it.comp1.toString() }.toList()
         } shouldBe (0..9 step 2).map { it.toString() }
     }
 
     @Test
     fun `should allow collecting fancier sequences`() {
-        val query = geary.queryManager.trackQuery(MyQuery())
+        val query = geary.queryManager.trackQuery(myQuery)
 
         query.collect {
-            filter { it.int % 2 == 0 }.map { it.int }.sortedByDescending { it }.take(3).toList()
+            filter { it.comp1 % 2 == 0 }.map { it.comp1 }.sortedByDescending { it }.take(3).toList()
         } shouldBe listOf(8, 6, 4)
     }
 
     @Test
     fun `should not allow working on sequence outside collect block`() {
-        val query = geary.queryManager.trackQuery(MyQuery())
+        val query = geary.queryManager.trackQuery(myQuery)
 
         shouldThrow<IllegalStateException> {
             query.collect {
-                filter { it.int % 2 == 0 }
-            }.map { it.int.toString() }.toList()
+                filter { it.comp1 % 2 == 0 }
+            }.map { it.comp1.toString() }.toList()
         }
     }
 
