@@ -72,6 +72,14 @@ abstract class ObserverEventsBuilder<Context> : ExecutableObserver<Context> {
         return ObserverBuilder(this, entityTypeOf(cId<A>(), cId<B>(), cId<C>()))
     }
 
+    inline fun <reified A : Any, reified B : Any, reified C : Any, reified D : Any> involving(size4: QueryShorthands.Size4? = null): ObserverBuilder<Context> {
+        return ObserverBuilder(this, entityTypeOf(cId<A>(), cId<B>(), cId<C>(), cId<D>()))
+    }
+
+    inline fun <reified A : Any, reified B : Any, reified C : Any, reified D : Any, reified E : Any> involving(size5: QueryShorthands.Size5? = null): ObserverBuilder<Context> {
+        return ObserverBuilder(this, entityTypeOf(cId<A>(), cId<B>(), cId<C>(), cId<D>(), cId<E>()))
+    }
+
     fun involvingAny(): ObserverBuilder<Context> {
         return ObserverBuilder(this, entityTypeOf())
     }

@@ -8,8 +8,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                compileOnly(project(":geary-core"))
-                compileOnly(project(":geary-serialization"))
+                implementation(project(":geary-core"))
+                implementation(project(":geary-serialization"))
 
                 implementation(libs.uuid)
                 implementation(idofrontLibs.idofront.di)

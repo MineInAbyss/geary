@@ -18,6 +18,12 @@ interface ExecutableObserver<Context> {
             handle(query)
         }
     }
+
+    fun <Q1 : Query, Q2: Query> exec(query1: Q1, query2: Q2,handle: Context.(Q1, Q2) -> Unit): Observer {
+        return filter(query1).filter(query2).exec {
+            handle(query1, query2)
+        }
+    }
 }
 
 data class QueryInvolvingObserverBuilder<Context, Q : ShorthandQuery>(

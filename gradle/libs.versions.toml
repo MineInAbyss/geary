@@ -1,12 +1,17 @@
 [versions]
+androidxCollection = "1.4.0"
 atomicfu = "0.24.0"
+kotlinxBenchmarkRuntime = "0.4.10"
+okio = "3.9.0"
+roaringbitmap = "1.0.6"
+statelyConcurrency = "2.0.7"
+uuid = "0.8.4"
 
 [libraries]
+androidx-collection = { module = "androidx.collection:collection", version.ref = "androidxCollection" }
 atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
-uuid = "com.benasher44:uuid:0.8.1"
-okio = "com.squareup.okio:okio:3.5.0"
-roaringbitmap = "org.roaringbitmap:RoaringBitmap:0.9.32"
-bitvector = "net.onedaybeard.bitvector:bitvector-js:0.1.4"
-kermit = "co.touchlab:kermit:1.2.2"
-androidx-collection = "androidx.collection:collection:1.4.0"
-stately-concurrency = "co.touchlab:stately-concurrency:2.0.7"
+kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinxBenchmarkRuntime" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+roaringbitmap = { module = "org.roaringbitmap:RoaringBitmap", version.ref = "roaringbitmap" }
+stately-concurrency = { module = "co.touchlab:stately-concurrency", version.ref = "statelyConcurrency" }
+uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }

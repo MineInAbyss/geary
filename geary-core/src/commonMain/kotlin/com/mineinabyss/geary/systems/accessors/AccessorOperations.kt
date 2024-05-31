@@ -9,6 +9,7 @@ import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.systems.accessors.type.*
 import com.mineinabyss.geary.systems.query.QueriedEntity
+import kotlin.reflect.typeOf
 
 abstract class AccessorOperations {
     abstract val cacheAccessors: Boolean
@@ -24,6 +25,17 @@ abstract class AccessorOperations {
         return addAccessor {
             ComponentAccessor(null, componentId<T>().withRole(HOLDS_DATA))
         }
+    }
+
+    protected inline fun <reified T> QueriedEntity.getPotentiallyNullable(): ReadOnlyAccessor<T> {
+        val t = typeOf<T>()
+        return addAccessor {
+            val id = componentId(t).withRole(HOLDS_DATA)
+            val compAccessor = ComponentAccessor<T & Any>(null, id)
+            if(t.isMarkedNullable)
+                ComponentOrDefaultAccessor<T?>(compAccessor, id) { null }
+            else compAccessor
+        } as ReadOnlyAccessor<T>
     }
 
     /** Accesses a data stored in a relation with kind [K] and target type [T], ensuring it is on the entity. */

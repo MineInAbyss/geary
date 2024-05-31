@@ -4,6 +4,7 @@ build
 target
 out
 */out/production/
+.kotlin
 
 .classpath
 .project

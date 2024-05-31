@@ -13,7 +13,7 @@ configure<AllOpenExtension> {
 
 dependencies {
     implementation(project(":geary-core"))
-    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.9")
+    implementation(libs.kotlinx.benchmark.runtime)
 }
 
 benchmark {

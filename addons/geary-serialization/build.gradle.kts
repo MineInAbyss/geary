@@ -8,7 +8,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                compileOnly(project(":geary-core"))
+                implementation(project(":geary-core"))
 
                 implementation(libs.uuid)
                 implementation(idofrontLibs.idofront.di)
@@ -20,7 +20,7 @@ kotlin {
         }
         jvmMain {
             dependencies {
-                compileOnly(idofrontLibs.kotlinx.serialization.kaml)
+                implementation(idofrontLibs.kotlinx.serialization.kaml)
             }
         }
     }
