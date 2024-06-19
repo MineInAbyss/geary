@@ -1,10 +1,12 @@
 package com.mineinabyss.geary.serialization
 
+import com.mineinabyss.geary.addons.Addon
 import com.mineinabyss.geary.addons.GearyPhase
-import com.mineinabyss.geary.addons.dsl.GearyAddonWithDefault
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.modules.onPhase
 import com.mineinabyss.geary.serialization.components.Persists
 import com.mineinabyss.geary.serialization.dsl.SerializableComponentsDSL
 import com.mineinabyss.geary.serialization.dsl.builders.ComponentSerializersBuilder
@@ -25,25 +27,27 @@ interface SerializableComponents {
         val formatsBuilder: FormatsBuilder
     }
 
-    companion object : GearyAddonWithDefault<Builder> {
-        override fun default(): Builder = object : Builder {
+    companion object : Addon<GearyModule, Builder, Builder> {
+        fun default(): Builder = object : Builder {
             override val serializersBuilder = ComponentSerializersBuilder()
             override val formatsBuilder = FormatsBuilder()
         }
 
-        override fun Builder.install() {
-            SerializableComponentsDSL(this).apply {
+        override fun install(app: GearyModule, configure: Builder.() -> Unit): Builder {
+            val builder = default().apply(configure)
+            SerializableComponentsDSL(builder).apply {
                 components {
                     component(GearyEntitySerializer)
                 }
             }
-            geary.pipeline.runOnOrAfter(GearyPhase.ADDONS_CONFIGURED) {
+            app.onPhase(GearyPhase.ADDONS_CONFIGURED) {
                 DI.add<SerializableComponents>(object : SerializableComponents {
-                    override val serializers = serializersBuilder.build()
-                    override val formats = formatsBuilder.build(serializers)
+                    override val serializers = builder.serializersBuilder.build()
+                    override val formats = builder.formatsBuilder.build(serializers)
                     override val persists: ComponentId = componentId<Persists>()
                 })
             }
+            return builder
         }
     }
 }

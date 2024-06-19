@@ -1,8 +1,9 @@
 package com.mineinabyss.geary.serialization.dsl
 
 import com.mineinabyss.geary.addons.dsl.GearyDSL
+import com.mineinabyss.geary.addons.install
 import com.mineinabyss.geary.datatypes.Component
-import com.mineinabyss.geary.modules.GearyConfiguration
+import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.serialization.SerializableComponents
 import com.mineinabyss.geary.serialization.formats.Format
 import kotlinx.serialization.InternalSerializationApi
@@ -67,5 +68,5 @@ class SerializableComponentsDSL(
 }
 
 @GearyDSL
-fun GearyConfiguration.serialization(configure: SerializableComponentsDSL.() -> Unit) =
+fun GearyModule.serialization(configure: SerializableComponentsDSL.() -> Unit) =
     install(SerializableComponents).also { SerializableComponentsDSL(it).configure() }

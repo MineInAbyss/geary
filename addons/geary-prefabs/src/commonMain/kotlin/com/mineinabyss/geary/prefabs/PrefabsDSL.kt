@@ -2,12 +2,13 @@ package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.GearyDSL
-import com.mineinabyss.geary.serialization.fileSystem
+import com.mineinabyss.geary.addons.get
+import okio.FileSystem
 import okio.Path
 
 @GearyDSL
 class PrefabsDSL(
-    private val namespaced: Namespaced
+    private val namespaced: Namespaced,
 ) {
     private val loader = prefabs.loader
 
@@ -20,7 +21,8 @@ class PrefabsDSL(
 
     fun fromRecursive(folder: Path) {
         loader.addSource(PrefabPath(namespaced.namespace) {
-            fileSystem
+            namespaced.module
+                .get<FileSystem>()
                 .listRecursively(folder, true)
                 .filter { it.name.contains('.') }
         })

@@ -2,8 +2,8 @@ package com.mineinabyss.geary.autoscan
 
 import co.touchlab.kermit.Severity
 import com.mineinabyss.geary.addons.dsl.GearyDSL
+import com.mineinabyss.geary.addons.install
 import com.mineinabyss.geary.datatypes.Component
-import com.mineinabyss.geary.modules.GearyConfiguration
 import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.dsl.serialization
@@ -19,17 +19,18 @@ import kotlin.reflect.jvm.kotlinFunction
 import kotlin.reflect.typeOf
 
 @GearyDSL
-fun GearyConfiguration.autoscan(
+fun GearyModule.autoscan(
     classLoader: ClassLoader,
     vararg limitToPackages: String,
-    configure: AutoScannerDSL.() -> Unit
-) =
-    install(AutoScanner).also { AutoScannerDSL(classLoader, limitToPackages.toList()).configure() }
+    configure: AutoScannerDSL.() -> Unit,
+) = install(AutoScanner)
+    .also { AutoScannerDSL(this, classLoader, limitToPackages.toList()).configure() }
 
 @GearyDSL
 class AutoScannerDSL(
+    private val module: GearyModule,
     private val classLoader: ClassLoader,
-    private val limitTo: List<String>
+    private val limitTo: List<String>,
 ) {
     private val logger get() = geary.logger
 
@@ -66,18 +67,16 @@ class AutoScannerDSL(
             .filter { !it.hasAnnotation<ExcludeAutoScan>() }
             .toList()
 
-        geary {
-            serialization {
-                components {
-                    scanned.forEach { scannedComponent ->
-                        runCatching { component(scannedComponent) }
-                            .onFailure {
-                                when {
-                                    geary.logger.config.minSeverity <= Severity.Verbose -> geary.logger.w("Failed to register component ${scannedComponent.simpleName}\n${it.stackTraceToString()}")
-                                    else -> geary.logger.w("Failed to register component ${scannedComponent.simpleName} ${it::class.simpleName}: ${it.message}")
-                                }
+        module.serialization {
+            components {
+                scanned.forEach { scannedComponent ->
+                    runCatching { component(scannedComponent) }
+                        .onFailure {
+                            when {
+                                geary.logger.config.minSeverity <= Severity.Verbose -> geary.logger.w("Failed to register component ${scannedComponent.simpleName}\n${it.stackTraceToString()}")
+                                else -> geary.logger.w("Failed to register component ${scannedComponent.simpleName} ${it::class.simpleName}: ${it.message}")
                             }
-                    }
+                        }
                 }
             }
         }
@@ -109,30 +108,27 @@ class AutoScannerDSL(
     /** Registers a polymorphic serializer for this [kClass], scanning for any subclasses. */
     @OptIn(InternalSerializationApi::class)
     fun <T : Any> subClassesOf(kClass: KClass<T>) {
-        geary {
-            serialization {
-                module {
-                    polymorphic(kClass) {
-                        val scanned = this@AutoScannerDSL.reflections
-                            .get(Scanners.SubTypes.of(kClass.java).asClass<Class<*>>(this@AutoScannerDSL.classLoader))
-                            .asSequence()
-                            .map { it.kotlin }
-                            .filter { !it.hasAnnotation<ExcludeAutoScan>() }
-                            .filterIsInstance<KClass<T>>()
-                            .toList()
+        module.serialization {
+            module {
+                polymorphic(kClass) {
+                    val scanned = this@AutoScannerDSL.reflections
+                        .get(Scanners.SubTypes.of(kClass.java).asClass<Class<*>>(this@AutoScannerDSL.classLoader))
+                        .asSequence()
+                        .map { it.kotlin }
+                        .filter { !it.hasAnnotation<ExcludeAutoScan>() }
+                        .filterIsInstance<KClass<T>>()
+                        .toList()
 
-                        scanned.forEach { scannedClass ->
-                            runCatching { subclass(scannedClass, scannedClass.serializer()) }
-                                .onFailure { this@AutoScannerDSL.logger.w("Failed to load subclass ${scannedClass.simpleName} of ${kClass.simpleName}") }
-                        }
-                        if (geary.logger.config.minSeverity <= Severity.Verbose)
-                            geary.logger.i("Autoscan found subclasses for ${kClass.simpleName}: ${scanned.joinToString { it.simpleName!! }}")
-                        else geary.logger.i("Autoscan found ${scanned.size} subclasses for ${kClass.simpleName}")
+                    scanned.forEach { scannedClass ->
+                        runCatching { subclass(scannedClass, scannedClass.serializer()) }
+                            .onFailure { this@AutoScannerDSL.logger.w("Failed to load subclass ${scannedClass.simpleName} of ${kClass.simpleName}") }
                     }
+                    if (geary.logger.config.minSeverity <= Severity.Verbose)
+                        geary.logger.i("Autoscan found subclasses for ${kClass.simpleName}: ${scanned.joinToString { it.simpleName!! }}")
+                    else geary.logger.i("Autoscan found ${scanned.size} subclasses for ${kClass.simpleName}")
                 }
             }
         }
-
     }
 
     /** @see subClassesOf */

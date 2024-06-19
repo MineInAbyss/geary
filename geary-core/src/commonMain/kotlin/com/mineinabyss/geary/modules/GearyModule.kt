@@ -1,6 +1,9 @@
 package com.mineinabyss.geary.modules
 
 import co.touchlab.kermit.Logger
+import com.mineinabyss.geary.addons.Application
+import com.mineinabyss.geary.addons.ApplicationEnvironment
+import com.mineinabyss.geary.addons.ApplicationFactory
 import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.engine.*
 import com.mineinabyss.geary.observers.EventRunner
@@ -8,26 +11,18 @@ import com.mineinabyss.idofront.di.DI
 
 val geary: GearyModule by DI.observe()
 
-fun <T : GearyModule> geary(
-    moduleProvider: GearyModuleProviderWithDefault<T>,
-    configuration: GearyConfiguration.() -> Unit = {}
-) {
-    val module = moduleProvider.default()
-    geary(moduleProvider, module, configuration)
-}
-
-fun <T : GearyModule> geary(
-    moduleProvider: GearyModuleProvider<T>,
-    module: T,
-    configuration: GearyConfiguration.() -> Unit = {}
-) {
-    moduleProvider.init(module)
-    module.invoke(configuration)
-    moduleProvider.start(module)
+fun <T : GearyModule, Config: Any> geary(
+    moduleProvider: ApplicationFactory<T, Config>,
+    configure: Config.() -> Unit = {},
+    module: T.() -> Unit = {}
+): T {
+    val module = moduleProvider.create(configure).apply(module)
+    DI.add<GearyModule>(module)
+    return module
 }
 
 @GearyDSL
-interface GearyModule {
+interface GearyModule: Application {
     val logger: Logger
     val entityProvider: EntityProvider
     val componentProvider: ComponentProvider
@@ -42,11 +37,11 @@ interface GearyModule {
     val eventRunner: EventRunner
     val pipeline: Pipeline
 
-    val defaults: Defaults
+//    operator fun invoke(configure: GearyConfiguration.() -> Unit) {
+//        GearyConfiguration(this).apply(configure)
+//    }
 
-    operator fun invoke(configure: GearyConfiguration.() -> Unit) {
-        GearyConfiguration(this).apply(configure)
-    }
+    fun start()
 
     companion object
 }

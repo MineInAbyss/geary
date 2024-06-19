@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.modules
 
+import com.mineinabyss.geary.addons.ApplicationFactory
 import com.mineinabyss.geary.datatypes.maps.SynchronizedArrayTypeMap
 import com.mineinabyss.geary.engine.archetypes.EntityByArchetypeProvider
 
@@ -10,21 +11,14 @@ import com.mineinabyss.geary.engine.archetypes.EntityByArchetypeProvider
  * Engine ticks may still be called manually.
  */
 class TestEngineModule(
-    reuseIDsAfterRemoval: Boolean = true,
-    useSynchronized: Boolean = false,
-) : ArchetypeEngineModule() {
-    override val records = if (useSynchronized) SynchronizedArrayTypeMap() else super.records
-    override val entityProvider = EntityByArchetypeProvider(reuseIDsAfterRemoval)
-
-    companion object : GearyModuleProviderWithDefault<TestEngineModule> {
-        override fun init(module: TestEngineModule) {
-            ArchetypeEngineModule.init(module)
-        }
-
-        override fun start(module: TestEngineModule) = Unit
-
-        override fun default(): TestEngineModule {
-            return TestEngineModule()
+    config: ArchetypeEngineConfig
+) : ArchetypeEngineModule(config) {
+    companion object : ApplicationFactory<TestEngineModule, ArchetypeEngineConfig> {
+        override fun create(configure: ArchetypeEngineConfig.() -> Unit): TestEngineModule {
+            val config = ArchetypeEngineConfig().apply(configure)
+            return TestEngineModule(config).apply {
+                ArchetypeEngineModule.init(this)
+            }
         }
     }
 }
