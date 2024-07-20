@@ -317,4 +317,12 @@ value class Entity(val id: EntityId) {
     // Marked for removal. Avoid breaking changes from adding the remove event.
     fun remove(kClass: KClass<*>): Boolean = remove(kClass, false)
     fun remove(component: ComponentId): Boolean = remove(component, false)
+
+    @Deprecated(
+        message = "Specify component type explicitly, otherwise the type may be inferred as Unit",
+        level = DeprecationLevel.ERROR,
+    )
+    fun getOrSet(default: () -> Unit) {
+        getOrSet<Unit> { }
+    }
 }

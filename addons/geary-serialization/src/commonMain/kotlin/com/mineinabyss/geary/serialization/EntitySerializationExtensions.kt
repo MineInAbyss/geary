@@ -4,9 +4,17 @@ import com.mineinabyss.geary.annotations.optin.DangerousComponentOperation
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.observers.events.OnAdd
+import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.serialization.components.Persists
+import com.mineinabyss.geary.systems.builders.observe
+import com.mineinabyss.geary.systems.query.query
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.reflect.KClass
+import kotlin.reflect.typeOf
 
 
 /**
@@ -17,7 +25,7 @@ import kotlin.reflect.KClass
 inline fun <reified T : Component> Entity.setPersisting(
     component: T,
     kClass: KClass<out T> = T::class,
-    noEvent: Boolean = false
+    noEvent: Boolean = false,
 ): T {
     set(component, kClass, noEvent)
     setRelation(serializableComponents.persists, componentId(kClass), Persists(), noEvent)
@@ -33,18 +41,28 @@ inline fun <reified T : Component> Entity.setPersisting(
 fun Entity.setAllPersisting(
     components: Collection<Component>,
     override: Boolean = true,
-    noEvent: Boolean = false
+    noEvent: Boolean = false,
 ) {
     components.forEach {
         if (override || !has(it::class)) setPersisting(it, it::class, noEvent)
     }
 }
 
+@Deprecated(
+    message = "Specify component type explicitly, otherwise the type may be inferred as Unit",
+    level = DeprecationLevel.ERROR,
+)
+fun Entity.getOrSetPersisting(default: () -> Unit) {
+    getOrSetPersisting<Unit> { }
+}
+
 /** Gets a persisting component of type [T] or adds a [default] if no component was present. */
 inline fun <reified T : Component> Entity.getOrSetPersisting(
     kClass: KClass<out T> = T::class,
-    default: () -> T
-): T = get(kClass) ?: default().also { setPersisting(it, kClass) }
+    default: () -> T,
+): T {
+    return get(kClass) ?: default().also { setPersisting(it, kClass) }
+}
 
 /** Gets all persisting components on this entity. */
 fun Entity.getAllPersisting(): Set<Component> =
