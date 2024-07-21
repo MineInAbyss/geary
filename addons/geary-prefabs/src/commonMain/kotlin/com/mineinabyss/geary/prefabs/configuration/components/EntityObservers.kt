@@ -30,7 +30,11 @@ class EventBind(
     @Transient
     val emitEvents = emit.flatMap { emitter ->
         emitter.map { component ->
-            if (using != null) ReEmitEvent(SerializableComponentId(using.id), component) else component
+            if (using != null) ReEmitEvent(
+                SerializableComponentId(using.id),
+                componentId(component::class),
+                component,
+            ) else component
         }
     }.map { CachedEvent(componentId(it::class), it) }
 }

@@ -8,6 +8,6 @@ import com.mineinabyss.geary.systems.builders.observeWithData
 fun GearyModule.reEmitEvent() = observeWithData<ReEmitEvent>().exec {
     entity.getRelationsByKind(event.findByRelationKind.id).forEach { relation ->
         val entity = relation.target.toGeary()
-        if (entity.exists()) entity.emit(event = event.findByRelationKind.id, data = event.data)
+        if (entity.exists()) entity.emit(event = event.dataComponentId, data = event.data)
     }
 }
