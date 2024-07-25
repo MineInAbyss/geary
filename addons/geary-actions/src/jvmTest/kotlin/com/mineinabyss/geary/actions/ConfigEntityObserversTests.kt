@@ -1,9 +1,8 @@
-package com.mineinabyss.geary.prefabs.observers
+package com.mineinabyss.geary.actions
 
+import com.mineinabyss.geary.actions.event_binds.EntityObservers
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.prefabs.Prefabs
-import com.mineinabyss.geary.prefabs.configuration.components.EntityObservers
 import com.mineinabyss.geary.serialization.dsl.serialization
 import com.mineinabyss.geary.serialization.dsl.withCommonComponentNames
 import com.mineinabyss.geary.serialization.formats.YamlFormat
@@ -11,7 +10,6 @@ import com.mineinabyss.geary.serialization.serializableComponents
 import com.mineinabyss.geary.serialization.serializers.GearyEntitySerializer
 import com.mineinabyss.geary.systems.builders.observeWithData
 import com.mineinabyss.idofront.di.DI
-import io.kotest.assertions.print.Print
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -32,7 +30,7 @@ class ConfigEntityObserversTests {
     fun createEngine() {
         DI.clear()
         geary(TestEngineModule) {
-            install(Prefabs)
+            install(GearyActions)
 
             serialization {
                 withCommonComponentNames()
@@ -53,9 +51,8 @@ class ConfigEntityObserversTests {
         // arrange
         val entityDef = """
         geary:observe:
-          - event: geary:onSet
-            involving: [ geary:myComp ]
-            emit:
+          geary:onSet:
+           # TODO involving: [ geary:myComp ]
               - geary:print:
                   string: "Hello World"
         """.trimIndent()
