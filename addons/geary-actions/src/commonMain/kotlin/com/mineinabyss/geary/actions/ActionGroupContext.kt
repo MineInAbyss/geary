@@ -1,0 +1,10 @@
+package com.mineinabyss.geary.actions
+
+import com.mineinabyss.geary.actions.expressions.Expression
+import com.mineinabyss.geary.datatypes.GearyEntity
+
+class ActionGroupContext(
+    var entity: GearyEntity,
+) {
+    fun <T> eval(expression: Expression<T>): T = expression.evaluate(this)
+}
