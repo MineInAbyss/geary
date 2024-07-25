@@ -3,6 +3,7 @@ package com.mineinabyss.geary.actions.actions
 import com.mineinabyss.geary.actions.Action
 import com.mineinabyss.geary.actions.ActionsCancelledException
 import com.mineinabyss.geary.actions.ActionGroupContext
+import com.mineinabyss.geary.actions.Condition
 import com.mineinabyss.geary.actions.event_binds.EventBind
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
@@ -16,15 +17,15 @@ class EnsureAction(
     val conditions: SerializedComponents,
 ) : Action {
     @Transient
-    private val flat = conditions.map { EventBind.CachedEvent(componentId(it::class), it) }
+    private val flat = conditions.map { componentId(it::class) to it }
 
     override fun ActionGroupContext.execute() {
-        flat.forEach {
-            when (val condition = it.data) {
-                is Conwdition -> with(condition) {
+        flat.forEach { (id, data) ->
+            when (data) {
+                is Condition -> with(data) {
                     if(!execute()) throw ActionsCancelledException()
                 }
-                else -> entity.emit(it.componentId, it.data) //TODO use geary condition system if we get one
+                else -> entity.emit(id, data) //TODO use geary condition system if we get one
             }
         }
     }
