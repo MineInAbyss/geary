@@ -74,6 +74,21 @@ dependencies {
 }
 ```
 
+### Version catalog entries
+
+```toml
+[versions]
+geary = "x.y.z"
+
+[libraries]
+geary-core = { module = "com.mineinabyss:geary-autoscan", version.ref = "geary" }
+geary-actions = { module = "com.mineinabyss:geary-actions", version.ref = "geary" }
+geary-autoscan = { module = "com.mineinabyss:geary-autoscan", version.ref = "geary" }
+geary-prefabs = { module = "com.mineinabyss:geary-prefabs", version.ref = "geary" }
+geary-serialization = { module = "com.mineinabyss:geary-serialization", version.ref = "geary" } 
+geary-uuid = { module = "com.mineinabyss:geary-uuid", version.ref = "geary" } 
+```
+
 ## Roadmap
 
 As the project matures, our primary goal is to make it useful to more people. Here are a handful of features we hope to achieve:
