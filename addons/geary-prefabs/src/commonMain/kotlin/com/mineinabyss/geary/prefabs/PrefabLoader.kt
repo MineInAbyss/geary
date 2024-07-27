@@ -88,7 +88,7 @@ class PrefabLoader {
         var hadMalformed = false
         val key = PrefabKey.of(namespace, path.name.substringBeforeLast('.'))
         val decoded = runCatching {
-            val config = PolymorphicListAsMapSerializer.Config(
+            val config = PolymorphicListAsMapSerializer.Config<Any>(
                 whenComponentMalformed = {
                     if (!hadMalformed) logger.e("[$key] Problems reading components")
                     hadMalformed = true

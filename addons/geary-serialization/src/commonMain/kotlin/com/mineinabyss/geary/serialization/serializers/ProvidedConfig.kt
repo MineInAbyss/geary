@@ -8,7 +8,7 @@ import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-class ProvidedConfig(val config: PolymorphicListAsMapSerializer.Config) : KSerializer<ProvidedConfig> {
+class ProvidedConfig(val config: PolymorphicListAsMapSerializer.Config<*>) : KSerializer<ProvidedConfig> {
     @OptIn(InternalSerializationApi::class)
     override val descriptor: SerialDescriptor =
         buildSerialDescriptor("PolymorphicListAsMapSerializer.Config", PolymorphicKind.SEALED)

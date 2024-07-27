@@ -14,9 +14,7 @@ fun GearyModule.bindEntityObservers() = observe<OnSet>()
     .involving(query<EntityObservers>())
     .exec { (observers) ->
         observers.observers.forEach { observer ->
-            val actionGroup = ActionGroup(
-                actions = observer.emit.flatten().map { EmitEventAction.wrapIfNotAction(it) }
-            )
+            val actionGroup = ActionGroup(observer.emit)
             entity.observe(observer.event.id).involving(EntityType(observer.involving.map { it.id })).exec {
                 val context = ActionGroupContext(entity)
                 actionGroup.execute(context)
