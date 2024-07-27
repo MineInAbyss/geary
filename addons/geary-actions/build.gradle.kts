@@ -19,6 +19,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(idofrontLibs.kotlinx.coroutines.test)
+                implementation(idofrontLibs.kotlinx.serialization.kaml)
                 implementation(idofrontLibs.kotest.assertions)
                 implementation(idofrontLibs.kotest.property)
                 implementation(idofrontLibs.idofront.di)

@@ -8,7 +8,7 @@ import com.mineinabyss.geary.helpers.componentId
 class EmitEventAction(
     val eventId: ComponentId,
     val data: Any?,
-): Action {
+) : Action {
     override fun ActionGroupContext.execute() {
         entity.emit(event = eventId, data = data)
     }
@@ -16,6 +16,6 @@ class EmitEventAction(
     companion object {
         fun from(data: Any) = EmitEventAction(componentId(data::class), data)
 
-        fun wrapIfNotAction(data: Any) = if(data is Action) data else from(data)
+        fun wrapIfNotAction(data: Any) = if (data is Action) data else from(data)
     }
 }

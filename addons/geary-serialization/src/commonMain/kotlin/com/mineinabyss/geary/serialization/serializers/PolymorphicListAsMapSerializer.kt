@@ -21,7 +21,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
     serializer: KSerializer<T>,
 ) : KSerializer<List<T>> {
     // We need primary constructor to be a single serializer for generic serialization to work, use of() if manually creating
-    private var config: Config = Config()
+    private var config: Config<T> = Config()
 
     val polymorphicSerializer = serializer as? PolymorphicSerializer<T> ?: error("Serializer is not polymorphic")
 
@@ -49,7 +49,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                     }
 
                     else -> {
-                        val componentSerializer = findSerializerFor(compositeDecoder.serializersModule, namespaces, key)
+                        val componentSerializer = config.customKeys[key] ?: findSerializerFor(compositeDecoder.serializersModule, namespaces, key)
                             .getOrElse {
                                 if (config.onMissingSerializer != OnMissing.IGNORE) {
                                     config.whenComponentMalformed(key)
@@ -87,7 +87,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         return components
     }
 
-    fun getParentConfig(serializersModule: SerializersModule): Config? {
+    fun getParentConfig(serializersModule: SerializersModule): Config<*>? {
         return (serializersModule.getContextual(ProvidedConfig::class) as? ProvidedConfig)?.config
     }
 
@@ -116,18 +116,19 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         ERROR, WARN, IGNORE
     }
 
-    data class Config(
+    data class Config<T : Any>(
         val namespaces: List<String> = listOf(),
         val prefix: String = "",
         val onMissingSerializer: OnMissing = OnMissing.WARN,
         val skipMalformedComponents: Boolean = true,
         val whenComponentMalformed: (String) -> Unit = {},
+        val customKeys: Map<String, KSerializer<out T>> = mapOf(),
     )
 
     companion object {
         fun <T : Any> of(
             serializer: PolymorphicSerializer<T>,
-            config: Config = Config(),
+            config: Config<T> = Config(),
         ): PolymorphicListAsMapSerializer<T> {
             return PolymorphicListAsMapSerializer(serializer).apply {
                 this.config = config
@@ -135,12 +136,12 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         }
 
         fun ofComponents(
-            config: Config = Config(),
+            config: Config<Any> = Config(),
         ) = of(PolymorphicSerializer(GearyComponent::class)).apply {
             this.config = config
         }
 
-        fun SerializersModuleBuilder.provideConfig(config: Config) {
+        fun SerializersModuleBuilder.provideConfig(config: Config<*>) {
             contextual(ProvidedConfig::class, ProvidedConfig(config))
         }
     }
