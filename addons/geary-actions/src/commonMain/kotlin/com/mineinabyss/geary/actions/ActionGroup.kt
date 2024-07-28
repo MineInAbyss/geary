@@ -1,6 +1,15 @@
 package com.mineinabyss.geary.actions
 
+import com.mineinabyss.geary.actions.actions.EmitEventAction
 import com.mineinabyss.geary.actions.actions.EnsureAction
+import com.mineinabyss.geary.actions.event_binds.ActionRegister
+import com.mineinabyss.geary.actions.event_binds.ActionWhen
+import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.serialization.serializers.InnerSerializer
+import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
+import com.mineinabyss.geary.serialization.serializers.SerializedComponents
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
 
 class ActionEntry(
     val action: Action,
@@ -8,6 +17,7 @@ class ActionEntry(
     val register: String?,
 )
 
+@Serializable(with = ActionGroup.Serializer::class)
 class ActionGroup(
     val actions: List<ActionEntry>,
 ) {
@@ -27,4 +37,41 @@ class ActionGroup(
             }
         }
     }
+
+    object Serializer : InnerSerializer<List<SerializedComponents>, ActionGroup>(
+        serialName = "geary:action_group",
+        inner = ListSerializer(
+            PolymorphicListAsMapSerializer.ofComponents(
+                PolymorphicListAsMapSerializer.Config(
+                    customKeys = mapOf(
+                        "when" to ActionWhen.serializer(),
+                        "register" to ActionRegister.serializer()
+                    )
+                )
+            )
+        ),
+        inverseTransform = { TODO() },
+        transform = {
+            val actions = it.mapNotNull { components ->
+                var action: Action? = null
+                var condition: List<EnsureAction>? = null
+                var register: String? = null
+                components.forEach { comp ->
+                    when {
+                        comp is ActionWhen -> condition = comp.conditions
+                        comp is ActionRegister -> register = comp.register
+                        action != null -> geary.logger.w { "Multiple actions defined in one block!" }
+                        else -> action = EmitEventAction.wrapIfNotAction(comp)
+                    }
+                }
+                if (action == null) return@mapNotNull null
+                ActionEntry(
+                    action = action!!,
+                    conditions = condition,
+                    register = register
+                )
+            }
+            ActionGroup(actions)
+        }
+    )
 }
