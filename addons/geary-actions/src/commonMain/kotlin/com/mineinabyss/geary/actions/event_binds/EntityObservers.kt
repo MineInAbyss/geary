@@ -5,6 +5,7 @@ import com.mineinabyss.geary.actions.actions.EnsureAction
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.SerializableComponentId
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlin.jvm.JvmInline
 
@@ -30,9 +31,15 @@ class EntityObservers(
 }
 
 
-@JvmInline
-@Serializable
-value class ActionWhen(val conditions: List<EnsureAction>)
+@Serializable(with = ActionWhen.Serializer::class)
+class ActionWhen(val conditions: List<EnsureAction>) {
+    object Serializer : InnerSerializer<List<EnsureAction>, ActionWhen>(
+        serialName = "geary:when",
+        inner = ListSerializer(EnsureAction.serializer()),
+        inverseTransform = ActionWhen::conditions,
+        transform = ::ActionWhen
+    )
+}
 
 @JvmInline
 @Serializable
