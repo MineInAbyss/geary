@@ -47,7 +47,7 @@ class GearyEntitySerializerTest {
         // act
         val entity =
             format.decodeFromString(GearyEntitySerializer, file, overrideSerializersModule = SerializersModule {
-                provideConfig(PolymorphicListAsMapSerializer.Config(namespaces = listOf("test")))
+                provideConfig(PolymorphicListAsMapSerializer.Config<Any>(namespaces = listOf("test")))
             })
 
         // assert
