@@ -1,10 +1,6 @@
 package com.mineinabyss.geary.actions.actions
 
-import com.mineinabyss.geary.actions.Action
-import com.mineinabyss.geary.actions.ActionsCancelledException
-import com.mineinabyss.geary.actions.ActionGroupContext
-import com.mineinabyss.geary.actions.Condition
-import com.mineinabyss.geary.actions.event_binds.EventBind
+import com.mineinabyss.geary.actions.*
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
@@ -23,7 +19,9 @@ class EnsureAction(
         flat.forEach { (id, data) ->
             when (data) {
                 is Condition -> with(data) {
-                    if(!execute()) throw ActionsCancelledException()
+                    if(!execute()) {
+                        throw ActionsCancelledException()
+                    }
                 }
                 else -> entity.emit(id, data) //TODO use geary condition system if we get one
             }

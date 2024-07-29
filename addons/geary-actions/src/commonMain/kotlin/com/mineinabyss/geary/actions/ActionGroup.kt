@@ -2,6 +2,7 @@ package com.mineinabyss.geary.actions
 
 import com.mineinabyss.geary.actions.actions.EmitEventAction
 import com.mineinabyss.geary.actions.actions.EnsureAction
+import com.mineinabyss.geary.actions.event_binds.ActionOnFail
 import com.mineinabyss.geary.actions.event_binds.ActionRegister
 import com.mineinabyss.geary.actions.event_binds.ActionWhen
 import com.mineinabyss.geary.modules.geary
@@ -15,6 +16,7 @@ class ActionEntry(
     val action: Action,
     val conditions: List<EnsureAction>?,
     val register: String?,
+    val onFail: ActionGroup?,
 )
 
 @Serializable(with = ActionGroup.Serializer::class)
@@ -33,19 +35,21 @@ class ActionGroup(
                 if (entry.register != null)
                     context.register(entry.register, returned)
             } catch (e: ActionsCancelledException) {
+                entry.onFail?.execute(context)
                 return
             }
         }
     }
 
-    object Serializer : InnerSerializer<List<SerializedComponents>, ActionGroup>(
+    class Serializer : InnerSerializer<List<SerializedComponents>, ActionGroup>(
         serialName = "geary:action_group",
         inner = ListSerializer(
             PolymorphicListAsMapSerializer.ofComponents(
                 PolymorphicListAsMapSerializer.Config(
                     customKeys = mapOf(
-                        "when" to ActionWhen.serializer(),
-                        "register" to ActionRegister.serializer()
+                        "when" to { ActionWhen.serializer() },
+                        "register" to { ActionRegister.serializer() },
+                        "onFail" to { ActionOnFail.serializer() }
                     )
                 )
             )
@@ -56,10 +60,12 @@ class ActionGroup(
                 var action: Action? = null
                 var condition: List<EnsureAction>? = null
                 var register: String? = null
+                var onFail: ActionGroup? = null
                 components.forEach { comp ->
                     when {
                         comp is ActionWhen -> condition = comp.conditions
                         comp is ActionRegister -> register = comp.register
+                        comp is ActionOnFail -> onFail = comp.action
                         action != null -> geary.logger.w { "Multiple actions defined in one block!" }
                         else -> action = EmitEventAction.wrapIfNotAction(comp)
                     }
@@ -68,7 +74,8 @@ class ActionGroup(
                 ActionEntry(
                     action = action!!,
                     conditions = condition,
-                    register = register
+                    register = register,
+                    onFail = onFail
                 )
             }
             ActionGroup(actions)

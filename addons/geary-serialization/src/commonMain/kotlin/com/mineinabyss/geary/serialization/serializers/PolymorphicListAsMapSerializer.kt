@@ -49,7 +49,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                     }
 
                     else -> {
-                        val componentSerializer = config.customKeys[key] ?: findSerializerFor(compositeDecoder.serializersModule, namespaces, key)
+                        val componentSerializer = config.customKeys[key]?.invoke() ?: findSerializerFor(compositeDecoder.serializersModule, namespaces, key)
                             .getOrElse {
                                 if (config.onMissingSerializer != OnMissing.IGNORE) {
                                     config.whenComponentMalformed(key)
@@ -122,7 +122,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         val onMissingSerializer: OnMissing = OnMissing.WARN,
         val skipMalformedComponents: Boolean = true,
         val whenComponentMalformed: (String) -> Unit = {},
-        val customKeys: Map<String, KSerializer<out T>> = mapOf(),
+        val customKeys: Map<String, () -> KSerializer<out T>> = mapOf(),
     )
 
     companion object {
