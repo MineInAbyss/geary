@@ -40,7 +40,7 @@ class SerializerTest {
                 subclass(B::class)
                 subclass(SubSerializers::class)
             }
-            provideConfig(PolymorphicListAsMapSerializer.Config(namespaces = listOf("test")))
+            provideConfig(PolymorphicListAsMapSerializer.Config<Any>(namespaces = listOf("test")))
         })
 
     val mapSerializer = PolymorphicListAsMapSerializer(PolymorphicSerializer(Components::class))
