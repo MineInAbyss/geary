@@ -17,7 +17,7 @@ class EntityObservers(
         serialName = "geary:observe",
         inner = MapSerializer(
             SerializableComponentId.serializer(),
-            ActionGroup.Serializer
+            ActionGroup.serializer()
         ),
         inverseTransform = { TODO() },
         transform = {
@@ -33,7 +33,7 @@ class EntityObservers(
 
 @Serializable(with = ActionWhen.Serializer::class)
 class ActionWhen(val conditions: List<EnsureAction>) {
-    object Serializer : InnerSerializer<List<EnsureAction>, ActionWhen>(
+    class Serializer : InnerSerializer<List<EnsureAction>, ActionWhen>(
         serialName = "geary:when",
         inner = ListSerializer(EnsureAction.serializer()),
         inverseTransform = ActionWhen::conditions,
@@ -44,3 +44,13 @@ class ActionWhen(val conditions: List<EnsureAction>) {
 @JvmInline
 @Serializable
 value class ActionRegister(val register: String)
+
+@Serializable(with = ActionOnFail.Serializer::class)
+class ActionOnFail(val action: ActionGroup) {
+    class Serializer : InnerSerializer<ActionGroup, ActionOnFail>(
+        serialName = "geary:on_fail",
+        inner = ActionGroup.Serializer(),
+        inverseTransform = ActionOnFail::action,
+        transform = ::ActionOnFail
+    )
+}
