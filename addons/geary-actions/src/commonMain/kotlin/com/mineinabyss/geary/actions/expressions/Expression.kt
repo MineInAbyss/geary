@@ -59,3 +59,5 @@ sealed interface Expression<T> {
         }
     }
 }
+
+fun <T> expr(value: T) = Expression.Fixed(value)

@@ -10,9 +10,9 @@ import kotlin.jvm.JvmInline
 @Serializable
 value class EntityExpression(
     val expression: String,
-) /*: Expression<GearyEntity>()*/ {
-    fun evaluate(context: ActionGroupContext): GearyEntity {
+) : Expression<GearyEntity> {
+    override fun evaluate(context: ActionGroupContext): GearyEntity {
         return if (expression == "parent") context.entity.parent!!
-        else TODO()
+        else Expression.Evaluate<GearyEntity>(expression).evaluate(context)
     }
 }

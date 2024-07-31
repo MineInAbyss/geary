@@ -13,4 +13,10 @@ class ActionGroupContext(
     fun register(name: String, value: Any?) {
         environment[name] = value
     }
+
+    fun copy(): ActionGroupContext {
+        val newContext = ActionGroupContext(entity)
+        newContext.environment.putAll(environment)
+        return newContext
+    }
 }

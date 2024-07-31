@@ -54,3 +54,7 @@ class ActionOnFail(val action: ActionGroup) {
         transform = ::ActionOnFail
     )
 }
+
+@JvmInline
+@Serializable
+value class ActionLoop(val expression: String)
