@@ -12,6 +12,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.modules.SerializersModule
+import kotlin.math.min
 
 @Serializable(with = Expression.Serializer::class)
 sealed interface Expression<T> {
@@ -27,6 +28,53 @@ sealed interface Expression<T> {
     ) : Expression<T> {
         override fun evaluate(context: ActionGroupContext): T {
             return context.environment[expression] as? T ?: error("Expression $expression not found in context")
+        }
+    }
+
+    companion object {
+        val funcRegex = Regex("[.{}]")
+        fun parseExpression(string: String, module: SerializersModule): Expression<*> {
+            val before = string.substringBefore(".")
+            val after = string.substringAfter(".")
+            val reference = Evaluate<Any>(before)
+            return foldFunctions(reference, after, module)
+        }
+
+        // entity.doSomething(at: {{ entity.location }}, )
+
+        tailrec fun foldFunctions(
+            reference: Expression<*>,
+            remainder: String,
+            module: SerializersModule
+        ): Expression<*> {
+            val (name, afterName) = getFunctionName(remainder)
+            val (yaml, afterYaml) = getYaml(afterName ?: "{}")
+            val functionExpr = FunctionExpression.parse(reference, name, yaml, module)
+            if (afterYaml == "") return functionExpr
+            return foldFunctions(functionExpr, afterYaml, module)
+        }
+
+        fun getYaml(expr: String): Pair<String, String> {
+            if (!expr.startsWith("{")) return "{}" to expr
+            var brackets = 0
+            val yamlEndIndex = expr.indexOfFirst {
+                if (it == '{') brackets++
+                if (it == '}') brackets--
+                brackets != 0
+            }
+            return expr.take(yamlEndIndex - 1) to expr.drop(yamlEndIndex - 1)
+        }
+
+        fun getFunctionName(expr: String): Pair<String, String?> {
+            val yamlStart = expr.indexOf('{').toUInt()
+            val nextSection = expr.indexOf('.').toUInt()
+            val end = min(yamlStart, nextSection).toInt()
+            if (end == -1) return expr to null
+            return expr.take(end) to expr.drop(end)
+        }
+
+        fun of(string: String): Expression<*> {
+
         }
     }
 
@@ -57,6 +105,24 @@ sealed interface Expression<T> {
         override fun serialize(encoder: Encoder, value: Expression<T>) {
             TODO("Not yet implemented")
         }
+    }
+}
+
+abstract class FunctionExpression<I, O>(
+    val input: Expression<I>,
+    val name: String,
+    val yaml: String
+) : Expression<O> {
+    companion object {
+        fun parse(ref: Expression<*>, name: String, yaml: String, module: SerializersModule): FunctionExpression<*, *> {
+            TODO()
+        }
+    }
+
+    abstract fun map(input: I, context: ActionGroupContext): O
+
+    override fun evaluate(context: ActionGroupContext): O {
+        return map(context.eval(input), context)
     }
 }
 
