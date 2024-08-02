@@ -10,7 +10,7 @@ import kotlinx.serialization.encoding.Encoder
 abstract class InnerSerializer<I, O>(
     val serialName: String,
     val inner: KSerializer<I>,
-    val transform: (I) -> O,
+    val transform: Decoder.(I) -> O,
     val inverseTransform: (O) -> I,
 ) : KSerializer<O> {
     override val descriptor =
@@ -19,7 +19,7 @@ abstract class InnerSerializer<I, O>(
         else SerialDescriptor(serialName, inner.descriptor)
 
     override fun deserialize(decoder: Decoder): O {
-        return transform(inner.deserialize(decoder))
+        return transform(decoder, inner.deserialize(decoder))
     }
 
     override fun serialize(encoder: Encoder, value: O) {

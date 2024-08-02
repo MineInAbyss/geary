@@ -20,6 +20,6 @@ class BecomeAction(
         serialName = "geary:become",
         inner = EntityExpression.serializer(),
         inverseTransform = { it.become },
-        transform = ::BecomeAction
+        transform = { BecomeAction(it) }
     )
 }

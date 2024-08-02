@@ -33,7 +33,7 @@ class Passive(
         serialName = "geary:passive",
         inner = ListSerializer(SystemBind.serializer()),
         inverseTransform = Passive::systems,
-        transform = ::Passive
+        transform = { Passive(it) }
     )
 }
 

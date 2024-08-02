@@ -37,7 +37,7 @@ class ActionWhen(val conditions: List<EnsureAction>) {
         serialName = "geary:when",
         inner = ListSerializer(EnsureAction.serializer()),
         inverseTransform = ActionWhen::conditions,
-        transform = ::ActionWhen
+        transform = { ActionWhen(it) }
     )
 }
 
@@ -51,7 +51,7 @@ class ActionOnFail(val action: ActionGroup) {
         serialName = "geary:on_fail",
         inner = ActionGroup.Serializer(),
         inverseTransform = ActionOnFail::action,
-        transform = ::ActionOnFail
+        transform = { ActionOnFail(it) }
     )
 }
 
