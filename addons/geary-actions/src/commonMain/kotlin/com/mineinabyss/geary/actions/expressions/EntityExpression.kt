@@ -13,6 +13,6 @@ value class EntityExpression(
 ) : Expression<GearyEntity> {
     override fun evaluate(context: ActionGroupContext): GearyEntity {
         return if (expression == "parent") context.entity.parent!!
-        else Expression.Evaluate<GearyEntity>(expression).evaluate(context)
+        else Expression.Variable<GearyEntity>(expression).evaluate(context)
     }
 }

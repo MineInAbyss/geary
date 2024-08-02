@@ -33,7 +33,7 @@ class ActionGroup(
                 if (entry.loop != null) {
                     entry.loop.evaluate(context).forEach { loopEntry ->
                         val subcontext = context.copy()
-                        subcontext.register("item", loopEntry)
+                        subcontext.register("it", loopEntry)
                         executeEntry(subcontext, entry)
                     }
                 } else
@@ -83,7 +83,7 @@ class ActionGroup(
                         comp is ActionWhen -> condition = comp.conditions
                         comp is ActionRegister -> register = comp.register
                         comp is ActionOnFail -> onFail = comp.action
-                        comp is ActionLoop -> loop = Expression.Evaluate(comp.expression)
+                        comp is ActionLoop -> loop = Expression.parseExpression(comp.expression, serializersModule) as Expression<List<Any>>
                         action != null -> geary.logger.w { "Multiple actions defined in one block!" }
                         else -> action = EmitEventAction.wrapIfNotAction(comp)
                     }
