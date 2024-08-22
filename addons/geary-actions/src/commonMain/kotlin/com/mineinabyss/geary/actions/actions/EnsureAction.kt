@@ -19,16 +19,26 @@ class EnsureAction(
         flat.forEach { (id, data) ->
             when (data) {
                 is Condition -> with(data) {
-                    if(!execute()) {
+                    if (!execute()) {
                         throw ActionsCancelledException()
                     }
                 }
+
                 else -> entity.emit(id, data) //TODO use geary condition system if we get one
             }
         }
     }
 
-    object Serializer: InnerSerializer<SerializedComponents, EnsureAction>(
+    fun conditionsMet(context: ActionGroupContext): Boolean {
+        try {
+            execute(context)
+        } catch (e: ActionsCancelledException) {
+            return false
+        }
+        return true
+    }
+
+    object Serializer : InnerSerializer<SerializedComponents, EnsureAction>(
         serialName = "geary:ensure",
         inner = PolymorphicListAsMapSerializer.ofComponents(),
         inverseTransform = { it.conditions },
