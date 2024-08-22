@@ -3,9 +3,17 @@ package com.mineinabyss.geary.actions
 import com.mineinabyss.geary.actions.expressions.Expression
 import com.mineinabyss.geary.datatypes.GearyEntity
 
-class ActionGroupContext(
-    var entity: GearyEntity,
-) {
+class ActionGroupContext() {
+    constructor(entity: GearyEntity) : this() {
+        this.entity = entity
+    }
+
+    var entity: GearyEntity
+        get() = environment["entity"] as GearyEntity
+        set(value) {
+            environment["entity"] = value
+        }
+
     val environment: MutableMap<String, Any?> = mutableMapOf()
 
     fun <T> eval(expression: Expression<T>): T = expression.evaluate(this)
@@ -15,8 +23,10 @@ class ActionGroupContext(
     }
 
     fun copy(): ActionGroupContext {
-        val newContext = ActionGroupContext(entity)
+        val newContext = ActionGroupContext()
         newContext.environment.putAll(environment)
         return newContext
     }
+
+    companion object
 }

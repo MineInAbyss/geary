@@ -47,10 +47,10 @@ class ActionGroup(
 
     private fun executeEntry(context: ActionGroupContext, entry: ActionEntry) {
         entry.conditions?.forEach { condition ->
-            with(condition) { context.execute() }
+            condition.execute(context)
         }
 
-        val returned = with(entry.action) { context.execute() }
+        val returned = entry.action.execute(context)
 
         if (entry.register != null)
             context.register(entry.register, returned)
