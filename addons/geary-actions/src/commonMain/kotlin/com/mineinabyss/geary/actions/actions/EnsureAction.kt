@@ -24,7 +24,7 @@ class EnsureAction(
                     }
                 }
 
-                else -> entity.emit(id, data) //TODO use geary condition system if we get one
+                else -> entity?.emit(id, data) //TODO use geary condition system if we get one
             }
         }
     }

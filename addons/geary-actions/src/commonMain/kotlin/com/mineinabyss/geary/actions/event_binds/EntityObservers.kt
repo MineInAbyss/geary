@@ -2,11 +2,15 @@ package com.mineinabyss.geary.actions.event_binds
 
 import com.mineinabyss.geary.actions.ActionGroup
 import com.mineinabyss.geary.actions.actions.EnsureAction
+import com.mineinabyss.geary.actions.expressions.Expression
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.SerializableComponentId
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlin.jvm.JvmInline
 
 @Serializable(with = EntityObservers.Serializer::class)
@@ -58,3 +62,13 @@ class ActionOnFail(val action: ActionGroup) {
 @JvmInline
 @Serializable
 value class ActionLoop(val expression: String)
+
+@Serializable
+class ActionEnvironment(val environment: Map<String, Expression<@Contextual Any>>) {
+    object Serializer : InnerSerializer<Map<String, Expression<@Contextual Any>>, ActionEnvironment>(
+        serialName = "geary:with",
+        inner = MapSerializer(String.serializer(), Expression.serializer(ContextualSerializer(Any::class))),
+        inverseTransform = ActionEnvironment::environment,
+        transform = { ActionEnvironment(it) }
+    )
+}

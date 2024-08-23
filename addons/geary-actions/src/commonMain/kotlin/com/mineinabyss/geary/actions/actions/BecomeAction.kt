@@ -12,6 +12,8 @@ import kotlinx.serialization.Serializable
 class BecomeAction(
     val become: EntityExpression,
 ) : Action {
+    override val useSubcontext: Boolean = false
+
     override fun ActionGroupContext.execute() {
         entity = become.evaluate(this)
     }

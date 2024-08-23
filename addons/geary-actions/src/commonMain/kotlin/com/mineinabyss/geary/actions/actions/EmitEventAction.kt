@@ -10,7 +10,7 @@ class EmitEventAction(
     val data: Any?,
 ) : Action {
     override fun ActionGroupContext.execute() {
-        entity.emit(event = eventId, data = data)
+        entity?.emit(event = eventId, data = data)
     }
 
     companion object {
