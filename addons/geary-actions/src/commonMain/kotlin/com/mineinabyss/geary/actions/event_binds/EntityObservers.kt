@@ -63,7 +63,7 @@ class ActionOnFail(val action: ActionGroup) {
 @Serializable
 value class ActionLoop(val expression: String)
 
-@Serializable
+@Serializable(with = ActionEnvironment.Serializer::class)
 class ActionEnvironment(val environment: Map<String, Expression<@Contextual Any>>) {
     object Serializer : InnerSerializer<Map<String, Expression<@Contextual Any>>, ActionEnvironment>(
         serialName = "geary:with",
