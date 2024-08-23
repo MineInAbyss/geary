@@ -8,8 +8,8 @@ class ActionGroupContext() {
         this.entity = entity
     }
 
-    var entity: GearyEntity
-        get() = environment["entity"] as GearyEntity
+    var entity: GearyEntity?
+        get() = environment["entity"] as? GearyEntity
         set(value) {
             environment["entity"] = value
         }
@@ -25,6 +25,12 @@ class ActionGroupContext() {
     fun copy(): ActionGroupContext {
         val newContext = ActionGroupContext()
         newContext.environment.putAll(environment)
+        return newContext
+    }
+
+    fun plus(newEnvironment: Map<String, Any?>): ActionGroupContext {
+        val newContext = copy()
+        newContext.environment.putAll(newEnvironment)
         return newContext
     }
 

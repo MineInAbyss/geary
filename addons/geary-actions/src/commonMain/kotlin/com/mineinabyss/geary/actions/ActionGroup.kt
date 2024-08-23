@@ -2,10 +2,7 @@ package com.mineinabyss.geary.actions
 
 import com.mineinabyss.geary.actions.actions.EmitEventAction
 import com.mineinabyss.geary.actions.actions.EnsureAction
-import com.mineinabyss.geary.actions.event_binds.ActionLoop
-import com.mineinabyss.geary.actions.event_binds.ActionOnFail
-import com.mineinabyss.geary.actions.event_binds.ActionRegister
-import com.mineinabyss.geary.actions.event_binds.ActionWhen
+import com.mineinabyss.geary.actions.event_binds.*
 import com.mineinabyss.geary.actions.expressions.Expression
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
@@ -20,15 +17,18 @@ class ActionEntry(
     val register: String?,
     val onFail: ActionGroup?,
     val loop: Expression<List<Any>>?,
+    val environment: Map<String, Expression<Any>>?,
 )
 
 @Serializable(with = ActionGroup.Serializer::class)
 class ActionGroup(
     val actions: List<ActionEntry>,
-): Action {
+) : Action {
     override fun ActionGroupContext.execute() {
-        val context = this
         actions.forEach { entry ->
+            val context = if (entry.action.useSubcontext)
+                entry.environment?.let { env -> this.plus(env.mapValues { eval(it.value) }) } ?: this
+            else this
             try {
                 if (entry.loop != null) {
                     entry.loop.evaluate(context).forEach { loopEntry ->
@@ -78,12 +78,16 @@ class ActionGroup(
                 var register: String? = null
                 var loop: Expression<List<Any>>? = null
                 var onFail: ActionGroup? = null
+                var environment: Map<String, Expression<Any>>? = null
                 components.forEach { comp ->
                     when {
                         comp is ActionWhen -> condition = comp.conditions
                         comp is ActionRegister -> register = comp.register
                         comp is ActionOnFail -> onFail = comp.action
-                        comp is ActionLoop -> loop = Expression.parseExpression(comp.expression, serializersModule) as Expression<List<Any>>
+                        comp is ActionLoop -> loop =
+                            Expression.parseExpression(comp.expression, serializersModule) as Expression<List<Any>>
+
+                        comp is ActionEnvironment -> environment = comp.environment
                         action != null -> geary.logger.w { "Multiple actions defined in one block!" }
                         else -> action = EmitEventAction.wrapIfNotAction(comp)
                     }
@@ -94,7 +98,8 @@ class ActionGroup(
                     conditions = condition,
                     register = register,
                     onFail = onFail,
-                    loop = loop
+                    loop = loop,
+                    environment = environment
                 )
             }
             ActionGroup(actions)
