@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.modules
 
+import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.datatypes.maps.SynchronizedArrayTypeMap
 import com.mineinabyss.geary.engine.archetypes.EntityByArchetypeProvider
 
@@ -9,16 +10,20 @@ import com.mineinabyss.geary.engine.archetypes.EntityByArchetypeProvider
  * No pipeline tasks are run, and the engine won't be scheduled for ticking.
  * Engine ticks may still be called manually.
  */
+//TODO swap to koin
 class TestEngineModule(
     reuseIDsAfterRemoval: Boolean = true,
     useSynchronized: Boolean = false,
-) : ArchetypeEngineModule() {
-    override val records = if (useSynchronized) SynchronizedArrayTypeMap() else super.records
+) : GearyModule by ArchetypeEngineModule(
+) {
+    //TODO
+//    records = if (useSynchronized) SynchronizedArrayTypeMap() else ArrayTypeMap()
     override val entityProvider = EntityByArchetypeProvider(reuseIDsAfterRemoval)
 
     companion object : GearyModuleProviderWithDefault<TestEngineModule> {
         override fun init(module: TestEngineModule) {
-            ArchetypeEngineModule.init(module)
+            TODO()
+//            ArchetypeEngineModule.init(module)
         }
 
         override fun start(module: TestEngineModule) = Unit

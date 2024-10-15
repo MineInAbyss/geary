@@ -4,14 +4,20 @@ import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.datatypes.family.MutableFamily
+import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.datatypes.withRole
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
+import com.mineinabyss.geary.modules.ArchetypeEngineModule
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.systems.accessors.type.*
 import com.mineinabyss.geary.systems.query.QueriedEntity
+import com.mineinabyss.idofront.di.DI
+import com.mineinabyss.idofront.di.DIContext
 import kotlin.reflect.typeOf
 
 abstract class AccessorOperations {
+    abstract val world: Geary
     abstract val cacheAccessors: Boolean
 
     @PublishedApi
@@ -23,16 +29,16 @@ abstract class AccessorOperations {
     /** Accesses a component, ensuring it is on the entity. */
     protected inline fun <reified T : Any> QueriedEntity.get(): ComponentAccessor<T> {
         return addAccessor {
-            ComponentAccessor(null, componentId<T>().withRole(HOLDS_DATA))
+            ComponentAccessor(world.module.componentProvider, null, world.componentId<T>().withRole(HOLDS_DATA))
         }
     }
 
     protected inline fun <reified T> QueriedEntity.getPotentiallyNullable(): ReadOnlyAccessor<T> {
         val t = typeOf<T>()
         return addAccessor {
-            val id = componentId(t).withRole(HOLDS_DATA)
-            val compAccessor = ComponentAccessor<T & Any>(null, id)
-            if(t.isMarkedNullable)
+            val id = world.componentId(t).withRole(HOLDS_DATA)
+            val compAccessor = ComponentAccessor<T & Any>(world.module.componentProvider, null, id)
+            if (t.isMarkedNullable)
                 ComponentOrDefaultAccessor<T?>(compAccessor, id) { null }
             else compAccessor
         } as ReadOnlyAccessor<T>
@@ -40,7 +46,7 @@ abstract class AccessorOperations {
 
     /** Accesses a data stored in a relation with kind [K] and target type [T], ensuring it is on the entity. */
     protected inline fun <reified K : Any, reified T : Any> QueriedEntity.getRelation(): ComponentAccessor<T> {
-        return addAccessor { ComponentAccessor(null, Relation.of<K, T>().id) }
+        return addAccessor { ComponentAccessor(world.module.componentProvider, null, Relation.of<K, T>(world).id) }
     }
 
     inline fun <T : Accessor> addAccessor(create: () -> T): T {
@@ -89,22 +95,23 @@ abstract class AccessorOperations {
      * - Note: nullability rules are still upheld with [Any].
      */
     protected inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelations(): RelationsAccessor {
-        return addAccessor { RelationsAccessor(null, componentIdWithNullable<K>(), componentIdWithNullable<T>()) }
+        return addAccessor { RelationsAccessor(world.module.componentProvider, null, world.componentIdWithNullable<K>(), world.componentIdWithNullable<T>()) }
     }
 
     /** @see getRelations */
     protected inline fun <reified K : Component?, reified T : Component?> QueriedEntity.getRelationsWithData(): RelationsWithDataAccessor<K, T> {
         return addAccessor {
             RelationsWithDataAccessor(
+                world.module.componentProvider,
                 null,
-                componentIdWithNullable<K>(),
-                componentIdWithNullable<T>()
+                world.componentIdWithNullable<K>(),
+                world.componentIdWithNullable<T>()
             )
         }
     }
 
     protected operator fun QueriedEntity.invoke(init: MutableFamily.Selector.And.() -> Unit) {
-        val family = com.mineinabyss.geary.datatypes.family.family(init)
+        val family = world.family(init)
         extraFamilies.add(family)
     }
 }

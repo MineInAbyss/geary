@@ -1,9 +1,11 @@
 package com.mineinabyss.geary.actions
 
+import co.touchlab.kermit.Logger
 import com.mineinabyss.geary.actions.actions.EmitEventAction
 import com.mineinabyss.geary.actions.actions.EnsureAction
 import com.mineinabyss.geary.actions.event_binds.*
 import com.mineinabyss.geary.actions.expressions.Expression
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
@@ -88,7 +90,7 @@ class ActionGroup(
                             Expression.parseExpression(comp.expression, serializersModule) as Expression<List<Any>>
 
                         comp is ActionEnvironment -> environment = comp.environment
-                        action != null -> geary.logger.w { "Multiple actions defined in one block!" }
+                        action != null -> Geary.w { "Multiple actions defined in one block!" }
                         else -> action = EmitEventAction.wrapIfNotAction(comp)
                     }
                 }

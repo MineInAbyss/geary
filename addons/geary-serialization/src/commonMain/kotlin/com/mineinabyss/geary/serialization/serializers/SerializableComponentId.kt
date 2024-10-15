@@ -3,7 +3,6 @@ package com.mineinabyss.geary.serialization.serializers
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.helpers.componentId
-import com.mineinabyss.geary.serialization.serializableComponents
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind

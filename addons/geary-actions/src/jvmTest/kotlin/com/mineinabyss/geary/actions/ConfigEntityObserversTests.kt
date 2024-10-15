@@ -7,6 +7,7 @@ import com.mineinabyss.geary.serialization.dsl.serialization
 import com.mineinabyss.geary.serialization.dsl.withCommonComponentNames
 import com.mineinabyss.geary.serialization.formats.YamlFormat
 import com.mineinabyss.geary.serialization.serializableComponents
+import com.mineinabyss.geary.serialization.serialization
 import com.mineinabyss.geary.serialization.serializers.GearyEntitySerializer
 import com.mineinabyss.geary.systems.builders.observeWithData
 import com.mineinabyss.idofront.di.DI
@@ -42,8 +43,7 @@ class ConfigEntityObserversTests {
                     component(MyComp.serializer())
                 }
             }
-        }
-        geary.pipeline.runStartupTasks()
+        }.start()
     }
 
     @Test

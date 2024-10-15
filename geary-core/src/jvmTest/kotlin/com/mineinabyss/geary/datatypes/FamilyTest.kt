@@ -10,10 +10,11 @@ import org.junit.jupiter.api.Test
 
 internal class FamilyTest: GearyTest() {
     private sealed class RelatesTo
+    val comp = MockComponentProvider()
 
     @Test
     fun contains() {
-        val family = family {
+        val family = family(comp) {
             has(1uL, 2uL, 3uL)
         }
         (EntityType(listOf(1uL, 2uL)) in family) shouldBe false

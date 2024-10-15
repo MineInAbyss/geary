@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.helpers.tests
 
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.idofront.di.DI
@@ -10,17 +11,21 @@ import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.AfterAll
 
 abstract class GearyTest {
+    private var _geary: Geary? = null
+    val geary get() = _geary!!
+
     init {
         startEngine()
     }
 
     fun startEngine() {
-        geary(TestEngineModule)
+        _geary = geary(TestEngineModule).start()
     }
 
     @AfterAll
     fun clearEngine() {
         DI.clear()
+        _geary = null
     }
 
     /** Recreates the engine. */

@@ -2,6 +2,7 @@ package com.mineinabyss.geary.datatypes.maps
 
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.family.Family
+import com.mineinabyss.geary.engine.Components
 import com.mineinabyss.geary.helpers.hasRelationKind
 import com.mineinabyss.geary.helpers.hasRelationTarget
 import com.mineinabyss.geary.modules.geary
@@ -10,6 +11,7 @@ import com.mineinabyss.geary.modules.geary
  * A map of [ComponentId]s to Arrays of objects with the ability to make fast queries based on component IDs.
  */
 internal class Family2ObjectArrayMap<T>(
+    val components: Components,
     val getIndex: ((T) -> Int)? = null,
     val setIndex: ((T, Int) -> Unit)? = null
 ) {
@@ -46,8 +48,8 @@ internal class Family2ObjectArrayMap<T>(
             // See componentMap definition for relations
             if (id.isRelation()) {
                 val relation = Relation.of(id)
-                set(Relation.of(relation.kind, geary.components.any).id)
-                set(Relation.of(geary.components.any, relation.target).id)
+                set(Relation.of(relation.kind, components.any).id)
+                set(Relation.of(components.any, relation.target).id)
             }
             set(id)
         }
@@ -61,8 +63,8 @@ internal class Family2ObjectArrayMap<T>(
             // See componentMap definition for relations
             if (id.isRelation()) {
                 val relation = Relation.of(id)
-                clear(Relation.of(relation.kind, geary.components.any).id)
-                clear(Relation.of(geary.components.any, relation.target).id)
+                clear(Relation.of(relation.kind, components.any).id)
+                clear(Relation.of(components.any, relation.target).id)
             }
             clear(id)
         }
@@ -120,7 +122,7 @@ internal class Family2ObjectArrayMap<T>(
             is Family.Leaf.Component -> componentMap[family.component.toLong()]?.copy() ?: bitsOf()
             is Family.Leaf.AnyToTarget -> {
                 // The bits for relationId in componentMap represent archetypes with any relations containing target
-                val relationId = Relation.of(geary.components.any, family.target).id
+                val relationId = Relation.of(components.any, family.target).id
                 componentMap[relationId.toLong()]?.copy()?.apply {
                     if (family.kindMustHoldData) forEachBit { index ->
                         val type = elementTypes[index]
@@ -132,7 +134,7 @@ internal class Family2ObjectArrayMap<T>(
 
             is Family.Leaf.KindToAny -> {
                 // The bits for relationId in componentMap represent archetypes with any relations containing kind
-                val relationId = Relation.of(family.kind, geary.components.any).id
+                val relationId = Relation.of(family.kind, components.any).id
                 componentMap[relationId.toLong()]?.copy()?.apply {
                     if (family.targetMustHoldData) forEachBit { index ->
                         val type = elementTypes[index]

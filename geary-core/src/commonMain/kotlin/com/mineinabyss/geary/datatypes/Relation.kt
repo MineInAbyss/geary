@@ -3,6 +3,7 @@ package com.mineinabyss.geary.datatypes
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.helpers.readableString
+import com.mineinabyss.geary.modules.Geary
 import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
 
@@ -33,7 +34,7 @@ value class Relation private constructor(
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
 
-    override fun toString(): String = "${kind.readableString()} to ${target.readableString()}"
+    override fun toString(): String = "${kind.readableString(TODO())} to ${target.readableString(TODO())}"
 
     companion object {
         fun of(
@@ -45,14 +46,14 @@ value class Relation private constructor(
                     or (target and RELATION_TARGET_MASK) // Add target, stripping any type roles
         )
 
-        fun of(kind: KClass<*>, target: KClass<*>): Relation =
-            of(componentId(kind), componentId(target))
+        fun of(world: Geary, kind: KClass<*>, target: KClass<*>): Relation =
+            of(world.componentId(kind), world.componentId(target))
 
-        inline fun <reified K : Component?, reified T : Component> of(): Relation =
-            of(componentIdWithNullable<K>(), componentId<T>())
+        inline fun <reified K : Component?, reified T : Component> of(world: Geary): Relation =
+            of(world.componentIdWithNullable<K>(), world.componentId<T>())
 
-        inline fun <reified K : Component?> of(target: Entity): Relation =
-            of(componentIdWithNullable<K>(), target.id)
+        inline fun <reified K : Component?> of(world: Geary, target: Entity): Relation =
+            of(world.componentIdWithNullable<K>(), target.id)
 
         /**
          * Creates a relation from an id that is assumed to be valid. Use this to avoid boxing Relation because of

@@ -1,15 +1,10 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
-import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.getArchetype
 import com.mineinabyss.geary.helpers.tests.GearyTest
 import com.mineinabyss.geary.modules.archetypes
-import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.system
 import com.mineinabyss.geary.systems.query.Query
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll

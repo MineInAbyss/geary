@@ -5,11 +5,11 @@ import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.*
-import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.modules.ArchetypeEngineModule
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.observers.events.OnAdd
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.RelationWithData
-import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
 
 typealias GearyEntity = Entity
@@ -19,41 +19,44 @@ typealias GearyEntity = Entity
  *
  * Provides some useful functions, so we aren't forced to go through [Engine] every time we want to do some things.
  */
-@JvmInline
-value class Entity(val id: EntityId) {
+//TODO add require checks for entities across different worlds
+class Entity(val id: EntityId, val world: Geary) {
     inline val idL get() = id.toLong()
 
-    private val entityProvider get() = geary.entityProvider
-    private val queryManager get() = geary.queryManager
-    private val read get() = geary.read
-    private val write get() = geary.write
+    val geary get() = world.module
+    private val entityProvider get() = world.module.entityProvider
+    private val entityRemoveProvider get() = world.module.entityRemoveProvider
+    private val queryManager get() = world.module.queryManager
+    private val read get() = world.module.read
+    private val write get() = world.module.write
+    private val records get() = (world.module as ArchetypeEngineModule).records
 
     /**
      * Gets this entity's type (the ids of components added to it)
      * or throws an error if it is no longer active on the koinGet<Engine>().
      */
-    val type: EntityType get() = entityProvider.getType(this)
+    val type: EntityType get() = records.getType(id)
 
-    val children: List<Entity>
-        get() = queryManager.getEntitiesMatching(family {
+    val children: EntityArray
+        get() = queryManager.getEntitiesMatching(world.family {
             hasRelation(geary.components.childOf, this@Entity.id)
-        })
+        }).toEntityArray(world)
 
-    val instances: List<Entity>
-        get() = queryManager.getEntitiesMatching(family {
+    val instances: EntityArray
+        get() = queryManager.getEntitiesMatching(world.family {
             hasRelation(geary.components.instanceOf, this@Entity.id)
-        })
+        }).toEntityArray(world)
 
     val prefabs: List<Entity>
-        get() = getRelations(geary.components.instanceOf, geary.components.any).map { it.target.toGeary() }
+        get() = getRelations(geary.components.instanceOf, geary.components.any).map { it.target.toGeary(world) }
 
     /** Remove this entity from the ECS. */
     fun removeEntity() {
-        entityProvider.remove(this)
+        entityRemoveProvider.remove(id)
     }
 
     /** Checks whether this entity has not been removed. */
-    fun exists(): Boolean = read.exists(this)
+    fun exists(): Boolean = read.exists(id)
 
     /**
      * Sets a component that holds data for this entity
@@ -63,14 +66,14 @@ value class Entity(val id: EntityId) {
     inline fun <reified T : Component> set(
         component: T,
         kClass: KClass<out T> = T::class,
-        noEvent: Boolean = false
-    ): Unit = set(component, componentId(kClass), noEvent)
+        noEvent: Boolean = false,
+    ): Unit = set(component, world.componentId(kClass), noEvent)
 
     fun set(
         component: Component,
         componentId: ComponentId,
-        noEvent: Boolean = false
-    ): Unit = write.setComponentFor(this, componentId, component, noEvent)
+        noEvent: Boolean = false,
+    ): Unit = write.setComponentFor(id, componentId, component, noEvent)
 
     /** Sets components that hold data for this entity */
     fun setAll(components: Collection<Component>, override: Boolean = true) {
@@ -85,7 +88,7 @@ value class Entity(val id: EntityId) {
      * @param noEvent If true, will not fire an [OnAdd] event.
      */
     fun add(component: ComponentId, noEvent: Boolean = false) {
-        write.addComponentFor(this, component, noEvent)
+        write.addComponentFor(id, component, noEvent)
     }
 
     /**
@@ -94,7 +97,7 @@ value class Entity(val id: EntityId) {
      * @param noEvent If true, will not fire an [OnAdd] event.
      */
     inline fun <reified T : Component> add(noEvent: Boolean = false) {
-        add(componentId<T>(), noEvent)
+        add(world.componentId<T>(), noEvent)
     }
 
     /**
@@ -112,15 +115,15 @@ value class Entity(val id: EntityId) {
      * @return Whether the component was present before removal.
      */
     inline fun <reified T : Component> remove(noEvent: Boolean = false): Boolean =
-        remove(componentId<T>(), noEvent)
+        remove(world.componentId<T>(), noEvent)
 
     /** Removes a component whose class is [kClass] from this entity. */
     fun remove(kClass: KClass<*>, noEvent: Boolean = false): Boolean =
-        remove(componentId(kClass), noEvent)
+        remove(world.componentId(kClass), noEvent)
 
     /** Removes a component with id [component] from this entity. */
     fun remove(component: ComponentId, noEvent: Boolean = false): Boolean =
-        write.removeComponentFor(this, component, noEvent)
+        write.removeComponentFor(id, component, noEvent)
 
     /**
      * Removes a list of [components] from this entity.
@@ -132,7 +135,7 @@ value class Entity(val id: EntityId) {
 
     /** Clears all components on this entity. */
     fun clear() {
-        write.clearEntity(this)
+        write.clearEntity(id)
     }
 
     /** Gets a component of type [T] on this entity. */
@@ -140,20 +143,20 @@ value class Entity(val id: EntityId) {
 
     /** @see get */
     inline fun <reified T : Component> get(kClass: KClass<out T>): T? =
-        get(componentId(kClass)) as? T
+        get(world.componentId(kClass)) as? T
 
     /** Gets a [component] which holds data from this entity. Use [has] if the component is not to hold data. */
     fun get(component: ComponentId): Component? =
-        read.getComponentFor(this, component)
+        read.get(id, component)
 
     /** Gets a component of type [T] or sets a [default] if no component was present. */
     inline fun <reified T : Component> getOrSet(
         kClass: KClass<out T> = T::class,
-        default: () -> T
+        default: () -> T,
     ): T = get(kClass) ?: default().also { set(it) }
 
     /** Gets all the components on this entity, as well as relations in the form of [RelationComponent]. */
-    fun getAll(): Set<Component> = read.getComponentsFor(this).toSet()
+    fun getAll(): Set<Component> = read.getAll(id).toSet()
 
     /**
      * Checks whether this entity is an instance of another [entity]
@@ -166,11 +169,11 @@ value class Entity(val id: EntityId) {
 
     /** @see has */
     inline fun <reified T : Component> has(kClass: KClass<out T>): Boolean =
-        has(componentId(kClass))
+        has(world.componentId(kClass))
 
     /** Checks whether this entity has a [component], regardless of it holding data. */
     fun has(component: ComponentId): Boolean =
-        read.hasComponentFor(this, component)
+        read.has(id, component)
 
     /**
      * Checks whether an entity has all of [components] set or added.
@@ -181,7 +184,8 @@ value class Entity(val id: EntityId) {
 
     /** Adds a [base] entity to this entity.  */
     fun extend(base: Entity) {
-        write.extendFor(this, base)
+        require(base.world == world)
+        write.extendFor(id, base.id)
     }
 
     /** Adds a [prefab] entity to this entity.  */
@@ -193,21 +197,21 @@ value class Entity(val id: EntityId) {
 
     /** Gets the data stored under the relation of kind [K] and target [T]. */
     inline fun <reified K : Component, reified T : Component> getRelation(): K? {
-        return getRelation(component<T>())
+        return getRelation(world.component<T>())
     }
 
     /** Gets the data stored under the relation of kind [K] and target [target]. */
     inline fun <reified K : Component> getRelation(target: Entity): K? {
-        return get(Relation.of<K>(target).id) as? K
+        return get(Relation.of<K>(world, target).id) as? K
     }
 
     /** Like [getRelations], but reads appropriate data as requested and puts it in a [RelationWithData] object. */
     @Suppress("UNCHECKED_CAST") // Intrnal logic ensures cast always succeeds
     inline fun <reified K : Component?, reified T : Component?> getRelationsWithData(): List<RelationWithData<K, T>> =
         geary.read.getRelationsWithDataFor(
-            this,
-            componentIdWithNullable<K>(),
-            componentIdWithNullable<T>()
+            id,
+            world.componentIdWithNullable<K>(),
+            world.componentIdWithNullable<T>()
         ) as List<RelationWithData<K, T>>
 
     fun getRelationsByKind(kind: ComponentId): List<Relation> =
@@ -215,56 +219,56 @@ value class Entity(val id: EntityId) {
 
     /** Queries for relations using the same format as [AccessorOperations.getRelations]. */
     inline fun <reified K : Component?, reified T : Component?> getRelations(): List<Relation> =
-        getRelations(componentIdWithNullable<K>(), componentIdWithNullable<T>())
+        getRelations(world.componentIdWithNullable<K>(), world.componentIdWithNullable<T>())
 
     fun getRelations(kind: ComponentId, target: EntityId): List<Relation> =
-        read.getRelationsFor(this, kind, target)
+        read.getRelationsFor(id, kind, target)
 
     inline fun <reified K : Component, reified T : Component> hasRelation(): Boolean =
-        hasRelation<K>(component<T>())
+        hasRelation<K>(world.component<T>())
 
     inline fun <reified K : Component?> hasRelation(target: Entity): Boolean =
-        has(Relation.of<K>(target).id)
+        has(Relation.of<K>(world, target).id)
 
     inline fun <reified K : Any, reified T : Any> setRelation(data: K, noEvent: Boolean = false) {
-        setRelation(data, component<T>(), noEvent)
+        setRelation(data, world.component<T>(), noEvent)
     }
 
     inline fun <reified K : Any> setRelation(data: K, target: Entity, noEvent: Boolean = false) {
-        setRelation(componentId<K>(), target.id, data, noEvent)
+        setRelation(world.componentId<K>(), target.id, data, noEvent)
     }
 
     fun setRelation(kind: ComponentId, target: EntityId, data: Component, noEvent: Boolean = false) {
-        geary.write.setComponentFor(this, Relation.of(kind, target).id, data, noEvent)
+        geary.write.setComponentFor(id, Relation.of(kind, target).id, data, noEvent)
     }
 
     inline fun <reified K : Any, reified T : Any> addRelation(noEvent: Boolean = false) {
-        addRelation<K>(component<T>(), noEvent)
+        addRelation<K>(world.component<T>(), noEvent)
     }
 
     inline fun <reified K : Any> addRelation(target: Entity, noEvent: Boolean = false) {
-        geary.write.addComponentFor(this, Relation.of<K?>(target).id, noEvent)
+        geary.write.addComponentFor(id, Relation.of<K?>(world, target).id, noEvent)
     }
 
     fun addRelation(kind: ComponentId, target: EntityId, noEvent: Boolean = false) {
-        geary.write.addComponentFor(this, Relation.of(kind, target).id, noEvent)
+        geary.write.addComponentFor(id, Relation.of(kind, target).id, noEvent)
     }
 
     inline fun <reified K : Component, reified T : Component> removeRelation(noEvent: Boolean = false): Boolean {
-        return removeRelation<K>(component<T>(), noEvent)
+        return removeRelation<K>(world.component<T>(), noEvent)
     }
 
     inline fun <reified K : Any> removeRelation(target: Entity, noEvent: Boolean = false): Boolean {
-        return geary.write.removeComponentFor(this, Relation.of<K>(target).id, noEvent)
+        return geary.write.removeComponentFor(id, Relation.of<K>(world, target).id, noEvent)
     }
 
     // Events
-    inline fun <reified T: Any> emit(data: T? = null, involving: ComponentId = NO_COMPONENT) {
-        emit(componentId<T>(), data, involving)
+    inline fun <reified T : Any> emit(data: T? = null, involving: ComponentId = NO_COMPONENT) {
+        emit(world.componentId<T>(), data, involving)
     }
 
     fun emit(event: ComponentId, data: Any? = null, involving: ComponentId = NO_COMPONENT) {
-        geary.eventRunner.callEvent(event, data, involving, this)
+        geary.eventRunner.callEvent(event, data, involving, id)
     }
 
     // Prefabs

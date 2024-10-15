@@ -5,20 +5,21 @@ import com.mineinabyss.geary.datatypes.entityTypeOf
 import com.mineinabyss.geary.datatypes.family.MutableFamily
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.cId
+import com.mineinabyss.geary.modules.Geary
 import kotlin.jvm.JvmName
 
 
-abstract class ShorthandQuery : Query() {
+abstract class ShorthandQuery(world: Geary) : Query(world) {
     abstract val involves: EntityType
 }
 
-abstract class ShorthandQuery1<A> : ShorthandQuery() {
+abstract class ShorthandQuery1<A>(world: Geary) : ShorthandQuery(world) {
     val comp1 get() = component1()
 
     abstract operator fun component1(): A
 }
 
-abstract class ShorthandQuery2<A, B> : ShorthandQuery() {
+abstract class ShorthandQuery2<A, B>(world: Geary) : ShorthandQuery(world) {
     val comp1 get() = component1()
     val comp2 get() = component2()
 
@@ -26,7 +27,7 @@ abstract class ShorthandQuery2<A, B> : ShorthandQuery() {
     abstract operator fun component2(): B
 }
 
-abstract class ShorthandQuery3<A, B, C> : ShorthandQuery() {
+abstract class ShorthandQuery3<A, B, C>(world: Geary) : ShorthandQuery(world) {
     val comp1 get() = component1()
     val comp2 get() = component2()
     val comp3 get() = component3()
@@ -36,7 +37,7 @@ abstract class ShorthandQuery3<A, B, C> : ShorthandQuery() {
     abstract operator fun component3(): C
 }
 
-abstract class ShorthandQuery4<A, B, C, D> : ShorthandQuery() {
+abstract class ShorthandQuery4<A, B, C, D>(world: Geary) : ShorthandQuery(world) {
     val comp1 get() = component1()
     val comp2 get() = component2()
     val comp3 get() = component3()
@@ -48,7 +49,7 @@ abstract class ShorthandQuery4<A, B, C, D> : ShorthandQuery() {
     abstract operator fun component4(): D
 }
 
-abstract class ShorthandQuery5<A, B, C, D, E> : ShorthandQuery() {
+abstract class ShorthandQuery5<A, B, C, D, E>(world: Geary) : ShorthandQuery(world) {
     val comp1 get() = component1()
     val comp2 get() = component2()
     val comp3 get() = component3()
@@ -63,16 +64,16 @@ abstract class ShorthandQuery5<A, B, C, D, E> : ShorthandQuery() {
 }
 
 
-fun query() = object : Query() {}
+fun Geary.query() = object : Query(this) {}
 
-fun query(match: MutableFamily.Selector.And.() -> Unit) = object : Query() {
-    override fun ensure() = this { add(family(match)) }
+fun Geary.query(match: MutableFamily.Selector.And.() -> Unit) = object : Query(this) {
+    override fun ensure() = this { add(world.family(match)) }
 }
 
-inline fun <reified A> query(
+inline fun <reified A> Geary.query(
     size1: QueryShorthands.Size1? = null,
     noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null
-) = object : ShorthandQuery1<A>() {
+) = object : ShorthandQuery1<A>(this) {
     override val involves = entityTypeOf(cId<A>())
     override fun ensure() {
         filterFamily?.let { this { it() } }
@@ -83,10 +84,10 @@ inline fun <reified A> query(
     override fun component1() = accessor1.get(this)
 }
 
-inline fun <reified A, reified B> query(
+inline fun <reified A, reified B> Geary.query(
     size2: QueryShorthands.Size2? = null,
     noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
-) = object : ShorthandQuery2<A, B>() {
+) = object : ShorthandQuery2<A, B>(this) {
     override val involves = entityTypeOf(cId<A>(), cId<B>())
     override fun ensure() {
         filterFamily?.let { this { it() } }
@@ -100,10 +101,10 @@ inline fun <reified A, reified B> query(
 }
 
 
-inline fun <reified A, reified B, reified C> query(
+inline fun <reified A, reified B, reified C> Geary.query(
     size3: QueryShorthands.Size3? = null,
     noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
-) = object : ShorthandQuery3<A, B, C>() {
+) = object : ShorthandQuery3<A, B, C>(this) {
     override val involves = entityTypeOf(cId<A>(), cId<B>(), cId<C>())
     override fun ensure() {
         filterFamily?.let { this { it() } }
@@ -118,10 +119,10 @@ inline fun <reified A, reified B, reified C> query(
     override fun component3(): C = accessor3.get(this)
 }
 
-inline fun <reified A, reified B, reified C, reified D> query(
+inline fun <reified A, reified B, reified C, reified D> Geary.query(
     size4: QueryShorthands.Size4? = null,
     noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
-) = object : ShorthandQuery4<A, B, C, D>() {
+) = object : ShorthandQuery4<A, B, C, D>(this) {
     override val involves = entityTypeOf(cId<A>(), cId<B>(), cId<C>(), cId<D>())
     override fun ensure() {
         filterFamily?.let { this { it() } }
@@ -138,10 +139,10 @@ inline fun <reified A, reified B, reified C, reified D> query(
     override fun component4(): D = accessor4.get(this)
 }
 
-inline fun <reified A, reified B, reified C, reified D, reified E> query(
+inline fun <reified A, reified B, reified C, reified D, reified E> Geary.query(
     size5: QueryShorthands.Size5? = null,
     noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
-) = object : ShorthandQuery5<A, B, C, D, E>() {
+) = object : ShorthandQuery5<A, B, C, D, E>(this) {
     override val involves = entityTypeOf(cId<A>(), cId<B>(), cId<C>(), cId<D>())
     override fun ensure() {
         filterFamily?.let { this { it() } }

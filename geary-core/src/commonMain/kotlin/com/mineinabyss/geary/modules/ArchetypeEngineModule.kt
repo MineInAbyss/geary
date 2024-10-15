@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.modules
 
 import co.touchlab.kermit.Logger
-import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.engine.Components
 import com.mineinabyss.geary.engine.PipelineImpl
@@ -13,29 +12,36 @@ import com.mineinabyss.idofront.di.DI
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-val archetypes: ArchetypeEngineModule by DI.observe()
-
-open class ArchetypeEngineModule(
+class ArchetypeEngineModule(
     tickDuration: Duration = 50.milliseconds,
 ) : GearyModule {
+    val records: ArrayTypeMap = ArrayTypeMap()
     override val logger = Logger.withTag("Geary")
-    override val queryManager = ArchetypeQueryManager()
-
-    override val engine = ArchetypeEngine(tickDuration)
-    override val eventRunner = ArchetypeEventRunner()
-    override val pipeline = PipelineImpl()
-
-    open val records: ArrayTypeMap = ArrayTypeMap()
-
-    override val read = ArchetypeReadOperations()
-    override val write = ArchetypeMutateOperations()
     override val entityProvider = EntityByArchetypeProvider()
-    override val componentProvider = ComponentAsEntityProvider()
     override val defaults: Defaults = Defaults()
 
-    open val archetypeProvider: ArchetypeProvider = SimpleArchetypeProvider()
-
-    override val components by lazy { Components() }
+    override val componentProvider = ComponentAsEntityProvider(entityProvider, logger)
+    override val components = Components(componentProvider)
+    override val queryManager = ArchetypeQueryManager(componentProvider)
+    override val read = ArchetypeReadOperations(components, records)
+    override val pipeline = PipelineImpl(queryManager)
+    override val engine = ArchetypeEngine(pipeline, logger, tickDuration)
+    override val eventRunner = ArchetypeEventRunner(read, components.observer, componentProvider, records)
+    override val write = ArchetypeMutateOperations(
+        records,
+        eventRunner = eventRunner,
+        components = components,
+        queryManager = queryManager,
+    )
+    override val entityRemoveProvider = EntityRemove(
+        removedEntities = entityProvider.removedEntities,
+        reader = read,
+        write = write,
+        records = records,
+        components = components,
+        eventRunner = eventRunner,
+        queryManager = queryManager,
+    )
 
     companion object : GearyModuleProviderWithDefault<ArchetypeEngineModule> {
         override fun default(): ArchetypeEngineModule {
@@ -45,18 +51,18 @@ open class ArchetypeEngineModule(
         override fun init(module: ArchetypeEngineModule) {
             DI.add<ArchetypeEngineModule>(module)
             DI.add<GearyModule>(module)
-            module.entityProvider.init(module.records, module.archetypeProvider.rootArchetype)
-            module.write.init(module.records)
+            module.entityProvider.init(module.records, module.write.archetypeProvider.rootArchetype)
             module.componentProvider.createComponentInfo()
         }
 
         override fun start(module: ArchetypeEngineModule) {
-            module {
-                on(GearyPhase.ENABLE) {
-                    module.engine.start()
-                }
-            }
-            geary.pipeline.runStartupTasks()
+            TODO("Fix")
+//            module {
+//                on(GearyPhase.ENABLE) {
+//                    module.engine.start()
+//                }
+//            }
+//            geary.pipeline.runStartupTasks()
         }
     }
 }

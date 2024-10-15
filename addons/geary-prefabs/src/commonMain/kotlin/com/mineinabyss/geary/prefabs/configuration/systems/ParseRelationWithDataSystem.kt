@@ -6,7 +6,7 @@ import com.mineinabyss.geary.systems.accessors.RelationWithData
 import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.query
 
-fun GearyModule.createParseRelationWithDataListener() = observe<OnSet>()
+fun Geary.createParseRelationWithDataListener() = observe<OnSet>()
     .involving(query<RelationWithData<*, *>>()).exec { (relationWithData) ->
         val entity = entity
         val data = relationWithData.data

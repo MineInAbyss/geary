@@ -1,9 +1,9 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import co.touchlab.kermit.Logger
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.*
 import com.mineinabyss.geary.helpers.fastForEach
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.TrackedSystem
 import com.mineinabyss.geary.systems.query.Query
 import kotlinx.coroutines.*
@@ -18,12 +18,13 @@ import kotlin.time.Duration
  *
  * Learn more [here](https://github.com/MineInAbyss/Geary/wiki/Basic-ECS-engine-architecture).
  */
-open class ArchetypeEngine(override val tickDuration: Duration) : TickingEngine() {
-    private val pipeline get() = geary.pipeline
-    private val logger get() = geary.logger
-
+open class ArchetypeEngine(
+    private val pipeline: Pipeline,
+    private val logger: Logger,
+    override val tickDuration: Duration,
     override val coroutineContext: CoroutineContext =
         (CoroutineScope(Dispatchers.Default) + CoroutineName("Geary Engine")).coroutineContext
+) : TickingEngine() {
 
     /** Describes how to individually tick each system */
     protected open fun <T : Query> TrackedSystem<T>.runSystem() {

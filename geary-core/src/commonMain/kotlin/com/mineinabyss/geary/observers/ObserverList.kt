@@ -4,13 +4,15 @@ import androidx.collection.LongSparseArray
 import androidx.collection.MutableObjectList
 import androidx.collection.mutableObjectListOf
 import com.mineinabyss.geary.datatypes.ComponentId
-import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.EntityId
 import com.mineinabyss.geary.datatypes.getOrPut
+import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.NO_COMPONENT
-import com.mineinabyss.geary.modules.archetypes
 
-class ObserverList {
+class ObserverList(
+    val records: ArrayTypeMap,
+) {
     val involved2Observer = LongSparseArray<MutableObjectList<Observer>>()
 
     fun add(observer: Observer) {
@@ -21,9 +23,7 @@ class ObserverList {
         }
     }
 
-    inline fun forEach(involvedComp: ComponentId, entity: GearyEntity, exec: (Observer, Archetype, row: Int) -> Unit) {
-        val records = archetypes.records
-
+    inline fun forEach(involvedComp: ComponentId, entity: EntityId, exec: (Observer, Archetype, row: Int) -> Unit) {
         involved2Observer[0L]?.forEach {
             records.runOn(entity) { archetype, row -> exec(it, archetype, row) }
         }

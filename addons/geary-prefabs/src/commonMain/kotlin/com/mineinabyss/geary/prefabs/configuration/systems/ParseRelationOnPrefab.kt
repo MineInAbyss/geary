@@ -7,7 +7,7 @@ import com.mineinabyss.geary.prefabs.configuration.components.RelationOnPrefab
 import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.query
 
-fun GearyModule.createParseRelationOnPrefabListener() = observe<OnSet>()
+fun Geary.createParseRelationOnPrefabListener() = observe<OnSet>()
     .involving(query<RelationOnPrefab>()).exec { (relation) ->
         try {
             val target = entity.lookup(relation.target)?.id ?: return@exec

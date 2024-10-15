@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.engine.archetypes
 
 import androidx.collection.*
-import com.mineinabyss.geary.components.relations.InstanceOf
-import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
+import com.mineinabyss.geary.engine.Components
+import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeMutateOperations
 import com.mineinabyss.geary.helpers.*
-import com.mineinabyss.geary.modules.archetypes
-import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.observers.EventRunner
 import com.mineinabyss.geary.observers.events.*
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 
@@ -19,19 +19,16 @@ import com.mineinabyss.geary.systems.accessors.RelationWithData
  */
 class Archetype internal constructor(
     val type: EntityType,
-    var id: Int
+    var id: Int,
+    private val write: ArchetypeMutateOperations,
+    private val records: ArrayTypeMap,
+    private val archetypeProvider: ArchetypeProvider,
+    private val eventRunner: EventRunner,
+    private val comps: Components,
+    private val queryManager: ArchetypeQueryManager,
 ) {
-    private val records = archetypes.records
-    private val archetypeProvider = archetypes.archetypeProvider
-    private val eventRunner = archetypes.eventRunner
-    private val comps get() = geary.components
-
-    val entities: Sequence<Entity>
-        get() {
-            val entities = mutableListOf<Entity>()
-            ids.forEach { entities += it.toGeary() }
-            return entities.asSequence()
-        }
+    val entities: EntityIdArray
+        get() = ULongArray(size) { ids[id].toULong() }
 
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     private val ids = mutableLongListOf()
@@ -74,8 +71,8 @@ class Archetype internal constructor(
     val size: Int get() = ids.size
 
     // ==== Helper functions ====
-    fun getEntity(row: Int): Entity {
-        return ids[row].toGeary()
+    fun getEntity(row: Int): EntityId {
+        return ids[row].toULong()
     }
 
     /**
@@ -156,7 +153,7 @@ class Archetype internal constructor(
     private fun moveOnlyAdding(
         oldArc: Archetype,
         oldRow: Int,
-        entity: EntityId
+        entity: EntityId,
     ) = move(entity) {
         for (i in 0..componentData.lastIndex) {
             componentData[i].add(oldArc.componentData[i][oldRow])
@@ -192,14 +189,14 @@ class Archetype internal constructor(
     }
 
 
-    internal fun createWithoutData(entity: Entity): Int {
-        ids.add(entity.idL)
+    internal fun createWithoutData(entity: EntityId): Int {
+        ids.add(entity.toLong())
         return ids.lastIndex
     }
 
     internal inline fun move(
         entity: EntityId,
-        copyData: () -> Unit
+        copyData: () -> Unit,
     ): Int {
         if (unregistered) error("Tried adding entity to archetype that is no longer registered. Was it referenced outside of Geary?")
         ids.add(entity.toLong())
@@ -207,7 +204,7 @@ class Archetype internal constructor(
 
         copyData()
 
-        records[Entity(entity), this] = row
+        records[entity, this] = row
         return row
     }
 
@@ -229,7 +226,7 @@ class Archetype internal constructor(
         row: Int,
         componentId: ComponentId,
         callEvent: Boolean,
-        onUpdated: (Archetype, row: Int) -> Unit
+        onUpdated: (Archetype, row: Int) -> Unit,
     ) {
         // if already present in this archetype, stop here since we don't need to update any data
         if (contains(componentId)) return
@@ -262,7 +259,7 @@ class Archetype internal constructor(
         componentId: ComponentId,
         data: Component,
         callEvent: Boolean,
-        onUpdated: (Archetype, row: Int) -> Unit
+        onUpdated: (Archetype, row: Int) -> Unit,
     ) {
         val dataComponent = componentId.withRole(HOLDS_DATA)
 
@@ -290,15 +287,14 @@ class Archetype internal constructor(
             moveTo.callComponentModifyEvent(comps.onSet, componentId, newRow) { arch, row ->
                 arch.callComponentModifyEvent(comps.onFirstSet, componentId, row, onUpdated)
             }
-        }
-        else onUpdated(moveTo, newRow)
+        } else onUpdated(moveTo, newRow)
     }
 
     private inline fun callComponentModifyEvent(
         eventType: ComponentId,
         involvedComp: ComponentId,
         row: Int,
-        onComplete: (Archetype, row: Int) -> Unit = { _, _ -> }
+        onComplete: (Archetype, row: Int) -> Unit = { _, _ -> },
     ) {
         val entity = getEntity(row)
         callComponentModifyEvent(eventType, involvedComp, row)
@@ -322,11 +318,11 @@ class Archetype internal constructor(
         val instanceEntity = instanceArch.getEntity(instanceRow)
         var instanceArch = instanceArch
         var instanceRow = instanceRow
-        instanceArch.addComponent(instanceRow, Relation.of<InstanceOf?>(baseEntity).id, true) { arch, row ->
+        instanceArch.addComponent(instanceRow, Relation.of(comps.instanceOf, baseEntity).id, true) { arch, row ->
             instanceArch = arch; instanceRow = row
         }
 
-        val noInheritComponents = getRelationsByKind(componentId<NoInherit>()).map { Relation.of(it).target }
+        val noInheritComponents = getRelationsByKind(comps.noInherit).map { Relation.of(it).target }
         type.filter { !it.holdsData() && it !in noInheritComponents }.forEach {
             instanceArch.addComponent(instanceRow, it, true) { arch, row -> instanceArch = arch; instanceRow = row }
         }
@@ -336,8 +332,10 @@ class Archetype internal constructor(
                 instanceArch = arch; instanceRow = row
             }
         }
-        baseEntity.children.fastForEach {
-            it.addParent(instanceEntity)
+        queryManager.childrenOf(baseEntity).forEach { child ->
+            // Add instanceEntity as parent
+            write.addComponentFor(instanceEntity, comps.couldHaveChildren, true)
+            write.addComponentFor(child, Relation.of(comps.childOf, instanceEntity).id, false)
         }
         records.runOn(instanceEntity) { arch, row -> instanceArch = arch; instanceRow = row }
 
@@ -389,7 +387,7 @@ class Archetype internal constructor(
             if (allowUnregister == UNKNOWN) allowUnregister =
                 if (type.contains(comps.keepEmptyArchetype)) FALSE else TRUE
             if (allowUnregister == FALSE) return
-            archetypes.queryManager.unregisterArchetype(this)
+            queryManager.unregisterArchetype(this)
             unregistered = true
             componentRemoveEdges.forEach { id, archetype ->
                 archetype.componentAddEdges.remove(id.toLong())
@@ -442,7 +440,7 @@ class Archetype internal constructor(
         row: Int,
         kind: ComponentId,
         target: EntityId,
-        relations: List<Relation>
+        relations: List<Relation>,
     ): List<RelationWithData<*, *>> {
         return relations.map { relation ->
             RelationWithData(
@@ -466,7 +464,7 @@ class Archetype internal constructor(
             val replacement = ids[lastIndex]
             ids[row] = replacement
             componentData.fastForEach { it[row] = it.last() }
-            records[replacement.toGeary(), this@Archetype] = row
+            records[replacement.toULong(), this@Archetype] = row
         }
 
 

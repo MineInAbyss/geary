@@ -30,7 +30,7 @@ Read our [Quickstart guide](https://wiki.mineinabyss.com/geary/quickstart/) to s
 data class Position(var x: Double, var y: Double)
 data class Velocity(var x: Double, var y: Double)
 
-fun GearyModule.updatePositionSystem() = system(query<Position, Velocity>())
+fun Geary.updatePositionSystem() = system(query<Position, Velocity>())
     .every(interval = 20.milliseconds)
     .exec { (position, velocity) ->
         // We can access our components like regular variables!

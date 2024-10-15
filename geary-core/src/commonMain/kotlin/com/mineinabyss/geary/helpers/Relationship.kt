@@ -47,7 +47,7 @@ fun Entity.clearChildren() {
 
 /** Gets the first parent of this entity */
 val Entity.parent: Entity?
-    get() = getRelations<ChildOf?, Any?>().firstOrNull()?.target?.toGeary()
+    get() = getRelations<ChildOf?, Any?>().firstOrNull()?.target?.toGeary(world)
 
 /** Runs code on the first parent of this entity. */
 inline fun Entity.onParent(
@@ -59,4 +59,4 @@ inline fun Entity.onParent(
 }
 
 val Entity.parents: Set<Entity>
-    get() = getRelations<ChildOf?, Any?>().mapTo(mutableSetOf()) { it.target.toGeary() }
+    get() = getRelations<ChildOf?, Any?>().mapTo(mutableSetOf()) { it.target.toGeary(world) }

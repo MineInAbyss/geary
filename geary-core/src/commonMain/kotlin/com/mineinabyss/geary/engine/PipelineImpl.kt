@@ -7,9 +7,9 @@ import com.mineinabyss.geary.systems.System
 import com.mineinabyss.geary.systems.TrackedSystem
 import com.mineinabyss.geary.systems.query.Query
 
-class PipelineImpl : Pipeline {
-    private val queryManager get() = geary.queryManager
-
+class PipelineImpl(
+    val queryManager: QueryManager
+) : Pipeline {
     private val onSystemAdd = mutableListOf<(System<*>) -> Unit>()
     private val repeatingSystems: MutableSet<TrackedSystem<*>> = mutableSetOf()
 
