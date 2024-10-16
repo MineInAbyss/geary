@@ -6,8 +6,9 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.modules.ArchetypeEngineModule
+import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.get
 import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
@@ -16,18 +17,15 @@ open class QueriedEntity(
     final override val world: Geary,
     final override val cacheAccessors: Boolean,
 ) : AccessorOperations() {
-    val module =
-        world.module as? ArchetypeEngineModule ?: error("QueriedEntity can only be used with the ArchetypeEngineModule")
-
     @PublishedApi
     @UnsafeAccessors
-    internal var archetype = (world.module as ArchetypeEngineModule).write.archetypeProvider.rootArchetype
+    internal var archetype = world.get<ArchetypeProvider>().rootArchetype
 
     internal val extraFamilies: MutableList<Family> = mutableListOf()
 
     internal val props: MutableMap<String, Accessor> = mutableMapOf()
 
-    fun buildFamily(): Family.Selector.And = world.family {
+    fun buildFamily(): Family.Selector.And = family {
         accessors
             .filterIsInstance<FamilyMatching>()
             .mapNotNull { it.family }

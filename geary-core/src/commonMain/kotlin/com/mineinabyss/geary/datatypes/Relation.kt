@@ -46,15 +46,6 @@ value class Relation private constructor(
                     or (target and RELATION_TARGET_MASK) // Add target, stripping any type roles
         )
 
-        fun of(world: Geary, kind: KClass<*>, target: KClass<*>): Relation =
-            of(world.componentId(kind), world.componentId(target))
-
-        inline fun <reified K : Component?, reified T : Component> of(world: Geary): Relation =
-            of(world.componentIdWithNullable<K>(), world.componentId<T>())
-
-        inline fun <reified K : Component?> of(world: Geary, target: Entity): Relation =
-            of(world.componentIdWithNullable<K>(), target.id)
-
         /**
          * Creates a relation from an id that is assumed to be valid. Use this to avoid boxing Relation because of
          * the nullable type on [toRelation].

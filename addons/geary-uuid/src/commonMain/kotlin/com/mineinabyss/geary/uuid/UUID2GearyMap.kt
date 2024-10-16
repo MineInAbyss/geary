@@ -1,11 +1,9 @@
 package com.mineinabyss.geary.uuid
 
-import com.benasher44.uuid.Uuid
 import com.mineinabyss.geary.datatypes.EntityId
-import com.mineinabyss.geary.datatypes.GearyEntity
-import com.mineinabyss.geary.helpers.toGeary
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
+import kotlin.uuid.Uuid
 
 interface UUID2GearyMap {
     operator fun get(uuid: Uuid): EntityId?

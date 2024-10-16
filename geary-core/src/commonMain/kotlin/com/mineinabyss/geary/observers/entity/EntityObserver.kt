@@ -21,7 +21,7 @@ inline fun <reified T : Any> GearyEntity.observeWithData(): ObserverEventsBuilde
 fun GearyEntity.attachObserver(observer: Observer) {
     val observerEntity = world.entity {
         // TODO avoid cast
-        set(EventToObserversMap((world.module as ArchetypeEngineModule).records).apply { addObserver(observer) })
+        set(EventToObserversMap(world.records).apply { addObserver(observer) })
         addRelation<ChildOf>(this@attachObserver) // Remove entity when original is removed
     }
     //TODO remove when prefabs auto propagate component adds down

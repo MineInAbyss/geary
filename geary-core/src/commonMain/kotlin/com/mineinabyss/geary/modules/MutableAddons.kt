@@ -16,7 +16,7 @@ class MutableAddons {
 
     fun initAll(setup: GearySetup) {
         addons.forEach { (name, addon) ->
-            val geary = Geary(setup.module, setup.context, setup.module.logger.withTag(name))
+            val geary = Geary(setup.application, setup.logger.withTag(name))
             (addon.addon.onInstall as Geary.(Any?) -> Any).invoke(geary, addon.config)
         }
     }

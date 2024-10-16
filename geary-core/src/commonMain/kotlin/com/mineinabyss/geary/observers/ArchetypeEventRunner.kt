@@ -12,10 +12,11 @@ import com.mineinabyss.geary.helpers.fastForEach
 
 class ArchetypeEventRunner(
     val reader: ArchetypeReadOperations,
-    val observerComponent: ComponentId,
     val compProvider: ComponentProvider,
     val records: ArrayTypeMap
 ) : EventRunner {
+    val observerComponent: ComponentId = compProvider.id<Observer>()
+
     private val eventToObserversMap = EventToObserversMap(records)
     override fun addObserver(observer: Observer) {
         eventToObserversMap.addObserver(observer)

@@ -7,19 +7,18 @@ import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.ComponentProvider
 import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import com.mineinabyss.geary.systems.accessors.ReadOnlyAccessor
 import com.mineinabyss.geary.systems.query.Query
 
 class RelationsAccessor(
-    comp: ComponentProvider,
+    val comp: ComponentProvider,
     override val originalAccessor: Accessor?,
     val kind: ComponentId,
     val target: EntityId,
 ) : ReadOnlyAccessor<List<Relation>>, FamilyMatching {
-    override val family = family(comp) { hasRelation(kind, target) }
+    override val family = family { hasRelation(kind, target) }
 
     private var cachedRelations = emptyList<Relation>()
     private var cachedArchetype: Archetype? = null

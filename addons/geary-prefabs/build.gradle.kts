@@ -10,9 +10,6 @@ kotlin {
             dependencies {
                 implementation(project(":geary-core"))
                 implementation(project(":geary-serialization"))
-
-                implementation(libs.uuid)
-                implementation(idofrontLibs.idofront.di)
             }
         }
 
@@ -22,7 +19,6 @@ kotlin {
                 implementation(idofrontLibs.kotlinx.coroutines.test)
                 implementation(idofrontLibs.kotest.assertions)
                 implementation(idofrontLibs.kotest.property)
-                implementation(idofrontLibs.idofront.di)
                 implementation(project(":geary-core"))
                 implementation(project(":geary-serialization"))
             }

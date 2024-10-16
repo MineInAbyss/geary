@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.modules.Geary
-import kotlin.jvm.JvmInline
 
 typealias EntityIdArray = ULongArray
 
@@ -12,7 +11,7 @@ fun EntityIdArray.toEntityArray(world: Geary): EntityArray {
 class EntityArray(
     val world: Geary,
     val ids: EntityIdArray,
-): Collection<Entity> {
+) : Collection<Entity> {
     override val size: Int get() = ids.size
 
     override fun isEmpty(): Boolean = ids.isEmpty()
@@ -33,5 +32,13 @@ class EntityArray(
 
     inline fun fastForEach(action: (Entity) -> Unit) {
         for (i in ids.indices) action(GearyEntity(ids[i], world))
+    }
+
+    inline fun flatMap(transform: (Entity) -> EntityArray): EntityArray {
+        return ids.flatMapTo(arrayListOf()) { transform(Entity(it, world)).ids }.toULongArray().toEntityArray(world)
+    }
+
+    operator fun minus(other: Collection<Entity>): EntityArray {
+        return ids.minus(other.map { it.id }.toSet()).toULongArray().toEntityArray(world)
     }
 }

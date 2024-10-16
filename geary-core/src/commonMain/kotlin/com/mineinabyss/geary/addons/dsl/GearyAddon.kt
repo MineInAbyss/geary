@@ -1,9 +1,11 @@
 package com.mineinabyss.geary.addons.dsl
 
+import co.touchlab.kermit.Logger
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.modules.Geary
-import com.mineinabyss.geary.modules.GearyModule
-import com.mineinabyss.idofront.di.DIContext
+import org.koin.core.KoinApplication
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import kotlin.jvm.JvmName
 
 interface GearyAddonWithDefault<Module> : GearyAddon<Module> {
@@ -27,10 +29,10 @@ data class Addon<Configuration, Instance>(
 data class AddonSetup<Configuration>(
     val name: String,
     val configuration: Configuration,
-    val module: GearyModule,
-    val context: DIContext,
-) {
-    val geary: Geary = Geary(module, context, module.logger.withTag(name))
+    val application: KoinApplication,
+): KoinComponent {
+    val logger = get<Logger>().withTag(name)
+    val geary: Geary = Geary(application, logger)
 
     /** Runs a block during [GearyPhase.INIT_COMPONENTS] */
     fun components(configure: Geary.() -> Unit) {
@@ -71,7 +73,7 @@ data class AddonSetup<Configuration>(
      * ```
      */
     fun on(phase: GearyPhase, run: () -> Unit) {
-        module.pipeline.runOnOrAfter(phase, run)
+        geary.pipeline.runOnOrAfter(phase, run)
     }
 }
 
@@ -79,7 +81,7 @@ fun createAddon(
     name: String,
     init: AddonSetup<Unit>.() -> Unit = {},
 ): Addon<Unit, Unit> = Addon(name, { }) {
-    init(AddonSetup(name, it, module, context))
+    init(AddonSetup(name, it, application))
 }
 
 @JvmName("createAddon1")
@@ -88,7 +90,7 @@ fun <Conf> createAddon(
     configuration: Geary.() -> Conf,
     init: AddonSetup<Conf>.() -> Unit = {},
 ): Addon<Conf, Conf> = Addon(name, configuration) { conf ->
-    init(AddonSetup(name, conf, module, context))
+    init(AddonSetup(name, conf, application))
     conf
 }
 
@@ -99,6 +101,6 @@ fun <Conf, Inst> createAddon(
     init: AddonSetup<Conf>.() -> Inst,
 ): Addon<Conf, Inst> {
     return Addon(name, configuration) {
-        init(AddonSetup(name, it, module, context))
+        init(AddonSetup(name, it, application))
     }
 }

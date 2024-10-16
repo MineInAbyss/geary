@@ -22,8 +22,7 @@ open class ArchetypeEngine(
     private val pipeline: Pipeline,
     private val logger: Logger,
     override val tickDuration: Duration,
-    override val coroutineContext: CoroutineContext =
-        (CoroutineScope(Dispatchers.Default) + CoroutineName("Geary Engine")).coroutineContext
+    override val coroutineContext: CoroutineContext
 ) : TickingEngine() {
 
     /** Describes how to individually tick each system */

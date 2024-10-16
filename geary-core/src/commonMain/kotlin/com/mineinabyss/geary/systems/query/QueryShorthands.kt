@@ -67,7 +67,7 @@ abstract class ShorthandQuery5<A, B, C, D, E>(world: Geary) : ShorthandQuery(wor
 fun Geary.query() = object : Query(this) {}
 
 fun Geary.query(match: MutableFamily.Selector.And.() -> Unit) = object : Query(this) {
-    override fun ensure() = this { add(world.family(match)) }
+    override fun ensure() = this { add(family(match)) }
 }
 
 inline fun <reified A> Geary.query(

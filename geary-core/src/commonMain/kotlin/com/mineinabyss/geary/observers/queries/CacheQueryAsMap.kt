@@ -2,6 +2,7 @@ package com.mineinabyss.geary.observers.queries
 
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.observers.builders.ObserverContext
 import com.mineinabyss.geary.observers.events.OnFirstSet
 import com.mineinabyss.geary.observers.events.OnRemove

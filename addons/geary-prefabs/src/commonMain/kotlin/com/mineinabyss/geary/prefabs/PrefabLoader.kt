@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.prefabs
 
-import com.benasher44.uuid.Uuid
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.entity
@@ -19,6 +18,7 @@ import com.mineinabyss.geary.systems.query.Query
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import okio.Path
+import kotlin.uuid.Uuid
 
 class PrefabLoader {
     private val formats get() = serializableComponents.formats

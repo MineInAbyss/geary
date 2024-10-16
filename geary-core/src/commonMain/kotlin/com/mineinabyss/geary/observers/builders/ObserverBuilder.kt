@@ -4,7 +4,6 @@ import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.GearyEntityType
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.ComponentProvider
-import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.observers.Observer
 import com.mineinabyss.geary.systems.query.Query
 import com.mineinabyss.geary.systems.query.ShorthandQuery
@@ -56,7 +55,7 @@ data class ObserverBuilder<Context>(
     override fun exec(handle: Context.() -> Unit): Observer {
         val observer = Observer(
             matchQueries,
-            family(comp) { matchQueries.forEach { add(it.buildFamily()) } },
+            family { matchQueries.forEach { add(it.buildFamily()) } },
             involvedComponents,
             GearyEntityType(events.listenToEvents),
             events.mustHoldData,

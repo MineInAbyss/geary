@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SerializerTest {
+class ComponentIdSerializerTest {
     interface Components
 
     @SerialName("test:thing.a")

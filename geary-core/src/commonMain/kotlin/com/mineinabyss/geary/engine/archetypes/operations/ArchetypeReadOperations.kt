@@ -2,11 +2,8 @@ package com.mineinabyss.geary.engine.archetypes.operations
 
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
-import com.mineinabyss.geary.engine.ComponentProvider
 import com.mineinabyss.geary.engine.Components
 import com.mineinabyss.geary.engine.EntityReadOperations
-import com.mineinabyss.geary.engine.id
-import com.mineinabyss.geary.helpers.toGeary
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 
 class ArchetypeReadOperations(

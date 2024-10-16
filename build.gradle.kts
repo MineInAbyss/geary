@@ -41,6 +41,7 @@ allprojects {
                         optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
                         optIn("kotlin.time.ExperimentalTime")
                         optIn("kotlin.ExperimentalUnsignedTypes")
+                        optIn("kotlin.uuid.ExperimentalUuidApi")
                         optIn("kotlinx.serialization.ExperimentalSerializationApi")
                         optIn("kotlin.RequiresOptIn")
                     }

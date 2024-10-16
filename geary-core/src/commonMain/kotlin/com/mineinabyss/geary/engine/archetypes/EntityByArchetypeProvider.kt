@@ -1,25 +1,27 @@
 package com.mineinabyss.geary.engine.archetypes
 
 import co.touchlab.stately.concurrency.AtomicLong
-import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.datatypes.EntityId
+import com.mineinabyss.geary.datatypes.EntityStack
+import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.engine.Components
 import com.mineinabyss.geary.engine.EntityProvider
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeMutateOperations
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeReadOperations
-import com.mineinabyss.geary.helpers.*
+import com.mineinabyss.geary.helpers.NO_COMPONENT
+import com.mineinabyss.geary.components.ReservedComponents
 import com.mineinabyss.geary.observers.EventRunner
-import com.mineinabyss.geary.observers.events.OnEntityRemoved
 
 class EntityRemove(
-    private val removedEntities: EntityStack,
+    private val entityProvider: EntityByArchetypeProvider,
     private val reader: ArchetypeReadOperations,
     private val write: ArchetypeMutateOperations,
     private val records: ArrayTypeMap,
     private val components: Components,
     private val eventRunner: EventRunner,
     private val queryManager: ArchetypeQueryManager,
-){
+) {
     /** Removes an entity, freeing up its entity id for later reuse. */
     fun remove(entity: EntityId) {
         if (!reader.has(entity, components.suppressRemoveEvent))
@@ -44,21 +46,23 @@ class EntityRemove(
         records.runOn(entity) { archetype, row ->
             archetype.removeEntity(row)
             records.remove(entity)
-            removedEntities.push(entity)
+            entityProvider.removedEntities.push(entity)
         }
     }
 }
 
 class EntityByArchetypeProvider(
     private val reuseIDsAfterRemoval: Boolean = true,
+    private val archetypeProvider: ArchetypeProvider,
+    private val records: ArrayTypeMap,
 ) : EntityProvider {
-    private lateinit var records: ArrayTypeMap
-
-    //    private val archetypeProvider: ArchetypeProvider by lazy { archetypes.archetypeProvider }
-    private lateinit var root: Archetype
-
     internal val removedEntities: EntityStack = EntityStack()
     private val currId = AtomicLong(0L)
+
+    init {
+        // Allocate reserved components
+        repeat(ReservedComponents.reservedComponents.size) { create() }
+    }
 
     override fun create(): EntityId {
         val entity: EntityId = if (reuseIDsAfterRemoval) {
@@ -69,13 +73,8 @@ class EntityByArchetypeProvider(
         return entity
     }
 
-    fun init(records: ArrayTypeMap, root: Archetype) {
-        this.records = records
-        this.root = root
-    }
-
     private fun createRecord(entity: EntityId) {
-        val root = root
+        val root = archetypeProvider.rootArchetype
         val row = root.createWithoutData(entity)
         records[entity, root] = row
     }

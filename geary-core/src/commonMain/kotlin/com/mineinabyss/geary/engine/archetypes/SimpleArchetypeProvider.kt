@@ -7,15 +7,9 @@ import co.touchlab.stately.concurrency.synchronize
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
-import com.mineinabyss.geary.engine.Components
-import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeMutateOperations
-import com.mineinabyss.geary.observers.EventRunner
 
 class SimpleArchetypeProvider(
     private val records: ArrayTypeMap,
-    private val write: ArchetypeMutateOperations,
-    private val eventRunner: EventRunner,
-    private val components: Components,
     private val queryManager: ArchetypeQueryManager,
 ) : ArchetypeProvider {
     override val rootArchetype: Archetype by lazy {
@@ -39,12 +33,8 @@ class SimpleArchetypeProvider(
         return Archetype(
             type = type,
             id = id,
-            write = write,
             records = records,
             archetypeProvider = this,
-            eventRunner = eventRunner,
-            comps = components,
-            queryManager = queryManager
         )
     }
 

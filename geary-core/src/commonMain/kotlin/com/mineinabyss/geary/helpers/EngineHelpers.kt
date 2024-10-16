@@ -9,7 +9,7 @@ import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 /** Creates a new empty entity. May reuse recently deleted entity ids. */
-fun Geary.entity(): Entity = Entity(module.entityProvider.create(), this)
+fun Geary.entity(): Entity = Entity(entityProvider.create(), this)
 
 /** @see entity */
 inline fun Geary.entity(run: Entity.() -> Unit): Entity = entity().apply(run)
@@ -19,7 +19,7 @@ inline fun <T> Geary.temporaryEntity(
     run: (Entity) -> T,
 ): T {
     val entity = entity {
-        add(module.components.suppressRemoveEvent, noEvent = true)
+        add(components.suppressRemoveEvent, noEvent = true)
     }
     return try {
         run(entity)
@@ -30,7 +30,7 @@ inline fun <T> Geary.temporaryEntity(
 
 inline fun <reified T> Geary.component(): Entity = component(T::class)
 
-fun Geary.component(kClass: KClass<*>): Entity = componentId(kClass).toGeary(this)
+fun Geary.component(kClass: KClass<*>): Entity = componentId(kClass).toGeary()
 
 /** Gets or registers the id of a component of type [T] */
 inline fun <reified T> Geary.componentId(): ComponentId = componentId(T::class)
@@ -45,7 +45,7 @@ fun Geary.componentId(kType: KType): ComponentId =
 
 /** Gets or registers the id of a component by its [kClass]. */
 fun Geary.componentId(kClass: KClassifier): ComponentId =
-    module.componentProvider.getOrRegisterComponentIdForClass(kClass)
+    componentProvider.getOrRegisterComponentIdForClass(kClass)
 
 
 @Deprecated("Should not be getting an id for an id!", ReplaceWith("componentId(component)"))
@@ -54,6 +54,6 @@ fun componentId(kClass: KClass<out ComponentId>): Nothing =
     error("Trying to access id for component id")
 
 /** Gets the [ComponentInfo] component from a component's id. */
-fun ComponentId.getComponentInfo(world: Geary): ComponentInfo? = this.toGeary(world).get()
+fun Geary.getComponentInfo(component: ComponentId): ComponentInfo? = component.toGeary().get<ComponentInfo>()
 
 inline fun <reified T> Geary.cId(): ComponentId = componentId<T>()

@@ -8,7 +8,6 @@ import kotlin.reflect.KClassifier
 import kotlin.reflect.typeOf
 
 interface ComponentProvider {
-    val types: Components
     /**
      * Given a component's [kClass], returns its [ComponentId], or registers an entity
      * with a [ComponentInfo] that will represent this [kClass]'s component type.

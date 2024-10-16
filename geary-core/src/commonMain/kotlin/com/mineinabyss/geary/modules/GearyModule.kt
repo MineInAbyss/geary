@@ -1,70 +1,40 @@
 package com.mineinabyss.geary.modules
 
-import co.touchlab.kermit.Logger
-import com.mineinabyss.geary.addons.dsl.*
-import com.mineinabyss.geary.engine.*
-import com.mineinabyss.geary.engine.archetypes.EntityRemove
-import com.mineinabyss.geary.observers.EventRunner
-import com.mineinabyss.idofront.di.DI
-import com.mineinabyss.idofront.di.DIContext
+import org.koin.core.module.Module
+import org.koin.dsl.koinApplication
+import org.koin.dsl.module
 
-//val geary: GearyAPI by DI.observe()
-
-fun <T : GearyModule> geary(
-    moduleProvider: GearyModuleProviderWithDefault<T>,
-    context: DIContext = DI,
+fun geary(
+    module: GearyModule,
     configure: GearySetup.() -> Unit = {},
 ): UninitializedGearyModule {
-    val module = moduleProvider.default()
-    return geary(moduleProvider, module, context, configure)
-}
-
-fun <T : GearyModule> geary(
-    moduleProvider: GearyModuleProvider<T>,
-    module: T,
-    context: DIContext = DI,
-    configure: GearySetup.() -> Unit = {},
-): UninitializedGearyModule {
-    moduleProvider.init(module)
-    val setup = GearySetup(module, context)
+    val application = koinApplication {
+        properties(module.properties)
+        modules(module.module)
+    }
+    val initializer = application.koin.get<EngineInitializer>()
+    initializer.init()
+    val setup = GearySetup(application)
     configure(setup)
-    return UninitializedGearyModule(setup, moduleProvider as GearyModuleProvider<GearyModule>)
+    return UninitializedGearyModule(setup, initializer)
 }
 
 data class UninitializedGearyModule(
     val setup: GearySetup,
-    val provider: GearyModuleProvider<GearyModule>
+    val initializer: EngineInitializer,
 ) {
     inline fun configure(configure: GearySetup.() -> Unit) = setup.configure()
 
-    fun start(): Geary{
+    fun start(): Geary {
         setup.addons.initAll(setup)
-        provider.start(setup.module)
-        setup.module.pipeline.runStartupTasks() // TODO keep pipeline separate, it shouldnt be used after init
-        return Geary(setup.module, setup.context)
+        initializer.start()
+        val world = Geary(setup.application)
+        world.pipeline.runStartupTasks() // TODO keep pipeline separate, it shouldnt be used after init
+        return world
     }
 }
 
-/**
- * Describes all the dependencies needed to initialize and run a Geary engine.
- */
-@GearyDSL
-interface GearyModule {
-    val logger: Logger
-    val entityProvider: EntityProvider
-    val entityRemoveProvider: EntityRemove
-    val componentProvider: ComponentProvider
-
-    val read: EntityReadOperations
-    val write: EntityMutateOperations
-
-    val queryManager: QueryManager
-    val components: Components
-    val engine: Engine
-
-    val eventRunner: EventRunner
-    val pipeline: Pipeline
-
-    val defaults: Defaults
-}
-
+data class GearyModule(
+    val module: Module,
+    val properties: Map<String, Any> = emptyMap(),
+)

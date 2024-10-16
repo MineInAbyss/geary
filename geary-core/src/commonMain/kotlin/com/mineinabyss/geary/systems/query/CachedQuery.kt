@@ -5,7 +5,9 @@ import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.engine.archetypes.Archetype
+import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.fastForEach
+import com.mineinabyss.geary.modules.get
 
 class CachedQuery<T : Query> internal constructor(val query: T) {
     val matchedArchetypes: MutableList<Archetype> = mutableListOf()
@@ -68,7 +70,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
         val accessors = cachingAccessors
 
         // current archetype
-        var archetype = query.module.write.archetypeProvider.rootArchetype // avoid nullable perf loss
+        var archetype = query.world.get<ArchetypeProvider>().rootArchetype // avoid nullable perf loss
         var upTo = 0
 
         // current entity

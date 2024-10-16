@@ -3,7 +3,6 @@ package com.mineinabyss.geary.observers.builders
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.ComponentProvider
 import com.mineinabyss.geary.engine.id
-import com.mineinabyss.geary.helpers.NO_ENTITY
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.observers.Observer
 import com.mineinabyss.geary.systems.query.Query
@@ -54,7 +53,7 @@ abstract class ObserverEventsBuilder<Context> : ExecutableObserver<Context> {
     abstract val mustHoldData: Boolean
     abstract val onBuild: (Observer) -> Unit
 
-    val comp: ComponentProvider get() = world.module.componentProvider
+    val comp: ComponentProvider get() = world.componentProvider
 
     abstract fun provideContext(entity: EntityId, data: Any?): Context
 

@@ -1,22 +1,22 @@
 package com.mineinabyss.geary.modules
 
+import co.touchlab.kermit.Logger
 import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.Addon
-import com.mineinabyss.idofront.di.DIContext
+import org.koin.core.KoinApplication
 
 /**
  * Represents a Geary engine whose dependencies have been created in a [GearyModule] and is ready to have addons
  * installed. Load phases are accessible here and will be called once start gets called.
  */
 class GearySetup(
-    val module: GearyModule,
-    val context: DIContext,
+    val application: KoinApplication,
 ) {
     val addons = MutableAddons()
-    val logger = module.logger
-    val geary = Geary(module, context, logger)
+    val logger = application.koin.get<Logger>()
+    val geary = Geary(application)
 
-    inline fun <T: Addon<Conf, *>, Conf> install(addon: T, configure: Conf.() -> Unit = {}): T {
+    inline fun <T : Addon<Conf, *>, Conf> install(addon: T, configure: Conf.() -> Unit = {}): T {
         addons.getOrPut(geary, addon).apply { config.configure() }
         return addon
     }
