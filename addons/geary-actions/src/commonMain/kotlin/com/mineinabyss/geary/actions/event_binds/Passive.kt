@@ -7,6 +7,7 @@ import com.mineinabyss.geary.actions.serializers.DurationSerializer
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.SerializableComponentId
@@ -43,7 +44,7 @@ fun Geary.parsePassive() = observe<OnSet>()
             entity.add(systemMatchingId)
             system(query {
                 has(systemMatchingId)
-                has(systemBind.match.map { it.id })
+                has(systemBind.match)
             }).every(systemBind.every).execOnAll {
                 entities().fastForEach { entity ->
                     runCatching {

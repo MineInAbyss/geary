@@ -3,6 +3,7 @@ package com.mineinabyss.geary.addons.dsl
 import co.touchlab.kermit.Logger
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.modules.Geary
+import org.koin.core.Koin
 import org.koin.core.KoinApplication
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -31,6 +32,7 @@ data class AddonSetup<Configuration>(
     val configuration: Configuration,
     val application: KoinApplication,
 ): KoinComponent {
+    override fun getKoin(): Koin = application.koin
     val logger = get<Logger>().withTag(name)
     val geary: Geary = Geary(application, logger)
 

@@ -9,12 +9,12 @@ import com.mineinabyss.geary.serialization.dsl.withCommonComponentNames
 import com.mineinabyss.geary.serialization.formats.YamlFormat
 import com.mineinabyss.geary.serialization.serialization
 import com.mineinabyss.geary.serialization.serializers.GearyEntitySerializer
+import com.mineinabyss.geary.test.GearyTest
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import org.junit.jupiter.api.Test
-import test.GearyTest
 
 class ConfigEntityObserversTests : GearyTest() {
     @Serializable

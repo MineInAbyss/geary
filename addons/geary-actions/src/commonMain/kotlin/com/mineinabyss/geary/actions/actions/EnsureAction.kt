@@ -2,18 +2,23 @@ package com.mineinabyss.geary.actions.actions
 
 import com.mineinabyss.geary.actions.*
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.SerializedComponents
+import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
-@Serializable(with = EnsureAction.Serializer::class)
+//@Serializable(with = EnsureAction.Serializer::class)
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(with = ContextualSerializer::class)
 class EnsureAction(
+    world: Geary,
     val conditions: SerializedComponents,
 ) : Action {
     @Transient
-    private val flat = conditions.map { componentId(it::class) to it }
+    private val flat = conditions.map { world.componentId(it::class) to it }
 
     override fun ActionGroupContext.execute() {
         flat.forEach { (id, data) ->
@@ -38,10 +43,12 @@ class EnsureAction(
         return true
     }
 
-    object Serializer : InnerSerializer<SerializedComponents, EnsureAction>(
+    class Serializer(
+        val world: Geary
+    ) : InnerSerializer<SerializedComponents, EnsureAction>(
         serialName = "geary:ensure",
         inner = PolymorphicListAsMapSerializer.ofComponents(),
         inverseTransform = { it.conditions },
-        transform = { EnsureAction(it) }
+        transform = { EnsureAction(world, it) }
     )
 }

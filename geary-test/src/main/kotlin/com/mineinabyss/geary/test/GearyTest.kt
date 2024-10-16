@@ -2,10 +2,7 @@ package com.mineinabyss.geary.test
 
 import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
-import com.mineinabyss.geary.modules.Geary
-import com.mineinabyss.geary.modules.TestEngineModule
-import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.modules.get
+import com.mineinabyss.geary.modules.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -26,10 +23,8 @@ abstract class GearyTest : Geary {
         startEngine()
     }
 
-    fun startEngine() {
-        println(setupGeary().start().application.koin.get<Engine>())
-        println(setupGeary().start().application.koin.get<Engine>())
-        _application = setupGeary().start().application
+    fun startEngine(override: UninitializedGearyModule? = null) {
+        _application = (override ?: setupGeary()).start().application
     }
 
     @AfterAll
@@ -38,9 +33,9 @@ abstract class GearyTest : Geary {
     }
 
     /** Recreates the engine. */
-    fun resetEngine() {
+    fun resetEngine(override: UninitializedGearyModule? = null) {
         clearEngine()
-        startEngine()
+        startEngine(override)
     }
 
     companion object {

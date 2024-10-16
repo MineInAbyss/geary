@@ -1,15 +1,14 @@
 package com.mineinabyss.geary.actions
 
-import co.touchlab.kermit.Logger
 import com.mineinabyss.geary.actions.actions.EmitEventAction
 import com.mineinabyss.geary.actions.actions.EnsureAction
 import com.mineinabyss.geary.actions.event_binds.*
 import com.mineinabyss.geary.actions.expressions.Expression
 import com.mineinabyss.geary.modules.Geary
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.SerializedComponents
+import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 
@@ -22,7 +21,8 @@ class ActionEntry(
     val environment: Map<String, Expression<Any>>?,
 )
 
-@Serializable(with = ActionGroup.Serializer::class)
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(with = ContextualSerializer::class)
 class ActionGroup(
     val actions: List<ActionEntry>,
 ) : Action {
@@ -58,7 +58,9 @@ class ActionGroup(
             context.register(entry.register, returned)
     }
 
-    class Serializer : InnerSerializer<List<SerializedComponents>, ActionGroup>(
+    class Serializer(
+        val world: Geary
+    ) : InnerSerializer<List<SerializedComponents>, ActionGroup>(
         serialName = "geary:action_group",
         inner = ListSerializer(
             PolymorphicListAsMapSerializer.ofComponents(
@@ -66,7 +68,7 @@ class ActionGroup(
                     customKeys = mapOf(
                         "when" to { ActionWhen.serializer() },
                         "register" to { ActionRegister.serializer() },
-                        "onFail" to { ActionOnFail.serializer() },
+                        "onFail" to { ContextualSerializer(ActionOnFail::class) },
                         "loop" to { ActionLoop.serializer() }
                     )
                 )
@@ -87,11 +89,11 @@ class ActionGroup(
                         comp is ActionRegister -> register = comp.register
                         comp is ActionOnFail -> onFail = comp.action
                         comp is ActionLoop -> loop =
-                            Expression.parseExpression(comp.expression, serializersModule) as Expression<List<Any>>
+                            Expression.parseExpression(world, comp.expression, serializersModule) as Expression<List<Any>>
 
                         comp is ActionEnvironment -> environment = comp.environment
                         action != null -> Geary.w { "Multiple actions defined in one block!" }
-                        else -> action = EmitEventAction.wrapIfNotAction(comp)
+                        else -> action = EmitEventAction.wrapIfNotAction(world, comp)
                     }
                 }
                 if (action == null) return@mapNotNull null
