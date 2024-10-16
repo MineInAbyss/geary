@@ -5,7 +5,8 @@ kotlinxBenchmarkRuntime = "0.4.10"
 okio = "3.9.0"
 roaringbitmap = "1.0.6"
 statelyConcurrency = "2.0.7"
-uuid = "0.8.4"
+koin = "4.0.0"
+junitJupiter = "5.8.1"
 
 [libraries]
 androidx-collection = { module = "androidx.collection:collection", version.ref = "androidxCollection" }
@@ -14,4 +15,6 @@ kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 roaringbitmap = { module = "org.roaringbitmap:RoaringBitmap", version.ref = "roaringbitmap" }
 stately-concurrency = { module = "co.touchlab:stately-concurrency", version.ref = "statelyConcurrency" }
-uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }

@@ -5,7 +5,7 @@ import com.mineinabyss.geary.observers.events.OnExtend
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 import com.mineinabyss.geary.systems.builders.observeWithData
 
-fun GearyModule.createCopyToInstancesSystem() = observeWithData<OnExtend>()
+fun Geary.createCopyToInstancesSystem() = observeWithData<OnExtend>()
     .exec {
         val copy = event.baseEntity.get<CopyToInstances>() ?: return@exec
         copy.decodeComponentsTo(entity)

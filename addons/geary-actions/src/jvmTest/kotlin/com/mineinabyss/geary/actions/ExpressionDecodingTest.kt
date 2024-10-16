@@ -7,16 +7,16 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.serialization.dsl.serialization
 import com.mineinabyss.geary.serialization.formats.YamlFormat
-import com.mineinabyss.idofront.di.DI
+import com.mineinabyss.geary.serialization.serialization
+import com.mineinabyss.geary.test.GearyTest
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import org.junit.jupiter.api.Test
 
-class ExpressionDecodingTest {
+class ExpressionDecodingTest : GearyTest() {
     @Serializable
     data class TestData(
         val name: Expression<String>,
@@ -66,20 +66,17 @@ class ExpressionDecodingTest {
 
     @Test
     fun shouldCorrectlyParseExpressionFunctions() {
-        DI.clear()
-        geary(TestEngineModule){
+        resetEngine(geary(TestEngineModule) {
             serialization {
                 components {
                     component(TestFunction.serializer())
                 }
                 format("yml", ::YamlFormat)
             }
+        })
 
-        }
-
-        geary.pipeline.runStartupTasks()
         val input = "'{{ entity.geary:testFunction{ string: test } }}'"
-        val expr = Yaml.default.decodeFromString(Expression.Serializer(String.serializer()), input)
+        val expr = Yaml.default.decodeFromString(Expression.Serializer(this, String.serializer()), input)
         expr.evaluate(ActionGroupContext(entity = entity())) shouldBe "test"
     }
 }

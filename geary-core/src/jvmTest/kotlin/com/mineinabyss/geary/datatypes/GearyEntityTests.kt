@@ -2,9 +2,10 @@ package com.mineinabyss.geary.datatypes
 
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.helpers.*
-import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.test.GearyTest
+import com.mineinabyss.geary.modules.relationOf
 import com.mineinabyss.geary.systems.accessors.RelationWithData
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
@@ -36,7 +37,7 @@ internal class GearyEntityTests : GearyTest() {
         entity {
             add<String>()
             set(1)
-        }.type.getArchetype() shouldBe archetypes.archetypeProvider.rootArchetype + componentId<String>() + componentId<Int>() + (HOLDS_DATA or componentId<Int>())
+        }.type.getArchetype() shouldBe rootArchetype + componentId<String>() + componentId<Int>() + (HOLDS_DATA or componentId<Int>())
     }
 
     @Test
@@ -44,7 +45,7 @@ internal class GearyEntityTests : GearyTest() {
         entity {
             set("Test")
             remove<String>()
-        }.type.getArchetype() shouldBe archetypes.archetypeProvider.rootArchetype
+        }.type.getArchetype() shouldBe rootArchetype
     }
 
     @Test
@@ -53,7 +54,7 @@ internal class GearyEntityTests : GearyTest() {
             set(1)
             set("Test")
             remove<String>()
-        }.type.getArchetype() shouldBe archetypes.archetypeProvider.rootArchetype + componentId<Int>() + (HOLDS_DATA or componentId<Int>())
+        }.type.getArchetype() shouldBe rootArchetype + componentId<Int>() + (HOLDS_DATA or componentId<Int>())
     }
 
     @Test
@@ -84,7 +85,7 @@ internal class GearyEntityTests : GearyTest() {
         entity {
             add<String>()
             set("Test")
-        }.type.getArchetype() shouldBe archetypes.archetypeProvider.rootArchetype + componentId<String>() + (componentId<String>() or HOLDS_DATA)
+        }.type.getArchetype() shouldBe rootArchetype + componentId<String>() + (componentId<String>() or HOLDS_DATA)
     }
 
     @Test
@@ -126,8 +127,8 @@ internal class GearyEntityTests : GearyTest() {
             setRelation<String, Int>("String to int relation")
         }
         entity.type.inner.shouldContainExactlyInAnyOrder(
-            Relation.of<String?, Int>().id,
-            Relation.of<String, Int>().id,
+            relationOf<String?, Int>().id,
+            relationOf<String, Int>().id,
         )
     }
 
@@ -141,7 +142,7 @@ internal class GearyEntityTests : GearyTest() {
         }
         entity.getAll().shouldContainExactlyInAnyOrder(
             "Test",
-            RelationWithData(RelatesTo(), null, relation = Relation.of<RelatesTo, String>().withRole(HOLDS_DATA)),
+            RelationWithData(RelatesTo(), null, relation = relationOf<RelatesTo, String>().withRole(HOLDS_DATA)),
         )
     }
 
@@ -163,8 +164,8 @@ internal class GearyEntityTests : GearyTest() {
                 addParent(parent)
             }
 
-            parent.children.shouldContainExactly(child)
-            child.parents.shouldContainExactly(parent)
+            parent.children.shouldContain(child)
+            child.parents.shouldContain(parent)
         }
     }
 

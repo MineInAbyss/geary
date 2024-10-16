@@ -6,13 +6,14 @@ import co.touchlab.stately.concurrency.Synchronizable
 import co.touchlab.stately.concurrency.synchronize
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityType
-import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 
-class SimpleArchetypeProvider : ArchetypeProvider {
-    private val queryManager: ArchetypeQueryManager get() = archetypes.queryManager
-
+class SimpleArchetypeProvider(
+    private val records: ArrayTypeMap,
+    private val queryManager: ArchetypeQueryManager,
+) : ArchetypeProvider {
     override val rootArchetype: Archetype by lazy {
-        Archetype(EntityType(), 0).also {
+        createArchetype(EntityType(), 0).also {
             queryManager.registerArchetype(it)
         }
     }
@@ -21,12 +22,20 @@ class SimpleArchetypeProvider : ArchetypeProvider {
 
 
     private fun createArchetype(prevNode: Archetype, componentEdge: ComponentId): Archetype {
-        val arc = Archetype(prevNode.type.plus(componentEdge), queryManager.archetypeCount)
-
+        val arc = createArchetype(prevNode.type.plus(componentEdge), queryManager.archetypeCount)
         arc.componentRemoveEdges[componentEdge.toLong()] = prevNode
         prevNode.componentAddEdges[componentEdge.toLong()] = arc
         queryManager.registerArchetype(arc)
         return arc
+    }
+
+    private fun createArchetype(type: EntityType, id: Int): Archetype {
+        return Archetype(
+            type = type,
+            id = id,
+            records = records,
+            archetypeProvider = this,
+        )
     }
 
     override fun getArchetype(entityType: EntityType): Archetype = archetypeWriteLock.synchronize {

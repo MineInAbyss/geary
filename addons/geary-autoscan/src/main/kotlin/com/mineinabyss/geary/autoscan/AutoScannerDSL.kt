@@ -3,8 +3,8 @@ package com.mineinabyss.geary.autoscan
 import co.touchlab.kermit.Severity
 import com.mineinabyss.geary.addons.dsl.GearyDSL
 import com.mineinabyss.geary.datatypes.Component
-import com.mineinabyss.geary.modules.GearyConfiguration
 import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.modules.GearySetup
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.dsl.serialization
 import kotlinx.serialization.*
@@ -19,7 +19,7 @@ import kotlin.reflect.jvm.kotlinFunction
 import kotlin.reflect.typeOf
 
 @GearyDSL
-fun GearyConfiguration.autoscan(
+fun GearySetup.autoscan(
     classLoader: ClassLoader,
     vararg limitToPackages: String,
     configure: AutoScannerDSL.() -> Unit
@@ -111,7 +111,7 @@ class AutoScannerDSL(
     fun <T : Any> subClassesOf(kClass: KClass<T>) {
         geary {
             serialization {
-                module {
+                application {
                     polymorphic(kClass) {
                         val scanned = this@AutoScannerDSL.reflections
                             .get(Scanners.SubTypes.of(kClass.java).asClass<Class<*>>(this@AutoScannerDSL.classLoader))

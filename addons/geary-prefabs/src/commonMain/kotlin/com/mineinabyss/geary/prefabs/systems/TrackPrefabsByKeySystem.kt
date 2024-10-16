@@ -8,7 +8,7 @@ import com.mineinabyss.geary.prefabs.prefabs
 import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.query
 
-fun GearyModule.createTrackPrefabsByKeyListener() = observe<OnSet>()
+fun Geary.createTrackPrefabsByKeyListener() = observe<OnSet>()
     .involving(query<PrefabKey>()).exec { (key) ->
         prefabs.manager.registerPrefab(key, entity)
         entity.addRelation<NoInherit, PrefabKey>()

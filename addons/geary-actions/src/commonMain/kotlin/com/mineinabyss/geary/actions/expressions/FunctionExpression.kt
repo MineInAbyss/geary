@@ -1,19 +1,22 @@
 package com.mineinabyss.geary.actions.expressions
 
 import com.mineinabyss.geary.actions.ActionGroupContext
-import com.mineinabyss.geary.serialization.serializableComponents
-import com.mineinabyss.geary.serialization.serializers.SerializableComponentId
+import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.serialization.SerializableComponents
+import com.mineinabyss.geary.serialization.serializers.ComponentIdSerializer
 import kotlinx.serialization.modules.SerializersModule
 
 interface FunctionExpression<I, O> {
     companion object {
         fun parse(
+            world: Geary,
             ref: Expression<*>,
             name: String,
             yaml: String,
             module: SerializersModule,
         ): FunctionExpressionWithInput<*, *> {
-            val compClass = SerializableComponentId.Serializer.getComponent(name, module)
+            val serializableComponents = world.getAddon(SerializableComponents)
+            val compClass = ComponentIdSerializer(world).getComponent(name, module)
             val serializer = serializableComponents.serializers.getSerializerFor(compClass)
                 ?: error("No serializer found for component $name")
             val expr =

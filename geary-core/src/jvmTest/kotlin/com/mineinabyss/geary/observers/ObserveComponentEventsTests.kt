@@ -2,12 +2,11 @@ package com.mineinabyss.geary.observers
 
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.test.GearyTest
+import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.observers.events.OnAdd
 import com.mineinabyss.geary.observers.events.OnRemove
 import com.mineinabyss.geary.observers.events.OnSet
-import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.query
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldContainExactly
@@ -28,7 +27,7 @@ internal class ObserveComponentEventsTests : GearyTest() {
         @Test
         fun `should correctly observe OnSet events involving single component`() {
             var called = 0
-            geary.observe<OnSet>().involving<Int>().exec { called += 1 }
+            observe<OnSet>().involving<Int>().exec { called += 1 }
 
             val entity = entity()
             called shouldBe 0
@@ -42,7 +41,7 @@ internal class ObserveComponentEventsTests : GearyTest() {
         fun `should correctly observe OnSet events involving multiple components`() {
             var called = 0
 
-            geary.observe<OnSet>().involving(query<String, Int, Double>()).exec { called++ }
+            observe<OnSet>().involving(query<String, Int, Double>()).exec { called++ }
 
             entity {
                 set("")
@@ -63,7 +62,7 @@ internal class ObserveComponentEventsTests : GearyTest() {
         @Test
         fun `should observe add event when component added or set`() {
             var called = 0
-            geary.observe<OnAdd>().involving<Int>().exec {
+            observe<OnAdd>().involving<Int>().exec {
                 called += 1
             }
 
@@ -81,7 +80,7 @@ internal class ObserveComponentEventsTests : GearyTest() {
         fun `should fire remove listener and have access to removed component data when component removed`() {
             // arrange
             var called = 0
-            geary.observe<OnRemove>().involving<String>().exec(query<String>()) { (string) ->
+            observe<OnRemove>().involving<String>().exec(query<String>()) { (string) ->
                 string shouldBe "data"
                 called++
             }
@@ -102,7 +101,7 @@ internal class ObserveComponentEventsTests : GearyTest() {
             var called = 0
 
 
-            geary.observe<OnRemove>().involving<String>().exec {
+            observe<OnRemove>().involving<String>().exec {
                 called++
             }
             val entity = entity {
@@ -121,7 +120,7 @@ internal class ObserveComponentEventsTests : GearyTest() {
         fun `should not call remove listener when added but not set component removed`() {
             // arrange
             var called = 0
-            geary.observe<OnRemove>().involving(query<String>()).exec {
+            observe<OnRemove>().involving(query<String>()).exec {
                 called++
             }
             val entity = entity {
@@ -139,7 +138,7 @@ internal class ObserveComponentEventsTests : GearyTest() {
         fun `should still remove component after remove listener modifies it`() {
             // arrange
             var called = 0
-            geary.observe<OnRemove>().involving(query<String>()).exec {
+            observe<OnRemove>().involving(query<String>()).exec {
                 called++
                 entity.set("new data")
             }
@@ -161,7 +160,7 @@ internal class ObserveComponentEventsTests : GearyTest() {
         fun `should correctly fire listener that listens to several removed components`() {
             // arrange
             var called = mutableListOf<Entity>()
-            geary.observe<OnRemove>().involving(query<String, Int>()).exec { (string, int) ->
+            observe<OnRemove>().involving(query<String, Int>()).exec { (string, int) ->
                 called.add(entity)
             }
             val entity1 = entity {
@@ -182,14 +181,14 @@ internal class ObserveComponentEventsTests : GearyTest() {
             entity3.remove<String>() // Doesn't fire
 
             // assert
-            called shouldContainExactly  listOf(entity1, entity2)
+            called shouldContainExactly listOf(entity1, entity2)
         }
 
         @Test
         fun `should correctly remove component if event listener modifies type`() {
             // arrange
             var called = 0
-            geary.observe<OnRemove>().involving(query<String>()).exec { (string) ->
+            observe<OnRemove>().involving(query<String>()).exec { (string) ->
                 called++
                 entity.set(1)
             }

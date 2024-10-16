@@ -3,6 +3,7 @@ package com.mineinabyss.geary.engine
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.datatypes.EntityId
 
 interface EntityMutateOperations {
     /**
@@ -11,24 +12,24 @@ interface EntityMutateOperations {
      * @param noEvent Whether to fire an [AddedComponent] event.
      */
     fun setComponentFor(
-        entity: Entity,
+        entity: EntityId,
         componentId: ComponentId,
         data: Component,
         noEvent: Boolean
     )
 
     /** Adds this [componentId] to the [entity]'s type but doesn't store any data. */
-    fun addComponentFor(entity: Entity, componentId: ComponentId, noEvent: Boolean)
+    fun addComponentFor(entity: EntityId, componentId: ComponentId, noEvent: Boolean)
 
-    fun extendFor(entity: Entity, base: Entity)
+    fun extendFor(entity: EntityId, base: EntityId)
 
     /** Removes a [componentId] from an [entity] and clears any data previously associated with it. */
-    fun removeComponentFor(entity: Entity, componentId: ComponentId, noEvent: Boolean): Boolean
+    fun removeComponentFor(entity: EntityId, componentId: ComponentId, noEvent: Boolean): Boolean
 
     // To avoid breaking changes from component remove events, marked for removal
     @Deprecated("Use removeComponentFor(entity, componentId, noEvent) instead.")
-    fun removeComponentFor(entity: Entity, componentId: ComponentId): Boolean
+    fun removeComponentFor(entity: EntityId, componentId: ComponentId): Boolean
 
     /** Removes all components from an entity. */
-    fun clearEntity(entity: Entity)
+    fun clearEntity(entity: EntityId)
 }

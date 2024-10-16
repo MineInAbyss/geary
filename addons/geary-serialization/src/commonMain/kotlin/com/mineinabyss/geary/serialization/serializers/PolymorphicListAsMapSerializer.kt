@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.serialization.serializers
 
 import com.mineinabyss.geary.datatypes.GearyComponent
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.fromCamelCaseToSnakeCase
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.hasNamespace
@@ -57,7 +58,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                                 }
                                 when (config.onMissingSerializer) {
                                     OnMissing.ERROR -> throw it
-                                    OnMissing.WARN -> geary.logger.w("No serializer found for $key in namespaces $namespaces, ignoring")
+                                    OnMissing.WARN -> Geary.w("No serializer found for $key in namespaces $namespaces, ignoring")
                                     OnMissing.IGNORE -> Unit
                                 }
                                 compositeDecoder.skipMapValue()
@@ -70,7 +71,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                                 config.whenComponentMalformed(key)
                                 parentConfig?.whenComponentMalformed?.invoke(key)
                                 if (config.skipMalformedComponents) {
-                                    geary.logger.w(
+                                    Geary.w(
                                         "Malformed component $key, ignoring:\n" +
                                                 it.stackTraceToString()
                                                     .lineSequence()
@@ -96,6 +97,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         namespaces: List<String>,
         key: String,
     ): Result<KSerializer<T>> = runCatching {
+        val namespaces = namespaces.plus("geary").toSet()
         if (key.startsWith("kotlin.")) {
             return@runCatching serializersModule.getPolymorphic(polymorphicSerializer.baseClass, key) as KSerializer<T>
         }

@@ -6,12 +6,11 @@ import com.mineinabyss.geary.actions.execute
 import com.mineinabyss.geary.actions.serializers.DurationSerializer
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.fastForEach
-import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.SerializableComponentId
-import com.mineinabyss.geary.systems.builders.observe
-import com.mineinabyss.geary.systems.builders.system
 import com.mineinabyss.geary.systems.query.query
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
@@ -37,7 +36,7 @@ class Passive(
     )
 }
 
-fun GearyModule.parsePassive() = observe<OnSet>()
+fun Geary.parsePassive() = observe<OnSet>()
     .involving(query<Passive>())
     .exec { (passive) ->
         passive.systems.forEach { systemBind ->
@@ -45,7 +44,7 @@ fun GearyModule.parsePassive() = observe<OnSet>()
             entity.add(systemMatchingId)
             system(query {
                 has(systemMatchingId)
-                has(systemBind.match.map { it.id })
+                has(systemBind.match)
             }).every(systemBind.every).execOnAll {
                 entities().fastForEach { entity ->
                     runCatching {

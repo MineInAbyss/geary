@@ -2,10 +2,10 @@ package com.mineinabyss.geary.observers
 
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.tests.GearyTest
+import com.mineinabyss.geary.test.GearyTest
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.observe
-import com.mineinabyss.geary.systems.builders.observeWithData
+import com.mineinabyss.geary.modules.observe
+import com.mineinabyss.geary.modules.observeWithData
 import com.mineinabyss.geary.systems.query.query
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -22,7 +22,7 @@ class ObserverTypeTests : GearyTest() {
     @Test
     fun `should observe event regardless of holding data when not observing event data`() {
         var called = 0
-        geary.observe<MyEvent>().exec { called++ }
+        observe<MyEvent>().exec { called++ }
         val entity = entity()
 
         called shouldBe 0
@@ -37,7 +37,7 @@ class ObserverTypeTests : GearyTest() {
     @Test
     fun `should not observe event without data when observing data`() {
         var called = 0
-        geary.observeWithData<MyEvent>().exec {
+        observeWithData<MyEvent>().exec {
             event.shouldBeInstanceOf<MyEvent>()
             called++
         }
@@ -55,7 +55,7 @@ class ObserverTypeTests : GearyTest() {
     @Test
     fun `should observe events involving component when filtering one involved component`() {
         var called = 0
-        geary.observe<MyEvent>().involving(query<Int>()).exec { (int) -> called += int }
+        observe<MyEvent>().involving(query<Int>()).exec { (int) -> called += int }
 
         val entity = entity()
 

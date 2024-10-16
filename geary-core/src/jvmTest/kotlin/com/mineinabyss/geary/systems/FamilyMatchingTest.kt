@@ -1,15 +1,10 @@
 package com.mineinabyss.geary.systems
 
-import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
-import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.getArchetype
-import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.modules.archetypes
-import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.system
+import com.mineinabyss.geary.modules.findEntities
+import com.mineinabyss.geary.test.GearyTest
 import com.mineinabyss.geary.systems.query.Query
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
@@ -20,7 +15,7 @@ class FamilyMatchingTest : GearyTest() {
     val stringId = componentId<String>() or HOLDS_DATA
     val intId = componentId<Int>()
 
-    val system = geary.system(object : Query() {
+    val system = system(object : Query(this) {
         val string by get<String>()
         override fun ensure() = this { has<Int>() }
     }).defer { it.string }.onFinish { data, entity ->
@@ -28,7 +23,7 @@ class FamilyMatchingTest : GearyTest() {
         entity.has<Int>() shouldBe true
     }
 
-    val root = archetypes.archetypeProvider.rootArchetype
+    val root = rootArchetype
     val correctArchetype = root + stringId + intId
 
     @Test
@@ -46,7 +41,8 @@ class FamilyMatchingTest : GearyTest() {
             set("Test")
             set(1)
         }
-        geary.queryManager.getEntitiesMatching(system.runner.family).shouldContainAll(entity, entity2)
+        val entities = findEntities(system.runner.family)
+        entities.shouldContainAll(entity, entity2)
     }
 
     @Test

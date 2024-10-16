@@ -3,12 +3,15 @@ package com.mineinabyss.geary.engine
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.Relation
+import com.mineinabyss.geary.datatypes.entityTypeOf
+import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.engine.archetypes.Archetype
+import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.getArchetype
-import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.modules.get
+import com.mineinabyss.geary.test.GearyTest
+import com.mineinabyss.geary.modules.relationOf
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
@@ -19,7 +22,7 @@ internal class ArchetypeTest : GearyTest() {
 
     @Nested
     inner class ArchetypeNavigation {
-        val root = archetypes.archetypeProvider.rootArchetype
+        val root = rootArchetype
 
         @Test
         fun `archetype ids assigned correctly`() {
@@ -51,10 +54,10 @@ internal class ArchetypeTest : GearyTest() {
     fun matchedRelations() {
         val target = entity()
         val target2 = entity()
-        val relatesTo = Relation.of<RelatesTo>(target)
-        val instanceOf = Relation.of<InstanceOf?>(target)
-        val instanceOf2 = Relation.of<InstanceOf?>(target2)
-        val arc = Archetype(EntityType(listOf(relatesTo.id, instanceOf.id, instanceOf2.id)), 0)
+        val relatesTo = relationOf<RelatesTo>(target)
+        val instanceOf = relationOf<InstanceOf?>(target)
+        val instanceOf2 = relationOf<InstanceOf?>(target2)
+        val arc = get<ArchetypeProvider>().getArchetype(entityTypeOf(relatesTo.id, instanceOf.id, instanceOf2.id))
         arc.getRelationsByTarget(target.id).map { Relation.of(it) }
             .shouldContainExactlyInAnyOrder(relatesTo, instanceOf)
         arc.getRelationsByKind(componentId<InstanceOf>()).map { Relation.of(it) }

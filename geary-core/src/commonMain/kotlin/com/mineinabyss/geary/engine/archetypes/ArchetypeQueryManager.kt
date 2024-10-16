@@ -2,8 +2,11 @@ package com.mineinabyss.geary.engine.archetypes
 
 import co.touchlab.stately.concurrency.Synchronizable
 import co.touchlab.stately.concurrency.synchronize
-import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.components.ReservedComponents
+import com.mineinabyss.geary.datatypes.EntityId
+import com.mineinabyss.geary.datatypes.EntityIdArray
 import com.mineinabyss.geary.datatypes.family.Family
+import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.datatypes.maps.Family2ObjectArrayMap
 import com.mineinabyss.geary.engine.QueryManager
 import com.mineinabyss.geary.helpers.contains
@@ -48,13 +51,21 @@ class ArchetypeQueryManager : QueryManager {
         return archetypes.match(family)
     }
 
-    override fun getEntitiesMatching(family: Family): List<Entity> {
-        return getArchetypesMatching(family).flatMap(Archetype::entities)
+    override fun getEntitiesMatching(family: Family): EntityIdArray {
+        val archetypes = getArchetypesMatching(family)
+        // TODO avoid the list creation here, make the ULongArray directly
+        return archetypes.flatMap(Archetype::entities).toULongArray()
     }
 
-    override fun getEntitiesMatchingAsSequence(family: Family): Sequence<Entity> {
+    override fun getEntitiesMatchingAsSequence(family: Family): Sequence<EntityId> {
         return getArchetypesMatching(family)
             .asSequence()
             .flatMap(Archetype::entities)
+    }
+
+    override fun childrenOf(parent: EntityId): EntityIdArray {
+        return getEntitiesMatching(family {
+            hasRelation(ReservedComponents.CHILD_OF, parent)
+        })
     }
 }

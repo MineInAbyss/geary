@@ -10,19 +10,16 @@ kotlin {
             dependencies {
                 implementation(project(":geary-core"))
                 implementation(project(":geary-serialization"))
-
-                implementation(libs.uuid)
-                implementation(idofrontLibs.idofront.di)
             }
         }
-        val commonTest by getting {
+        val jvmTest by getting {
             dependencies {
+                implementation(project(":geary-test"))
                 implementation(kotlin("test"))
                 implementation(idofrontLibs.kotlinx.coroutines.test)
                 implementation(idofrontLibs.kotlinx.serialization.kaml)
                 implementation(idofrontLibs.kotest.assertions)
                 implementation(idofrontLibs.kotest.property)
-                implementation(idofrontLibs.idofront.di)
                 implementation(project(":geary-core"))
                 implementation(project(":geary-serialization"))
             }

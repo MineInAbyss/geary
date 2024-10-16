@@ -2,15 +2,15 @@ package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.GearyDSL
-import com.mineinabyss.geary.serialization.fileSystem
+import okio.FileSystem
 import okio.Path
 
 @GearyDSL
 class PrefabsDSL(
-    private val namespaced: Namespaced
+    private val fileSystem: FileSystem,
+    private val loader: PrefabLoader,
+    private val namespaced: Namespaced,
 ) {
-    private val loader = prefabs.loader
-
     /** Loads prefab entities from all files inside a [directory][from], into a given [namespace] */
     fun from(
         vararg from: Path,
