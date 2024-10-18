@@ -1,12 +1,12 @@
 package com.mineinabyss.geary.systems
 
 import com.mineinabyss.geary.components.relations.InstanceOf
+import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.getArchetype
-import com.mineinabyss.geary.helpers.tests.GearyTest
+import com.mineinabyss.geary.modules.findEntities
+import com.mineinabyss.geary.test.GearyTest
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.system
 import com.mineinabyss.geary.systems.query.Query
 import io.kotest.inspectors.forAll
 import io.kotest.matchers.collections.shouldContain
@@ -24,7 +24,7 @@ class RelationMatchingSystemTest : GearyTest() {
     fun relations() {
         var ran = 0
         resetEngine()
-        val system = geary.system(object : Query() {
+        val system = system(object : Query(this) {
             val persists by getRelationsWithData<Persists, Any?>()
         }).exec {
             ran++
@@ -57,7 +57,7 @@ class RelationMatchingSystemTest : GearyTest() {
         var ran = 0
         var persistsCount = 0
         var instanceOfCount = 0
-        val system = geary.system(object : Query() {
+        val system = system(object : Query(this) {
             val persists by getRelationsWithData<Persists, Any>()
             val instanceOf by getRelationsWithData<InstanceOf?, Any?>()
         }).exec {
@@ -99,7 +99,6 @@ class RelationMatchingSystemTest : GearyTest() {
     fun relationsWithData() {
         resetEngine()
 
-
         val entity = entity {
             setRelation<Persists, String>(Persists())
             add<String>()
@@ -110,16 +109,19 @@ class RelationMatchingSystemTest : GearyTest() {
             set("Test")
         }
 
-        val system = geary.system(object : Query() {
+        val system = system(object : Query(this) {
             val withData by getRelationsWithData<Persists, Any>()
         }).exec {
             withData.forAll { it.data shouldBe Persists() }
             withData.forAll { it.targetData shouldBe "Test" }
         }
-
+        println(componentId<Any>())
+        println(findEntities {
+            hasRelation<Persists, Any>()
+        }.toList())
         system.runner.matchedArchetypes.shouldNotContain(entity.type.getArchetype())
         system.runner.matchedArchetypes.shouldContain(entityWithData.type.getArchetype())
 
-        geary.engine.tick(0)
+        engine.tick(0)
     }
 }

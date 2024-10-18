@@ -5,6 +5,7 @@ import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityId
 import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.datatypes.family.family
+import com.mineinabyss.geary.engine.ComponentProvider
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
@@ -12,6 +13,7 @@ import com.mineinabyss.geary.systems.accessors.ReadOnlyAccessor
 import com.mineinabyss.geary.systems.query.Query
 
 class RelationsAccessor(
+    val comp: ComponentProvider,
     override val originalAccessor: Accessor?,
     val kind: ComponentId,
     val target: EntityId,

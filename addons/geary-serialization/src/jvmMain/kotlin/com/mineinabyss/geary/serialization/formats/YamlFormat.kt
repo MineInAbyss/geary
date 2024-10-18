@@ -1,9 +1,6 @@
 package com.mineinabyss.geary.serialization.formats
 
-import com.charleskorn.kaml.Yaml
-import com.charleskorn.kaml.YamlConfiguration
-import com.charleskorn.kaml.decodeFromStream
-import com.charleskorn.kaml.encodeToStream
+import com.charleskorn.kaml.*
 import com.mineinabyss.geary.serialization.formats.Format.ConfigType
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
@@ -14,22 +11,31 @@ import org.intellij.lang.annotations.Language
 import java.io.InputStream
 
 class YamlFormat(
-    module: SerializersModule
+    module: SerializersModule,
+    configuration: Configuration = Configuration(),
 ) : Format {
+    class Configuration(
+        val regular: YamlConfiguration = YamlConfiguration(
+            encodeDefaults = false,
+            polymorphismStyle = PolymorphismStyle.Property,
+            polymorphismPropertyName = "type",
+        ),
+        val nonStrict: YamlConfiguration = YamlConfiguration(
+            encodeDefaults = false,
+            strictMode = false,
+            polymorphismStyle = PolymorphismStyle.Property,
+            polymorphismPropertyName = "type",
+        ),
+    )
     override val ext = "yml"
 
     private val nonStrictYaml = Yaml(
-        configuration = YamlConfiguration(
-            encodeDefaults = false,
-            strictMode = false,
-        )
+        configuration = configuration.nonStrict
     )
 
     val regularYaml = Yaml(
         serializersModule = module,
-        configuration = YamlConfiguration(
-            encodeDefaults = false,
-        )
+        configuration = configuration.regular
     )
 
     override fun <T> decodeFromFile(

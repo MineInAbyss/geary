@@ -1,10 +1,9 @@
 package com.mineinabyss.geary.observers
 
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.test.GearyTest
+import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.observers.events.OnEntityRemoved
-import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.query
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
@@ -14,13 +13,13 @@ class EntityRemoveObserverTest : GearyTest() {
     fun `should correctly run multiple listeners on single event`() {
         var called = 0
 
-        val listener1 = geary.observe<OnEntityRemoved>().exec(query<Int>()) { (data) ->
+        val listener1 = observe<OnEntityRemoved>().exec(query<Int>()) { (data) ->
             data shouldBe 1
             entity.remove<Int>()
             called++
         }
 
-        val listener2 = geary.observe<OnEntityRemoved>().exec(query<String>()) { (data) ->
+        val listener2 = observe<OnEntityRemoved>().exec(query<String>()) { (data) ->
             data shouldBe ""
         }
 

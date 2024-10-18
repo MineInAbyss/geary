@@ -1,10 +1,12 @@
 package com.mineinabyss.geary.systems.query
 
+import com.mineinabyss.geary.modules.ArchetypeEngineModule
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.type.ComponentAccessor
 import kotlin.reflect.KProperty
 
-abstract class Query : QueriedEntity(cacheAccessors = true) {
+abstract class Query(world: Geary) : QueriedEntity(world, cacheAccessors = true) {
     /** Automatically matches families for any accessor that's supposed to match a family. */
     operator fun <T : Accessor> T.provideDelegate(
         thisRef: Any,

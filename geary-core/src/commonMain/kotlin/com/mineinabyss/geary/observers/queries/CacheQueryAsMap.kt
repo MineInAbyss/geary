@@ -1,32 +1,32 @@
 package com.mineinabyss.geary.observers.queries
 
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.observers.builders.ObserverContext
 import com.mineinabyss.geary.observers.events.OnFirstSet
 import com.mineinabyss.geary.observers.events.OnRemove
-import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.ShorthandQuery
 
-fun <T, Q : ShorthandQuery> GearyModule.cacheGroupedBy(
+fun <T, Q : ShorthandQuery> Geary.cacheGroupedBy(
     query: Q,
-    groupBy: ObserverContext.(Q) -> T
+    groupBy: ObserverContext.(Q) -> T,
 ): QueryGroupedBy<T, Q> {
     return object : QueryGroupedBy<T, Q>(query, this) {
         override fun ObserverContext.groupBy(query: Q): T = groupBy(query)
     }
 }
 
-fun <T, Q : ShorthandQuery> GearyModule.cacheAssociatedBy(
+fun <T, Q : ShorthandQuery> Geary.cacheAssociatedBy(
     query: Q,
-    associateBy: ObserverContext.(Q) -> T
+    associateBy: ObserverContext.(Q) -> T,
 ): QueryAssociatedBy<T, Q> {
     return object : QueryAssociatedBy<T, Q>(query, this) {
         override fun ObserverContext.associateBy(query: Q): T = associateBy(query)
     }
 }
 
-abstract class QueryGroupedBy<T, Q : ShorthandQuery>(private val query: Q, geary: GearyModule) {
+abstract class QueryGroupedBy<T, Q : ShorthandQuery>(private val query: Q, geary: Geary) {
     private val map = mutableMapOf<T, MutableList<Entity>>()
 
     abstract fun ObserverContext.groupBy(query: Q): T
@@ -51,7 +51,7 @@ abstract class QueryGroupedBy<T, Q : ShorthandQuery>(private val query: Q, geary
     }
 }
 
-abstract class QueryAssociatedBy<T, Q : ShorthandQuery>(private val query: Q, geary: GearyModule) {
+abstract class QueryAssociatedBy<T, Q : ShorthandQuery>(private val query: Q, geary: Geary) {
     private val map = mutableMapOf<T, Entity>()
 
     abstract fun ObserverContext.associateBy(query: Q): T

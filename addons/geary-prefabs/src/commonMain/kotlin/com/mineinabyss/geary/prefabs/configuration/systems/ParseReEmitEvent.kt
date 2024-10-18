@@ -1,12 +1,11 @@
 package com.mineinabyss.geary.prefabs.configuration.systems
 
-import com.mineinabyss.geary.helpers.toGeary
-import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.observeWithData
 import com.mineinabyss.geary.prefabs.configuration.components.ReEmitEvent
-import com.mineinabyss.geary.systems.builders.observeWithData
 
-fun GearyModule.reEmitEvent() = observeWithData<ReEmitEvent>().exec {
-    entity.getRelationsByKind(event.findByRelationKind.id).forEach { relation ->
+fun Geary.reEmitEvent() = observeWithData<ReEmitEvent>().exec {
+    entity.getRelationsByKind(event.findByRelationKind).forEach { relation ->
         val entity = relation.target.toGeary()
         if (entity.exists()) entity.emit(event = event.dataComponentId, data = event.data)
     }

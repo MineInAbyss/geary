@@ -1,16 +1,14 @@
 package com.mineinabyss.geary.datatypes
 
-import com.mineinabyss.geary.helpers.toGeary
-
 class EntityStack(
     @PublishedApi
-    internal val stack: ArrayDeque<Long> = ArrayDeque()
+    internal val stack: ArrayDeque<Long> = ArrayDeque(),
 ) {
-    fun push(entity: Entity) {
-        stack.add(entity.id.toLong())
+    fun push(entity: EntityId) {
+        stack.add(entity.toLong())
     }
 
-    inline fun popOrElse(orElse: () -> Entity): Entity =
+    inline fun popOrElse(orElse: () -> EntityId): EntityId =
         if (stack.isEmpty()) orElse()
-        else stack.removeFirst().toGeary()
+        else stack.removeFirst().toULong()
 }

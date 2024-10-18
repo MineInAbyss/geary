@@ -1,36 +1,39 @@
 package com.mineinabyss.geary.datatypes.family
 
+import com.mineinabyss.geary.components.ReservedComponents
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.helpers.componentId
-import com.mineinabyss.geary.helpers.componentIdWithNullable
-import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.engine.id
+import com.mineinabyss.geary.engine.idWithNullable
+import com.mineinabyss.geary.modules.Geary
 
 inline fun family(init: MutableFamily.Selector.And.() -> Unit): Family.Selector.And {
     return MutableFamily.Selector.And().apply(init)
 }
 
-sealed class MutableFamily : Family {
-    sealed class Leaf : MutableFamily() {
-        class Component(
-            override var component: ComponentId
-        ) : Leaf(), Family.Leaf.Component
+sealed interface MutableFamily : Family {
+//    val comp: ComponentProvider
 
-        class AnyToTarget(
+    sealed interface Leaf : MutableFamily {
+        data class Component(
+            override var component: ComponentId,
+        ) : Leaf, Family.Leaf.Component
+
+        data class AnyToTarget(
             override var target: EntityId,
-            override val kindMustHoldData: Boolean
-        ) : Leaf(), Family.Leaf.AnyToTarget
+            override val kindMustHoldData: Boolean,
+        ) : Leaf, Family.Leaf.AnyToTarget
 
-        class KindToAny(
+        data class KindToAny(
             override var kind: ComponentId,
-            override val targetMustHoldData: Boolean
-        ) : Leaf(), Family.Leaf.KindToAny
+            override val targetMustHoldData: Boolean,
+        ) : Leaf, Family.Leaf.KindToAny
     }
 
 
-    sealed class Selector : MutableFamily(), Family.Selector {
+    sealed class Selector : MutableFamily, Family.Selector {
         class And(
-            and: MutableList<MutableFamily> = mutableListOf()
+            and: MutableList<MutableFamily> = mutableListOf(),
         ) : Selector(), Family.Selector.And {
             init {
                 elements.addAll(and)
@@ -40,7 +43,7 @@ sealed class MutableFamily : Family {
         }
 
         class AndNot(
-            andNot: MutableList<MutableFamily> = mutableListOf()
+            andNot: MutableList<MutableFamily> = mutableListOf(),
         ) : Selector(), Family.Selector.AndNot {
             init {
                 elements.addAll(andNot)
@@ -50,7 +53,7 @@ sealed class MutableFamily : Family {
         }
 
         class Or(
-            or: MutableList<MutableFamily> = mutableListOf()
+            or: MutableList<MutableFamily> = mutableListOf(),
         ) : Selector(), Family.Selector.Or {
             init {
                 elements.addAll(or)
@@ -93,8 +96,9 @@ sealed class MutableFamily : Family {
             kind: ComponentId,
             target: EntityId,
         ) {
-            val specificKind = kind and ENTITY_MASK != geary.components.any
-            val specificTarget = target and ENTITY_MASK != geary.components.any
+            val any = ReservedComponents.ANY
+            val specificKind = kind and ENTITY_MASK != any
+            val specificTarget = target and ENTITY_MASK != any
             return when {
                 specificKind && specificTarget -> has(Relation.of(kind, target).id)
                 specificTarget -> add(Leaf.AnyToTarget(target, kind.holdsData()))
@@ -103,14 +107,14 @@ sealed class MutableFamily : Family {
             }
         }
 
-        inline fun <reified K, reified T> hasRelation(): Unit = hasRelation<K>(componentIdWithNullable<T>())
+        inline fun <reified K, reified T> Geary.hasRelation(): Unit = hasRelation<K>(componentProvider.idWithNullable<T>())
 
-        inline fun <reified K> hasRelation(target: EntityId) {
-            val kind = componentIdWithNullable<K>()
+        inline fun <reified K> Geary.hasRelation(target: EntityId) {
+            val kind = componentProvider.idWithNullable<K>()
             hasRelation(kind, target)
         }
 
-        inline fun <reified K> hasRelation(target: Entity): Unit = hasRelation<K>(target.id)
+        inline fun <reified K> Geary.hasRelation(target: Entity): Unit = hasRelation<K>(target.id)
 
 
         inline fun or(init: Or.() -> Unit) {
@@ -125,11 +129,11 @@ sealed class MutableFamily : Family {
             add(AndNot().apply(init))
         }
 
-        inline fun <reified T : Component> has(): Unit =
-            has(componentId<T>())
+        inline fun <reified T : Component> Geary.has(): Unit =
+            has(componentProvider.id<T>())
 
-        inline fun <reified T : Component> hasSet(): Unit =
-            hasSet(componentId<T>())
+        inline fun <reified T : Component> Geary.hasSet(): Unit =
+            hasSet(componentProvider.id<T>())
 
         fun has(vararg componentIds: ComponentId) {
             has(componentIds)

@@ -1,12 +1,11 @@
 package com.mineinabyss.geary.instancing
 
 import com.mineinabyss.geary.components.relations.NoInherit
-import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.test.GearyTest
+import com.mineinabyss.geary.modules.observe
+import com.mineinabyss.geary.modules.relationOf
 import com.mineinabyss.geary.observers.events.OnSet
-import com.mineinabyss.geary.systems.builders.observe
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.BeforeEach
@@ -30,7 +29,7 @@ class InstancingTest : GearyTest() {
         val instance = entity { extend(prefab) }
 
         // assert
-        instance.getRelations<String?, Any?>().shouldBe(listOf(Relation.of<String?>(relatesTo)))
+        instance.getRelations<String?, Any?>().shouldBe(listOf(relationOf<String?>(relatesTo)))
     }
 
     @Test
@@ -68,7 +67,7 @@ class InstancingTest : GearyTest() {
     @Test
     fun `should correctly extend entity when listener modifies it during extend process`() {
         // arrange
-        geary.observe<OnSet>().involving<Int>().exec {
+        observe<OnSet>().involving<Int>().exec {
             entity.set("Modifying!")
         }
         val prefab = entity {

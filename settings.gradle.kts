@@ -26,8 +26,9 @@ dependencyResolutionManagement {
 }
 
 include(
-    "geary-benchmarks",
+//    "geary-benchmarks",
     "geary-core",
+    "geary-test",
 )
 
 // Go through addons directory and load all projects based on file name

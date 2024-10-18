@@ -1,6 +1,8 @@
 package com.mineinabyss.geary.actions.expressions
 
 import com.mineinabyss.geary.actions.ActionGroupContext
+import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.serialization.getWorld
 import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -31,23 +33,25 @@ sealed interface Expression<T> {
     }
 
     companion object {
-        fun parseExpression(string: String, module: SerializersModule): Expression<*> {
+        fun parseExpression(
+            world: Geary,string: String, module: SerializersModule): Expression<*> {
             val (name, rem) = getFunctionName(string)
             val reference = Variable<Any>(name)
             if(rem == "") return reference
-            return foldFunctions(reference, rem, module)
+            return foldFunctions(world, reference, rem, module)
         }
 
         tailrec fun foldFunctions(
+            world: Geary,
             reference: Expression<*>,
             remainder: String,
             module: SerializersModule,
         ): Expression<*> {
             val (name, afterName) = getFunctionName(remainder)
             val (yaml, afterYaml) = getYaml(afterName)
-            val functionExpr = FunctionExpression.parse(reference, name, yaml, module)
+            val functionExpr = FunctionExpression.parse(world, reference, name, yaml, module)
             if (afterYaml == "") return functionExpr
-            return foldFunctions(functionExpr, afterYaml, module)
+            return foldFunctions(world, functionExpr, afterYaml, module)
         }
 
         fun getYaml(expr: String): Pair<String, String> {
@@ -76,6 +80,7 @@ sealed interface Expression<T> {
         override val descriptor: SerialDescriptor = ContextualSerializer(Any::class).descriptor
 
         override fun deserialize(decoder: Decoder): Expression<T> {
+            val world = decoder.serializersModule.getWorld()
             // Try reading string value, if serial type isn't string, this fails
             runCatching {
                 decoder.decodeStructure(String.serializer().descriptor) {
@@ -84,6 +89,7 @@ sealed interface Expression<T> {
             }.onSuccess { string ->
                 if (string.startsWith("{{") && string.endsWith("}}"))
                     return parseExpression(
+                        world,
                         string.removePrefix("{{").removeSuffix("}}").trim(),
                         decoder.serializersModule
                     ) as Expression<T>

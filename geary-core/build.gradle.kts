@@ -12,19 +12,21 @@ kotlin {
                 implementation(libs.androidx.collection)
                 implementation(idofrontLibs.kotlin.reflect)
 
-                api(idofrontLibs.idofront.di)
+                api(libs.koin.core)
                 api(idofrontLibs.kermit)
                 api(idofrontLibs.kotlinx.coroutines)
             }
 
         }
-        val commonTest by getting {
+
+        val jvmTest by getting {
             dependencies {
+                implementation(project(":geary-test"))
                 implementation(kotlin("test"))
                 implementation(idofrontLibs.kotlinx.coroutines.test)
                 implementation(idofrontLibs.kotest.assertions)
                 implementation(idofrontLibs.kotest.property)
-                implementation(idofrontLibs.idofront.di)
+                implementation(libs.koin.test)
             }
         }
 

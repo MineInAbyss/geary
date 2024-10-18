@@ -6,7 +6,7 @@ import com.mineinabyss.geary.datatypes.Entity as GE
 
 /** Gets a component of type [T] from an entity, returning null if [T] is nullable, or an error otherwise. */
 inline fun <reified T : GC?> GE.nullOrError(): T {
-    val data = get(componentId<T>()) as? T?
+    val data = get(world.componentId<T>()) as? T?
     if (!typeOf<T>().isMarkedNullable && data == null) {
         error("")
     }

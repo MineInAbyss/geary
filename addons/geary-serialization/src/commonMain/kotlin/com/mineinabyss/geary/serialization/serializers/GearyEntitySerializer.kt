@@ -2,22 +2,26 @@ package com.mineinabyss.geary.serialization.serializers
 
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.serialization.getAllPersisting
+import com.mineinabyss.geary.serialization.getWorld
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-typealias SerializableGearyEntity = @Serializable(with = GearyEntitySerializer::class) GearyEntity
+//TODO register contextual serializer for world
+typealias SerializableGearyEntity = @Contextual GearyEntity
 
-
-object GearyEntitySerializer : KSerializer<GearyEntity> {
+class GearyEntitySerializer() : KSerializer<GearyEntity> {
     private val componentSerializer = PolymorphicListAsMapSerializer.ofComponents()
     override val descriptor = SerialDescriptor("geary:entity", componentSerializer.descriptor)
 
     override fun deserialize(decoder: Decoder): GearyEntity {
-        return entity {
+        val world = decoder.serializersModule.getWorld()
+        return world.entity {
             setAll(componentSerializer.deserialize(decoder))
         }
     }
