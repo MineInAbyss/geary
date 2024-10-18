@@ -99,12 +99,13 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         if (key.startsWith("kotlin.")) {
             return@runCatching serializersModule.getPolymorphic(polymorphicSerializer.baseClass, key) as KSerializer<T>
         }
+        val defaultNamespaces = namespaces.plus("geary").toSet()
         val parsedKey = "${config.prefix}$key".fromCamelCaseToSnakeCase()
         return@runCatching (if (parsedKey.hasNamespace())
             serializersModule.getPolymorphic(polymorphicSerializer.baseClass, parsedKey)
-        else namespaces.firstNotNullOfOrNull { namespace ->
+        else defaultNamespaces.firstNotNullOfOrNull { namespace ->
             serializersModule.getPolymorphic(polymorphicSerializer.baseClass, "$namespace:$parsedKey")
-        } ?: error("No serializer found for $parsedKey in any of the namespaces $namespaces"))
+        } ?: error("No serializer found for $parsedKey in any of the namespaces $defaultNamespaces"))
                 as? KSerializer<T> ?: error("Serializer for $parsedKey is not a component serializer")
     }
 
