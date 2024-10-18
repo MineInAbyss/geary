@@ -1,9 +1,6 @@
 package com.mineinabyss.geary.serialization.formats
 
-import com.charleskorn.kaml.Yaml
-import com.charleskorn.kaml.YamlConfiguration
-import com.charleskorn.kaml.decodeFromStream
-import com.charleskorn.kaml.encodeToStream
+import com.charleskorn.kaml.*
 import com.mineinabyss.geary.serialization.formats.Format.ConfigType
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
@@ -22,6 +19,7 @@ class YamlFormat(
         configuration = YamlConfiguration(
             encodeDefaults = false,
             strictMode = false,
+            polymorphismStyle = PolymorphismStyle.Property
         )
     )
 
@@ -29,6 +27,7 @@ class YamlFormat(
         serializersModule = module,
         configuration = YamlConfiguration(
             encodeDefaults = false,
+            polymorphismStyle = PolymorphismStyle.Property
         )
     )
 

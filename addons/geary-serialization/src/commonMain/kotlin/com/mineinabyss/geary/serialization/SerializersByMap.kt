@@ -19,13 +19,14 @@ class SerializersByMap(
 
     //TODO allow this to work for all registered classes, not just components
     override fun getClassFor(serialName: String, namespaces: List<String>): KClass<out Component> {
+        val defaultNamespaces = (namespaces + "geary").toSet()
         val parsedKey = serialName.fromCamelCaseToSnakeCase()
         return (if (parsedKey.hasNamespace())
             serialName2Component[parsedKey]
-        else namespaces.firstNotNullOfOrNull { namespace ->
+        else defaultNamespaces.firstNotNullOfOrNull { namespace ->
             serialName2Component["$namespace:$parsedKey"]
         })
-            ?: error("$parsedKey is not a component registered in any of the namespaces: $namespaces")
+            ?: error("$parsedKey is not a component registered in any of the namespaces: $defaultNamespaces")
     }
 
     override fun <T : Component> getSerializerFor(
