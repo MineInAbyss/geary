@@ -7,27 +7,22 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 import com.mineinabyss.geary.serialization.getAllPersisting
 import com.mineinabyss.geary.serialization.serialization
-import com.mineinabyss.idofront.di.DI
+import com.mineinabyss.geary.test.GearyTest
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.builtins.serializer
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class CopyToInstancesTest {
-    @BeforeEach
-    fun createEngine() {
-        DI.clear()
-        geary(TestEngineModule) {
-            install(Prefabs)
-
-            serialization {
-                components {
-                    component(String.serializer())
-                    component(Int.serializer())
-                }
+class CopyToInstancesTest : GearyTest() {
+    override fun setupGeary() = geary(TestEngineModule) {
+        serialization {
+            components {
+                component(String.serializer())
+                component(Int.serializer())
             }
-        }.start()
+        }
+
+        install(Prefabs)
     }
 
     @Test
@@ -37,7 +32,8 @@ class CopyToInstancesTest {
             set(
                 CopyToInstances(
                     temporary = listOf(42),
-                    persisting = listOf("Hello world")
+                    persisting = listOf("Hello world"),
+                    world = world,
                 )
             )
             addRelation<NoInherit, CopyToInstances>()

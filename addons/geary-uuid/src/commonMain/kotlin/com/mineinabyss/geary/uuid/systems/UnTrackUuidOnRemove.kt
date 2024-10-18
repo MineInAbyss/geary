@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.uuid.systems
 
 import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.observers.events.OnRemove
 import com.mineinabyss.geary.systems.query.query
 import com.mineinabyss.geary.uuid.UUID2GearyMap

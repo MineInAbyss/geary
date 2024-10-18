@@ -15,9 +15,10 @@ fun Entity.inheritPrefabsIfNeeded(instances: Set<Entity> = setOf()) {
     val add = get<InheritPrefabs>() ?: return
     remove<InheritPrefabs>()
     add.from.mapNotNull { key ->
-        key.toEntityOrNull().also {
-            if (it == null) geary.logger.w("Prefab ${get<PrefabKey>()} could not inherit prefab $key, it does not exist")
-        }
+        TODO()
+//        key.toEntityOrNull().also {
+//            if (it == null) geary.logger.w("Prefab ${get<PrefabKey>()} could not inherit prefab $key, it does not exist")
+//        }
     }.forEach { parent ->
         parent.inheritPrefabsIfNeeded(instances + this)
         extend(parent)

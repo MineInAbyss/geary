@@ -3,6 +3,7 @@ package com.mineinabyss.geary.actions.event_binds
 import com.mineinabyss.geary.actions.ActionGroup
 import com.mineinabyss.geary.actions.actions.EnsureAction
 import com.mineinabyss.geary.actions.expressions.Expression
+import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.SerializableComponentId
@@ -15,18 +16,15 @@ import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlin.jvm.JvmInline
 
-@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
-@Serializable(with = ContextualSerializer::class)
+@Serializable(with = EntityObservers.Serializer::class)
 class EntityObservers(
     val observers: List<EventBind>,
 ) {
-    class Serializer(
-        world: Geary
-    ) : InnerSerializer<Map<SerializableComponentId, ActionGroup>, EntityObservers>(
+    class Serializer : InnerSerializer<Map<SerializableComponentId, ActionGroup>, EntityObservers>(
         serialName = "geary:observe",
         inner = MapSerializer(
-            SerializableComponentId.serializer(),
-            ActionGroup.Serializer(world)
+            ContextualSerializer(ComponentId::class),
+            ActionGroup.Serializer()
         ),
         inverseTransform = { TODO() },
         transform = {
@@ -54,12 +52,11 @@ class ActionWhen(val conditions: List<EnsureAction>) {
 @Serializable
 value class ActionRegister(val register: String)
 
+@Serializable(with = ActionOnFail.Serializer::class)
 class ActionOnFail(val action: ActionGroup) {
-    class Serializer(
-        world: Geary
-    ) : InnerSerializer<ActionGroup, ActionOnFail>(
+    class Serializer : InnerSerializer<ActionGroup, ActionOnFail>(
         serialName = "geary:on_fail",
-        inner = ActionGroup.Serializer(world),
+        inner = ActionGroup.Serializer(),
         inverseTransform = ActionOnFail::action,
         transform = { ActionOnFail(it) }
     )
@@ -69,12 +66,11 @@ class ActionOnFail(val action: ActionGroup) {
 @Serializable
 value class ActionLoop(val expression: String)
 
+@Serializable(with = ActionEnvironment.Serializer::class)
 class ActionEnvironment(val environment: Map<String, Expression<@Contextual Any>>) {
-    class Serializer(
-        world: Geary,
-    ) : InnerSerializer<Map<String, Expression<@Contextual Any>>, ActionEnvironment>(
+    object Serializer : InnerSerializer<Map<String, Expression<@Contextual Any>>, ActionEnvironment>(
         serialName = "geary:with",
-        inner = MapSerializer(String.serializer(), Expression.Serializer(world, ContextualSerializer(Any::class))),
+        inner = MapSerializer(String.serializer(), Expression.Serializer(ContextualSerializer(Any::class))),
         inverseTransform = ActionEnvironment::environment,
         transform = { ActionEnvironment(it) }
     )

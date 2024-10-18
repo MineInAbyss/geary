@@ -4,6 +4,7 @@ import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.serialization.ComponentSerializers
 import com.mineinabyss.geary.serialization.SerializableComponents
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.KSerializer
@@ -16,8 +17,10 @@ import kotlin.reflect.KClass
 
 typealias SerializableComponentId = @Contextual ComponentId
 
-class ComponentIdSerializer(val world: Geary) : KSerializer<SerializableComponentId> {
-    val serializers = world.getAddon(SerializableComponents).serializers
+class ComponentIdSerializer(
+    val componentSerializers: ComponentSerializers,
+    val world: Geary
+) : KSerializer<SerializableComponentId> {
     override val descriptor = PrimitiveSerialDescriptor("EventComponent", PrimitiveKind.STRING)
 
     private val polymorphicListAsMapSerializer = PolymorphicListAsMapSerializer.ofComponents()
@@ -34,6 +37,6 @@ class ComponentIdSerializer(val world: Geary) : KSerializer<SerializableComponen
         val namespaces = polymorphicListAsMapSerializer
             .getParentConfig(module)?.namespaces
             ?: emptyList()
-        return serializers.getClassFor(name, namespaces)
+        return componentSerializers.getClassFor(name, namespaces)
     }
 }

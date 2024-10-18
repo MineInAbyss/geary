@@ -3,21 +3,18 @@ package com.mineinabyss.geary.prefabs
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.idofront.di.DI
+import com.mineinabyss.geary.serialization.SerializableComponents
+import com.mineinabyss.geary.test.GearyTest
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class PrefabTests {
+class PrefabTests : GearyTest() {
     private val testKey = PrefabKey.of("test:1")
 
-    @BeforeEach
-    fun createEngine() {
-        DI.clear()
-        geary(TestEngineModule) {
-            install(Prefabs)
-        }
+    override fun setupGeary() = geary(TestEngineModule) {
+        install(SerializableComponents)
+        install(Prefabs)
     }
 
     @Test
@@ -29,7 +26,7 @@ class PrefabTests {
         val instance = entity { extend(prefab) }
 
         // assert
-        testKey.toEntity() shouldBe prefab
+        entityOfOrNull(testKey) shouldBe prefab
         instance.get<PrefabKey>().shouldBeNull()
     }
 
@@ -39,6 +36,6 @@ class PrefabTests {
         val prefab = entity { set(testKey) }
 
         // assert
-        testKey.toEntityOrNull() shouldBe prefab
+        entityOfOrNull(testKey) shouldBe prefab
     }
 }

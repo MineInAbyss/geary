@@ -12,27 +12,30 @@ import java.io.InputStream
 
 class YamlFormat(
     module: SerializersModule,
-    configuration: YamlConfiguration = YamlConfiguration(
-        encodeDefaults = false,
-        polymorphismStyle = PolymorphismStyle.Property,
-        polymorphismPropertyName = "type",
-    ),
-    nonStrictConfiguration: YamlConfiguration = YamlConfiguration(
-        encodeDefaults = false,
-        strictMode = false,
-        polymorphismStyle = PolymorphismStyle.Property,
-        polymorphismPropertyName = "type",
-    ),
+    configuration: Configuration = Configuration(),
 ) : Format {
+    class Configuration(
+        val regular: YamlConfiguration = YamlConfiguration(
+            encodeDefaults = false,
+            polymorphismStyle = PolymorphismStyle.Property,
+            polymorphismPropertyName = "type",
+        ),
+        val nonStrict: YamlConfiguration = YamlConfiguration(
+            encodeDefaults = false,
+            strictMode = false,
+            polymorphismStyle = PolymorphismStyle.Property,
+            polymorphismPropertyName = "type",
+        ),
+    )
     override val ext = "yml"
 
     private val nonStrictYaml = Yaml(
-        configuration = nonStrictConfiguration
+        configuration = configuration.nonStrict
     )
 
     val regularYaml = Yaml(
         serializersModule = module,
-        configuration = configuration
+        configuration = configuration.regular
     )
 
     override fun <T> decodeFromFile(

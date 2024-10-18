@@ -25,7 +25,6 @@ import org.koin.core.Koin
 import org.koin.core.KoinApplication
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.core.qualifier.named
 import kotlin.reflect.KClass
 
 /**
@@ -42,6 +41,7 @@ interface Geary : KoinComponent {
     abstract val application: KoinApplication
     open val logger: Logger get() = application.koin.get()
     override fun getKoin(): Koin = application.koin
+
     // By default, we always get the latest instance of deps, the Impl class gets them once for user
     // access where the engine isn't expected to be reloaded (ex. like it might be in tests)
     val eventRunner: EventRunner get() = get()
@@ -55,12 +55,11 @@ interface Geary : KoinComponent {
     val componentProvider: ComponentProvider get() = get()
     val records: ArrayTypeMap get() = get()
     val engine: GearyEngine get() = get()
+    val addons: MutableAddons get() = get()
 
-    //    @JvmName("getAddon1")
-    fun <T : Addon<*, Inst>, Inst> getAddon(addon: T): Inst = TODO()
+    fun <T : Addon<*, Inst>, Inst> getAddon(addon: T): Inst = addons.getInstance(addon)
 
-    //    @JvmName("getAddon2")
-//    fun <T : Addon<*, Inst>, Inst> getAddon(addon: T?): Inst? = TODO()
+    fun <T : Addon<Conf, *>, Conf> getConfiguration(addon: T): Conf = addons.getConfig(addon)
 
     // Queries
 
@@ -158,5 +157,5 @@ inline fun <reified T : Any> Geary.observeWithData(): ObserverWithData<T> {
     }
 }
 
-inline fun Geary.findEntities(init: MutableFamily.Selector.And.() -> Unit)=
+inline fun Geary.findEntities(init: MutableFamily.Selector.And.() -> Unit) =
     findEntities(family(init))

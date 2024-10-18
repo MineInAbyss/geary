@@ -3,6 +3,7 @@ package com.mineinabyss.geary.actions.actions
 import com.mineinabyss.geary.actions.*
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.serialization.getWorld
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.SerializedComponents
@@ -10,9 +11,7 @@ import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
-//@Serializable(with = EnsureAction.Serializer::class)
-@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
-@Serializable(with = ContextualSerializer::class)
+@Serializable(with = EnsureAction.Serializer::class)
 class EnsureAction(
     world: Geary,
     val conditions: SerializedComponents,
@@ -43,12 +42,10 @@ class EnsureAction(
         return true
     }
 
-    class Serializer(
-        val world: Geary
-    ) : InnerSerializer<SerializedComponents, EnsureAction>(
+    class Serializer : InnerSerializer<SerializedComponents, EnsureAction>(
         serialName = "geary:ensure",
         inner = PolymorphicListAsMapSerializer.ofComponents(),
         inverseTransform = { it.conditions },
-        transform = { EnsureAction(world, it) }
+        transform = { EnsureAction(serializersModule.getWorld(), it) }
     )
 }

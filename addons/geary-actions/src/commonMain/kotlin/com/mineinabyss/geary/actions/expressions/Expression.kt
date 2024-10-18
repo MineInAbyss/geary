@@ -2,6 +2,7 @@ package com.mineinabyss.geary.actions.expressions
 
 import com.mineinabyss.geary.actions.ActionGroupContext
 import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.serialization.getWorld
 import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -13,6 +14,7 @@ import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.modules.SerializersModule
 import kotlin.math.min
 
+@Serializable(with = Expression.Serializer::class)
 sealed interface Expression<T> {
     fun evaluate(context: ActionGroupContext): T
     data class Fixed<T>(
@@ -74,13 +76,11 @@ sealed interface Expression<T> {
 
     // TODO kaml handles contextual completely different form Json, can we somehow allow both? Otherwise
     //  kaml also has broken contextual serializer support that we need to work around :(
-    class Serializer<T : Any>(
-        val world: Geary,
-        val serializer: KSerializer<T>
-    ) : KSerializer<Expression<T>> {
+    class Serializer<T : Any>(val serializer: KSerializer<T>) : KSerializer<Expression<T>> {
         override val descriptor: SerialDescriptor = ContextualSerializer(Any::class).descriptor
 
         override fun deserialize(decoder: Decoder): Expression<T> {
+            val world = decoder.serializersModule.getWorld()
             // Try reading string value, if serial type isn't string, this fails
             runCatching {
                 decoder.decodeStructure(String.serializer().descriptor) {

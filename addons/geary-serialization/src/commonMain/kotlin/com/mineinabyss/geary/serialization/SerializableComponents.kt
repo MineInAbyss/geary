@@ -12,13 +12,16 @@ import com.mineinabyss.geary.serialization.dsl.builders.ComponentSerializersBuil
 import com.mineinabyss.geary.serialization.dsl.builders.FormatsBuilder
 import com.mineinabyss.geary.serialization.formats.Format
 import com.mineinabyss.geary.serialization.formats.Formats
+import com.mineinabyss.geary.serialization.serializers.ComponentIdSerializer
 import com.mineinabyss.geary.serialization.serializers.GearyEntitySerializer
+import com.mineinabyss.geary.serialization.serializers.SerializableComponentId
+import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.modules.PolymorphicModuleBuilder
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.SerializersModuleBuilder
-import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.modules.*
 import kotlinx.serialization.serializerOrNull
 import kotlin.reflect.KClass
 
@@ -27,7 +30,7 @@ data class SerializableComponentsBuilder(
     val serializers: ComponentSerializersBuilder = ComponentSerializersBuilder(),
     val formats: FormatsBuilder = FormatsBuilder(),
     var overridePersists: ComponentId? = null,
-    var addGearyEntitySerializer: Boolean = false,
+    var addGearyEntitySerializer: Boolean = true,
 ) {
     /** Adds a [SerializersModule] for polymorphic serialization of [Component]s within the ECS. */
     inline fun components(crossinline init: PolymorphicModuleBuilder<Component>.() -> Unit) {
@@ -74,12 +77,18 @@ data class SerializableComponentsBuilder(
     }
 
     fun build(): SerializableComponentsModule {
+        module {
+            println("Adding Geary to serializers")
+            contextual<Geary>(GearyWorldProvider(world))
+            contextual<ComponentId>(ComponentIdSerializer(serializers.build(), world))
+        }
+        val serializers = serializers.build()
         if (addGearyEntitySerializer) {
-            components { component(GearyEntitySerializer(world)) }
+            components { component(GearyEntitySerializer()) }
         }
         return SerializableComponentsModule(
-            serializers = serializers.build(),
-            formats = formats.build(serializers.build()),
+            serializers = serializers,
+            formats = formats.build(serializers),
             persists = overridePersists ?: world.componentId<Persists>()
         )
     }
@@ -99,3 +108,16 @@ val SerializableComponents = createAddon<SerializableComponentsBuilder, Serializ
 @GearyDSL
 fun GearySetup.serialization(configure: SerializableComponentsBuilder.() -> Unit) =
     install(SerializableComponents, configure)
+
+fun SerializersModule.getWorld(): Geary = (getContextual(Geary::class) as GearyWorldProvider).world
+
+class GearyWorldProvider(val world: Geary): KSerializer<Geary> {
+    override val descriptor: SerialDescriptor = ContextualSerializer(Any::class).descriptor
+
+    override fun deserialize(decoder: Decoder): Geary {
+        return world
+    }
+
+    override fun serialize(encoder: Encoder, value: Geary) {
+    }
+}

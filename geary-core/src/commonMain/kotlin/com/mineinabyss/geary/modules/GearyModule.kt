@@ -26,9 +26,9 @@ data class UninitializedGearyModule(
     inline fun configure(configure: GearySetup.() -> Unit) = setup.configure()
 
     fun start(): Geary {
-        setup.addons.initAll(setup)
-        initializer.start()
         val world = Geary(setup.application)
+        world.addons.initAll(setup)
+        initializer.start()
         world.pipeline.runStartupTasks() // TODO keep pipeline separate, it shouldnt be used after init
         return world
     }

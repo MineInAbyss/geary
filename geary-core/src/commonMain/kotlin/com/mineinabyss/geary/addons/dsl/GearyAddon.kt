@@ -79,9 +79,10 @@ data class AddonSetup<Configuration>(
     }
 }
 
+@JvmName("createAddon0")
 fun createAddon(
     name: String,
-    init: AddonSetup<Unit>.() -> Unit = {},
+    init: AddonSetup<Unit>.() -> Unit,
 ): Addon<Unit, Unit> = Addon(name, { }) {
     init(AddonSetup(name, it, application))
 }

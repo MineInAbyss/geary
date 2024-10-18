@@ -5,12 +5,18 @@ import com.mineinabyss.geary.actions.actions.EnsureAction
 import com.mineinabyss.geary.actions.event_binds.*
 import com.mineinabyss.geary.actions.expressions.Expression
 import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.serialization.getWorld
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.SerializedComponents
 import kotlinx.serialization.ContextualSerializer
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.modules.SerializersModule
 
 class ActionEntry(
     val action: Action,
@@ -21,8 +27,7 @@ class ActionEntry(
     val environment: Map<String, Expression<Any>>?,
 )
 
-@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
-@Serializable(with = ContextualSerializer::class)
+@Serializable(with = ActionGroup.Serializer::class)
 class ActionGroup(
     val actions: List<ActionEntry>,
 ) : Action {
@@ -58,9 +63,7 @@ class ActionGroup(
             context.register(entry.register, returned)
     }
 
-    class Serializer(
-        val world: Geary
-    ) : InnerSerializer<List<SerializedComponents>, ActionGroup>(
+    class Serializer : InnerSerializer<List<SerializedComponents>, ActionGroup>(
         serialName = "geary:action_group",
         inner = ListSerializer(
             PolymorphicListAsMapSerializer.ofComponents(
@@ -68,7 +71,7 @@ class ActionGroup(
                     customKeys = mapOf(
                         "when" to { ActionWhen.serializer() },
                         "register" to { ActionRegister.serializer() },
-                        "onFail" to { ContextualSerializer(ActionOnFail::class) },
+                        "onFail" to { ActionOnFail.Serializer() },
                         "loop" to { ActionLoop.serializer() }
                     )
                 )
@@ -76,6 +79,7 @@ class ActionGroup(
         ),
         inverseTransform = { TODO() },
         transform = {
+            val world = serializersModule.getWorld()
             val actions = it.mapNotNull { components ->
                 var action: Action? = null
                 var condition: List<EnsureAction>? = null

@@ -52,7 +52,7 @@ class ConfigEntityObserversTests : GearyTest() {
         """.trimIndent()
 
         val format = YamlFormat(getAddon(SerializableComponents).serializers.module)
-        val entity = format.decodeFromString(GearyEntitySerializer(this), entityDef)
+        val entity = format.decodeFromString(GearyEntitySerializer(), entityDef)
         val printed = mutableListOf<String>()
         observeWithData<Print>().exec { printed += event.string }
 

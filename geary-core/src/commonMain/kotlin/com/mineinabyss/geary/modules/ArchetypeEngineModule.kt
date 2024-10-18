@@ -82,6 +82,7 @@ fun ArchetypeEngineModule(
         } withOptions {
             bind<EngineInitializer>()
         }
+        singleOf(::MutableAddons)
     }, properties = mapOf(
         "tickDuration" to tickDuration,
         "reuseIDsAfterRemoval" to reuseIDsAfterRemoval,

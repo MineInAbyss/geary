@@ -12,12 +12,11 @@ import org.koin.core.KoinApplication
 class GearySetup(
     val application: KoinApplication,
 ) {
-    val addons = MutableAddons()
     val logger = application.koin.get<Logger>()
     val geary = Geary(application)
 
     inline fun <T : Addon<Conf, *>, Conf> install(addon: T, configure: Conf.() -> Unit = {}): T {
-        addons.getOrPut(geary, addon).apply { config.configure() }
+        geary.addons.getOrPut(geary, addon).apply { config.configure() }
         return addon
     }
 
