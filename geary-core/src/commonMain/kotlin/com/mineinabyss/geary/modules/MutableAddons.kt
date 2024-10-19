@@ -10,8 +10,8 @@ class MutableAddons {
     internal val instances = mutableMapOf<String, Any>()
     internal val addonsOrder = mutableListOf<AddonToConfig<*>>()
 
-    fun <I> getInstance(addon: Addon<*, I>): I {
-        return instances[addon.name] as? I ?: error("Instance for addon ${addon.name} not found")
+    fun <I> getInstance(addon: Addon<*, I>): I? {
+        return instances[addon.name] as? I
     }
 
     fun <T> getOrPut(world: Geary, addon: Addon<T, *>, customConfiguration: (() -> T)? = null): AddonToConfig<T> {

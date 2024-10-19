@@ -16,7 +16,7 @@ import com.mineinabyss.geary.systems.accessors.FamilyMatching
 open class QueriedEntity(
     final override val world: Geary,
     final override val cacheAccessors: Boolean,
-) : AccessorOperations() {
+) : AccessorOperations(), Geary by world {
     @PublishedApi
     @UnsafeAccessors
     internal var archetype = world.get<ArchetypeProvider>().rootArchetype

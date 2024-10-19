@@ -57,7 +57,10 @@ interface Geary : KoinComponent {
     val engine: GearyEngine get() = get()
     val addons: MutableAddons get() = get()
 
-    fun <T : Addon<*, Inst>, Inst> getAddon(addon: T): Inst = addons.getInstance(addon)
+    fun <T : Addon<*, Inst>, Inst> getAddon(addon: T): Inst =
+        addons.getInstance(addon) ?: error("Instance for addon ${addon.name} not found")
+
+    fun <T : Addon<*, Inst>, Inst> getAddonOrNull(addon: T?): Inst? = addon?.let { addons.getInstance(addon) }
 
     fun <T : Addon<Conf, *>, Conf> getConfiguration(addon: T): Conf = addons.getConfig(addon)
 
