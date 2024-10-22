@@ -188,6 +188,12 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
         forEach { entities.add(Entity(it.unsafeEntity, world)) }
         return entities
     }
+
+    fun count(): Int {
+        var count = 0
+        forEach { count++ }
+        return count
+    }
 }
 
 inline fun <R> List<CachedQuery.Deferred<R>>.execOnFinish(run: (data: R, entity: GearyEntity) -> Unit) {

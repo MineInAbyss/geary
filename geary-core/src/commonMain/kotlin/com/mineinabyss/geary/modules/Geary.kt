@@ -76,6 +76,12 @@ interface Geary : KoinComponent {
         return queryManager.trackQuery(query)
     }
 
+    fun <T : Query> cache(
+        create: (Geary) -> T,
+    ): CachedQuery<T> {
+        return cache(create(this))
+    }
+
     fun <T : Query> system(
         query: T,
     ): SystemBuilder<T> {

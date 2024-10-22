@@ -22,7 +22,7 @@ data class Addon<Configuration, Instance>(
     val defaultConfiguration: Geary.() -> Configuration,
     val onInstall: Geary.(Configuration) -> Instance,
 ) {
-    operator fun invoke(customConfiguration: Geary.() -> Configuration): Addon<Configuration, Instance> {
+    fun withConfig(customConfiguration: Geary.() -> Configuration): Addon<Configuration, Instance> {
         return copy(defaultConfiguration = customConfiguration)
     }
 }

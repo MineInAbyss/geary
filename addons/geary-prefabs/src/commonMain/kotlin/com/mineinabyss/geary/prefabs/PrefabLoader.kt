@@ -27,7 +27,7 @@ class PrefabLoader(
 ) {
     private val readFiles = mutableListOf<PrefabPath>()
 
-    private val needsInherit = world.cache(NeedsInherit(world))
+    private val needsInherit = world.cache(::NeedsInherit)
 
     fun addSource(path: PrefabPath) {
         readFiles.add(path)
