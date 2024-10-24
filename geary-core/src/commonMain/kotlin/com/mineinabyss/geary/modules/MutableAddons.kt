@@ -25,10 +25,14 @@ class MutableAddons {
         return addons[addon.name]?.config as? T ?: error("Config for addon ${addon.name} not found")
     }
 
+    fun init(addon: AddonToConfig<*>, setup: GearySetup) {
+        val geary = Geary(setup.application, setup.logger.withTag(addon.addon.name))
+        instances[addon.addon.name] = (addon.addon.onInstall as Geary.(Any?) -> Any).invoke(geary, addon.config)
+    }
+
     fun initAll(setup: GearySetup) {
         addonsOrder.forEach { addon ->
-            val geary = Geary(setup.application, setup.logger.withTag(addon.addon.name))
-            instances[addon.addon.name] = (addon.addon.onInstall as Geary.(Any?) -> Any).invoke(geary, addon.config)
+            init(addon, setup)
         }
     }
 }

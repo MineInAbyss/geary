@@ -3,10 +3,12 @@ package com.mineinabyss.geary.addons.dsl
 import co.touchlab.kermit.Logger
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.GearySetup
 import org.koin.core.Koin
 import org.koin.core.KoinApplication
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import org.koin.core.module.Module
 import kotlin.jvm.JvmName
 
 interface GearyAddonWithDefault<Module> : GearyAddon<Module> {
@@ -76,6 +78,10 @@ data class AddonSetup<Configuration>(
      */
     fun on(phase: GearyPhase, run: () -> Unit) {
         geary.pipeline.runOnOrAfter(phase, run)
+    }
+
+    fun inject(vararg modules: Module) {
+        application.modules(*modules)
     }
 }
 
