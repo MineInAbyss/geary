@@ -20,14 +20,14 @@ class PrefabsBuilder {
 }
 
 val Prefabs
-    get() = createAddon<PrefabsBuilder, PrefabsModule>("Prefabs", {
-        PrefabsBuilder()
-    }) {
+    get() = createAddon<PrefabsBuilder, PrefabsModule>("Prefabs", { PrefabsBuilder() }) {
         val formats = geary.getAddon(SerializableComponents).formats
         val module = object : PrefabsModule {
             override val manager = PrefabManager()
             override val loader: PrefabLoader = PrefabLoader(geary, formats, logger)
         }
+
+        configuration.paths.forEach { module.loader.addSource(it) }
 
         systems {
             createInheritPrefabsOnLoadListener()

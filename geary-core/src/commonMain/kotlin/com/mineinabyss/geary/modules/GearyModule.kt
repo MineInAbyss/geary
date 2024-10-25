@@ -29,7 +29,6 @@ data class UninitializedGearyModule(
         val world = Geary(setup.application)
         world.addons.initAll(setup)
         initializer.start()
-        world.pipeline.runStartupTasks() // TODO keep pipeline separate, it shouldnt be used after init
         return world
     }
 }

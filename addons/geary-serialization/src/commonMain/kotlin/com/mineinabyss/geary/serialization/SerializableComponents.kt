@@ -78,7 +78,6 @@ data class SerializableComponentsBuilder(
 
     fun build(): SerializableComponentsModule {
         module {
-            println("Adding Geary to serializers")
             contextual<Geary>(GearyWorldProvider(world))
             contextual<ComponentId>(ComponentIdSerializer(serializers.build(), world))
         }

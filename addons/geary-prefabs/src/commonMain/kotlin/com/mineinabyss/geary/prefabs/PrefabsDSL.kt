@@ -20,10 +20,10 @@ class PrefabsDSL(
     }
 
     fun fromRecursive(folder: Path) {
-        PrefabPath(namespaced.namespace) {
+        prefabsBuilder.paths.add(PrefabPath(namespaced.namespace) {
             fileSystem
                 .listRecursively(folder, true)
                 .filter { it.name.contains('.') }
-        }
+        })
     }
 }
