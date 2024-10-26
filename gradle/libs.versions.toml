@@ -7,6 +7,7 @@ roaringbitmap = "1.0.6"
 statelyConcurrency = "2.0.7"
 koin = "4.0.0"
 junitJupiter = "5.8.1"
+kotlinxIO = "0.5.4"
 
 [libraries]
 androidx-collection = { module = "androidx.collection:collection", version.ref = "androidxCollection" }
@@ -18,3 +19,4 @@ stately-concurrency = { module = "co.touchlab:stately-concurrency", version.ref 
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
+kotlinx-io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinxIO" }

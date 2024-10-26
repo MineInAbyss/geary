@@ -14,9 +14,9 @@ class MutableAddons {
         return instances[addon.name] as? I
     }
 
-    fun <T> getOrPut(world: Geary, addon: Addon<T, *>, customConfiguration: (() -> T)? = null): AddonToConfig<T> {
+    fun <T> getOrPut(setup: GearySetup, addon: Addon<T, *>, customConfiguration: (() -> T)? = null): AddonToConfig<T> {
         return addons.getOrPut(addon.name) {
-            AddonToConfig(addon, customConfiguration?.invoke() ?: addon.defaultConfiguration(world))
+            AddonToConfig(addon, customConfiguration?.invoke() ?: addon.defaultConfiguration(setup))
                 .also { addonsOrder.add(it) }
         } as AddonToConfig<T>
     }

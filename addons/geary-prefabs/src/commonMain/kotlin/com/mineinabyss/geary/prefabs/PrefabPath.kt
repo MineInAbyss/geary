@@ -1,8 +1,16 @@
 package com.mineinabyss.geary.prefabs
 
-import okio.Path
+import kotlinx.io.Source
+import kotlinx.io.files.Path
 
-class PrefabPath(
+data class PrefabPath(
     val namespace: String,
-    val get: () -> Sequence<Path>,
+    val paths: () -> Sequence<Path> = { emptySequence() },
+    val sources: () -> Sequence<PrefabSource> = { emptySequence() },
+)
+
+data class PrefabSource(
+    val source: Source,
+    val key: PrefabKey,
+    val formatExt: String,
 )

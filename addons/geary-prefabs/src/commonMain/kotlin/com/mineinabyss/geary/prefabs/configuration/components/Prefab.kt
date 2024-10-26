@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.prefabs.configuration.components
 
-import okio.Path
+import kotlinx.io.files.Path
 
 /**
  * A component applied to prefabs loaded from a file that allows them to be reread.

@@ -21,10 +21,10 @@ interface GearyAddon<Module> {
 
 data class Addon<Configuration, Instance>(
     val name: String,
-    val defaultConfiguration: Geary.() -> Configuration,
-    val onInstall: Geary.(Configuration) -> Instance,
+    val defaultConfiguration: GearySetup.() -> Configuration,
+    val onInstall: GearySetup.(Configuration) -> Instance,
 ) {
-    fun withConfig(customConfiguration: Geary.() -> Configuration): Addon<Configuration, Instance> {
+    fun withConfig(customConfiguration: GearySetup.() -> Configuration): Addon<Configuration, Instance> {
         return copy(defaultConfiguration = customConfiguration)
     }
 }
@@ -96,7 +96,7 @@ fun createAddon(
 @JvmName("createAddon1")
 fun <Conf> createAddon(
     name: String,
-    configuration: Geary.() -> Conf,
+    configuration: GearySetup.() -> Conf,
     init: AddonSetup<Conf>.() -> Unit = {},
 ): Addon<Conf, Conf> = Addon(name, configuration) { conf ->
     init(AddonSetup(name, conf, application))
@@ -106,7 +106,7 @@ fun <Conf> createAddon(
 @JvmName("createAddon2")
 fun <Conf, Inst> createAddon(
     name: String,
-    configuration: Geary.() -> Conf,
+    configuration: GearySetup.() -> Conf,
     init: AddonSetup<Conf>.() -> Inst,
 ): Addon<Conf, Inst> {
     return Addon(name, configuration) {

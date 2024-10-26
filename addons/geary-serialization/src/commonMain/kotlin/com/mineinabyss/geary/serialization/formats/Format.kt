@@ -1,33 +1,35 @@
 package com.mineinabyss.geary.serialization.formats
 
-import kotlinx.serialization.*
-import kotlinx.serialization.json.Json
+import kotlinx.io.Buffer
+import kotlinx.io.Sink
+import kotlinx.io.Source
+import kotlinx.io.files.SystemFileSystem
+import kotlinx.io.writeString
+import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
-import okio.Path
 
 interface Format {
     val ext: String
 
-    fun <T> decodeFromString(
+//    fun <T> decodeFromString(
+//        deserializer: DeserializationStrategy<T>,
+//        string: String,
+//        overrideSerializersModule: SerializersModule? = null,
+//        configType: ConfigType = ConfigType.REGULAR,
+//    ): T
+
+    fun <T> decode(
         deserializer: DeserializationStrategy<T>,
-        string: String,
+        source: Source,
         overrideSerializersModule: SerializersModule? = null,
         configType: ConfigType = ConfigType.REGULAR,
     ): T
 
-    fun <T> decodeFromFile(
-        deserializer: DeserializationStrategy<T>,
-        path: Path,
-        overrideSerializersModule: SerializersModule? = null,
-        configType: ConfigType = ConfigType.REGULAR,
-    ): T
-
-    fun <T> encodeToFile(
+    fun <T> encode(
         serializer: SerializationStrategy<T>,
         value: T,
-        path: Path,
+        sink: Sink,
         overrideSerializersModule: SerializersModule? = null,
         configType: ConfigType = ConfigType.REGULAR,
     )
@@ -36,4 +38,19 @@ interface Format {
         REGULAR,
         NON_STRICT
     }
+
+    fun <T> decodeFromString(
+        deserializer: DeserializationStrategy<T>,
+        string: String,
+        overrideSerializersModule: SerializersModule? = null,
+        configType: ConfigType = ConfigType.REGULAR,
+    ): T {
+        val buffer = Buffer().apply { writeString(string) }
+        return decode(deserializer, buffer, overrideSerializersModule, configType)
+    }
+}
+
+
+fun main() {
+    SystemFileSystem
 }

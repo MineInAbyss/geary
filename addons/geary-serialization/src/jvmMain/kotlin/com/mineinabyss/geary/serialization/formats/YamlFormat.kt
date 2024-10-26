@@ -2,12 +2,11 @@ package com.mineinabyss.geary.serialization.formats
 
 import com.charleskorn.kaml.*
 import com.mineinabyss.geary.serialization.formats.Format.ConfigType
+import kotlinx.io.*
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.overwriteWith
-import okio.Path
-import org.intellij.lang.annotations.Language
 import java.io.InputStream
 
 class YamlFormat(
@@ -38,13 +37,13 @@ class YamlFormat(
         configuration = configuration.regular
     )
 
-    override fun <T> decodeFromFile(
+    override fun <T> decode(
         deserializer: DeserializationStrategy<T>,
-        path: Path,
+        source: Source,
         overrideSerializersModule: SerializersModule?,
         configType: ConfigType,
     ): T {
-        return decodeFromStream(deserializer, overrideSerializersModule, configType) { path.toFile().inputStream() }
+        return decodeFromStream(deserializer, overrideSerializersModule, configType) { source.asInputStream() }
     }
 
     fun <T> decodeFromStream(
@@ -60,24 +59,14 @@ class YamlFormat(
         return Yaml(module, config).decodeFromStream(deserializer, inputStream())
     }
 
-
-    override fun <T> decodeFromString(
-        deserializer: DeserializationStrategy<T>,
-        @Language("yaml") string: String,
-        overrideSerializersModule: SerializersModule?,
-        configType: ConfigType
-    ): T {
-        return decodeFromStream(deserializer, overrideSerializersModule, configType) { string.byteInputStream() }
-    }
-
-    override fun <T> encodeToFile(
+    override fun <T> encode(
         serializer: SerializationStrategy<T>,
         value: T,
-        path: Path,
+        path: Sink,
         overrideSerializersModule: SerializersModule?,
         configType: ConfigType
     ) {
-        getConfig(configType).encodeToStream(serializer, value, path.toFile().outputStream())
+        getConfig(configType).encodeToStream(serializer, value, path.asOutputStream())
     }
 
     fun getConfig(configType: ConfigType): Yaml = when (configType) {

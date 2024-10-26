@@ -98,11 +98,6 @@ interface Geary : KoinComponent {
         return SystemBuilder(defaultName, query, pipeline)
     }
 
-    fun loadAddon(addon: Addon<*, *>) {
-        addons.init(addons.getOrPut(this, addon), setup = GearySetup(application))
-    }
-
-
     fun relationOf(kind: KClass<*>, target: KClass<*>): Relation =
         Relation.of(componentId(kind), componentId(target))
 

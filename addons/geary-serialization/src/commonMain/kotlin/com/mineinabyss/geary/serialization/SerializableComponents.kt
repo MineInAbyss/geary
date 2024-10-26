@@ -101,7 +101,7 @@ data class SerializableComponentsModule(
 
 val SerializableComponents = createAddon<SerializableComponentsBuilder, SerializableComponentsModule>(
     "Serializable Components",
-    { SerializableComponentsBuilder(this) }
+    { SerializableComponentsBuilder(geary) }
 ) { configuration.build() }
 
 @GearyDSL
