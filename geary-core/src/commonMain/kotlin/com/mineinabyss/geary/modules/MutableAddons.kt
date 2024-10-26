@@ -26,8 +26,7 @@ class MutableAddons {
     }
 
     fun init(addon: AddonToConfig<*>, setup: GearySetup) {
-        val geary = Geary(setup.application, setup.logger.withTag(addon.addon.name))
-        instances[addon.addon.name] = (addon.addon.onInstall as Geary.(Any?) -> Any).invoke(geary, addon.config)
+        instances[addon.addon.name] = (addon.addon.onInstall as GearySetup.(Any?) -> Any).invoke(setup, addon.config)
     }
 
     fun initAll(setup: GearySetup) {
