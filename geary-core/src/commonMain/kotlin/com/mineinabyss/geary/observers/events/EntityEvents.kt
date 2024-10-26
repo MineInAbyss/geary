@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.observers.events
 
-import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.datatypes.EntityId
 
 class OnEntityRemoved
 
-class OnExtend(val baseEntity: Entity)
+class OnExtend(val baseEntity: EntityId)

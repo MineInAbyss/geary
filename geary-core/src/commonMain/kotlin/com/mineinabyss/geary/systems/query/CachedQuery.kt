@@ -2,10 +2,12 @@ package com.mineinabyss.geary.systems.query
 
 import com.mineinabyss.geary.annotations.optin.ExperimentalGearyApi
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
+import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.engine.archetypes.Archetype
+import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.fastForEach
-import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.modules.get
 
 class CachedQuery<T : Query> internal constructor(val query: T) {
     val matchedArchetypes: MutableList<Archetype> = mutableListOf()
@@ -68,7 +70,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
         val accessors = cachingAccessors
 
         // current archetype
-        var archetype = archetypes.archetypeProvider.rootArchetype // avoid nullable perf loss
+        var archetype = query.world.get<ArchetypeProvider>().rootArchetype // avoid nullable perf loss
         var upTo = 0
 
         // current entity
@@ -174,7 +176,8 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
     inline fun <R> mapWithEntity(crossinline run: T.(T) -> R): List<Deferred<R>> {
         val deferred = mutableListOf<Deferred<R>>()
         forEach {
-            deferred.add(Deferred(run(it), it.unsafeEntity))
+            // TODO use EntityList instead
+            deferred.add(Deferred(run(it), Entity(it.unsafeEntity, world)))
         }
         return deferred
     }
@@ -182,8 +185,14 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
     @OptIn(UnsafeAccessors::class)
     fun entities(): List<GearyEntity> {
         val entities = mutableListOf<GearyEntity>()
-        forEach { entities.add(it.unsafeEntity) }
+        forEach { entities.add(Entity(it.unsafeEntity, world)) }
         return entities
+    }
+
+    fun count(): Int {
+        var count = 0
+        forEach { count++ }
+        return count
     }
 }
 

@@ -3,6 +3,7 @@ package com.mineinabyss.geary.observers.builders
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.GearyEntityType
 import com.mineinabyss.geary.datatypes.family.family
+import com.mineinabyss.geary.engine.ComponentProvider
 import com.mineinabyss.geary.observers.Observer
 import com.mineinabyss.geary.systems.query.Query
 import com.mineinabyss.geary.systems.query.ShorthandQuery
@@ -40,6 +41,7 @@ data class QueryInvolvingObserverBuilder<Context, Q : ShorthandQuery>(
 }
 
 data class ObserverBuilder<Context>(
+    val comp: ComponentProvider,
     val events: ObserverEventsBuilder<Context>,
     val involvedComponents: EntityType,
     val matchQueries: List<Query> = emptyList(),

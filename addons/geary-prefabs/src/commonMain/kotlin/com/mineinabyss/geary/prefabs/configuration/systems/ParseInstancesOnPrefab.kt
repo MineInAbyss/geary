@@ -2,16 +2,16 @@ package com.mineinabyss.geary.prefabs.configuration.systems
 
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 import com.mineinabyss.geary.prefabs.configuration.components.InstancesOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
-import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.query
 
-fun GearyModule.createParseInstancesOnPrefabListener() = observe<OnSet>()
+fun Geary.createParseInstancesOnPrefabListener() = observe<OnSet>()
     .involving(query<InstancesOnPrefab, PrefabKey>()).exec { (instances, prefabKey) ->
         entity.addRelation<NoInherit, InstancesOnPrefab>()
         instances.nameToComponents.forEach { (name, components) ->

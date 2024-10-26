@@ -3,11 +3,14 @@ package com.mineinabyss.geary.actions.event_binds
 import com.mineinabyss.geary.actions.ActionGroup
 import com.mineinabyss.geary.actions.actions.EnsureAction
 import com.mineinabyss.geary.actions.expressions.Expression
+import com.mineinabyss.geary.datatypes.ComponentId
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.SerializableComponentId
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseContextualSerialization
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -20,8 +23,8 @@ class EntityObservers(
     class Serializer : InnerSerializer<Map<SerializableComponentId, ActionGroup>, EntityObservers>(
         serialName = "geary:observe",
         inner = MapSerializer(
-            SerializableComponentId.serializer(),
-            ActionGroup.serializer()
+            ContextualSerializer(ComponentId::class),
+            ActionGroup.Serializer()
         ),
         inverseTransform = { TODO() },
         transform = {
@@ -67,7 +70,7 @@ value class ActionLoop(val expression: String)
 class ActionEnvironment(val environment: Map<String, Expression<@Contextual Any>>) {
     object Serializer : InnerSerializer<Map<String, Expression<@Contextual Any>>, ActionEnvironment>(
         serialName = "geary:with",
-        inner = MapSerializer(String.serializer(), Expression.serializer(ContextualSerializer(Any::class))),
+        inner = MapSerializer(String.serializer(), Expression.Serializer(ContextualSerializer(Any::class))),
         inverseTransform = ActionEnvironment::environment,
         transform = { ActionEnvironment(it) }
     )

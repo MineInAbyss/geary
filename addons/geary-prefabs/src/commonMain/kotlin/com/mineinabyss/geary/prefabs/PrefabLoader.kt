@@ -1,39 +1,39 @@
 package com.mineinabyss.geary.prefabs
 
-import com.benasher44.uuid.Uuid
+import co.touchlab.kermit.Logger
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.helpers.fastForEach
-import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabsIfNeeded
 import com.mineinabyss.geary.serialization.formats.Format.ConfigType.NON_STRICT
-import com.mineinabyss.geary.serialization.serializableComponents
+import com.mineinabyss.geary.serialization.formats.Formats
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer.Companion.provideConfig
-import com.mineinabyss.geary.systems.builders.cache
 import com.mineinabyss.geary.systems.query.Query
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import okio.Path
+import kotlin.uuid.Uuid
 
-class PrefabLoader {
-    private val formats get() = serializableComponents.formats
-
-    private val logger get() = geary.logger
-
+class PrefabLoader(
+    val world: Geary,
+    val formats: Formats,
+    val logger: Logger,
+) {
     private val readFiles = mutableListOf<PrefabPath>()
 
-    private val needsInherit = geary.cache(NeedsInherit())
+    private val needsInherit = world.cache(::NeedsInherit)
 
     fun addSource(path: PrefabPath) {
         readFiles.add(path)
     }
 
-    class NeedsInherit : Query() {
+    class NeedsInherit(world: Geary) : Query(world) {
         val inheritPrefabs by get<InheritPrefabs>()
     }
 
@@ -113,7 +113,7 @@ class PrefabLoader {
             return PrefabLoadResult.Failure(exception)
         }
 
-        val entity = writeTo ?: entity()
+        val entity = writeTo ?: world.entity()
         entity.addRelation<NoInherit, Prefab>()
         entity.addRelation<NoInherit, Uuid>()
         entity.addRelation<NoInherit, CopyToInstances>()
@@ -128,7 +128,7 @@ class PrefabLoader {
 
     fun loadFromPathOrReloadExisting(namespace: String, path: Path): PrefabLoadResult {
         val key = PrefabKey.of(namespace, path.name.substringBeforeLast('.'))
-        val existing = prefabs.manager[key]
+        val existing = world.getAddon(Prefabs).manager[key]
         existing?.clear()
         return loadFromPath(namespace, path, existing)
     }

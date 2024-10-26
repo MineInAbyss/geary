@@ -1,9 +1,7 @@
 package com.mineinabyss.geary.engine
 
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.helpers.toGeary
-import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.test.GearyTest
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -22,7 +20,7 @@ internal class GearyEngineTest : GearyTest() {
             entity().id shouldBe offset + 100uL
 
             (0 until 100).forEach {
-                geary.entityProvider.remove((offset + it.toULong()).toGeary())
+                entityRemoveProvider.remove((offset + it.toULong()))
             }
         }
     }

@@ -1,10 +1,9 @@
 package com.mineinabyss.geary.observers.entity_scoped
 
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.test.GearyTest
+import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.observers.entity.observe
-import com.mineinabyss.geary.systems.builders.observe
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
@@ -18,7 +17,7 @@ class EntityScopedObserverTest : GearyTest() {
         val globallyObserve = entity()
         val lines = mutableListOf<String>()
         scopedObserve.observe<Clicked>().exec { lines += "Scoped clicked $entity" }
-        geary.observe<Clicked>().exec { lines += "Global clicked $entity" }
+        observe<Clicked>().exec { lines += "Global clicked $entity" }
 
         // act
         scopedObserve.emit<Clicked>()

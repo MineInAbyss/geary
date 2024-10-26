@@ -10,5 +10,4 @@ dependencies {
 
     implementation(idofrontLibs.reflections)
     implementation(idofrontLibs.kotlin.reflect)
-    implementation(idofrontLibs.idofront.di)
 }

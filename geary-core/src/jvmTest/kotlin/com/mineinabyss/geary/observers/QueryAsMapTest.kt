@@ -1,7 +1,7 @@
 package com.mineinabyss.geary.observers
 
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.tests.GearyTest
+import com.mineinabyss.geary.test.GearyTest
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.observers.queries.cacheAssociatedBy
 import com.mineinabyss.geary.systems.query.query
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 class QueryAsMapTest : GearyTest() {
     @Test
     fun `should correctly track entity in map`() {
-        val map = geary.cacheAssociatedBy(query<String>()) { (string) -> string }
+        val map = cacheAssociatedBy(query<String>()) { (string) -> string }
 
         entity {
             set("Hello world")

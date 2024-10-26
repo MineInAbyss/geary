@@ -7,9 +7,9 @@ import com.mineinabyss.geary.serialization.formats.SimpleFormats
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.modules.SerializersModule
 
-class FormatsBuilder {
-    val formats = mutableMapOf<String, (SerializersModule) -> Format>()
-
+data class FormatsBuilder(
+    val formats: MutableMap<String, (SerializersModule) -> Format> = mutableMapOf()
+) {
     /** Registers a [Format] for a file with extension [ext]. */
     fun register(ext: String, makeFromat: (SerializersModule) -> Format) {
         formats[ext] = makeFromat

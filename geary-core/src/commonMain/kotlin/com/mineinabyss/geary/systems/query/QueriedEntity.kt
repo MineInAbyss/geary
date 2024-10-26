@@ -1,19 +1,25 @@
 package com.mineinabyss.geary.systems.query
 
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
-import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.datatypes.EntityId
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.modules.archetypes
+import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
+import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.get
 import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
 
 open class QueriedEntity(
-    override val cacheAccessors: Boolean
-) : AccessorOperations() {
+    final override val world: Geary,
+    final override val cacheAccessors: Boolean,
+) : AccessorOperations(), Geary by world {
+    @PublishedApi
+    @UnsafeAccessors
+    internal var archetype = world.get<ArchetypeProvider>().rootArchetype
 
     internal val extraFamilies: MutableList<Family> = mutableListOf()
 
@@ -36,15 +42,11 @@ open class QueriedEntity(
 
     @PublishedApi
     @UnsafeAccessors
-    internal var archetype = archetypes.archetypeProvider.rootArchetype
-
-    @PublishedApi
-    @UnsafeAccessors
     internal var row = 0
 
     private var delegate: GearyEntity? = null
 
     @UnsafeAccessors
-    val unsafeEntity: Entity
+    val unsafeEntity: EntityId
         get() = this.archetype.getEntity(row)
 }

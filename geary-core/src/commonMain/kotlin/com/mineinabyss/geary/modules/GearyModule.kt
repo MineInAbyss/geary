@@ -1,53 +1,39 @@
 package com.mineinabyss.geary.modules
 
-import co.touchlab.kermit.Logger
-import com.mineinabyss.geary.addons.dsl.GearyDSL
-import com.mineinabyss.geary.engine.*
-import com.mineinabyss.geary.observers.EventRunner
-import com.mineinabyss.idofront.di.DI
+import org.koin.core.module.Module
+import org.koin.dsl.koinApplication
+import org.koin.dsl.module
 
-val geary: GearyModule by DI.observe()
-
-fun <T : GearyModule> geary(
-    moduleProvider: GearyModuleProviderWithDefault<T>,
-    configuration: GearyConfiguration.() -> Unit = {}
-) {
-    val module = moduleProvider.default()
-    geary(moduleProvider, module, configuration)
-}
-
-fun <T : GearyModule> geary(
-    moduleProvider: GearyModuleProvider<T>,
-    module: T,
-    configuration: GearyConfiguration.() -> Unit = {}
-) {
-    moduleProvider.init(module)
-    module.invoke(configuration)
-    moduleProvider.start(module)
-}
-
-@GearyDSL
-interface GearyModule {
-    val logger: Logger
-    val entityProvider: EntityProvider
-    val componentProvider: ComponentProvider
-
-    val read: EntityReadOperations
-    val write: EntityMutateOperations
-
-    val queryManager: QueryManager
-    val components: Components
-    val engine: Engine
-
-    val eventRunner: EventRunner
-    val pipeline: Pipeline
-
-    val defaults: Defaults
-
-    operator fun invoke(configure: GearyConfiguration.() -> Unit) {
-        GearyConfiguration(this).apply(configure)
+fun geary(
+    module: GearyModule,
+    configure: GearySetup.() -> Unit = {},
+): UninitializedGearyModule {
+    val application = koinApplication {
+        properties(module.properties)
+        modules(module.module)
     }
-
-    companion object
+    val initializer = application.koin.get<EngineInitializer>()
+    initializer.init()
+    val setup = GearySetup(application)
+    configure(setup)
+    return UninitializedGearyModule(setup, initializer)
 }
 
+data class UninitializedGearyModule(
+    val setup: GearySetup,
+    val initializer: EngineInitializer,
+) {
+    inline fun configure(configure: GearySetup.() -> Unit) = setup.configure()
+
+    fun start(): Geary {
+        val world = Geary(setup.application)
+        world.addons.initAll(setup)
+        initializer.start()
+        return world
+    }
+}
+
+data class GearyModule(
+    val module: Module,
+    val properties: Map<String, Any> = emptyMap(),
+)

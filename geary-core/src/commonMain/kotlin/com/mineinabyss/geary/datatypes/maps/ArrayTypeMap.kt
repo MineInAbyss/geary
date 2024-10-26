@@ -2,9 +2,9 @@ package com.mineinabyss.geary.datatypes.maps
 
 import androidx.collection.mutableObjectListOf
 import com.mineinabyss.geary.datatypes.BucketedULongArray
-import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.datatypes.EntityId
+import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.engine.archetypes.Archetype
-
 
 open class ArrayTypeMap : TypeMap {
     @PublishedApi
@@ -16,12 +16,12 @@ open class ArrayTypeMap : TypeMap {
 
     // We don't return nullable record to avoid boxing.
     // Accessing an entity that doesn't exist is indicative of a problem elsewhere and should be made obvious.
-    open fun getArchAndRow(entity: Entity): ULong {
-        return archAndRow[entity.id.toInt()]
+    open fun getArchAndRow(entity: EntityId): ULong {
+        return archAndRow[entity.toInt()]
     }
 
-    override fun set(entity: Entity, archetype: Archetype, row: Int) {
-        val id = entity.id.toInt()
+    override fun set(entity: EntityId, archetype: Archetype, row: Int) {
+        val id = entity.toInt()
         archAndRow[id] = (indexOrAdd(archetype).toULong() shl 32) or row.toULong()
     }
 
@@ -35,19 +35,23 @@ open class ArrayTypeMap : TypeMap {
         } else index
     }
 
-    override fun remove(entity: Entity) {
-        val id = entity.id.toInt()
+    override fun remove(entity: EntityId) {
+        val id = entity.toInt()
         archAndRow[id] = 0UL
     }
 
-    override operator fun contains(entity: Entity): Boolean {
-        val id = entity.id.toInt()
+    override operator fun contains(entity: EntityId): Boolean {
+        val id = entity.toInt()
         return id < archAndRow.size && archAndRow[id] != 0uL
     }
 
 
-    inline fun <T> runOn(entity: Entity, run: (archetype: Archetype, row: Int) -> T): T {
+    inline fun <T> runOn(entity: EntityId, run: (archetype: Archetype, row: Int) -> T): T {
         val info = getArchAndRow(entity)
         return run(archList[(info shr 32).toInt()], info.toInt())
+    }
+
+    fun getType(entity: EntityId): EntityType = runOn(entity) { archetype, _ ->
+        archetype.type
     }
 }

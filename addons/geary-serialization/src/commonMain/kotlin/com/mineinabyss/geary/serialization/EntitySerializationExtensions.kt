@@ -4,17 +4,9 @@ import com.mineinabyss.geary.annotations.optin.DangerousComponentOperation
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.componentId
-import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.observers.events.OnAdd
-import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.serialization.components.Persists
-import com.mineinabyss.geary.systems.builders.observe
-import com.mineinabyss.geary.systems.query.query
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 import kotlin.reflect.KClass
-import kotlin.reflect.typeOf
 
 
 /**
@@ -28,7 +20,7 @@ inline fun <reified T : Component> Entity.setPersisting(
     noEvent: Boolean = false,
 ): T {
     set(component, kClass, noEvent)
-    setRelation(serializableComponents.persists, componentId(kClass), Persists(), noEvent)
+    setRelation(world.getAddon(SerializableComponents).persists, world.componentId(kClass), Persists(), noEvent)
     return component
 }
 

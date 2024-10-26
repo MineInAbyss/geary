@@ -4,16 +4,16 @@ import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.helpers.addParent
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.prefabs.configuration.components.ChildOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.ChildrenOnPrefab
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
-import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.query
 
 
-fun GearyModule.createParseChildOnPrefabListener() = observe<OnSet>()
+fun Geary.createParseChildOnPrefabListener() = observe<OnSet>()
     .involving(query<ChildOnPrefab>())
     .exec { (child) ->
         entity {
@@ -23,7 +23,7 @@ fun GearyModule.createParseChildOnPrefabListener() = observe<OnSet>()
         entity.remove<ChildOnPrefab>()
     }
 
-fun GearyModule.createParseChildrenOnPrefabListener() = observe<OnSet>()
+fun Geary.createParseChildrenOnPrefabListener() = observe<OnSet>()
     .involving(query<ChildrenOnPrefab>())
     .exec { (children) ->
         children.nameToComponents.forEach { (name, components) ->

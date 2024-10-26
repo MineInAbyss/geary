@@ -11,24 +11,31 @@ import org.intellij.lang.annotations.Language
 import java.io.InputStream
 
 class YamlFormat(
-    module: SerializersModule
+    module: SerializersModule,
+    configuration: Configuration = Configuration(),
 ) : Format {
+    class Configuration(
+        val regular: YamlConfiguration = YamlConfiguration(
+            encodeDefaults = false,
+            polymorphismStyle = PolymorphismStyle.Property,
+            polymorphismPropertyName = "type",
+        ),
+        val nonStrict: YamlConfiguration = YamlConfiguration(
+            encodeDefaults = false,
+            strictMode = false,
+            polymorphismStyle = PolymorphismStyle.Property,
+            polymorphismPropertyName = "type",
+        ),
+    )
     override val ext = "yml"
 
     private val nonStrictYaml = Yaml(
-        configuration = YamlConfiguration(
-            encodeDefaults = false,
-            strictMode = false,
-            polymorphismStyle = PolymorphismStyle.Property
-        )
+        configuration = configuration.nonStrict
     )
 
     val regularYaml = Yaml(
         serializersModule = module,
-        configuration = YamlConfiguration(
-            encodeDefaults = false,
-            polymorphismStyle = PolymorphismStyle.Property
-        )
+        configuration = configuration.regular
     )
 
     override fun <T> decodeFromFile(

@@ -3,6 +3,7 @@ package com.mineinabyss.geary.benchmarks.events
 import com.mineinabyss.geary.benchmarks.helpers.oneMil
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.builders.observe
@@ -18,7 +19,7 @@ class EventCalls {
     @Setup(Level.Invocation)
     fun setupPerInvocation() {
         geary(TestEngineModule)
-        targets = (1..oneMil).map { entity { set(it) } }
+        targets = (1..oneMil).map { entity().apply { set(it) } }
         createListener()
     }
 
@@ -39,6 +40,7 @@ class EventCalls {
             targets[it].emit<TestEvent>()
         }
     }
+
 }
 
 fun main() {

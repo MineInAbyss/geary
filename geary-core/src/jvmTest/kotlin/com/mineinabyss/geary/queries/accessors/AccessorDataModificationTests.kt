@@ -1,17 +1,14 @@
 package com.mineinabyss.geary.queries.accessors
 
-import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.helpers.Comp1
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.tests.GearyTest
-import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.cache
+import com.mineinabyss.geary.test.GearyTest
 import com.mineinabyss.geary.systems.query.Query
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class AccessorDataModificationTests : GearyTest() {
-    private fun registerQuery() = geary.cache(object : Query() {
+    private fun registerQuery() = cache(object : Query(this) {
         var data by get<Comp1>()
     })
 

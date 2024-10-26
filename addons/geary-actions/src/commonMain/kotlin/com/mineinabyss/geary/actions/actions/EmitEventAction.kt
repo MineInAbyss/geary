@@ -4,6 +4,7 @@ import com.mineinabyss.geary.actions.Action
 import com.mineinabyss.geary.actions.ActionGroupContext
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.modules.Geary
 
 class EmitEventAction(
     val eventId: ComponentId,
@@ -14,8 +15,8 @@ class EmitEventAction(
     }
 
     companion object {
-        fun from(data: Any) = EmitEventAction(componentId(data::class), data)
+        fun from(world: Geary, data: Any) = EmitEventAction(world.componentId(data::class), data)
 
-        fun wrapIfNotAction(data: Any) = if (data is Action) data else from(data)
+        fun wrapIfNotAction(world: Geary, data: Any) = if (data is Action) data else from(world, data)
     }
 }
