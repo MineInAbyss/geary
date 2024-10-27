@@ -2,10 +2,10 @@ package com.mineinabyss.geary.instancing
 
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.test.GearyTest
 import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.modules.relationOf
 import com.mineinabyss.geary.observers.events.OnSet
+import com.mineinabyss.geary.test.GearyTest
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.BeforeEach
@@ -82,5 +82,13 @@ class InstancingTest : GearyTest() {
         // assert
         instance.get<String>() shouldBe "test"
         instance.get<Int>() shouldBe 1
+    }
+
+    @Test
+    fun `should not inherit parent prefabs`() {
+        val parent = entity()
+        val prefab = entity { extend(parent) }
+        val entity = entity { extend(prefab) }
+        entity.prefabs shouldBe setOf(prefab)
     }
 }

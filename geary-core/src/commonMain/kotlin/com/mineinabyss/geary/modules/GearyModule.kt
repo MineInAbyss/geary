@@ -2,7 +2,6 @@ package com.mineinabyss.geary.modules
 
 import org.koin.core.module.Module
 import org.koin.dsl.koinApplication
-import org.koin.dsl.module
 
 fun geary(
     module: GearyModule,
@@ -23,7 +22,7 @@ data class UninitializedGearyModule(
     val setup: GearySetup,
     val initializer: EngineInitializer,
 ) {
-    inline fun configure(configure: GearySetup.() -> Unit) = setup.configure()
+    inline fun configure(configure: GearySetup.() -> Unit): UninitializedGearyModule = apply { setup.configure() }
 
     fun start(): Geary {
         val world = Geary(setup.application)

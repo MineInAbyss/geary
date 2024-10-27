@@ -3,10 +3,9 @@ package com.mineinabyss.geary.prefabs
 import kotlinx.io.asSource
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
+import java.io.File
 import java.io.InputStream
-import java.net.URL
-import java.util.jar.JarFile
-import kotlin.io.path.pathString
+import kotlin.io.path.*
 import kotlin.reflect.KClass
 
 object PrefabsDSLExtensions {
@@ -17,15 +16,9 @@ object PrefabsDSLExtensions {
         val classLoader = classLoaderRef.java.classLoader
         prefabsBuilder.paths.add(
             PrefabPath(namespaced.namespace) {
-                resources.asSequence().map {
-                    PrefabSource(
-                        source = (classLoader.getResourceAsStream(it)
-                            ?: error("Resource $it not found when loading prefab"))
-                            .asSource().buffered(),
-                        key = PrefabKey.of(namespaced.namespace, it),
-                        formatExt = it.substringAfterLast('.')
-                    )
-                }
+                resources.asSequence()
+                    .map { getResource(classLoader, it) }
+                    .mapNotNull { it?.asPrefabSource(namespaced.namespace) }
             }
         )
     }
@@ -37,13 +30,7 @@ object PrefabsDSLExtensions {
         val classLoader = classLoaderRef.java.classLoader
         prefabsBuilder.paths.add(
             PrefabPath(namespaced.namespace) {
-                walkJarResources(classLoader, folder).map {
-                    PrefabSource(
-                        source = it.asSource().buffered(),
-                        key = PrefabKey.of(namespaced.namespace, it.toString()),
-                        formatExt = it.toString().substringAfterLast('.')
-                    )
-                }
+                walkJarResources(classLoader, folder).map { it.asPrefabSource(namespaced.namespace) }
             }
         )
     }
@@ -56,20 +43,24 @@ object PrefabsDSLExtensions {
         fromDirectory(Path(folder.pathString))
     }
 
+    @OptIn(ExperimentalPathApi::class)
     fun walkJarResources(
         classLoader: ClassLoader,
         directory: String,
-    ): Sequence<InputStream> = sequence {
-        val dirUrl: URL = classLoader.getResource(directory) ?: return@sequence
-        val jarPath = dirUrl.path.substringBefore("!").removePrefix("file:")
-        val jarFile = JarFile(jarPath)
-        val entries = jarFile.entries()
-
-        while (entries.hasMoreElements()) {
-            val entry = entries.nextElement()
-            if (entry.name.startsWith(directory) && !entry.isDirectory) {
-                yield(jarFile.getInputStream(entry))
-            }
-        }
+    ): Sequence<java.nio.file.Path> {
+        val directoryPath = File(classLoader.getResource(directory)?.toURI() ?: return emptySequence()).toPath()
+        return directoryPath.walk().filter { it.isRegularFile() }
     }
+
+    fun getResource(classLoader: ClassLoader, path: String): java.nio.file.Path? {
+        return File(classLoader.getResource(path)?.toURI() ?: return null).toPath()
+    }
+
+    private fun java.nio.file.Path.asPrefabSource(namespace: String) = PrefabSource(
+        source = inputStream().asSource().buffered(),
+        key = PrefabKey.of(namespace, nameWithoutExtension),
+        formatExt = extension
+    )
+
+    data class NameToStream(val name: String, val stream: InputStream)
 }

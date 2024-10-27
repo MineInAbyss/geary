@@ -12,7 +12,7 @@ kotlin {
 
                 api(idofrontLibs.kotlinx.serialization.cbor)
                 api(idofrontLibs.kotlinx.serialization.json)
-                api(libs.kotlinx.io)
+                api(idofrontLibs.kotlinx.io)
             }
         }
         jvmMain {

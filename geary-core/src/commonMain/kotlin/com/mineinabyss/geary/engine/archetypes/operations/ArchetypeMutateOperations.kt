@@ -63,14 +63,25 @@ class ArchetypeMutateOperations(
         var instanceArch = instanceArch
         var instanceRow = instanceRow
 
+        // Mark instance a InstanceOf baseEntity
         addComponent(instanceArch, instanceRow, Relation.of(components.instanceOf, baseEntity).id, true) { arch, row ->
             instanceArch = arch; instanceRow = row
         }
 
-        val noInheritComponents = baseArchetype.getRelationsByKind(components.noInherit).map { Relation.of(it).target }
+        val basePrefabs = baseArchetype.getRelationsByKind(components.instanceOf)
+
+        // Don't inherit components marked as NoInherit, nor baseEntity's prefabs
+        val noInheritComponents: List<EntityId> = baseArchetype
+            .getRelationsByKind(components.noInherit)
+            .map { Relation.of(it).target }
+            .plus(basePrefabs.map { it })
+
+        // Add all components without data
         baseArchetype.type.filter { !it.holdsData() && it !in noInheritComponents }.forEach {
             addComponent(instanceArch, instanceRow, it, true) { arch, row -> instanceArch = arch; instanceRow = row }
         }
+
+        // Add all components with data
         baseArchetype.dataHoldingType.forEach {
             if (it.withoutRole(HOLDS_DATA) in noInheritComponents) return@forEach
             setComponent(instanceArch, instanceRow, it, baseArchetype.getUnsafe(baseRow, it), true) { arch, row ->
@@ -78,6 +89,7 @@ class ArchetypeMutateOperations(
             }
         }
 
+        // Children of instantiated prefabs should be children of the instance
         queryManager.childrenOf(baseEntity).forEach { child ->
             // Add instanceEntity as parent
             addComponentFor(instanceEntity, components.couldHaveChildren, true)

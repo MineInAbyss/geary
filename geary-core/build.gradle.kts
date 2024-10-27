@@ -13,6 +13,7 @@ kotlin {
                 implementation(idofrontLibs.kotlin.reflect)
 
                 api(libs.koin.core)
+                api(idofrontLibs.kotlinx.io)
                 api(idofrontLibs.kermit)
                 api(idofrontLibs.kotlinx.coroutines)
             }

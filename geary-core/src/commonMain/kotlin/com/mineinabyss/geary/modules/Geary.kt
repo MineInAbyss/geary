@@ -167,3 +167,5 @@ inline fun <reified T : Any> Geary.observeWithData(): ObserverWithData<T> {
 
 inline fun Geary.findEntities(init: MutableFamily.Selector.And.() -> Unit) =
     findEntities(family(init))
+
+inline fun Geary.findEntities(query: Query) = findEntities(query.buildFamily())

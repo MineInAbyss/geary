@@ -90,6 +90,7 @@ class PrefabLoader(
             )
             val serializer = PolymorphicListAsMapSerializer.ofComponents(config)
             val format = formats[formatExt] ?: throw IllegalArgumentException("Unknown file format $formatExt")
+            logger.v("Loading prefab $key from $source")
 
             format.decode(
                 serializer,
