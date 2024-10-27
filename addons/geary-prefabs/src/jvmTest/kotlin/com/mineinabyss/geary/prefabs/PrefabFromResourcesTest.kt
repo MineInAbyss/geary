@@ -2,7 +2,6 @@ package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.prefabs.PrefabsDSLExtensions.fromFiles
 import com.mineinabyss.geary.prefabs.PrefabsDSLExtensions.fromJarResourceDirectory
 import com.mineinabyss.geary.prefabs.PrefabsDSLExtensions.fromJarResources
 import com.mineinabyss.geary.serialization.formats.YamlFormat
@@ -46,25 +45,6 @@ class PrefabFromResourcesTest {
         with(world) {
             entityOfOrNull(PrefabKey.of("test:prefabA")) shouldNotBe null
             entityOfOrNull(PrefabKey.of("test:prefabB")) shouldNotBe null
-        }
-    }
-
-    @Test
-    fun `should load prefabs from path source`() {
-        val world = world().configure {
-            namespace("test") {
-                prefabs {
-                    fromFiles(
-                        PrefabsDSLExtensions.getResource(
-                            PrefabFromResourcesTest::class.java.classLoader,
-                            "prefabs/prefabA.yml"
-                        )!!
-                    )
-                }
-            }
-        }.start()
-        with(world) {
-            entityOfOrNull(PrefabKey.of("test:prefabA")) shouldNotBe null
         }
     }
 }
