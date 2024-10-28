@@ -61,9 +61,9 @@ object PrefabsDSLExtensions {
                     val entry = entries.nextElement()
                     if (entry.name.startsWith(directory) && !entry.isDirectory) {
                         yield(JarResource(
-                            nameWithoutExt = entry.name.substringAfterLast("/").substringBeforeLast("."),
-                            ext = entry.name.substringAfterLast("."),
-                            stream = jarFile.getInputStream(entry)
+                            classLoader,
+                            path = entry.name.substringAfter(directory).removePrefix("/"),
+                            resource = entry.name
                         ))
                     }
                 }
@@ -71,9 +71,9 @@ object PrefabsDSLExtensions {
                 val directoryPath = File(classLoader.getResource(directory)?.toURI() ?: return@sequence).toPath()
                 yieldAll(directoryPath.walk().filter { it.isRegularFile() }.map {
                     JarResource(
-                        nameWithoutExt = it.nameWithoutExtension,
-                        ext = it.extension,
-                        stream = it.inputStream()
+                        classLoader,
+                        path = it.toString().substringAfter(directoryPath.toString()).removePrefix("/"),
+                        resource = it.toString()
                     )
                 })
             }
@@ -83,9 +83,9 @@ object PrefabsDSLExtensions {
     fun getResource(classLoader: ClassLoader, path: String): JarResource? {
         return classLoader.getResourceAsStream(path)?.let { stream ->
             JarResource(
-                nameWithoutExt = path.substringAfterLast("/").substringBeforeLast("."),
-                ext = path.substringAfterLast("."),
-                stream = stream
+                classLoader = classLoader,
+                path = path,
+                resource = path
             )
         }
     }
@@ -97,8 +97,12 @@ object PrefabsDSLExtensions {
     )
 
     data class JarResource(
-        val nameWithoutExt: String,
-        val ext: String,
-        val stream: InputStream,
-    )
+        val classLoader: ClassLoader,
+        val path: String,
+        val resource: String
+    ) {
+        val nameWithoutExt = path.substringAfterLast("/").substringBeforeLast(".")
+        val ext = path.substringAfterLast(".")
+        val stream = classLoader.getResourceAsStream(resource)!!
+    }
 }
