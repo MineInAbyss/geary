@@ -2,11 +2,9 @@ package com.mineinabyss.geary.prefabs.configuration.components
 
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.serialization.SerializableComponents
 import com.mineinabyss.geary.serialization.serializers.SerializedComponents
 import com.mineinabyss.geary.serialization.setAllPersisting
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -23,31 +21,20 @@ import kotlinx.serialization.Serializable
 data class CopyToInstances(
     private val temporary: SerializedComponents? = null,
     private val persisting: SerializedComponents? = null,
-    private val world: @Contextual Geary,
 ) {
     @Serializable
     private data class DeepCopy(
         val temporary: List<@Polymorphic Component>?,
-        val persisting: List<@Polymorphic Component>?
-    )
-
-    val formats get() = world.getAddon(SerializableComponents).formats
-
-    // This is the safest and cleanest way to deep-copy, even if a little performance intense.
-    private val serializedComponents by lazy {
-        formats.binaryFormat.encodeToByteArray(
-            DeepCopy.serializer(),
-            DeepCopy(temporary, persisting)
-        )
-    }
-
-    private fun getDeepCopied() = formats.binaryFormat.decodeFromByteArray(
-        DeepCopy.serializer(), serializedComponents
+        val persisting: List<@Polymorphic Component>?,
     )
 
     fun decodeComponentsTo(entity: Entity) {
-        val (instance, persist) = getDeepCopied()
-        //order of addition specifies that persisting components should override all
+        val binaryFormat = entity.world.getAddon(SerializableComponents).formats.binaryFormat
+
+        // This is the safest and cleanest way to deep-copy, even if a little performance intense.
+        val encoded = binaryFormat.encodeToByteArray(DeepCopy.serializer(), DeepCopy(temporary, persisting))
+        val (instance, persist) = binaryFormat.decodeFromByteArray(DeepCopy.serializer(), encoded)
+
         if (instance != null) {
             entity.setAll(instance, override = false)
         }

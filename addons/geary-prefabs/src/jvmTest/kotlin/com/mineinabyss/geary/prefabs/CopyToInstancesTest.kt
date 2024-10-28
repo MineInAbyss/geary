@@ -33,7 +33,6 @@ class CopyToInstancesTest : GearyTest() {
                 CopyToInstances(
                     temporary = listOf(42),
                     persisting = listOf("Hello world"),
-                    world = world,
                 )
             )
             addRelation<NoInherit, CopyToInstances>()
