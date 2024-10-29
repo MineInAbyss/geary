@@ -4,9 +4,12 @@ import kotlinx.io.asSource
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import java.io.File
-import java.io.InputStream
+import java.nio.file.FileSystems
 import java.util.jar.JarFile
-import kotlin.io.path.*
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.pathString
+import kotlin.io.path.walk
 import kotlin.reflect.KClass
 
 object PrefabsDSLExtensions {
@@ -72,8 +75,8 @@ object PrefabsDSLExtensions {
                 yieldAll(directoryPath.walk().filter { it.isRegularFile() }.map {
                     JarResource(
                         classLoader,
-                        path = it.toString().substringAfter(directoryPath.toString()).removePrefix("/"),
-                        resource = it.toString()
+                        path = it.toString().substringAfter(directoryPath.toString()).removePrefix(FileSystems.getDefault().separator),
+                        resource = directory + it.toString().substringAfter(directoryPath.toString())
                     )
                 })
             }
@@ -101,7 +104,7 @@ object PrefabsDSLExtensions {
         val path: String,
         val resource: String
     ) {
-        val nameWithoutExt = path.substringAfterLast("/").substringBeforeLast(".")
+        val nameWithoutExt = path.substringAfterLast(FileSystems.getDefault().separator).substringBeforeLast(".")
         val ext = path.substringAfterLast(".")
         val stream = classLoader.getResourceAsStream(resource)!!
     }
