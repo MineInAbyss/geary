@@ -26,7 +26,7 @@ dependencyResolutionManagement {
 }
 
 include(
-//    "geary-benchmarks",
+    "geary-benchmarks",
     "geary-core",
     "geary-test",
 )

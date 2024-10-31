@@ -1,11 +1,16 @@
 package com.mineinabyss.geary.datatypes
 
+import androidx.collection.MutableLongList
 import com.mineinabyss.geary.modules.Geary
 
 typealias EntityIdArray = ULongArray
 
 fun EntityIdArray.toEntityArray(world: Geary): EntityArray {
     return EntityArray(world, this)
+}
+
+fun MutableLongList.toEntityArray(world: Geary): EntityArray {
+    return EntityArray(world, ULongArray(size) { get(it).toULong() })
 }
 
 class EntityArray(

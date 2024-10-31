@@ -6,8 +6,7 @@ import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.observe
-import com.mineinabyss.idofront.di.DI
+import com.mineinabyss.geary.modules.observe
 import org.openjdk.jmh.annotations.*
 
 @State(Scope.Benchmark)
@@ -15,17 +14,13 @@ class EventCalls {
     private class TestEvent
 
     var targets = emptyList<Entity>()
+    var geary: Geary = geary(TestEngineModule).start()
 
     @Setup(Level.Invocation)
     fun setupPerInvocation() {
-        geary(TestEngineModule)
-        targets = (1..oneMil).map { entity().apply { set(it) } }
+        geary = geary(TestEngineModule).start()
+        targets = (1..oneMil).map { geary.entity().apply { set(it) } }
         createListener()
-    }
-
-    @TearDown(Level.Invocation)
-    fun teardown() {
-        DI.clear()
     }
 
     var count = 0
@@ -40,7 +35,6 @@ class EventCalls {
             targets[it].emit<TestEvent>()
         }
     }
-
 }
 
 fun main() {

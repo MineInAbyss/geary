@@ -42,7 +42,7 @@ fun Entity.removeChild(child: Entity) {
 
 /** Removes all of this entity's children, also unlinking this parent from them. */
 fun Entity.clearChildren() {
-    children.fastForEach { remove(it.id) }
+    children.forEach { remove(it.id) }
 }
 
 /** Gets the first parent of this entity */

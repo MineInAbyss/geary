@@ -5,13 +5,15 @@ import co.touchlab.kermit.Severity
 import com.mineinabyss.geary.benchmarks.helpers.*
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.idofront.di.DI
 import org.openjdk.jmh.annotations.*
 
 @State(Scope.Benchmark)
 class NewEntityBenchmark {
+    var geary: Geary = geary(TestEngineModule).start()
+
     @Setup
     fun setLoggingLevel() {
         Logger.setMinSeverity(Severity.Warn)
@@ -19,23 +21,18 @@ class NewEntityBenchmark {
 
     @Setup(Level.Invocation)
     fun setupPerInvocation() {
-        geary(TestEngineModule)
-    }
-
-    @TearDown(Level.Invocation)
-    fun teardown() {
-        DI.clear()
+        geary = geary(TestEngineModule).start()
     }
 
     @Benchmark
-    fun create1MilEntitiesWith0Components() {
+    fun create1MilEntitiesWith0Components() = with(geary) {
         repeat(oneMil) {
             entity()
         }
     }
 
     @Benchmark
-    fun create1MilEntitiesWith1ComponentNoEvent() {
+    fun create1MilEntitiesWith1ComponentNoEvent() = with(geary) {
         repeat(oneMil) {
             entity {
                 set(Comp1(0), noEvent = true)
@@ -44,7 +41,7 @@ class NewEntityBenchmark {
     }
 
     @Benchmark
-    fun create1MilEntitiesWith1ComponentYesEvent() {
+    fun create1MilEntitiesWith1ComponentYesEvent() = with(geary) {
         repeat(oneMil) {
             entity {
                 set(Comp1(0))
@@ -53,7 +50,7 @@ class NewEntityBenchmark {
     }
 
     @Benchmark
-    fun create1MilEntitiesWith6Components() {
+    fun create1MilEntitiesWith6Components() = with(geary) {
         repeat(oneMil) {
             entity {
                 set(Comp1(0), noEvent = true)
@@ -67,7 +64,7 @@ class NewEntityBenchmark {
     }
 
     @Benchmark
-    fun create1MilEntitiesWith6ComponentsWithoutComponentIdCalls() {
+    fun create1MilEntitiesWith6ComponentsWithoutComponentIdCalls() = with(geary) {
         val comp1Id = componentId<Comp1>()
         val comp2Id = componentId<Comp2>()
         val comp3Id = componentId<Comp3>()

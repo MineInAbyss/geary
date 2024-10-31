@@ -1,25 +1,24 @@
 package com.mineinabyss.geary.benchmarks.unpacking
 
 import com.mineinabyss.geary.benchmarks.helpers.*
-import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.cache
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.systems.query.GearyQuery
 
-class Query1 : GearyQuery() {
+class Query1(world: Geary) : GearyQuery(world) {
     val comp1 by get<Comp1>()
 }
 
-class Query1Defaulting : GearyQuery() {
+class Query1Defaulting(world: Geary) : GearyQuery(world) {
     val comp1 by get<Comp1>().orDefault { Comp1(0) }
-    override fun ensure() = this { has<Comp1>()}
+    override fun ensure() = this { has<Comp1>() }
 }
 
-class Query2 : GearyQuery() {
+class Query2(world: Geary) : GearyQuery(world) {
     val comp1 by get<Comp1>()
     val comp2 by get<Comp2>()
 }
 
-class Query6 : GearyQuery() {
+class Query6(world: Geary) : GearyQuery(world) {
     val comp1 by get<Comp1>()
     val comp2 by get<Comp2>()
     val comp3 by get<Comp3>()
@@ -29,7 +28,7 @@ class Query6 : GearyQuery() {
 }
 
 
-class Query6WithoutDelegate : GearyQuery() {
+class Query6WithoutDelegate(world: Geary) : GearyQuery(world) {
     val comp1 = get<Comp1>()
     val comp2 = get<Comp2>()
     val comp3 = get<Comp3>()
@@ -47,8 +46,8 @@ class Query6WithoutDelegate : GearyQuery() {
     }
 }
 
-fun systemOf1() = geary.cache(Query1())
-fun systemOf1Defaulting() = geary.cache(Query1Defaulting())
-fun systemOf2() = geary.cache(Query2())
-fun systemOf6() = geary.cache(Query6())
-fun systemOf6WithoutDelegate() = geary.cache(Query6WithoutDelegate())
+fun Geary.systemOf1() = cache(::Query1)
+fun Geary.systemOf1Defaulting() = cache(::Query1Defaulting)
+fun Geary.systemOf2() = cache(::Query2)
+fun Geary.systemOf6() = cache(::Query6)
+fun Geary.systemOf6WithoutDelegate() = cache(::Query6WithoutDelegate)

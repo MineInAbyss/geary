@@ -1,12 +1,10 @@
 package com.mineinabyss.geary.benchmarks
 
+import GearyBenchmark
 import com.mineinabyss.geary.benchmarks.helpers.oneMil
 import com.mineinabyss.geary.benchmarks.helpers.tenMil
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.modules.TestEngineModule
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.query.Query
-import com.mineinabyss.geary.systems.builders.system
 import com.mineinabyss.geary.systems.query.query
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Scope
@@ -14,18 +12,19 @@ import org.openjdk.jmh.annotations.Setup
 import org.openjdk.jmh.annotations.State
 
 @State(Scope.Benchmark)
-class VelocitySystemBenchmark {
+class VelocitySystemBenchmark : GearyBenchmark() {
     data class Velocity(val x: Float, val y: Float)
     data class Position(var x: Float, var y: Float)
 
-    fun createVelocitySystem() = geary.system(object : Query() {
+    fun createVelocitySystem() = system(object : Query(this) {
         val velocity by get<Velocity>()
         var position by get<Position>()
     }).exec {
         it.position.x += it.velocity.x
         it.position.y += it.velocity.y
     }
-    fun createVelocitySystemNoDelegates() = geary.system(
+
+    fun createVelocitySystemNoDelegates() = system(
         query<Velocity, Position>()
     ).exec { (velocity, position) ->
         position.x += velocity.x
@@ -37,8 +36,6 @@ class VelocitySystemBenchmark {
 
     @Setup
     fun setUp() {
-        geary(TestEngineModule)
-
         repeat(tenMil) {
             entity {
                 set(Velocity(it.toFloat() / oneMil, it.toFloat() / oneMil))

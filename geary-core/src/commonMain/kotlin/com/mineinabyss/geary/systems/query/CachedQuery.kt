@@ -1,9 +1,12 @@
 package com.mineinabyss.geary.systems.query
 
+import androidx.collection.mutableLongListOf
 import com.mineinabyss.geary.annotations.optin.ExperimentalGearyApi
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.datatypes.EntityArray
 import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.toEntityArray
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.fastForEach
@@ -35,16 +38,16 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
             var row = 0
             query.archetype = archetype
             accessors.fastForEach { it.updateCache(archetype) }
-            try {
+//            try {
                 while (row < upTo) {
                     query.row = row
                     run(query, query)
                     row++
                 }
                 n++
-            } finally {
-                archetype.isIterating = false
-            }
+//            } finally {
+//                archetype.isIterating = false
+//            }
         }
     }
 
@@ -164,6 +167,13 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
         }
 
         return found
+    }
+
+    @OptIn(UnsafeAccessors::class)
+    inline fun filter(crossinline predicate: T.(T) -> Boolean): EntityArray {
+        val deferred = mutableLongListOf()
+        forEach { if (predicate(it)) deferred.add(it.unsafeEntity.toLong()) }
+        return deferred.toEntityArray(query.world)
     }
 
 

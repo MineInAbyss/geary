@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.benchmarks.misc
 
+import GearyBenchmark
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.Severity
 import com.mineinabyss.geary.benchmarks.helpers.*
@@ -13,7 +14,8 @@ import org.openjdk.jmh.annotations.State
 import kotlin.reflect.typeOf
 
 @State(Scope.Benchmark)
-class ComponentIdTest {
+class ComponentIdTest : GearyBenchmark() {
+
     @Setup
     fun setup() {
         Logger.setMinSeverity(Severity.Warn)
