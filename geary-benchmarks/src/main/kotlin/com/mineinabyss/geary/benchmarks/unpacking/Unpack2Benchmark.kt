@@ -1,8 +1,8 @@
 package com.mineinabyss.geary.benchmarks.unpacking
 
-import GearyBenchmark
 import com.mineinabyss.geary.benchmarks.helpers.Comp1
 import com.mineinabyss.geary.benchmarks.helpers.Comp2
+import com.mineinabyss.geary.benchmarks.helpers.GearyBenchmark
 import com.mineinabyss.geary.benchmarks.helpers.tenMil
 import com.mineinabyss.geary.helpers.entity
 import org.openjdk.jmh.annotations.Benchmark
@@ -24,16 +24,11 @@ class Unpack2Benchmark : GearyBenchmark() {
 
     @Benchmark
     fun unpack1of2Comp() {
-        systemOf1().forEach {
-            it.comp1
-        }
+        systemOf2().forEach { (a) -> }
     }
 
     @Benchmark
     fun unpack2of2Comp() {
-        systemOf2().forEach {
-            it.comp1
-            it.comp2
-        }
+        systemOf2().forEach { (a, b) -> }
     }
 }

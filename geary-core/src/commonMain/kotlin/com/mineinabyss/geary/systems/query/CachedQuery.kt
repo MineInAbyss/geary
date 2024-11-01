@@ -1,12 +1,10 @@
 package com.mineinabyss.geary.systems.query
 
+import androidx.collection.LongList
 import androidx.collection.mutableLongListOf
 import com.mineinabyss.geary.annotations.optin.ExperimentalGearyApi
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
-import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.datatypes.EntityArray
-import com.mineinabyss.geary.datatypes.GearyEntity
-import com.mineinabyss.geary.datatypes.toEntityArray
+import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.fastForEach
@@ -23,33 +21,32 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
      * Use [apply] on the query to use its accessors.
      * */
     @OptIn(UnsafeAccessors::class)
-    inline fun forEach(crossinline run: T.(T) -> Unit) {
+    inline fun forEach(run: (T) -> Unit) {
         val matched = matchedArchetypes
         var n = 0
         val size = matched.size // Get size ahead of time to avoid rerunning on entities that end up in new archetypes
         val accessors = cachingAccessors
+//        val query = query
         while (n < size) {
             val archetype = matched[n]
-            archetype.isIterating = true
 
             // We disallow entity archetype modifications while iterating, but allow creating new entities.
             // These will always end up at the end of the archetype list, so we just don't iterate over them.
             val upTo = archetype.size
             var row = 0
+            query.row = 0
             query.archetype = archetype
             accessors.fastForEach { it.updateCache(archetype) }
-//            try {
-                while (row < upTo) {
-                    query.row = row
-                    run(query, query)
-                    row++
-                }
-                n++
-//            } finally {
-//                archetype.isIterating = false
-//            }
+            while (row < upTo) {
+                run(query)
+                query.row++
+                row++
+            }
+            n++
         }
     }
+
+    fun Archetype.getData() = componentData
 
     /**
      * Allows collecting values as a sequence under some rules. Slower than [forEach] or functions directly on the runner like [map], [any], [find]
@@ -93,7 +90,6 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
             upTo = archetype.size
             query.archetype = archetype
             accessors.fastForEach { it.updateCache(archetype) }
-            archetype.isIterating = true
             return true
         }
 
@@ -112,7 +108,6 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
                 if (prepareRow()) {
                     query
                 } else {
-                    archetype.isIterating = false
                     n++
                     if (prepareArchetype()) {
                         prepareRow()
@@ -122,19 +117,18 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
             }.constrainOnce())
         } finally {
             //TODO issues if it's just root archetype?
-            archetype.isIterating = false
             closed = true
         }
         return collected
     }
 
-    inline fun <R> map(crossinline run: T.(T) -> R): List<R> {
+    inline fun <R> map(crossinline run: (T) -> R): List<R> {
         val deferred = mutableListOf<R>()
         forEach { deferred.add(run(it)) }
         return deferred
     }
 
-    inline fun <R> mapNotNull(crossinline run: T.(T) -> R?): List<R> {
+    inline fun <R> mapNotNull(crossinline run: (T) -> R?): List<R> {
         val deferred = mutableListOf<R>()
         forEach { query -> run(query).let { if (it != null) deferred.add(it) } }
         return deferred
@@ -143,7 +137,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
     @PublishedApi
     internal class FoundValue : Throwable()
 
-    inline fun any(crossinline predicate: T.(T) -> Boolean): Boolean {
+    inline fun any(crossinline predicate: (T) -> Boolean): Boolean {
         try {
             forEach { if (predicate(it)) throw FoundValue() }
         } catch (e: FoundValue) {
@@ -153,7 +147,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
         return false
     }
 
-    inline fun <R> find(crossinline map: T.(T) -> R, crossinline predicate: T.(T) -> Boolean): R? {
+    inline fun <R> find(crossinline map: (T) -> R, crossinline predicate: (T) -> Boolean): R? {
         var found: R? = null
         try {
             forEach {
@@ -170,7 +164,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
     }
 
     @OptIn(UnsafeAccessors::class)
-    inline fun filter(crossinline predicate: T.(T) -> Boolean): EntityArray {
+    inline fun filter(crossinline predicate: (T) -> Boolean): EntityArray {
         val deferred = mutableLongListOf()
         forEach { if (predicate(it)) deferred.add(it.unsafeEntity.toLong()) }
         return deferred.toEntityArray(query.world)
@@ -179,24 +173,24 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
 
     data class Deferred<R>(
         val data: R,
-        val entity: GearyEntity
+        val entity: GearyEntity,
     )
 
     @OptIn(UnsafeAccessors::class)
-    inline fun <R> mapWithEntity(crossinline run: T.(T) -> R): List<Deferred<R>> {
+    inline fun <R> mapWithEntity(crossinline run: (T) -> R): List<Deferred<R>> {
         val deferred = mutableListOf<Deferred<R>>()
         forEach {
             // TODO use EntityList instead
-            deferred.add(Deferred(run(it), Entity(it.unsafeEntity, world)))
+            deferred.add(Deferred(run(it), Entity(it.unsafeEntity, it.world)))
         }
         return deferred
     }
 
     @OptIn(UnsafeAccessors::class)
-    fun entities(): List<GearyEntity> {
-        val entities = mutableListOf<GearyEntity>()
-        forEach { entities.add(Entity(it.unsafeEntity, world)) }
-        return entities
+    fun entities(): EntityArray {
+        val entities = mutableLongListOf()
+        forEach { entities.add(it.unsafeEntity.toLong()) }
+        return entities.toEntityArray(query.world)
     }
 
     fun count(): Int {

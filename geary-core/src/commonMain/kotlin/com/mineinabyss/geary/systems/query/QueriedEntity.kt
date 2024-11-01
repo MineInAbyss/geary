@@ -12,6 +12,7 @@ import com.mineinabyss.geary.modules.get
 import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
+import kotlin.jvm.JvmField
 
 open class QueriedEntity(
     final override val world: Geary,
@@ -19,6 +20,7 @@ open class QueriedEntity(
 ) : AccessorOperations(), Geary by world {
     @PublishedApi
     @UnsafeAccessors
+    @JvmField
     internal var archetype = world.get<ArchetypeProvider>().rootArchetype
 
     internal val extraFamilies: MutableList<Family> = mutableListOf()
@@ -42,9 +44,8 @@ open class QueriedEntity(
 
     @PublishedApi
     @UnsafeAccessors
+    @JvmField
     internal var row = 0
-
-    private var delegate: GearyEntity? = null
 
     @UnsafeAccessors
     val unsafeEntity: EntityId

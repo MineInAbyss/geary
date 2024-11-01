@@ -63,6 +63,22 @@ abstract class ShorthandQuery5<A, B, C, D, E>(world: Geary) : ShorthandQuery(wor
     abstract operator fun component5(): E
 }
 
+abstract class ShorthandQuery6<A, B, C, D, E, F>(world: Geary) : ShorthandQuery(world) {
+    val comp1 get() = component1()
+    val comp2 get() = component2()
+    val comp3 get() = component3()
+    val comp4 get() = component4()
+    val comp5 get() = component5()
+    val comp6 get() = component6()
+
+    abstract operator fun component1(): A
+    abstract operator fun component2(): B
+    abstract operator fun component3(): C
+    abstract operator fun component4(): D
+    abstract operator fun component5(): E
+    abstract operator fun component6(): F
+}
+
 
 fun Geary.query() = object : Query(this) {}
 
@@ -143,7 +159,7 @@ inline fun <reified A, reified B, reified C, reified D, reified E> Geary.query(
     size5: QueryShorthands.Size5? = null,
     noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
 ) = object : ShorthandQuery5<A, B, C, D, E>(this) {
-    override val involves = entityTypeOf(cId<A>(), cId<B>(), cId<C>(), cId<D>())
+    override val involves = entityTypeOf(cId<A>(), cId<B>(), cId<C>(), cId<D>(), cId<E>())
     override fun ensure() {
         filterFamily?.let { this { it() } }
     }
@@ -159,6 +175,30 @@ inline fun <reified A, reified B, reified C, reified D, reified E> Geary.query(
     override fun component3(): C = accessor3.get(this)
     override fun component4(): D = accessor4.get(this)
     override fun component5(): E = accessor5.get(this)
+}
+
+inline fun <reified A, reified B, reified C, reified D, reified E, reified F> Geary.query(
+    size6: QueryShorthands.Size6? = null,
+    noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
+) = object : ShorthandQuery6<A, B, C, D, E, F>(this) {
+    override val involves = entityTypeOf(cId<A>(), cId<B>(), cId<C>(), cId<D>(), cId<E>(), cId<F>())
+    override fun ensure() {
+        filterFamily?.let { this { it() } }
+    }
+
+    private val accessor1 = getPotentiallyNullable<A>()
+    private val accessor2 = getPotentiallyNullable<B>()
+    private val accessor3 = getPotentiallyNullable<C>()
+    private val accessor4 = getPotentiallyNullable<D>()
+    private val accessor5 = getPotentiallyNullable<E>()
+    private val accessor6 = getPotentiallyNullable<F>()
+
+    override fun component1(): A = accessor1.get(this)
+    override fun component2(): B = accessor2.get(this)
+    override fun component3(): C = accessor3.get(this)
+    override fun component4(): D = accessor4.get(this)
+    override fun component5(): E = accessor5.get(this)
+    override fun component6(): F = accessor6.get(this)
 }
 
 @JvmName("toList1")
@@ -177,4 +217,5 @@ object QueryShorthands {
     sealed class Size3
     sealed class Size4
     sealed class Size5
+    sealed class Size6
 }

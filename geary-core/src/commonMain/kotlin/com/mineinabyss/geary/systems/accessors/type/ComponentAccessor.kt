@@ -1,7 +1,5 @@
 package com.mineinabyss.geary.systems.accessors.type
 
-import androidx.collection.MutableObjectList
-import androidx.collection.mutableObjectListOf
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.family.family
@@ -16,17 +14,18 @@ import com.mineinabyss.geary.systems.query.Query
 class ComponentAccessor<T : Any>(
     comp: ComponentProvider,
     override val originalAccessor: Accessor?,
-    val id: ComponentId
+    val id: ComponentId,
 ) : ReadWriteAccessor<T>, FamilyMatching {
     override val family = family { hasSet(id) }
 
     private var cachedIndex = -1
-    private var cachedDataArray: MutableObjectList<T> = mutableObjectListOf()
+    private var cachedDataArray: Array<T> = arrayOf<Any>() as Array<T>
 
     fun updateCache(archetype: Archetype) {
         cachedIndex = archetype.indexOf(id)
         @Suppress("UNCHECKED_CAST")
-        if (cachedIndex != -1) cachedDataArray = archetype.componentData[cachedIndex] as MutableObjectList<T>
+        if (cachedIndex != -1) cachedDataArray =
+            archetype.componentData[cachedIndex].content as Array<T>
     }
 
     override fun get(query: Query): T {

@@ -1,3 +1,5 @@
+package com.mineinabyss.geary.benchmarks.helpers
+
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary

@@ -7,6 +7,7 @@ import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.helpers.*
 import com.mineinabyss.geary.observers.events.*
 import com.mineinabyss.geary.systems.accessors.RelationWithData
+import kotlin.jvm.JvmField
 
 /**
  * Archetypes store a list of entities with the same [EntityType], and provide functions to
@@ -27,9 +28,6 @@ class Archetype internal constructor(
     /** The entity ids in this archetype. Indices are the same as [componentData]'s sub-lists. */
     private val ids = mutableLongListOf()
 
-    @PublishedApi
-    internal var isIterating: Boolean = false
-
     private var unregistered: Boolean = false
 
     // This is way slower as a Boolean? because of boxing
@@ -41,8 +39,9 @@ class Archetype internal constructor(
     internal val dataHoldingType: EntityType = type.filter { it.holdsData() }
 
     /** An outer list with indices for component ids, and sub-lists with data indexed by entity [ids]. */
-    internal val componentData: Array<MutableObjectList<Component>> =
-        Array(dataHoldingType.size) { mutableObjectListOf() }
+    @JvmField
+    internal val componentData: Array<MutableComponentList<Component>> =
+        Array(dataHoldingType.size) { mutableComponentListOf() }
 
     /** Edges to other archetypes where a single component has been added. */
     internal val componentAddEdges = LongSparseArray<Archetype>()

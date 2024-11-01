@@ -5,9 +5,8 @@ import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.contains
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.findEntities
-import com.mineinabyss.geary.test.GearyTest
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.query.Query
+import com.mineinabyss.geary.test.GearyTest
 import io.kotest.inspectors.forAll
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
@@ -26,9 +25,9 @@ class RelationMatchingSystemTest : GearyTest() {
         resetEngine()
         val system = system(object : Query(this) {
             val persists by getRelationsWithData<Persists, Any?>()
-        }).exec {
+        }).exec { q ->
             ran++
-            persists.forAll { it.data.shouldBeInstanceOf<Persists>() }
+            q.persists.forAll { it.data.shouldBeInstanceOf<Persists>() }
         }
 
         val entity = entity {
@@ -60,13 +59,13 @@ class RelationMatchingSystemTest : GearyTest() {
         val system = system(object : Query(this) {
             val persists by getRelationsWithData<Persists, Any>()
             val instanceOf by getRelationsWithData<InstanceOf?, Any?>()
-        }).exec {
+        }).exec { q ->
             ran++
-            persistsCount += persists.size
-            instanceOfCount += instanceOf.size
-            persists.forAll { it.data.shouldBeInstanceOf<Persists>() }
-            persists.forAll { it.targetData shouldNotBe null }
-            instanceOf.forAll { it.data shouldBe null }
+            persistsCount += q.persists.size
+            instanceOfCount += q.instanceOf.size
+            q.persists.forAll { it.data.shouldBeInstanceOf<Persists>() }
+            q.persists.forAll { it.targetData shouldNotBe null }
+            q.instanceOf.forAll { it.data shouldBe null }
         }
 
         entity {
@@ -111,9 +110,9 @@ class RelationMatchingSystemTest : GearyTest() {
 
         val system = system(object : Query(this) {
             val withData by getRelationsWithData<Persists, Any>()
-        }).exec {
-            withData.forAll { it.data shouldBe Persists() }
-            withData.forAll { it.targetData shouldBe "Test" }
+        }).exec { q ->
+            q.withData.forAll { it.data shouldBe Persists() }
+            q.withData.forAll { it.targetData shouldBe "Test" }
         }
         println(componentId<Any>())
         println(findEntities {

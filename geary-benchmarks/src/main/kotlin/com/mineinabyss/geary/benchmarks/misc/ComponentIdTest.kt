@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.benchmarks.misc
 
-import GearyBenchmark
+import com.mineinabyss.geary.benchmarks.helpers.GearyBenchmark
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.Severity
 import com.mineinabyss.geary.benchmarks.helpers.*

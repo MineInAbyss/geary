@@ -20,10 +20,10 @@ class AccessorDataModificationTests : GearyTest() {
         }
 
         var count = 0
-        registerQuery().forEach {
-            data shouldBe Comp1(1)
-            data = Comp1(10)
-            data shouldBe Comp1(10)
+        registerQuery().forEach { q ->
+            q.data shouldBe Comp1(1)
+            q.data = Comp1(10)
+            q.data shouldBe Comp1(10)
             count++
         }
         count shouldBe 1

@@ -1,6 +1,6 @@
 package com.mineinabyss.geary.benchmarks
 
-import GearyBenchmark
+import com.mineinabyss.geary.benchmarks.helpers.GearyBenchmark
 import com.mineinabyss.geary.benchmarks.helpers.oneMil
 import com.mineinabyss.geary.benchmarks.helpers.tenMil
 import com.mineinabyss.geary.helpers.entity
