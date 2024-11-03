@@ -2,6 +2,7 @@ package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.addons.Namespaced
 import com.mineinabyss.geary.addons.dsl.GearyDSL
+import com.mineinabyss.geary.datatypes.GearyEntity
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 
@@ -10,6 +11,11 @@ class PrefabsDSL(
     internal val prefabsBuilder: PrefabSources,
     internal val namespaced: Namespaced,
 ) {
+    fun create(vararg prefabs: Pair<String, GearyEntity>) {
+        prefabs.forEach { (name, entity) ->
+            PrefabLoader.markAsPrefab(entity, PrefabKey.of(namespaced.namespace, name))
+        }
+    }
 
     /** Loads prefab entities from all files inside a [directory][from], into a given [namespace] */
     fun fromFiles(

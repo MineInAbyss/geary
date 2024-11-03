@@ -5,7 +5,6 @@ import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
@@ -29,14 +28,6 @@ class PrefabLoader(
     val logger: Logger,
 ) {
     private val needsInherit = world.cache(::NeedsInherit)
-
-    fun markAsPrefab(entity: GearyEntity, key: PrefabKey) {
-        entity.set(Prefab())
-        entity.set<PrefabKey>(key)
-        entity.addRelation<NoInherit, Prefab>()
-        entity.addRelation<NoInherit, Uuid>()
-        entity.addRelation<NoInherit, CopyToInstances>()
-    }
 
     fun loadOrUpdatePrefabs() {
         val results = mutableListOf<String>()
@@ -154,5 +145,15 @@ class PrefabLoader(
 
     class NeedsInherit(world: Geary) : Query(world) {
         val inheritPrefabs by get<InheritPrefabs>()
+    }
+
+    companion object {
+        fun markAsPrefab(entity: GearyEntity, key: PrefabKey) {
+            entity.set(Prefab())
+            entity.set<PrefabKey>(key)
+            entity.addRelation<NoInherit, Prefab>()
+            entity.addRelation<NoInherit, Uuid>()
+            entity.addRelation<NoInherit, CopyToInstances>()
+        }
     }
 }
