@@ -3,8 +3,8 @@
 # Geary
 [![Package](https://img.shields.io/maven-metadata/v?metadataUrl=https://repo.mineinabyss.com/releases/com/mineinabyss/geary-core/maven-metadata.xml&color=light_green)](https://repo.mineinabyss.com/#/releases/com/mineinabyss/geary-core)
 [![Package](https://img.shields.io/maven-metadata/v?metadataUrl=https://repo.mineinabyss.com/snapshots/com/mineinabyss/geary-core/maven-metadata.xml&label=prerelease)](https://repo.mineinabyss.com/#/snapshots/com/mineinabyss/geary-core)
-[![Wiki](https://img.shields.io/badge/-Project%20Wiki-blueviolet?logo=Wikipedia&labelColor=gray)](https://wiki.mineinabyss.com/geary)
-[![Contribute](https://shields.io/badge/Contribute-e57be5?logo=github%20sponsors&style=flat&logoColor=white)](https://wiki.mineinabyss.com/contribute)
+[![Wiki](https://img.shields.io/badge/-Project%20Wiki-blueviolet?logo=Wikipedia&labelColor=gray)](https://docs.mineinabyss.com/geary)
+[![Contribute](https://shields.io/badge/Contribute-e57be5?logo=github%20sponsors&style=flat&logoColor=white)](https://docs.mineinabyss.com/contribute)
 </div>
 
 ## Overview
@@ -23,7 +23,7 @@ Geary is an Entity Component System (ECS) written in Kotlin. The engine design i
 
 ## Usage
 
-Read our [Quickstart guide](https://wiki.mineinabyss.com/geary/quickstart/) to see Geary in action, here's an excerpt, a simple velocity system:
+Read our [Quickstart guide](https://docs.mineinabyss.com/geary/quickstart/) to see Geary in action, here's an excerpt, a simple velocity system:
 
 
 ```kotlin
