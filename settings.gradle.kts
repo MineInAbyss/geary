@@ -21,7 +21,6 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("idofrontLibs") {
             from("com.mineinabyss:catalog:$idofrontVersion")
-            version("kaml", "0.66.0")
         }
     }
 }

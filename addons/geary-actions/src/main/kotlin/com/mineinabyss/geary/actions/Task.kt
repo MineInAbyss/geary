@@ -88,7 +88,8 @@ object TaskActionByNameSerializer : KSerializer<Task<Action>> {
         val world = decoder.serializersModule.getWorld()
         val yaml = decoder as YamlInput
         val taskDescriptor = Task.serializer(ContextualSerializer(Any::class)).descriptor
-        val node = yaml.node.yamlMap
+        //TODO get yaml node directly when we update kaml
+        val node = (yaml.beginStructure(ContextualSerializer(Any::class).descriptor) as YamlInput).node.yamlMap
 
         // Find action key and get the serializer based on it
         val action = node.entries.entries
