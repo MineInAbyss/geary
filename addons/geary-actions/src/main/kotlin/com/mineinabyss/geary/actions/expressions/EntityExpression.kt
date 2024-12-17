@@ -4,7 +4,6 @@ import com.mineinabyss.geary.actions.ActionGroupContext
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.helpers.parent
 import kotlinx.serialization.Serializable
-import kotlin.jvm.JvmInline
 
 @JvmInline
 @Serializable

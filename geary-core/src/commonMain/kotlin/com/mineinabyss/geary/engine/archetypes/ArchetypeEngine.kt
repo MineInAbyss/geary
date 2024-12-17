@@ -1,12 +1,15 @@
 package com.mineinabyss.geary.engine.archetypes
 
 import co.touchlab.kermit.Logger
-import com.mineinabyss.geary.datatypes.*
-import com.mineinabyss.geary.engine.*
+import com.mineinabyss.geary.datatypes.EntityType
+import com.mineinabyss.geary.engine.Pipeline
+import com.mineinabyss.geary.engine.TickingEngine
 import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.systems.TrackedSystem
 import com.mineinabyss.geary.systems.query.Query
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 
@@ -22,8 +25,9 @@ open class ArchetypeEngine(
     private val pipeline: Pipeline,
     private val logger: Logger,
     override val tickDuration: Duration,
-    override val coroutineContext: CoroutineContext
+    private val coroutineContext: () -> CoroutineContext,
 ) : TickingEngine() {
+    override val mainScope by lazy { CoroutineScope(coroutineContext()) }
 
     /** Describes how to individually tick each system */
     protected open fun <T : Query> TrackedSystem<T>.runSystem() {
@@ -32,7 +36,7 @@ open class ArchetypeEngine(
 
     override fun scheduleSystemTicking() {
         var tick = 0L
-        launch {
+        mainScope.launch {
             while (true) {
                 tick(tick++)
                 delay(tickDuration)

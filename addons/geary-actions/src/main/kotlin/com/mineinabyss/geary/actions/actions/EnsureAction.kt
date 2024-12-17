@@ -7,7 +7,6 @@ import com.mineinabyss.geary.serialization.getWorld
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.SerializedComponents
-import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 

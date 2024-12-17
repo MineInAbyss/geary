@@ -7,7 +7,8 @@ import kotlinx.coroutines.CoroutineScope
  *
  * Its companion object gets a service via Bukkit as its implementation.
  */
-interface Engine : CoroutineScope {
+interface Engine {
+    val mainScope: CoroutineScope
 
     /** Ticks the entire engine. Implementations may call at different speeds. */
     fun tick(currentTick: Long)

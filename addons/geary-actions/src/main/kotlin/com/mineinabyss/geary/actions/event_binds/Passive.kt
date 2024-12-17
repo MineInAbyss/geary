@@ -1,11 +1,10 @@
 package com.mineinabyss.geary.actions.event_binds;
 
-import com.mineinabyss.geary.actions.ActionGroup
 import com.mineinabyss.geary.actions.ActionGroupContext
+import com.mineinabyss.geary.actions.Tasks
 import com.mineinabyss.geary.actions.execute
 import com.mineinabyss.geary.actions.serializers.DurationSerializer
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.observers.events.OnSet
@@ -21,7 +20,7 @@ import kotlin.time.Duration.Companion.seconds
 class SystemBind(
     val match: List<SerializableComponentId>,
     val every: @Serializable(with = DurationSerializer::class) Duration = 1.seconds,
-    val run: ActionGroup,
+    val run: Tasks,
 )
 
 @Serializable(with = Passive.Serializer::class)

@@ -19,7 +19,13 @@ import org.junit.jupiter.api.Test
 class ConfigEntityObserversTests : GearyTest() {
     @Serializable
     @SerialName("geary:print")
-    data class Print(val string: String)
+    data class Print(val string: String): Action {
+        override fun ActionGroupContext.execute(): Any? {
+            entity?.emit<Print>(Print(string))
+            return null
+        }
+
+    }
 
     @Serializable
     @SerialName("geary:my_comp")

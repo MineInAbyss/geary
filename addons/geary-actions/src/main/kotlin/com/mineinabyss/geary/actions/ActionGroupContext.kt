@@ -2,6 +2,7 @@ package com.mineinabyss.geary.actions
 
 import com.mineinabyss.geary.actions.expressions.Expression
 import com.mineinabyss.geary.datatypes.GearyEntity
+import kotlinx.coroutines.CoroutineScope
 
 class ActionGroupContext() {
     constructor(entity: GearyEntity) : this() {
@@ -13,6 +14,8 @@ class ActionGroupContext() {
         set(value) {
             environment["entity"] = value
         }
+
+    val coroutineScope: CoroutineScope? get() = entity?.world?.engine?.mainScope
 
     val environment: MutableMap<String, Any?> = mutableMapOf()
 

@@ -26,3 +26,18 @@ abstract class InnerSerializer<I, O>(
         inner.serialize(encoder, inverseTransform(value))
     }
 }
+
+// TODO this causes a compiler error right now
+//inline fun <reified In, Out> innerSerializer(
+//    serialName: String,
+//    transform: Decoder.(In) -> Out,
+//    inverseTransform: (Out) -> In,
+//    inner: KSerializer<In> = serializer(),
+//): InnerSerializer<In, Out> {
+//    return object : InnerSerializer<In, Out>(
+//        serialName = serialName,// ?: inner.descriptor.serialName,
+//        inner = inner,
+//        transform = transform,
+//        inverseTransform = inverseTransform,
+//    ) {}
+//}

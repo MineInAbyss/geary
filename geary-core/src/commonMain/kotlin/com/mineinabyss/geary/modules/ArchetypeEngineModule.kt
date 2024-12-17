@@ -70,7 +70,7 @@ fun ArchetypeEngineModule(
     useSynchronized: Boolean = false,
     beginTickingOnStart: Boolean = true,
     defaults: Defaults = Defaults(),
-    engineThread: CoroutineContext = (CoroutineScope(Dispatchers.Default) + CoroutineName("Geary Engine")).coroutineContext,
+    engineThread: () -> CoroutineContext = { (CoroutineScope(Dispatchers.Default) + CoroutineName("Geary Engine")).coroutineContext },
 ) = GearyModule(
     module {
         includes(ArchetypesModules.engine)
