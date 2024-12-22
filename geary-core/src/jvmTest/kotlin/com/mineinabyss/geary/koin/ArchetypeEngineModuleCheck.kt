@@ -20,7 +20,7 @@ class ArchetypeEngineModuleCheck {
     @Test
     fun checkKoinModule() {
         ArchetypeEngineModule().module.verify(
-            extraTypes = listOf(Boolean::class, Duration::class, LoggerConfig::class, CoroutineContext::class)
+            extraTypes = listOf(Boolean::class, Duration::class, LoggerConfig::class, CoroutineContext::class, Function0::class)
         )
     }
 
