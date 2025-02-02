@@ -8,6 +8,8 @@ import com.mineinabyss.geary.engine.*
 import com.mineinabyss.geary.engine.archetypes.*
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeMutateOperations
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeReadOperations
+import com.mineinabyss.geary.helpers.async.AsyncCatcher
+import com.mineinabyss.geary.helpers.async.IgnoringAsyncCatcher
 import com.mineinabyss.geary.observers.ArchetypeEventRunner
 import com.mineinabyss.geary.observers.EventRunner
 import kotlinx.coroutines.CoroutineName
@@ -29,6 +31,7 @@ internal object ArchetypesModules {
         single { if (getProperty("useSynchronized")) SynchronizedArrayTypeMap() else ArrayTypeMap() } withOptions {
             bind<TypeMap>()
         }
+        single<AsyncCatcher> { IgnoringAsyncCatcher() }
     }
 
     val archetypes get() = module {
@@ -71,11 +74,14 @@ fun ArchetypeEngineModule(
     beginTickingOnStart: Boolean = true,
     defaults: Defaults = Defaults(),
     engineThread: () -> CoroutineContext = { (CoroutineScope(Dispatchers.Default) + CoroutineName("Geary Engine")).coroutineContext },
+    properties: Map<String, Any> = emptyMap()
 ) = GearyModule(
     module {
         includes(ArchetypesModules.engine)
         singleOf(::ArchetypeEventRunner) { bind<EventRunner>() }
-        singleOf(::ArchetypeMutateOperations) { bind<EntityMutateOperations>() }
+        single {
+            ArchetypeMutateOperations(get(), get(), get(), get(), get(), getPropertyOrNull("asyncCatcher.write") ?: get())
+        } withOptions { bind<EntityMutateOperations>() }
         singleOf(::EntityRemove)
         single {
             ArchetypeEngineInitializer(getProperty("beginTickingOnStart"), get(), get())
@@ -90,5 +96,5 @@ fun ArchetypeEngineModule(
         "beginTickingOnStart" to beginTickingOnStart,
         "defaults" to defaults,
         "engineThread" to engineThread
-    )
+    ) + properties
 )

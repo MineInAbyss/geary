@@ -8,6 +8,8 @@ import com.mineinabyss.geary.engine.QueryManager
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.NO_COMPONENT
+import com.mineinabyss.geary.helpers.async.AsyncCatcher
+import com.mineinabyss.geary.helpers.async.catch
 import com.mineinabyss.geary.observers.EventRunner
 import com.mineinabyss.geary.observers.events.OnExtend
 
@@ -17,6 +19,7 @@ class ArchetypeMutateOperations(
     private val components: Components,
     private val eventRunner: EventRunner,
     private val queryManager: QueryManager,
+    private val asyncCatcher: AsyncCatcher,
 ) : EntityMutateOperations {
     override fun setComponentFor(
         entity: EntityId,
@@ -24,6 +27,7 @@ class ArchetypeMutateOperations(
         data: Component,
         noEvent: Boolean,
     ) {
+        asyncCatcher.catch { "Async setComponent for $entity, component $componentId" }
         records.runOn(entity) { archetype, row ->
             // Only add HOLDS_DATA if this isn't a relation. All relations implicitly hold data currently and that bit
             // corresponds to the component part of the relation.
@@ -37,12 +41,14 @@ class ArchetypeMutateOperations(
         componentId: ComponentId,
         noEvent: Boolean,
     ) {
+        asyncCatcher.catch { "Async addComponent for $entity, component $componentId" }
         records.runOn(entity) { archetype, row ->
             addComponent(archetype, row, componentId.withoutRole(HOLDS_DATA), !noEvent)
         }
     }
 
     override fun extendFor(entity: EntityId, base: EntityId) {
+        asyncCatcher.catch { "Async extend for $entity, base $base" }
         records.runOn(base) { archetype, row ->
             records.runOn(entity) { entityArch, entityRow ->
                 instantiateTo(archetype, row, entityArch, entityRow)
@@ -106,6 +112,7 @@ class ArchetypeMutateOperations(
     }
 
     override fun removeComponentFor(entity: EntityId, componentId: ComponentId, noEvent: Boolean): Boolean {
+        asyncCatcher.catch { "Async remove for $entity, component $componentId" }
         val a = records.runOn(entity) { archetype, row ->
             archetype.removeComponent(row, componentId.withRole(HOLDS_DATA), onModify = { moveTo, newRow, onComplete ->
                 if (!noEvent) callComponentModifyEvent(moveTo, components.onRemove, componentId, newRow, onComplete)
@@ -127,6 +134,7 @@ class ArchetypeMutateOperations(
         removeComponentFor(entity, componentId, false)
 
     override fun clearEntity(entity: EntityId) {
+        asyncCatcher.catch { "Async clear for $entity" }
         records.runOn(entity) { archetype, row ->
             archetype.removeEntity(row)
             val newRow = archetypeProvider.rootArchetype.createWithoutData(entity)
