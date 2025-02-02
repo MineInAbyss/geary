@@ -1,10 +1,12 @@
 package com.mineinabyss.geary.systems.query
 
-import androidx.collection.LongList
 import androidx.collection.mutableLongListOf
 import com.mineinabyss.geary.annotations.optin.ExperimentalGearyApi
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
-import com.mineinabyss.geary.datatypes.*
+import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.datatypes.EntityArray
+import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.toEntityArray
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.fastForEach
@@ -134,8 +136,24 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
         return deferred
     }
 
-    @PublishedApi
-    internal class FoundValue : Throwable()
+    @OptIn(UnsafeAccessors::class)
+    inline fun <R> mapWithEntity(crossinline run: (T) -> R): List<Deferred<R>> {
+        val deferred = mutableListOf<Deferred<R>>()
+        forEach {
+            // TODO use EntityList instead
+            deferred.add(Deferred(run(it), Entity(it.unsafeEntity, it.world)))
+        }
+        return deferred
+    }
+
+    @OptIn(UnsafeAccessors::class)
+    inline fun <R> mapNotNullWithEntity(crossinline run: (T) -> R?): List<Deferred<R>> {
+        val deferred = mutableListOf<Deferred<R>>()
+        forEach { query ->
+            run(query).let { if (it != null) deferred.add(Deferred(it, Entity(query.unsafeEntity, query.world))) }
+        }
+        return deferred
+    }
 
     inline fun any(crossinline predicate: (T) -> Boolean): Boolean {
         try {
@@ -163,27 +181,17 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
         return found
     }
 
+    fun count(): Int {
+        var count = 0
+        forEach { count++ }
+        return count
+    }
+
     @OptIn(UnsafeAccessors::class)
     inline fun filter(crossinline predicate: (T) -> Boolean): EntityArray {
         val deferred = mutableLongListOf()
         forEach { if (predicate(it)) deferred.add(it.unsafeEntity.toLong()) }
         return deferred.toEntityArray(query.world)
-    }
-
-
-    data class Deferred<R>(
-        val data: R,
-        val entity: GearyEntity,
-    )
-
-    @OptIn(UnsafeAccessors::class)
-    inline fun <R> mapWithEntity(crossinline run: (T) -> R): List<Deferred<R>> {
-        val deferred = mutableListOf<Deferred<R>>()
-        forEach {
-            // TODO use EntityList instead
-            deferred.add(Deferred(run(it), Entity(it.unsafeEntity, it.world)))
-        }
-        return deferred
     }
 
     @OptIn(UnsafeAccessors::class)
@@ -193,11 +201,13 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
         return entities.toEntityArray(query.world)
     }
 
-    fun count(): Int {
-        var count = 0
-        forEach { count++ }
-        return count
-    }
+    data class Deferred<R>(
+        val data: R,
+        val entity: GearyEntity,
+    )
+
+    @PublishedApi
+    internal class FoundValue : Throwable()
 }
 
 inline fun <R> List<CachedQuery.Deferred<R>>.execOnFinish(run: (data: R, entity: GearyEntity) -> Unit) {
