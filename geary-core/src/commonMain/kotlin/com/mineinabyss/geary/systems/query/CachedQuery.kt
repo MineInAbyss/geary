@@ -48,6 +48,42 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
         }
     }
 
+    /**
+     * Runs this query on a list of entities gathered ahead of time.
+     *
+     * ### Unsafe constraints
+     * - Ensure all [entities] match this query.
+     * - Ensure [entities] belong to the same world as the query.
+     * - When iterating, ensure of all entities matching this query, only the current entity is modified.
+     */
+    @UnsafeAccessors
+    inline fun forEachMutating(entities: EntityArray, run: (Entity, T) -> Unit) {
+        val accessors = cachingAccessors
+        val query = query
+        val world = query.world
+        require(entities.world == query.world) { "Entities must belong to the same world as the query" }
+        val records = world.records
+        entities.forEachId { id ->
+            records.runOn(id) { archetype, row ->
+                query.archetype = archetype
+                query.row = row
+                accessors.fastForEach { it.updateCache(archetype) }
+                run(Entity(id, world), query)
+            }
+        }
+    }
+
+    /**
+     * Matches entities ahead of time and iterates over the matched list, allowing for archetype modifications.
+     *
+     * ### Unsafe constraints
+     * - When iterating, ensure of all entities matching this query, only the current entity is modified.
+     */
+    @UnsafeAccessors
+    inline fun forEachMutating(run: (Entity, T) -> Unit) {
+        forEachMutating(entities(), run)
+    }
+
     fun Archetype.getData() = componentData
 
     /**

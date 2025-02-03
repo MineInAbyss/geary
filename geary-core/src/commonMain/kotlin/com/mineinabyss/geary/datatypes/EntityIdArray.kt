@@ -39,6 +39,10 @@ class EntityArray(
         for (i in ids.indices) action(GearyEntity(ids[i], world))
     }
 
+    inline fun forEachId(action: (EntityId) -> Unit) {
+        for (i in ids.indices) action(ids[i])
+    }
+
     inline fun flatMap(transform: (Entity) -> EntityArray): EntityArray {
         return ids.flatMapTo(arrayListOf()) { transform(Entity(it, world)).ids }.toULongArray().toEntityArray(world)
     }
