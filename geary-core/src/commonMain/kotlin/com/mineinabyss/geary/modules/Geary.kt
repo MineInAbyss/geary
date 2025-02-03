@@ -132,6 +132,7 @@ interface Geary : KoinComponent {
         override val componentProvider: ComponentProvider by inject()
         override val records: ArrayTypeMap by inject()
         override val engine: GearyEngine by inject()
+        override val addons: MutableAddons by inject()
     }
 
     fun stringify() = application.toString().removePrefix("org.koin.core.KoinApplication")
