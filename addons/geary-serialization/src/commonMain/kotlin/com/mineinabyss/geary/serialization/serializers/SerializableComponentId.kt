@@ -5,7 +5,6 @@ import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.serialization.ComponentSerializers
-import com.mineinabyss.geary.serialization.SerializableComponents
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -19,7 +18,7 @@ typealias SerializableComponentId = @Contextual ComponentId
 
 class ComponentIdSerializer(
     val componentSerializers: ComponentSerializers,
-    val world: Geary
+    val world: Geary,
 ) : KSerializer<SerializableComponentId> {
     override val descriptor = PrimitiveSerialDescriptor("EventComponent", PrimitiveKind.STRING)
 

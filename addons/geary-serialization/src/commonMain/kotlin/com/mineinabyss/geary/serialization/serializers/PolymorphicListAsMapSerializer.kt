@@ -25,7 +25,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
 
     val polymorphicSerializer = serializer as? PolymorphicSerializer<T> ?: error("Serializer is not polymorphic")
 
-    override val descriptor = MapSerializer(String.serializer(), ContextualSerializer(Any::class)).descriptor
+    override val descriptor = YamlMap.serializer().descriptor
 
     override fun deserialize(decoder: Decoder): List<T> {
         val components = mutableListOf<T>()

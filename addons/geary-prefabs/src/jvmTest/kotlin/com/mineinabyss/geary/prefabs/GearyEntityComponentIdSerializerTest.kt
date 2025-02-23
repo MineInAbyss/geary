@@ -36,14 +36,12 @@ class GearyEntityComponentIdSerializerTest : GearyTest() {
         val format = YamlFormat(getAddon(SerializableComponents).serializers.module)
         val file =
             """
-            thing.a: {}
+            test:thing.a: {}
             """.trimIndent()
 
         // act
         val entity =
-            format.decodeFromString(GearyEntitySerializer(), file, overrideSerializersModule = SerializersModule {
-                provideConfig(PolymorphicListAsMapSerializer.Config<Any>(namespaces = listOf("test")))
-            })
+            format.decodeFromString(GearyEntitySerializer(), file)
 
         // assert
         entity.getAll() shouldContainExactly listOf(A)

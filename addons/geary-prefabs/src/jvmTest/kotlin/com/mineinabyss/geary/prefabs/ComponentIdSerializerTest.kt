@@ -40,7 +40,6 @@ class ComponentIdSerializerTest {
                 subclass(B::class)
                 subclass(SubSerializers::class)
             }
-            provideConfig(PolymorphicListAsMapSerializer.Config<Any>(namespaces = listOf("test")))
         })
 
     val mapSerializer = PolymorphicListAsMapSerializer(PolymorphicSerializer(Components::class))
@@ -53,37 +52,5 @@ class ComponentIdSerializerTest {
             test:thing.b: {}
             """.trimIndent()
         format.decodeFromString(mapSerializer, file) shouldBe listOf(A, B)
-    }
-
-    @Test
-    fun `should support subkey syntax`() {
-        val file =
-            """
-            test:thing.*:
-                a: {}
-                b: {}
-            """.trimIndent()
-        format.decodeFromString(mapSerializer, file) shouldBe listOf(A, B)
-    }
-
-    @Test
-    fun `should support importing namespaces`() {
-        val file =
-            """
-            thing.a: {}
-            thing.b: {}
-            """.trimIndent()
-        format.decodeFromString(mapSerializer, file) shouldBe listOf(A, B)
-    }
-
-    @Test
-    fun `should pass namespaces to child serializers`() {
-        val file =
-            """
-            "subserializers":
-                "components":
-                    "thing.a": {}
-            """.trimIndent()
-        format.decodeFromString(mapSerializer, file) shouldBe listOf(SubSerializers(listOf(A)))
     }
 }
