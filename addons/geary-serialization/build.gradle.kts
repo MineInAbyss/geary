@@ -12,12 +12,8 @@ kotlin {
 
                 api(idofrontLibs.kotlinx.serialization.cbor)
                 api(idofrontLibs.kotlinx.serialization.json)
+                api(idofrontLibs.kotlinx.serialization.kaml)
                 api(idofrontLibs.kotlinx.io)
-            }
-        }
-        jvmMain {
-            dependencies {
-                implementation(idofrontLibs.kotlinx.serialization.kaml)
             }
         }
     }

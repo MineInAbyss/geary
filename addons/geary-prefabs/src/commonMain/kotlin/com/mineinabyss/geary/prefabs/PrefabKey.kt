@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
  * An inline class which represents a key build from a [namespace] and [key], separated
  * by a '`:`' symbol.
  */
+@ConsistentCopyVisibility
 @Serializable(with = PrefabKeySerializer::class)
 // We don't make this a value class since calculating substring is pretty expensive compared to one new object instantiation
 data class PrefabKey private constructor(val namespace: String, val key: String) {

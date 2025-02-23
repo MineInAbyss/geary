@@ -1,15 +1,14 @@
 package com.mineinabyss.geary.serialization.serializers
 
+import com.charleskorn.kaml.YamlInput
+import com.charleskorn.kaml.YamlMap
 import com.mineinabyss.geary.datatypes.GearyComponent
 import com.mineinabyss.geary.modules.Geary
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.fromCamelCaseToSnakeCase
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.hasNamespace
 import kotlinx.serialization.*
-import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.SerializersModule
@@ -30,61 +29,39 @@ open class PolymorphicListAsMapSerializer<T : Any>(
 
     override fun deserialize(decoder: Decoder): List<T> {
         val components = mutableListOf<T>()
+        val componentMap = decoder.decodeSerializableValue(YamlMap.serializer())
+        val yaml = (decoder as YamlInput).yaml
 
-        val mapSerializer = object : CustomMapSerializer() {
-            override fun decode(key: String, compositeDecoder: CompositeDecoder) {
-                val parentConfig = getParentConfig(decoder.serializersModule)
-                val namespaces = parentConfig?.namespaces ?: emptyList()
-                when {
-                    key == "namespaces" -> {
-                        // Ignore namespaces component, it's parsed as a file-wide property
-                        compositeDecoder.decodeMapValue(ListSerializer(String.serializer()))
-                    }
+        componentMap.entries.forEach { (yamlKey, node) ->
+            val key = yamlKey.content
+            val componentSerializer = config.customKeys[key]?.invoke()
+                ?: findSerializerFor(yaml.serializersModule, emptyList(), key).getOrNull()
 
-                    key.endsWith("*") -> {
-                        val innerSerializer = of(
-                            polymorphicSerializer,
-                            config.copy(prefix = key.removeSuffix("*"))
-                        )
-                        components.addAll(compositeDecoder.decodeMapValue(innerSerializer))
-                    }
-
-                    else -> {
-                        val componentSerializer = config.customKeys[key]?.invoke() ?: findSerializerFor(compositeDecoder.serializersModule, namespaces, key)
-                            .getOrElse {
-                                if (config.onMissingSerializer != OnMissing.IGNORE) {
-                                    config.whenComponentMalformed(key)
-                                    parentConfig?.whenComponentMalformed?.invoke(key)
-                                }
-                                when (config.onMissingSerializer) {
-                                    OnMissing.ERROR -> throw it
-                                    OnMissing.WARN -> Geary.w("No serializer found for $key in namespaces $namespaces, ignoring")
-                                    OnMissing.IGNORE -> Unit
-                                }
-                                compositeDecoder.skipMapValue()
-                                return
-                            }
-
-                        runCatching { compositeDecoder.decodeMapValue(componentSerializer) }
-                            .onSuccess { components += it }
-                            .onFailure {
-                                config.whenComponentMalformed(key)
-                                parentConfig?.whenComponentMalformed?.invoke(key)
-                                if (config.skipMalformedComponents) {
-                                    Geary.w(
-                                        "Malformed component $key, ignoring:\n" +
-                                                it.stackTraceToString()
-                                                    .lineSequence()
-                                                    .joinToString("\n", limit = 10, truncated = "...")
-                                    )
-                                    compositeDecoder.skipMapValue()
-                                } else throw it
-                            }
-                    }
+            if (componentSerializer == null) {
+                if (config.onMissingSerializer != OnMissing.IGNORE) config.whenComponentMalformed(key)
+                when (config.onMissingSerializer) {
+                    OnMissing.ERROR -> error("Missing serializer for polymorphic key: $key")
+                    OnMissing.WARN -> Geary.w("No serializer found for $key, ignoring")
+                    OnMissing.IGNORE -> Unit
                 }
+                return@forEach
             }
+
+            runCatching { yaml.decodeFromYamlNode(componentSerializer, node) }
+                .onSuccess { components += it }
+                .onFailure {
+                    config.whenComponentMalformed(key)
+                    if (config.skipMalformedComponents) {
+                        Geary.w {
+                            "Malformed component $key, ignoring:\n" +
+                                    it.stackTraceToString()
+                                        .lineSequence()
+                                        .joinToString("\n", limit = 10, truncated = "...")
+                        }
+                    } else throw it
+                }
         }
-        mapSerializer.deserialize(decoder)
+
         return components
     }
 
