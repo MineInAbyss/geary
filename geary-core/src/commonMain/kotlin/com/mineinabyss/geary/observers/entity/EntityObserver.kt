@@ -5,7 +5,6 @@ import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.modules.ArchetypeEngineModule
 import com.mineinabyss.geary.observers.EventToObserversMap
 import com.mineinabyss.geary.observers.Observer
 import com.mineinabyss.geary.observers.builders.*
@@ -18,6 +17,9 @@ inline fun <reified T : Any> GearyEntity.observeWithData(): ObserverEventsBuilde
     return observeWithData(world.componentId<T>())
 }
 
+/**
+ * Attaches an observer to fire on events emitted on this entity and its instances.
+ */
 fun GearyEntity.attachObserver(observer: Observer) {
     val observerEntity = world.entity {
         // TODO avoid cast
@@ -27,6 +29,20 @@ fun GearyEntity.attachObserver(observer: Observer) {
     //TODO remove when prefabs auto propagate component adds down
     instances.forEach { it.addRelation<Observer>(observerEntity) }
     addRelation<Observer>(observerEntity)
+}
+
+/**
+ * Removes an entity observer that was previously attached via [attachObserver]
+ */
+fun GearyEntity.removeObserver(observer: Observer) = with(world) {
+    getRelations<Observer, Any?>().forEach {
+        val observerEntity = it.target.toGeary()
+        val map = observerEntity.get<EventToObserversMap>()
+        if (map != null) {
+            map.removeObserver(observer)
+            if (map.isEmpty) removeRelation<Observer>(observerEntity)
+        }
+    }
 }
 
 fun GearyEntity.observe(vararg events: ComponentId): ObserverEventsBuilder<ObserverContext> {

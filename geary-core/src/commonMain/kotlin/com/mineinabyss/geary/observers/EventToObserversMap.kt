@@ -10,9 +10,17 @@ class EventToObserversMap(
 ) {
     private val eventToObserverMap = LongSparseArray<ObserverList>()
 
+    val isEmpty get() = eventToObserverMap.isEmpty()
+
     fun addObserver(observer: Observer) {
         observer.listenToEvents.forEach { event ->
             eventToObserverMap.getOrPut(event.toLong()) { ObserverList(records) }.add(observer)
+        }
+    }
+
+    fun removeObserver(observer: Observer) {
+        observer.listenToEvents.forEach { event ->
+            eventToObserverMap[event.toLong()]?.remove(observer)
         }
     }
 

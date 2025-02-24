@@ -23,6 +23,14 @@ class ObserverList(
         }
     }
 
+    fun remove(observer: Observer) {
+        if (observer.involvedComponents.size == 0) {
+            involved2Observer[0L]?.remove(observer)
+        } else observer.involvedComponents.forEach { componentId ->
+            involved2Observer[componentId.toLong()]?.remove(observer)
+        }
+    }
+
     inline fun forEach(involvedComp: ComponentId, entity: EntityId, exec: (Observer, Archetype, row: Int) -> Unit) {
         involved2Observer[0L]?.forEach {
             records.runOn(entity) { archetype, row -> exec(it, archetype, row) }

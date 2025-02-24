@@ -4,14 +4,25 @@ import com.mineinabyss.geary.annotations.optin.DangerousComponentOperation
 import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.Engine
-import com.mineinabyss.geary.helpers.*
+import com.mineinabyss.geary.helpers.NO_COMPONENT
+import com.mineinabyss.geary.helpers.component
+import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.relationOf
+import com.mineinabyss.geary.observers.entity.observe
+import com.mineinabyss.geary.observers.entity.removeObserver
 import com.mineinabyss.geary.observers.events.OnAdd
+import com.mineinabyss.geary.observers.events.OnEntityRemoved
+import com.mineinabyss.geary.observers.events.OnRemove
+import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.RelationWithData
-import org.koin.core.Koin
-import org.koin.core.KoinApplication
+import com.mineinabyss.geary.systems.query.query
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.Channel.Factory.CONFLATED
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlin.reflect.KClass
 
 typealias GearyEntity = Entity
@@ -181,11 +192,42 @@ class Entity(val id: EntityId, val world: Geary) {
         requireSameWorldAs(base)
         world.write.extendFor(id, base.id)
     }
-    
+
     /** Removes a [prefab] from this entity.  */
     fun removePrefab(prefab: Entity) {
         requireSameWorldAs(prefab)
         remove(Relation.of(comp.instanceOf, prefab.id).id)
+    }
+
+    /**
+     * Get a component as a [Flow], updates to the component will be emitted, including `null` when the component is removed.
+     *
+     * The flow stops when the entity is removed.
+     */
+    inline fun <reified T : Any> getAsFlow(): Flow<T?> = with(world) {
+        flow {
+            val updates = Channel<T?>(CONFLATED)
+            updates.trySend(get<T>())
+            val onSetObserver = observe<OnSet>().involving<T>().exec(query<T>()) { (comp) ->
+                updates.trySend(comp)
+            }
+            val onRemoveObserver = observe<OnRemove>().involving<T>().exec(query<T>()) { (comp) ->
+                updates.trySend(null)
+            }
+            val onEntityRemoved = observe<OnEntityRemoved>().exec {
+                updates.close()
+            }
+
+            try {
+                for (update in updates) {
+                    emit(update)
+                }
+            } finally {
+                removeObserver(onSetObserver)
+                removeObserver(onRemoveObserver)
+                removeObserver(onEntityRemoved)
+            }
+        }
     }
 
     // Relations
