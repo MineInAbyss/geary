@@ -31,22 +31,46 @@ class PrefabLoader(
 
     fun loadOrUpdatePrefabs() {
         val results = mutableListOf<String>()
+        val deferredLoadOperations = mutableListOf<() -> PrefabLoadResult>()
+
         sources.paths.forEach { prefabsPath ->
             logger.i("Loading prefabs for namespace '${prefabsPath.namespace}'")
+
             val loaded = buildList {
-                addAll(prefabsPath.paths().map { path -> loadFromPathOrReloadExisting(prefabsPath.namespace, path) })
-                addAll(
-                    prefabsPath.sources().map {
-                        load(
-                            key = it.key,
-                            source = it.source,
-                            writeTo = world.getAddon(Prefabs).manager[it.key],
-                            formatExt = it.formatExt
-                        )
+                addAll(prefabsPath.paths().map { path ->
+                    val result = loadFromPathOrReloadExisting(prefabsPath.namespace, path)
+                    if (result is PrefabLoadResult.Defer) {
+                        deferredLoadOperations.add { loadFromPathOrReloadExisting(prefabsPath.namespace, path) }
                     }
-                )
+                    result
+                })
+                addAll(prefabsPath.sources().map { sourceEntry ->
+                    val key = sourceEntry.key
+                    val source = sourceEntry.source
+                    val formatExt = sourceEntry.formatExt
+
+                    val result = load(
+                        key = key,
+                        source = source,
+                        writeTo = world.getAddon(Prefabs).manager[key],
+                        formatExt = formatExt
+                    )
+                    if (result is PrefabLoadResult.Defer) {
+                        deferredLoadOperations.add {
+                            load(
+                                key = key,
+                                source = source,
+                                writeTo = world.getAddon(Prefabs).manager[key],
+                                formatExt = formatExt
+                            )
+                        }
+                    }
+                    result
+                })
             }
+
             val success = loaded.count { it is PrefabLoadResult.Success }
+            val defer = loaded.count { it is PrefabLoadResult.Defer }
             val warn = loaded.count { it is PrefabLoadResult.Warn }
             val fail = loaded.count { it is PrefabLoadResult.Failure }
             val total = loaded.count()
@@ -54,12 +78,57 @@ class PrefabLoader(
             results += buildString {
                 append("Loaded prefabs in '${prefabsPath.namespace}':")
                 if (success > 0) append(" success: $success,")
+                if (defer > 0) append(" defer: $defer,")
                 if (warn > 0) append(" warn: $warn,")
                 if (fail > 0) append(" fail: $fail,")
                 append(" total: $total")
             }
         }
+
         results.forEach { logger.i(it) }
+
+        if (deferredLoadOperations.isNotEmpty()) {
+            logger.i("Processing deferred prefab loads...")
+
+            var currentDeferred = deferredLoadOperations.toList()
+            var previousDeferredCount = -1
+            var iteration = 0
+
+            val allDeferredResults = mutableListOf<PrefabLoadResult>()
+
+            while (currentDeferred.size != previousDeferredCount && currentDeferred.isNotEmpty()) {
+                iteration++
+                previousDeferredCount = currentDeferred.size
+                logger.d("Deferred iteration $iteration: ${currentDeferred.size} operations to process")
+                val nextDeferred = mutableListOf<() -> PrefabLoadResult>()
+                currentDeferred.forEach { op ->
+                    when (val result = op.invoke()) {
+                        is PrefabLoadResult.Defer -> nextDeferred.add(op)
+                        else -> allDeferredResults.add(result)
+                    }
+                }
+                currentDeferred = nextDeferred
+            }
+
+            val finalFailResults = currentDeferred.map {
+                PrefabLoadResult.Failure(Exception("Deferred load failed: Dependent prefabs might not be available"))
+            }
+            allDeferredResults.addAll(finalFailResults)
+
+            val success = allDeferredResults.count { it is PrefabLoadResult.Success }
+            val warn = allDeferredResults.count { it is PrefabLoadResult.Warn }
+            val fail = allDeferredResults.count { it is PrefabLoadResult.Failure }
+            val total = allDeferredResults.count()
+
+            logger.i(buildString {
+                append("Deferred prefabs loading result:")
+                if (success > 0) append(" success: $success,")
+                if (warn > 0) append(" warn: $warn,")
+                if (fail > 0) append(" fail: $fail,")
+                append(" total: $total")
+            })
+        }
+
         needsInherit.entities().fastForEach {
             it.inheritPrefabsIfNeeded()
         }
@@ -140,6 +209,7 @@ class PrefabLoader(
     sealed class PrefabLoadResult {
         data class Success(val entity: Entity) : PrefabLoadResult()
         data class Warn(val entity: Entity) : PrefabLoadResult()
+        data class Defer(val entity: Entity) : PrefabLoadResult()
         data class Failure(val error: Throwable) : PrefabLoadResult()
     }
 

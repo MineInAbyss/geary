@@ -28,8 +28,8 @@ class PrefabFromResourcesTest {
         }.start()
 
         with(world) {
-            entityOfOrNull(PrefabKey.of("test:prefabA")) shouldNotBe null
-            entityOfOrNull(PrefabKey.of("test:prefabB")) shouldBe null
+            entityOfOrNull(PrefabKey.of("test:prefabs/prefabA")) shouldNotBe null
+            entityOfOrNull(PrefabKey.of("test:prefabs/prefabB")) shouldBe null
         }
     }
 
