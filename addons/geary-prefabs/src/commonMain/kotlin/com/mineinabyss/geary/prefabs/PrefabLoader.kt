@@ -11,6 +11,7 @@ import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabsIfNeeded
 import com.mineinabyss.geary.serialization.formats.Formats
+import com.mineinabyss.geary.serialization.serializers.DeferredLoadException
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer.Companion.provideConfig
 import com.mineinabyss.geary.systems.query.Query
@@ -164,9 +165,14 @@ class PrefabLoader(
         // Stop here if we need to make a new entity
         // For existing prefabs, add all tags except decoded on fail to keep them tracked
         if (writeTo == null) decoded.onFailure { exception ->
-            logger.e("[$key] Failed to load prefab")
-            exception.printStackTrace()
-            return PrefabLoadResult.Failure(exception)
+            if (exception is DeferredLoadException) {
+                return PrefabLoadResult.Defer
+            }
+            else {
+                logger.e("[$key] Failed to load prefab")
+                exception.printStackTrace()
+                return PrefabLoadResult.Failure(exception)
+            }
         }
 
         val entity = writeTo ?: world.entity()
@@ -209,7 +215,7 @@ class PrefabLoader(
     sealed class PrefabLoadResult {
         data class Success(val entity: Entity) : PrefabLoadResult()
         data class Warn(val entity: Entity) : PrefabLoadResult()
-        data class Defer(val entity: Entity) : PrefabLoadResult()
+        data object Defer : PrefabLoadResult()
         data class Failure(val error: Throwable) : PrefabLoadResult()
     }
 

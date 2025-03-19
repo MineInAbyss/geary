@@ -50,6 +50,10 @@ open class PolymorphicListAsMapSerializer<T : Any>(
             runCatching { yaml.decodeFromYamlNode(componentSerializer, node) }
                 .onSuccess { components += it }
                 .onFailure {
+                    if (it is DeferredLoadException) {
+                        throw it
+                    }
+
                     config.whenComponentMalformed(key)
                     if (config.skipMalformedComponents) {
                         Geary.w {
