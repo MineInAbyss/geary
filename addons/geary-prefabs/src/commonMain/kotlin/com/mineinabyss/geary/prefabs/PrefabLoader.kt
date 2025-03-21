@@ -11,7 +11,6 @@ import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabsIfNeeded
 import com.mineinabyss.geary.serialization.formats.Formats
-import com.mineinabyss.geary.serialization.serializers.DeferredLoadException
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer.Companion.provideConfig
 import com.mineinabyss.geary.systems.query.Query
@@ -142,11 +141,20 @@ class PrefabLoader(
         formatExt: String,
     ): PrefabLoadResult {
         var hadMalformed = false
+        var deferred = false
         val decoded = runCatching {
             val config = PolymorphicListAsMapSerializer.Config<Any>(
-                whenComponentMalformed = {
-                    if (!hadMalformed) logger.e("[$key] Problems reading components")
+                whenComponentMalformed = { _, ex ->
+                    if (ex is DeferredLoadException) {
+                        deferred = true
+                        return@Config true
+                    }
+
+                    if (!hadMalformed) {
+                        logger.e("[$key] Problems reading components")
+                    }
                     hadMalformed = true
+                    return@Config false
                 }
             )
             val serializer = PolymorphicListAsMapSerializer.ofComponents(config)
@@ -162,17 +170,16 @@ class PrefabLoader(
             )
         }
 
+        if (deferred) {
+            return PrefabLoadResult.Defer
+        }
+
         // Stop here if we need to make a new entity
         // For existing prefabs, add all tags except decoded on fail to keep them tracked
         if (writeTo == null) decoded.onFailure { exception ->
-            if (exception is DeferredLoadException) {
-                return PrefabLoadResult.Defer
-            }
-            else {
-                logger.e("[$key] Failed to load prefab")
-                exception.printStackTrace()
-                return PrefabLoadResult.Failure(exception)
-            }
+            logger.e("[$key] Failed to load prefab")
+            exception.printStackTrace()
+            return PrefabLoadResult.Failure(exception)
         }
 
         val entity = writeTo ?: world.entity()
