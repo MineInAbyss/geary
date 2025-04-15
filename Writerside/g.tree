@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE instance-profile
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
+
+<instance-profile id="g"
+                 name="Geary" start-page="About.topic">
+    <toc-element topic="About.topic"/>
+    <toc-element topic="quickstart.md"/>
+    <toc-element toc-title="Guide">
+        <toc-element topic="setup.md"/>
+        <toc-element topic="addons.md"/>
+        <toc-element topic="entities.md"/>
+        <toc-element topic="designing-components.md"/>
+        <toc-element topic="relations.md"/>
+    </toc-element>
+    <toc-element topic="backend_index.md">
+        <toc-element topic="resources.md"/>
+        <toc-element topic="core_index.md">
+            <toc-element topic="archetype-graph.md"/>
+            <toc-element topic="querying-archetypes.md"/>
+            <toc-element topic="changing-data.md"/>
+            <toc-element topic="events.md"/>
+        </toc-element>
+        <toc-element toc-title="Future plans">
+            <toc-element topic="memory-structure.md"/>
+        </toc-element>
+    </toc-element>
+</instance-profile>
