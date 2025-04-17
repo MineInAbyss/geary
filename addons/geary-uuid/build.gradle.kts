@@ -11,6 +11,7 @@ kotlin {
 
                 implementation(libs.atomicfu)
             }
+            kotlin.srcDirs("src")
         }
     }
 }

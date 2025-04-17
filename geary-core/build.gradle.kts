@@ -17,7 +17,6 @@ kotlin {
                 api(idofrontLibs.kermit)
                 api(idofrontLibs.kotlinx.coroutines)
             }
-
         }
 
         val jvmTest by getting {

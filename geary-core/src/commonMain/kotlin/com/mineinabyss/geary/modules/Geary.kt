@@ -154,13 +154,13 @@ inline fun <T : Query> execute(
     TODO()
 }
 
-inline fun <reified T : Any> Geary.observe(): ObserverWithoutData {
+inline fun <reified T : Any> Geary.observe(name: String? = null): ObserverWithoutData {
     return ObserverWithoutData(listOf(componentId<T>()), world = this) {
         eventRunner.addObserver(it)
     }
 }
 
-inline fun <reified T : Any> Geary.observeWithData(): ObserverWithData<T> {
+inline fun <reified T : Any> Geary.observeWithData(name: String? = null): ObserverWithData<T> {
     return ObserverWithData(listOf(componentId<T>()), world = this) {
         eventRunner.addObserver(it)
     }

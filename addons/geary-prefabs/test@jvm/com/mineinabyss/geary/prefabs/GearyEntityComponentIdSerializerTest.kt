@@ -6,13 +6,10 @@ import com.mineinabyss.geary.serialization.SerializableComponents
 import com.mineinabyss.geary.serialization.formats.YamlFormat
 import com.mineinabyss.geary.serialization.serialization
 import com.mineinabyss.geary.serialization.serializers.GearyEntitySerializer
-import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
-import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer.Companion.provideConfig
 import com.mineinabyss.geary.test.GearyTest
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModule
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 

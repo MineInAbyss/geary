@@ -18,3 +18,11 @@ dependencies {
     testImplementation(project(":geary-core"))
     testImplementation(project(":geary-serialization"))
 }
+
+sourceSets.main {
+    kotlin.srcDirs("src")
+}
+
+sourceSets.test {
+    kotlin.srcDirs("test")
+}

@@ -1,9 +1,7 @@
 package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.serialization.formats.YamlFormat
-import com.mineinabyss.geary.serialization.serializers.GearyEntitySerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
-import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer.Companion.provideConfig
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.PolymorphicSerializer

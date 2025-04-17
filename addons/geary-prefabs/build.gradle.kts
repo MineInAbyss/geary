@@ -6,14 +6,19 @@ plugins {
 
 kotlin {
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation(project(":geary-core"))
                 implementation(project(":geary-serialization"))
             }
+            kotlin.srcDir("src")
         }
 
-        val jvmTest by getting {
+        jvmMain {
+            kotlin.srcDir("src@jvm")
+        }
+
+        jvmTest {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(project(":geary-test"))
@@ -24,6 +29,8 @@ kotlin {
                 implementation(project(":geary-serialization"))
                 implementation(idofrontLibs.junit.jupiter)
             }
+            kotlin.srcDir("test@jvm")
+            resources.srcDir("resources")
         }
     }
 }
