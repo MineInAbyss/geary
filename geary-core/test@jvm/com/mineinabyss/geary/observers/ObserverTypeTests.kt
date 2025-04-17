@@ -3,7 +3,6 @@ package com.mineinabyss.geary.observers
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.test.GearyTest
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.modules.observeWithData
 import com.mineinabyss.geary.systems.query.query

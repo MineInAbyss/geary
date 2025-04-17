@@ -57,3 +57,7 @@ benchmark {
         }
     }
 }
+
+sourceSets.main {
+    kotlin.srcDirs("src")
+}

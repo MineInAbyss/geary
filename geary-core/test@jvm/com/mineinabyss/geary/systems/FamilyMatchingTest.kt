@@ -3,7 +3,6 @@ package com.mineinabyss.geary.systems
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.modules.findEntities
 import com.mineinabyss.geary.test.GearyTest
 import com.mineinabyss.geary.systems.query.Query
 import io.kotest.matchers.collections.shouldContain

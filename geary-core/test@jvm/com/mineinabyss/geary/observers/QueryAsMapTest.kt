@@ -2,7 +2,6 @@ package com.mineinabyss.geary.observers
 
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.test.GearyTest
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.observers.queries.cacheAssociatedBy
 import com.mineinabyss.geary.systems.query.query
 import io.kotest.matchers.shouldBe

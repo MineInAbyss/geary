@@ -6,7 +6,7 @@ plugins {
 
 kotlin {
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation(libs.stately.concurrency)
                 implementation(libs.androidx.collection)
@@ -17,9 +17,10 @@ kotlin {
                 api(idofrontLibs.kermit)
                 api(idofrontLibs.kotlinx.coroutines)
             }
+            kotlin.setSrcDirs(files("src"))
         }
 
-        val jvmTest by getting {
+        jvmTest {
             dependencies {
                 implementation(project(":geary-test"))
                 implementation(kotlin("test"))
@@ -28,14 +29,21 @@ kotlin {
                 implementation(idofrontLibs.kotest.property)
                 implementation(libs.koin.test)
             }
+            kotlin.setSrcDirs(files("test@jvm"))
+            resources.setSrcDirs(files("resources"))
         }
 
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 implementation(idofrontLibs.kotlinx.serialization.kaml)
                 implementation(idofrontLibs.fastutil)
                 implementation(libs.roaringbitmap)
             }
+            kotlin.setSrcDirs(files("src@jvm"))
+        }
+
+        nativeMain {
+            kotlin.setSrcDirs(files("src@native"))
         }
     }
 }

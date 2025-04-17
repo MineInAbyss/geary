@@ -4,8 +4,6 @@ import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.datatypes.entityTypeOf
-import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
-import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity

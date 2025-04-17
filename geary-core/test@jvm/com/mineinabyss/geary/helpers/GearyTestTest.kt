@@ -2,7 +2,6 @@ package com.mineinabyss.geary.helpers
 
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.test.GearyTest
-import com.mineinabyss.geary.modules.geary
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test

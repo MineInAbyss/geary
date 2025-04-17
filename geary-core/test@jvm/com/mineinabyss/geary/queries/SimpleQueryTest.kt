@@ -3,8 +3,6 @@ package com.mineinabyss.geary.queries
 import com.mineinabyss.geary.annotations.optin.ExperimentalGearyApi
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.test.GearyTest
-import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.query.Query
 import com.mineinabyss.geary.systems.query.query
 import com.mineinabyss.geary.systems.query.toList
 import io.kotest.assertions.assertSoftly
