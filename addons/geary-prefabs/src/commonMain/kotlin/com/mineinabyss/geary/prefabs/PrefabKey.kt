@@ -34,10 +34,7 @@ data class PrefabKey private constructor(val namespace: String, val key: String)
     }
 }
 
-fun Geary.entityOfOrNull(key: PrefabKey?): Entity? = key?.let {
-    val result = getAddon(Prefabs).manager[key]
-    result
-}
+fun Geary.entityOfOrNull(key: PrefabKey?): Entity? = key?.let { getAddon(Prefabs).manager[key] }
 
 fun Geary.entityOf(key: PrefabKey): Entity = entityOfOrNull(key)
     ?: error("Requested non null prefab entity for key '$key', but it does not exist.")

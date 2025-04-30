@@ -44,26 +44,11 @@ class PrefabLoader(
                     }
                     result
                 })
-                addAll(prefabsPath.sources().map { sourceEntry ->
-                    val key = sourceEntry.key
-                    val source = sourceEntry.source
-                    val formatExt = sourceEntry.formatExt
+                addAll(prefabsPath.sources().map { (source, key, formatExt) ->
 
-                    val result = load(
-                        key = key,
-                        source = source,
-                        writeTo = world.getAddon(Prefabs).manager[key],
-                        formatExt = formatExt
-                    )
-                    if (result is PrefabLoadResult.Defer) {
-                        deferredLoadOperations.add {
-                            load(
-                                key = key,
-                                source = source,
-                                writeTo = world.getAddon(Prefabs).manager[key],
-                                formatExt = formatExt
-                            )
-                        }
+                    val result = load(key, source, world.getAddon(Prefabs).manager[key], formatExt)
+                    if (result is PrefabLoadResult.Defer) deferredLoadOperations.add {
+                        load(key, source, world.getAddon(Prefabs).manager[key], formatExt)
                     }
                     result
                 })
