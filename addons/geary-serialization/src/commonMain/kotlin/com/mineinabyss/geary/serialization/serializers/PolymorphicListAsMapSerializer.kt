@@ -38,7 +38,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                 ?: findSerializerFor(yaml.serializersModule, emptyList(), key).getOrNull()
 
             if (componentSerializer == null) {
-                if (config.onMissingSerializer != OnMissing.IGNORE) config.whenComponentMalformed(key)
+                if (config.onMissingSerializer != OnMissing.IGNORE) config.whenComponentMalformed(key, null)
                 when (config.onMissingSerializer) {
                     OnMissing.ERROR -> error("Missing serializer for polymorphic key: $key")
                     OnMissing.WARN -> Geary.w("No serializer found for $key, ignoring")
@@ -50,7 +50,10 @@ open class PolymorphicListAsMapSerializer<T : Any>(
             runCatching { yaml.decodeFromYamlNode(componentSerializer, node) }
                 .onSuccess { components += it }
                 .onFailure {
-                    config.whenComponentMalformed(key)
+                    if (config.whenComponentMalformed(key, it)) {
+                        return@forEach
+                    }
+
                     if (config.skipMalformedComponents) {
                         Geary.w {
                             "Malformed component $key, ignoring:\n" +
@@ -96,12 +99,17 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         ERROR, WARN, IGNORE
     }
 
+    /**
+     * The config
+     *
+     * @param whenComponentMalformed Called when a component's deserialization fails. Receives the component key and an exception that was thrown, if any. Returns a boolean indicating whether the deserialization should be aborted.
+     */
     data class Config<T : Any>(
         val namespaces: List<String> = listOf(),
         val prefix: String = "",
         val onMissingSerializer: OnMissing = OnMissing.WARN,
         val skipMalformedComponents: Boolean = true,
-        val whenComponentMalformed: (String) -> Unit = {},
+        val whenComponentMalformed: (String, Throwable?) -> Boolean = { _, _ -> false },
         val customKeys: Map<String, () -> KSerializer<out T>> = mapOf(),
     )
 
