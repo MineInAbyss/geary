@@ -11,5 +11,5 @@ interface Engine {
     val mainScope: CoroutineScope
 
     /** Ticks the entire engine. Implementations may call at different speeds. */
-    fun tick(currentTick: Long)
+    fun tick()
 }

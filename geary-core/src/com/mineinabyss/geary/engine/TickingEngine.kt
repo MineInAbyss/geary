@@ -9,12 +9,9 @@ abstract class TickingEngine : Engine {
 
     open fun start(): Boolean {
         if (!started) {
-            scheduleSystemTicking()
             started = true
             return true
         }
         return false
     }
-
-    abstract fun scheduleSystemTicking()
 }

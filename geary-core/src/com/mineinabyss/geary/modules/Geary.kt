@@ -64,6 +64,10 @@ interface Geary : KoinComponent {
 
     fun <T : Addon<Conf, *>, Conf> getConfiguration(addon: T): Conf = addons.getConfig(addon)
 
+    fun tick() {
+        engine.tick()
+    }
+
     // Queries
 
     fun findEntities(family: Family): EntityArray {

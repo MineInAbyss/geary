@@ -35,9 +35,7 @@ class PipelineImpl(
         onSystemAdd.fastForEach { it(system) }
         val runner = queryManager.trackQuery(system.query)
         val tracked = TrackedSystem(system, runner)
-        if (system.interval != null) {
-            repeatingSystems.add(tracked)
-        }
+        repeatingSystems.add(tracked)
         return TrackedSystem(system, runner)
     }
 
