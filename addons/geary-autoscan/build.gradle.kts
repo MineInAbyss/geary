@@ -11,3 +11,7 @@ dependencies {
     implementation(idofrontLibs.reflections)
     implementation(idofrontLibs.kotlin.reflect)
 }
+
+sourceSets.main {
+    kotlin.srcDirs("src")
+}

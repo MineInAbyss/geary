@@ -15,6 +15,11 @@ kotlin {
                 api(idofrontLibs.kotlinx.serialization.kaml)
                 api(idofrontLibs.kotlinx.io)
             }
+            kotlin.srcDirs("src")
+        }
+
+        jvmMain {
+            kotlin.srcDirs("src@jvm")
         }
     }
 }

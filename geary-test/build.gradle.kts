@@ -11,3 +11,7 @@ dependencies {
     implementation(libs.koin.test)
     compileOnly(idofrontLibs.junit.jupiter)
 }
+
+sourceSets.main {
+    kotlin.srcDirs("src")
+}
