@@ -33,6 +33,9 @@ val Prefabs = createAddon<PrefabSources, PrefabsModule>("Prefabs", {
     PrefabSources()
 }) {
     val formats = geary.getAddon(SerializableComponents).formats
+    geary.infoReader.addInfoLine("prefabs") { entity ->
+        entity.prefabs.mapNotNull { it.get<PrefabKey>().toString() }.joinToString()
+    }
     val module = PrefabsModule(PrefabManager(), PrefabLoader(configuration, geary, formats, logger))
 
     systems {

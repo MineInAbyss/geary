@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     alias(idofrontLibs.plugins.kotlin.multiplatform)
-    alias(idofrontLibs.plugins.dokka)
     alias(idofrontLibs.plugins.mia.autoversion)
     alias(idofrontLibs.plugins.dependencyversions)
     alias(idofrontLibs.plugins.version.catalog.update)
@@ -20,12 +19,9 @@ allprojects {
 }
 
 allprojects {
-    apply(plugin = "org.jetbrains.dokka")
-
     pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
         kotlin {
             jvm {
-                withJava()
                 testRuns["test"].executionTask.configure {
                     useJUnitPlatform()
                 }

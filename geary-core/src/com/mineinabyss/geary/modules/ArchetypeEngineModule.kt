@@ -57,6 +57,7 @@ internal object ArchetypesModules {
         includes(components)
         singleOf(::ArchetypeReadOperations) { bind<EntityReadOperations>() }
         singleOf(::PipelineImpl) { bind<Pipeline>() }
+        singleOf(::EntityInfoReader)
     }
 
     val engine get() = module {
