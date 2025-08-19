@@ -18,9 +18,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: MineInAbyss/publish-action@develop
+      - uses: MineInAbyss/publish-action@v3
         with:
-          maven-metadata-url: https://repo.mineinabyss.com/releases/com/mineinabyss/geary-core/maven-metadata.xml
-          maven-snapshot-metadata-url: https://repo.mineinabyss.com/snapshots/com/mineinabyss/geary-core/maven-metadata.xml
           maven-username: ${{ secrets.MAVEN_PUBLISH_USERNAME }}
           maven-password: ${{ secrets.MAVEN_PUBLISH_PASSWORD }}
