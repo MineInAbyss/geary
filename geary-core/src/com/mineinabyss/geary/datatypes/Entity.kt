@@ -372,7 +372,9 @@ class Entity(val id: EntityId, val world: Geary) {
                 "This entity is in ${world.stringify()}, while the other is in ${other.world.stringify()}"
     }
 
-    override fun toString(): String = "Entity($id, world=${world.stringify()})"
+    override fun toString(): String {
+        return "$id(${world.infoReader.readEntityInfo(this)})"
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

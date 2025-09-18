@@ -46,6 +46,7 @@ interface Geary : KoinComponent {
     // access where the engine isn't expected to be reloaded (ex. like it might be in tests)
     val eventRunner: EventRunner get() = get()
     val read: EntityReadOperations get() = get()
+    val infoReader: EntityInfoReader get() = get()
     val write: EntityMutateOperations get() = get()
     val queryManager: QueryManager get() = get()
     val pipeline: Pipeline get() = get()
@@ -127,6 +128,7 @@ interface Geary : KoinComponent {
         override val logger: Logger = logger ?: super.logger
         override val eventRunner: EventRunner by inject()
         override val read: EntityReadOperations by inject()
+        override val infoReader: EntityInfoReader by inject()
         override val write: EntityMutateOperations by inject()
         override val queryManager: QueryManager by inject()
         override val pipeline: Pipeline by inject()

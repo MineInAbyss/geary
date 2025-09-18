@@ -49,7 +49,10 @@ fun Geary.parsePassive() = observe<OnSet>()
                     runCatching {
                         val context = ActionGroupContext(entity)
                         systemBind.run.execute(context)
-                    }.onFailure { it.printStackTrace() }
+                    }.onFailure {
+                        logger.e { "Error while executing passive system on entity $entity:" }
+                        it.printStackTrace()
+                    }
                 }
             }
         }
