@@ -121,6 +121,6 @@ class RelationMatchingSystemTest : GearyTest() {
         system.runner.matchedArchetypes.shouldNotContain(entity.type.getArchetype())
         system.runner.matchedArchetypes.shouldContain(entityWithData.type.getArchetype())
 
-        engine.tick(0)
+        engine.tick()
     }
 }

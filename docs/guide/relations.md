@@ -4,10 +4,10 @@ Geary treats components as entities, so each class gets a unique entity id. Rela
 
 |**Definition:** Relation
 |
-|| A relation is a component-entity pair which may store data.
-|| - The entity with the relation is called the `source`
-|| - The component part is the relation's `kind`, it defines what the relation *is*
-|| - The second is the relation's `target`, or which entity our relation is *with*
+| A relation is a component-entity pair which may store data.
+| - The entity with the relation is called the `source`
+| - The component part is the relation's `kind`, it defines what the relation *is*
+| - The second is the relation's `target`, or which entity our relation is *with*
 
 {.info}
 

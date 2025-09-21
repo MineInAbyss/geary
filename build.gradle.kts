@@ -63,7 +63,7 @@ configurations {
 
 afterEvaluate {
     dependencies {
-        "docs"("me.dvyy:shocky-docs:0.0.5")
+        "docs"("me.dvyy:shocky-docs:0.0.6")
     }
 }
 
