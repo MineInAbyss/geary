@@ -2,15 +2,14 @@
 
 Geary treats components as entities, so each class gets a unique entity id. Relations take advantage of this by combining two ids together.
 
-<deflist>
-<def title="Definition: Relation">
-A relation is a component-entity pair which may store data.
+|**Definition:** Relation
+|
+|| A relation is a component-entity pair which may store data.
+|| - The entity with the relation is called the `source`
+|| - The component part is the relation's `kind`, it defines what the relation *is*
+|| - The second is the relation's `target`, or which entity our relation is *with*
 
-- The entity with the relation is called the `source`
-- The component part is the relation's `kind`, it defines what the relation *is*
-- The second is the relation's `target`, or which entity our relation is *with*
-</def>
-</deflist>
+{.info}
 
 For instance, we may say Alice has a relation of the kind `Friend` with Bob. Alice is the relation's source, and Bob is the relation's target.
 

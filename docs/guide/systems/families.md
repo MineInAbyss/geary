@@ -1,6 +1,6 @@
 # Defining families
 
-Families have a counterpart for the following entity operations: `has`, `hasSet`, and `hasRelation` which match against all entities where those operations would return `true`.
+Families have a counterpart for the following entity operations: `has`, `hasSet`, and `hasRelation` which match against all entities where those operations would return `#!kotlin true`.
 
 These operations be joined by three connectives, `and, not, or`.
 
@@ -74,4 +74,4 @@ Consider three components, `A, B, C`, let's try to build some families from them
 
 ## Getting matched entities
 
-Once created, a family can check if an entity matches it with `entity in family // Boolean`. More importantly, we can now use them in our systems for fast pattern matching in queries.
+Once created, a family can check if an entity matches it with `#!kotlin entity in family // Boolean`. More importantly, we can now use them in our systems for fast pattern matching in queries.

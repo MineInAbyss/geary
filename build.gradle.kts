@@ -56,3 +56,26 @@ allprojects {
         }
     }
 }
+
+configurations {
+    create("docs")
+}
+
+afterEvaluate {
+    dependencies {
+        "docs"("me.dvyy:shocky-docs:0.0.5")
+    }
+}
+
+tasks {
+    register<JavaExec>("docsGenerate") {
+        classpath = configurations.getByName("docs")
+        mainClass.set("me.dvyy.shocky.docs.MainKt")
+        args("generate")
+    }
+    register<JavaExec>("docsServe") {
+        classpath = configurations.getByName("docs")
+        mainClass.set("me.dvyy.shocky.docs.MainKt")
+        args("serve")
+    }
+}

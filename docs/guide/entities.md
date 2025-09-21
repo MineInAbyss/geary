@@ -1,30 +1,30 @@
 # Entities
 
-> This guide is currently incomplete. A lot more info will be added soon to give a proper overview needed to get started with Geary.
-
-{style="warning"}
+This guide is currently incomplete
+A lot more info will be added soon to give a proper overview needed to get started with Geary.
+{.warning}
 
 ## Definitions
 
-<deflist>
-<def title="Entity">
+|**Definition:** Entity
+|
+||An entity is a unique *thing* that holds information.
 
-An entity is a unique *thing* that holds information.
+{.info}
 
 Notice how broad this definition is. An entity could be a zombie, a place in the world, the sound made by a player's footstep. What makes our entity unique is an `identifier` that represents it, in our case a 64-bit number we call `EntityId`.
-</def>
-<def title="Component">
 
-Individual pieces of data on an entitiy are called components. For instance, a component could be a `Location`, the `Sprite` of a monster, the `Health` of a player.
+|**Definition:** Component
+|
+||Individual pieces of data on an entitiy are called components.
+||For instance, a component could be a `Location`, the `Sprite` of a monster, the `Health` of a player.
+
+{.info}
 
 These are not inherently related to each other, for instance an entity can have a location but no sprite if it is invisible. However, components are very useful together. With a sprite and location, we can render something on screen!
-</def>
-</deflist>
 
-
-> Each component should hold specific data, i.e. *be good at one thing*. This lets us choose exactly the data we need to write clean, modular code.
-
-{style="tip"}
+**Tip:** Each component should hold specific data, i.e. *be good at one thing*. This lets us choose exactly the data we need to write clean, modular code.
+{.tip}
 
 ## Syntax
 
@@ -53,19 +53,20 @@ entity.get<Location>() // returns Location?
 
 1. The `set` operation gives a component to our entity. We'll learn more about it shortly.
 2. Notice this is just a regular class! We can add any class as a component, even if we didn't make it ourselves.
-3. This is the same as doing `entity().apply { ... }`
+3. This is the same as doing `#!kotlin entity().apply { ... }`
 
-> Notice how calling `entity()` returned `Entity` instead of a number. While it is useful to represent entities as numbers internally, if we wrote an operation like `set` for all numbers, someone could accidentally do `42.set(...)` without ever making a 42nd entity!
+|**Why make an Entity class?**
+|
+||Notice how calling `entity()` returned `Entity` instead of a number. While it is useful to represent entities as numbers internally, if we wrote an operation like `set` for all numbers, someone could accidentally do `#!kotlin 42.set(...)` without ever making a 42nd entity!
+||
+||So, we use `Entity` to write safer code and keep all the operations together. Click on the title below to see full documentation.
 
-{style="note" title="Why make an Entity class?"}
+{.info}
 
+**Typealiases.**
+Geary provides typealiases like `GearyEntity` for most classes so you can avoid conflicts if you already have a class named `Entity`.
+{.tip}
 
-
-So, we use `Entity` to write safer code and keep all the operations together. Click on the title below to see full documentation.
-
-> Geary provides typealiases like `GearyEntity` for most classes so you can avoid conflicts if you already have a class named `Entity`.
-
-{style="tip" title="Typealiases"}
 
 ## [`Entity`](https://mineinabyss.com/Geary/geary-core/com.mineinabyss.geary.datatypes/-entity/index.html) operations
 
@@ -98,8 +99,10 @@ entity.add<Alive>()
 
 `add` is useful for marker components that don't need to store data. Later we will explore how this feature lets us create relations to other entities.
 
-> Can we `add` and `set` the same component?
-> Yes, all set components are also added ones. Adding again will not remove any data.
+|**Can we `add` and `set` the same component?**
+||Yes, all set components are also added ones. Adding again will not remove any data.
+
+{.info}
 
 
 ### [`has`](https://mineinabyss.com/Geary/geary-core/com.mineinabyss.geary.datatypes/-entity/has.html) checks whether an entity has a set/added component

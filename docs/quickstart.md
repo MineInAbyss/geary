@@ -1,5 +1,9 @@
 # Quickstart
 
+**WIP, in-development syntax.**
+This page is a work in progress and includes syntax currently in development versions of Geary.
+{.warning}
+
 This page gives an overview of Geary's syntax and features, the rest of the guide will dive more in depth and assume less knowledge about ecs. Think of this as a *Geary by example* guide.
 
 ## Setup
@@ -25,9 +29,8 @@ with(world) {
 
 ```
 
-> Most of Geary is prepared for Kotlin multiplatform but currently only the JVM target is fully implemented.
-
-{style="note"}
+Most of Geary is prepared for Kotlin multiplatform but currently only the JVM target is fully implemented.
+{.info}
 
 ## Define components
 

@@ -5,7 +5,6 @@ about: A constantly running feature (ex giving mobs a walking animation when the
 title: ''
 labels: type:behavior
 assignees: ''
-
 ---
 
 ## Purpose

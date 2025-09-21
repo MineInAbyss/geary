@@ -23,22 +23,19 @@ entity.set(ReadyForBattle()) // Fails to compile
 
 Inheritance breaks modularity. Only use it if a library you work with already uses it.
 
-### DON'T
-
 ```kotlin
 class Animal { ... }
 class Pig: Animal { ... }
 
 entity().set(Pig())
 ```
+**Unclear whether this should be set as an animal or pig.**
+If we set a `Pig`, then anything that reads `Animal` will think it's not there! Similarly, if we set `Animal`, then nothing will know it's actually a `Pig`. Finally, if our hierarchy is big enough, we can't reasonably set every possibility.
+{.error}
 
-> If we set a `Pig`, then anything that reads `Animal` will think it's not there! Similarly, if we set `Animal`, then nothing will know it's actually a `Pig`. Finally, if our hierarchy is big enough, we can't reasonably set every possibility.
-
-{style="warning" title="Unclear whether this should be set as an animal or pig"}
-
-> If absolutely necessary, set the component both as a reasonable common parent class and as the exact class. For instance, in Minecraft we use the common `Entity` class and the specific mob class.
-
-### DO
+**If absolutely necessary,**
+set the component both as a reasonable common parent class and as the exact class. For instance, in Minecraft we use the common `Entity` class and the specific mob class.
+{.warning}
 
 ```kotlin
 sealed class Alive
@@ -50,16 +47,13 @@ entity {
 }
 ```
 
-> We can access either component without worrying about the other, or both if we like to.
-
-{style="note" title="Each component does one thing clearly"}
-
+**Each component does one thing clearly.**
+We can access either component without worrying about the other, or both if we like to.
+{.success}
 
 ## Aim for immutable components
 
 Keep component properties immutable (`val`) unless they are absolutely performance critical.
-
-### DONT
 
 ```kotlin
 data class Health(var amount: Int)
@@ -70,11 +64,8 @@ entity {
 }
 myHealth.amount = 0
 ```
-> We can change amount without anyone knowing!
-
-{style="warning"}
-
-### DO
+We can change amount without anyone knowing!
+{.error}
 
 ```kotlin
 data class Health(val amount: Int)
@@ -85,15 +76,14 @@ entity {
 }
 ```
 
-> Changing health must be done through Geary, it can notify any listeners!
-
-{style="note"}
+Changing health must be done through Geary, it can notify any listeners!
+{.success}
 
 ## Extra
 
-###  Don't set generic types like `List<String>`
+### Don't set generic types like `#!kotlin List<String>`
 
-Using generic types with your components is highly discouraged because Geary can't verify those types when getting a component. This is called type erasure. For example:
+It is highly discouraged to use generic types with your components, because we can't actually verify those types when getting a component. This is called type erasure. For example:
 
 ```kotlin
 entity {
@@ -102,5 +92,5 @@ entity {
 }
 ```
 
-> `get<List<Int>>()` succeeds because there is no way for us to know the generic type of the list during runtime. However, an error
+`#!kotlin get<List<Int>>()` succeeds because there is no way for us to know the generic type of the list during runtime. However, an error
 will be thrown when trying to access elements of the list which thought were integers, but are actually strings.

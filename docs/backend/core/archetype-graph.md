@@ -1,8 +1,7 @@
 # Archetype Graph
 
-> This method of archetype storage is heavily inspired by [Flecs' archetype graph](https://ajmmertens.medium.com/building-an-ecs-2-archetypes-and-vectorization-fe21690805f9). Their article goes into more detail on performance considerations and implementation.
-
-{style="note"}
+This method of archetype storage is heavily inspired by [Flecs' archetype graph](https://ajmmertens.medium.com/building-an-ecs-2-archetypes-and-vectorization-fe21690805f9). Their article goes into more detail on performance considerations and implementation.
+{.info}
 
 Since our engine groups entities by archetypes, adding or removing components requires us to move entities from one archetype to another. To add/remove a component, remove the entity from its current archetype, find the right one to jump to, and add it to that archetype.
 

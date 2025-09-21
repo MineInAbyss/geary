@@ -6,4 +6,4 @@ The JVM has traditionally managed a lot of memory organization on its own, but t
 
 For anyone interested, the following talk goes over how to think about CPU cache and some of its quirks:
 
-<video src="https://www.youtube.com/watch?v=BP6NxVxDQIs"/>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/BP6NxVxDQIs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="true"></iframe>
