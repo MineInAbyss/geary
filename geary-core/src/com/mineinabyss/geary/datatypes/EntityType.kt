@@ -4,13 +4,13 @@ import com.mineinabyss.geary.helpers.readableString
 
 
 /**
- * An inlined class used for tracking the components an entity/archetype has.
+ * Immutable array of [ComponentId]s used to represent the 'type' of an [com.mineinabyss.geary.engine.archetypes.Archetype].
  *
  * It provides fast (no boxing) functions backed by FastUtil sorted sets to do operations with [ComponentId]s.
  */
 class EntityType private constructor(
     @PublishedApi
-    internal val inner: ULongArray
+    internal val inner: ULongArray,
 ) {
     constructor() : this(ULongArray(0))
 

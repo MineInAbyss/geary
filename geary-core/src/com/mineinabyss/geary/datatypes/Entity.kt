@@ -3,7 +3,6 @@ package com.mineinabyss.geary.datatypes
 import com.mineinabyss.geary.annotations.optin.DangerousComponentOperation
 import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.datatypes.family.family
-import com.mineinabyss.geary.engine.Engine
 import com.mineinabyss.geary.helpers.NO_COMPONENT
 import com.mineinabyss.geary.helpers.component
 import com.mineinabyss.geary.helpers.componentId
@@ -28,11 +27,12 @@ import kotlin.reflect.KClass
 typealias GearyEntity = Entity
 
 /**
- * A wrapper around [EntityId] that gets inlined to just a long (no performance degradation since no boxing occurs).
+ * A combination of [EntityId] with a [world] it belongs to.
  *
- * Provides some useful functions, so we aren't forced to go through [Engine] every time we want to do some things.
+ * Provides some useful functions for reading and writing data associated with this entity, as well as validating
+ * matching [world] instances when multiple entities are involved (see [requireSameWorldAs]).
  */
-//TODO add require checks for entities across different worlds
+//TODO call requireSameWorldAs for all functions involving other Entity instances.
 class Entity(val id: EntityId, val world: Geary) {
     val comp get() = world.components
 

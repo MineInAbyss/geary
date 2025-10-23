@@ -13,6 +13,10 @@ fun MutableLongList.toEntityArray(world: Geary): EntityArray {
     return EntityArray(world, ULongArray(size) { get(it).toULong() })
 }
 
+/**
+ * An array of [EntityId]s with an associated [world].
+ * Avoids string boxed [GearyEntity] instances for each entity, with helpers to completely avoid boxing like [forEachId].
+ */
 class EntityArray(
     val world: Geary,
     val ids: EntityIdArray,
