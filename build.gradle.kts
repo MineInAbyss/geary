@@ -62,8 +62,9 @@ configurations {
 }
 
 afterEvaluate {
+    val version = file("docs/version").readText()
     dependencies {
-        "docs"("me.dvyy:shocky-docs:0.0.6")
+        "docs"("me.dvyy:shocky-docs:$version")
     }
 }
 
