@@ -161,15 +161,21 @@ inline fun <T : Query> execute(
 }
 
 inline fun <reified T : Any> Geary.observe(name: String? = null): ObserverWithoutData {
-    return ObserverWithoutData(listOf(componentId<T>()), world = this) {
-        eventRunner.addObserver(it)
-    }
+    return ObserverWithoutData(
+        listOf(componentId<T>()),
+        world = this,
+        onBuild = { eventRunner.addObserver(it) },
+        onClose = { eventRunner.removeObserver(it) }
+    )
 }
 
 inline fun <reified T : Any> Geary.observeWithData(name: String? = null): ObserverWithData<T> {
-    return ObserverWithData(listOf(componentId<T>()), world = this) {
-        eventRunner.addObserver(it)
-    }
+    return ObserverWithData(
+        listOf(componentId<T>()),
+        world = this,
+        onBuild = { eventRunner.addObserver(it) },
+        onClose = { eventRunner.removeObserver(it) }
+    )
 }
 
 inline fun Geary.findEntities(init: MutableFamily.Selector.And.() -> Unit) =

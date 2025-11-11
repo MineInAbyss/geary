@@ -5,8 +5,11 @@ import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.test.GearyTest
 import com.mineinabyss.geary.systems.query.Query
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
@@ -27,7 +30,7 @@ class FamilyMatchingTest : GearyTest() {
 
     @Test
     fun `archetypes have been matched correctly`() {
-        system.runner.matchedArchetypes shouldContain correctArchetype
+        system.runner.matchedArchetypes.asList() shouldContain correctArchetype
     }
 
     @Test

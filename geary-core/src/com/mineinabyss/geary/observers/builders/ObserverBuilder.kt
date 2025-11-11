@@ -20,7 +20,7 @@ interface ExecutableObserver<Context> {
         }
     }
 
-    fun <Q1 : Query, Q2: Query> exec(query1: Q1, query2: Q2,handle: Context.(Q1, Q2) -> Unit): Observer {
+    fun <Q1 : Query, Q2 : Query> exec(query1: Q1, query2: Q2, handle: Context.(Q1, Q2) -> Unit): Observer {
         return filter(query1).filter(query2).exec {
             handle(query1, query2)
         }
@@ -29,7 +29,7 @@ interface ExecutableObserver<Context> {
 
 data class QueryInvolvingObserverBuilder<Context, Q : ShorthandQuery>(
     val involvingQuery: Q,
-    val inner: ObserverBuilder<Context>
+    val inner: ObserverBuilder<Context>,
 ) {
     fun exec(handle: Context.(Q) -> Unit): Observer {
         return inner.exec { handle(involvingQuery) }
@@ -46,11 +46,9 @@ data class ObserverBuilder<Context>(
     val involvedComponents: EntityType,
     val matchQueries: List<Query> = emptyList(),
 ) : ExecutableObserver<Context> {
-
     override fun filter(vararg queries: Query): ObserverBuilder<Context> {
         return copy(matchQueries = matchQueries + queries.toList())
     }
-
 
     override fun exec(handle: Context.() -> Unit): Observer {
         val observer = Observer(
@@ -61,7 +59,8 @@ data class ObserverBuilder<Context>(
             events.mustHoldData,
             handle = { entity, data, _ ->
                 events.provideContext(entity, data).handle()
-            }
+            },
+            onClose = { events.world.eventRunner.removeObserver(it) }
         )
         events.onBuild(observer)
         return observer

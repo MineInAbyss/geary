@@ -21,6 +21,7 @@ class RemoveObserverTest : GearyTest() {
             set(2)
         }
 
+
         eventRunner.removeObserver(observer)
 
         entity.set(3)

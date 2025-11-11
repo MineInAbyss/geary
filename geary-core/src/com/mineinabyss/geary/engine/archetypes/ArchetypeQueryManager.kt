@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.engine.archetypes
 
+import androidx.collection.MutableObjectList
 import co.touchlab.stately.concurrency.Synchronizable
 import co.touchlab.stately.concurrency.synchronize
 import com.mineinabyss.geary.components.ReservedComponents
@@ -10,12 +11,11 @@ import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.datatypes.maps.Family2ObjectArrayMap
 import com.mineinabyss.geary.engine.QueryManager
 import com.mineinabyss.geary.helpers.contains
-import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.systems.query.CachedQuery
 import com.mineinabyss.geary.systems.query.Query
 
 class ArchetypeQueryManager : QueryManager {
-    private val queries = mutableListOf<CachedQuery<*>>()
+    private val queries = MutableObjectList<CachedQuery<*>>()
 
     private val archetypes = Family2ObjectArrayMap<Archetype>(
         getIndex = { it.id },
@@ -35,16 +35,24 @@ class ArchetypeQueryManager : QueryManager {
         return queryRunner
     }
 
-    internal fun registerArchetype(archetype: Archetype) = archetypeRegistryLock.synchronize {
-        archetypes.add(archetype, archetype.type)
-        val matched = queries.filter { archetype.type in it.family }
-        matched.fastForEach { it.matchedArchetypes += archetype }
+    override fun <T : Query> untrackQuery(query: CachedQuery<T>): Boolean {
+        if (query.closed || query !in queries) return false
+        query.closed = true
+        return queries.remove(query)
     }
 
-    internal fun unregisterArchetype(archetype: Archetype) = archetypeRegistryLock.synchronize {
+    internal fun registerArchetype(archetype: Archetype): Unit = archetypeRegistryLock.synchronize {
+        archetypes.add(archetype, archetype.type)
+        queries.forEach {
+            if (archetype.type in it.family) it.matchedArchetypes += archetype
+        }
+    }
+
+    internal fun unregisterArchetype(archetype: Archetype): Unit = archetypeRegistryLock.synchronize {
         archetypes.remove(archetype)
-        val matched = queries.filter { archetype.type in it.family }
-        matched.fastForEach { it.matchedArchetypes -= archetype }
+        queries.forEach {
+            if (archetype.type in it.family) it.matchedArchetypes -= archetype
+        }
     }
 
     fun getArchetypesMatching(family: Family): List<Archetype> {

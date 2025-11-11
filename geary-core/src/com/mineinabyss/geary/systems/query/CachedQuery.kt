@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.systems.query
 
+import androidx.collection.MutableObjectList
 import androidx.collection.mutableLongListOf
 import com.mineinabyss.geary.annotations.optin.ExperimentalGearyApi
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
@@ -12,10 +13,13 @@ import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.modules.get
 
-class CachedQuery<T : Query> internal constructor(val query: T) {
-    val matchedArchetypes: MutableList<Archetype> = mutableListOf()
+class CachedQuery<T : Query> internal constructor(val query: T): AutoCloseable {
+    val matchedArchetypes: MutableObjectList<Archetype> = MutableObjectList()
     val family = query.buildFamily()
     val cachingAccessors = query.cachingAccessors.toTypedArray()
+
+    var closed: Boolean = false
+        internal set
 
     /**
      * Quickly iterates over all matched entities, running [run] for each.
@@ -24,6 +28,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
      * */
     @OptIn(UnsafeAccessors::class)
     inline fun forEach(run: (T) -> Unit) {
+        ensureNotClosed()
         val matched = matchedArchetypes
         var n = 0
         val size = matched.size // Get size ahead of time to avoid rerunning on entities that end up in new archetypes
@@ -58,6 +63,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
      */
     @UnsafeAccessors
     inline fun forEachMutating(entities: EntityArray, run: (Entity, T) -> Unit) {
+        ensureNotClosed()
         val accessors = cachingAccessors
         val query = query
         val world = query.world
@@ -81,6 +87,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
      */
     @UnsafeAccessors
     inline fun forEachMutating(run: (Entity, T) -> Unit) {
+        ensureNotClosed()
         forEachMutating(entities(), run)
     }
 
@@ -102,6 +109,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
     @ExperimentalGearyApi
     @OptIn(UnsafeAccessors::class)
     fun <R> collect(collector: Sequence<T>.() -> R): R {
+        ensureNotClosed()
         val matched = matchedArchetypes
         var n = 0
         val size = matched.size
@@ -161,12 +169,14 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
     }
 
     inline fun <R> map(crossinline run: (T) -> R): List<R> {
+        ensureNotClosed()
         val deferred = mutableListOf<R>()
         forEach { deferred.add(run(it)) }
         return deferred
     }
 
     inline fun <R> mapNotNull(crossinline run: (T) -> R?): List<R> {
+        ensureNotClosed()
         val deferred = mutableListOf<R>()
         forEach { query -> run(query).let { if (it != null) deferred.add(it) } }
         return deferred
@@ -174,6 +184,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
 
     @OptIn(UnsafeAccessors::class)
     inline fun <R> mapWithEntity(crossinline run: (T) -> R): List<Deferred<R>> {
+        ensureNotClosed()
         val deferred = mutableListOf<Deferred<R>>()
         forEach {
             // TODO use EntityList instead
@@ -184,6 +195,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
 
     @OptIn(UnsafeAccessors::class)
     inline fun <R> mapNotNullWithEntity(crossinline run: (T) -> R?): List<Deferred<R>> {
+        ensureNotClosed()
         val deferred = mutableListOf<Deferred<R>>()
         forEach { query ->
             run(query).let { if (it != null) deferred.add(Deferred(it, Entity(query.unsafeEntity, query.world))) }
@@ -192,6 +204,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
     }
 
     inline fun any(crossinline predicate: (T) -> Boolean): Boolean {
+        ensureNotClosed()
         try {
             forEach { if (predicate(it)) throw FoundValue() }
         } catch (e: FoundValue) {
@@ -202,6 +215,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
     }
 
     inline fun <R> find(crossinline map: (T) -> R, crossinline predicate: (T) -> Boolean): R? {
+        ensureNotClosed()
         var found: R? = null
         try {
             forEach {
@@ -218,6 +232,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
     }
 
     fun count(): Int {
+        ensureNotClosed()
         var count = 0
         forEach { count++ }
         return count
@@ -225,6 +240,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
 
     @OptIn(UnsafeAccessors::class)
     inline fun filter(crossinline predicate: (T) -> Boolean): EntityArray {
+        ensureNotClosed()
         val deferred = mutableLongListOf()
         forEach { if (predicate(it)) deferred.add(it.unsafeEntity.toLong()) }
         return deferred.toEntityArray(query.world)
@@ -232,6 +248,7 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
 
     @OptIn(UnsafeAccessors::class)
     fun entities(): EntityArray {
+        ensureNotClosed()
         val entities = mutableLongListOf()
         forEach { entities.add(it.unsafeEntity.toLong()) }
         return entities.toEntityArray(query.world)
@@ -241,6 +258,18 @@ class CachedQuery<T : Query> internal constructor(val query: T) {
         val data: R,
         val entity: GearyEntity,
     )
+
+    @PublishedApi
+    internal inline fun ensureNotClosed() {
+        !closed || error("Query is closed")
+    }
+
+    /**
+     * Stops tracking matched entities for this query.
+     */
+    override fun close() {
+        query.world.queryManager.untrackQuery(this)
+    }
 
     @PublishedApi
     internal class FoundValue : Throwable()

@@ -46,10 +46,10 @@ fun GearyEntity.removeObserver(observer: Observer) = with(world) {
 }
 
 fun GearyEntity.observe(vararg events: ComponentId): ObserverEventsBuilder<ObserverContext> {
-    return ObserverWithoutData(events.toList(), world, ::attachObserver)
+    return ObserverWithoutData(events.toList(), world, ::attachObserver, ::removeObserver)
 }
 
 
 fun <T : Any> GearyEntity.observeWithData(vararg events: ComponentId): ObserverEventsBuilder<ObserverContextWithData<T>> {
-    return ObserverWithData(events.toList(), world, ::attachObserver)
+    return ObserverWithData(events.toList(), world, ::attachObserver, ::removeObserver)
 }

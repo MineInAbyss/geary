@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.engine
 
-import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.EntityId
 import com.mineinabyss.geary.datatypes.EntityIdArray
 import com.mineinabyss.geary.datatypes.family.Family
@@ -8,7 +7,17 @@ import com.mineinabyss.geary.systems.query.CachedQuery
 import com.mineinabyss.geary.systems.query.Query
 
 interface QueryManager {
-    fun <T: Query> trackQuery(query: T): CachedQuery<T>
+    /**
+     * Tracks a query by caching the archetypes that match it as they are registered.
+     */
+    fun <T : Query> trackQuery(query: T): CachedQuery<T>
+
+    /**
+     * Stops matching new archetypes to a query, marks it as closed to prevent further use.
+     *
+     * @return Whether the query was untracked.
+     */
+    fun <T : Query> untrackQuery(query: CachedQuery<T>): Boolean
 
     /** Returns a list of entities matching the given family. */
     fun getEntitiesMatching(family: Family): EntityIdArray

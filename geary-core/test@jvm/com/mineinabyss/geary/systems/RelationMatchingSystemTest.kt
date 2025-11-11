@@ -43,8 +43,8 @@ class RelationMatchingSystemTest : GearyTest() {
             add<String>()
         }
         (entity3.type in system.runner.family) shouldBe true
-        system.runner.matchedArchetypes.shouldNotContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
-        system.runner.matchedArchetypes.shouldContain(entity3.type.getArchetype())
+        system.runner.matchedArchetypes.asList().shouldNotContainAll(entity.type.getArchetype(), entity2.type.getArchetype())
+        system.runner.matchedArchetypes.asList().shouldContain(entity3.type.getArchetype())
 
         system.tick()
         ran shouldBe 1
@@ -118,8 +118,8 @@ class RelationMatchingSystemTest : GearyTest() {
         println(findEntities {
             hasRelation<Persists, Any>()
         }.toList())
-        system.runner.matchedArchetypes.shouldNotContain(entity.type.getArchetype())
-        system.runner.matchedArchetypes.shouldContain(entityWithData.type.getArchetype())
+        system.runner.matchedArchetypes.asList().shouldNotContain(entity.type.getArchetype())
+        system.runner.matchedArchetypes.asList().shouldContain(entityWithData.type.getArchetype())
 
         engine.tick()
     }

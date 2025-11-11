@@ -13,6 +13,7 @@ data class ObserverWithoutData(
     override val listenToEvents: List<ComponentId>,
     override val world: Geary,
     override val onBuild: (Observer) -> Unit,
+    override val onClose: (Observer) -> Unit,
 ) : ObserverEventsBuilder<ObserverContext>() {
     override val mustHoldData: Boolean = false
     inline fun <reified R> or() = copy(listenToEvents = listenToEvents + comp.id<R>())
@@ -31,6 +32,7 @@ data class ObserverWithData<R>(
     override val listenToEvents: List<ComponentId>,
     override val world: Geary,
     override val onBuild: (Observer) -> Unit,
+    override val onClose: (Observer) -> Unit,
 ) : ObserverEventsBuilder<ObserverContextWithData<R>>() {
     override val mustHoldData: Boolean = true
 
@@ -52,6 +54,7 @@ abstract class ObserverEventsBuilder<Context> : ExecutableObserver<Context> {
     abstract val listenToEvents: List<ComponentId>
     abstract val mustHoldData: Boolean
     abstract val onBuild: (Observer) -> Unit
+    abstract val onClose: (Observer) -> Unit
 
     val comp: ComponentProvider get() = world.componentProvider
 
