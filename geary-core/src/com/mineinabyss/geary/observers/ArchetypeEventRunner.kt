@@ -18,8 +18,13 @@ class ArchetypeEventRunner(
     val observerComponent: ComponentId = compProvider.id<Observer>()
 
     private val eventToObserversMap = EventToObserversMap(records)
+
     override fun addObserver(observer: Observer) {
         eventToObserversMap.addObserver(observer)
+    }
+
+    override fun removeObserver(observer: Observer) {
+        eventToObserversMap.removeObserver(observer)
     }
 
     private inline fun matchObservers(
