@@ -11,20 +11,21 @@ import kotlin.test.Test
 class RemoveObserverTest : GearyTest() {
     @Test
     fun `should stop observing events after removed`() {
+        // arrange
         val called = mutableListOf<Int>()
         val observer = observe<OnSet>().exec(query<Int>()) { (data) ->
             called += data
         }
 
+        // act
         val entity = entity {
             set(1)
             set(2)
         }
-
-
-        eventRunner.removeObserver(observer)
-
+        observer.close()
         entity.set(3)
+
+        // assert
 
         called shouldBe listOf(1, 2)
     }

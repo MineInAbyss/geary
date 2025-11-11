@@ -13,7 +13,7 @@ data class Observer(
     val listenToEvents: EntityType,
     val mustHoldData: Boolean,
     val handle: ObserverHandle,
-    val onClose: (Observer) -> Unit,
+    internal val onClose: (Observer) -> Unit,
 ) : AutoCloseable {
     var closed = false
         private set

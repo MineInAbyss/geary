@@ -10,6 +10,7 @@ import com.mineinabyss.geary.systems.query.QueryShorthands
 import com.mineinabyss.geary.systems.query.ShorthandQuery
 
 data class ObserverWithoutData(
+    @PublishedApi
     override val listenToEvents: List<ComponentId>,
     override val world: Geary,
     override val onBuild: (Observer) -> Unit,
@@ -50,13 +51,13 @@ data class ObserverWithData<R>(
 }
 
 abstract class ObserverEventsBuilder<Context> : ExecutableObserver<Context> {
-    abstract val world: Geary
-    abstract val listenToEvents: List<ComponentId>
-    abstract val mustHoldData: Boolean
-    abstract val onBuild: (Observer) -> Unit
-    abstract val onClose: (Observer) -> Unit
-
-    val comp: ComponentProvider get() = world.componentProvider
+    internal abstract val world: Geary
+    internal abstract val listenToEvents: List<ComponentId>
+    internal abstract val mustHoldData: Boolean
+    internal abstract val onBuild: (Observer) -> Unit
+    internal abstract val onClose: (Observer) -> Unit
+    @PublishedApi
+    internal val comp: ComponentProvider get() = world.componentProvider
 
     abstract fun provideContext(entity: EntityId, data: Any?): Context
 
