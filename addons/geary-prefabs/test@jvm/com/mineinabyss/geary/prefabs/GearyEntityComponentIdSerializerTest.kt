@@ -17,9 +17,9 @@ import org.junit.jupiter.api.TestInstance
 class GearyEntityComponentIdSerializerTest : GearyTest() {
     override fun setupGeary() = geary(TestEngineModule) {
         serialization {
-            components {
-                component(A.serializer())
-            }
+            registerComponentSerializers(
+                A.serializer()
+            )
         }
     }
 
@@ -30,7 +30,7 @@ class GearyEntityComponentIdSerializerTest : GearyTest() {
     @Test
     fun `GearyEntitySerializer should deserialize to entity correctly`() {
         // arrange
-        val format = YamlFormat(getAddon(SerializableComponents).serializers.module)
+        val format = YamlFormat(getAddon(SerializableComponents).formats.module)
         val file =
             """
             test:thing.a: {}

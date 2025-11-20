@@ -89,7 +89,7 @@ fun ArchetypeEngineModule(
         } withOptions {
             bind<EngineInitializer>()
         }
-        singleOf(::MutableAddons)
+        single { MutableAddons(this.getKoin()) }
     }, properties = mapOf(
         "tickDuration" to tickDuration,
         "reuseIDsAfterRemoval" to reuseIDsAfterRemoval,

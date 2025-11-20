@@ -3,9 +3,9 @@ package com.mineinabyss.geary.serialization.dsl
 import com.mineinabyss.geary.components.relations.ChildOf
 import com.mineinabyss.geary.components.relations.InstanceOf
 import com.mineinabyss.geary.observers.events.*
-import com.mineinabyss.geary.serialization.SerializableComponentsBuilder
+import com.mineinabyss.geary.serialization.SerializableComponentsModule
 
-fun SerializableComponentsBuilder.withCommonComponentNames() {
+fun SerializableComponentsModule.withCommonComponentNames() {
     namedComponent<OnAdd>("geary:on_add")
     namedComponent<OnSet>("geary:on_set")
     namedComponent<OnFirstSet>("geary:on_first_set")

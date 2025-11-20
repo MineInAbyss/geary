@@ -26,9 +26,9 @@ class ExpressionDecodingTest : GearyTest() {
 
     override fun setupGeary() = geary(TestEngineModule) {
         serialization {
-            components {
-                component(TestFunction.serializer())
-            }
+            registerComponentSerializers(
+                TestFunction.serializer()
+            )
             format("yml", ::YamlFormat)
         }
     }

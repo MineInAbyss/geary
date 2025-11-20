@@ -1,24 +1,33 @@
 package com.mineinabyss.geary.autoscan
 
-import co.touchlab.kermit.Severity
-import com.mineinabyss.geary.addons.dsl.createAddon
-import kotlin.reflect.KClass
-import kotlin.reflect.KFunction
+import co.touchlab.kermit.Logger
+import com.mineinabyss.geary.addons.dsl.GearyDSL
+import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.serialization.SerializableComponentsModule
 
-val AutoScanAddon = createAddon("Auto Scan", { AutoScanner() }) {
-    systems {
-        configuration.scannedSystems.asSequence()
-            .onEach { it.call(geary) }
-            .map { it.name }
-            .let {
-                if (geary.logger.config.minSeverity <= Severity.Verbose)
-                    geary.logger.i("Autoscan loaded singleton systems: ${it.joinToString()}")
-                else geary.logger.i("Autoscan loaded ${it.count()} singleton systems")
-            }
+//@GearyDSL
+//fun GearySetup.autoscan(
+//    classLoader: ClassLoader,
+//    vararg limitToPackages: String,
+//    configure: AutoScannerDSL.() -> Unit,
+//) = install(AutoScanAddon) { AutoScannerDSL(this@autoscan, this, classLoader, limitToPackages.toList()).configure() }
+
+@GearyDSL
+class AutoScanner(
+    private val world: Geary,
+    private val logger: Logger,
+    private val serializableComponents: SerializableComponentsModule,
+) {
+    fun scan(
+        classLoader: ClassLoader,
+        limitToPackages: List<String>,
+        block: AutoScanDefinition.() -> Unit,
+    ) {
+        AutoScanDefinition(
+            logger,
+            classLoader,
+            limitToPackages,
+            serializableComponents,
+        )
     }
 }
-
-class AutoScanner(
-    val scannedComponents: MutableSet<KClass<*>> = mutableSetOf(),
-    val scannedSystems: MutableSet<KFunction<*>> = mutableSetOf(),
-)

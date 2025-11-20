@@ -37,12 +37,12 @@ class ConfigEntityObserversTests : GearyTest() {
         serialization {
             withCommonComponentNames()
 
-            components {
-                component(String.serializer())
-                component(Print.serializer())
-                component(EntityObservers.serializer())
-                component(MyComp.serializer())
-            }
+            registerComponentSerializers(
+                String.serializer(),
+                Print.serializer(),
+                EntityObservers.serializer(),
+                MyComp.serializer(),
+            )
         }
     }
 
@@ -57,7 +57,7 @@ class ConfigEntityObserversTests : GearyTest() {
                   string: "Hello World"
         """.trimIndent()
 
-        val format = YamlFormat(getAddon(SerializableComponents).serializers.module)
+        val format = YamlFormat(getAddon(SerializableComponents).formats.module)
         val entity = format.decodeFromString(GearyEntitySerializer(), entityDef)
         val printed = mutableListOf<String>()
         observeWithData<Print>().exec { printed += event.string }

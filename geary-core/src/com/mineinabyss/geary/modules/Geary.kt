@@ -3,7 +3,8 @@ package com.mineinabyss.geary.modules
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.mutableLoggerConfigInit
 import co.touchlab.kermit.platformLogWriter
-import com.mineinabyss.geary.addons.dsl.Addon
+import com.mineinabyss.geary.addons.dsl.GearyAddon
+import com.mineinabyss.geary.addons.dsl.GearyAddonDSL
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.MutableFamily
@@ -37,7 +38,7 @@ import kotlin.reflect.KClass
  * Any functions that modify the state of the engine modify it right away,
  * they are not scheduled for load phases like [GearySetup] is.
  */
-interface Geary : KoinComponent {
+interface Geary : KoinComponent, GearyAddonDSL {
     abstract val application: KoinApplication
     open val logger: Logger get() = application.koin.get()
     override fun getKoin(): Koin = application.koin
@@ -58,12 +59,9 @@ interface Geary : KoinComponent {
     val engine: GearyEngine get() = get()
     val addons: MutableAddons get() = get()
 
-    fun <T : Addon<*, Inst>, Inst> getAddon(addon: T): Inst =
-        addons.getInstance(addon) ?: error("Instance for addon ${addon.name} not found")
+    fun <T : Any> getAddon(addon: GearyAddon<T>): T = addons.getAddon(addon)
 
-    fun <T : Addon<*, Inst>, Inst> getAddonOrNull(addon: T?): Inst? = addon?.let { addons.getInstance(addon) }
-
-    fun <T : Addon<Conf, *>, Conf> getConfiguration(addon: T): Conf = addons.getConfig(addon)
+    fun <T : Any> getAddonOrNull(addon: GearyAddon<T>?): T? = addon?.let { addons.getAddonOrNull(addon) }
 
     fun tick() {
         engine.tick()

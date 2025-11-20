@@ -1,10 +1,7 @@
 package com.mineinabyss.geary.modules
 
 import co.touchlab.kermit.Severity
-import com.mineinabyss.geary.addons.Namespaced
-import com.mineinabyss.geary.addons.dsl.Addon
-import com.mineinabyss.geary.addons.dsl.AddonSetup
-import com.mineinabyss.geary.addons.dsl.createAddon
+import com.mineinabyss.geary.addons.dsl.GearyAddon
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.KoinApplication
@@ -22,19 +19,8 @@ class GearySetup(
     val geary = Geary(application)
     val logger get() = geary.logger
 
-    inline fun <T : Addon<Conf, *>, Conf> install(addon: T, configure: Conf.() -> Unit = {}): Conf {
-        geary.addons.getOrPut(this, addon).apply { config.configure() }
-        return geary.addons.getConfig(addon)
-    }
-
-    inline fun install(name: String, crossinline init: AddonSetup<Unit>.() -> Unit) {
-        install(createAddon(name) {
-            init()
-        })
-    }
-
-    fun namespace(namespace: String, configure: Namespaced.() -> Unit) {
-        Namespaced(namespace, this).configure()
+    fun <T : Any> install(addon: GearyAddon<T>): T {
+        return geary.addons.install(addon)
     }
 
     fun loggerSeverity(severity: Severity) {

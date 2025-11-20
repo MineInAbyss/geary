@@ -15,5 +15,4 @@ class SimpleFormats(
 ) : Formats {
 
     override operator fun get(ext: String): Format? = formats[ext]
-
 }

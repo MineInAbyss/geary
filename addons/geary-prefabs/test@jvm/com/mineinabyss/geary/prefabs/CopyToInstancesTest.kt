@@ -16,10 +16,10 @@ import org.junit.jupiter.api.Test
 class CopyToInstancesTest : GearyTest() {
     override fun setupGeary() = geary(TestEngineModule) {
         serialization {
-            components {
-                component(String.serializer())
-                component(Int.serializer())
-            }
+            registerComponentSerializers(
+                String.serializer(),
+                Int.serializer(),
+            )
         }
 
         install(Prefabs)

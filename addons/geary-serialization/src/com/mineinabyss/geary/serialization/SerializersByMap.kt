@@ -10,9 +10,10 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlin.reflect.KClass
 
 class SerializersByMap(
-    override val module: SerializersModule,
-    val serialName2Component: Map<String, KClass<out Component>>
+    val serialName2Component: Map<String, KClass<out Component>>,
 ) : ComponentSerializers {
+    val module: SerializersModule = TODO()
+
     val component2serialName: Map<KClass<out Component>, String> = serialName2Component
         .entries
         .associate { it.value to it.key }

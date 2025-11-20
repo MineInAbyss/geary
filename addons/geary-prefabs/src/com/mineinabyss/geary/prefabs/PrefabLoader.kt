@@ -30,6 +30,7 @@ class PrefabLoader(
     private val needsInherit = world.cache(::NeedsInherit)
 
     fun loadOrUpdatePrefabs() {
+        TODO()
         val results = mutableListOf<String>()
         val deferredLoadOperations = mutableListOf<() -> PrefabLoadResult>()
 

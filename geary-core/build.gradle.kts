@@ -5,6 +5,9 @@ plugins {
 }
 
 kotlin {
+    compilerOptions {
+        freeCompilerArgs.set(listOf("-Xcontext-parameters"))
+    }
     sourceSets {
         commonMain {
             dependencies {
@@ -12,7 +15,7 @@ kotlin {
                 implementation(libs.androidx.collection)
                 implementation(idofrontLibs.kotlin.reflect)
 
-                api(libs.koin.core)
+                api(idofrontLibs.koin.core)
                 api(idofrontLibs.kotlinx.io)
                 api(idofrontLibs.kermit)
                 api(idofrontLibs.kotlinx.coroutines)
