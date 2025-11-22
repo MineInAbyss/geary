@@ -3,17 +3,14 @@ package com.mineinabyss.geary.systems
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.test.GearyTest
 import com.mineinabyss.geary.systems.query.Query
-import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.collections.shouldBeIn
+import com.mineinabyss.geary.test.GearyTest
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
-import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-class FamilyMatchingTest : GearyTest() {
+class SystemFamilyMatchingTest : GearyTest() {
     val stringId = componentId<String>() or HOLDS_DATA
     val intId = componentId<Int>()
 
