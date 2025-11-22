@@ -1,19 +1,27 @@
 package com.mineinabyss.geary.modules
 
+import org.koin.core.Koin
+import org.koin.core.annotation.KoinInternalApi
 import org.koin.core.module.Module
 import org.koin.dsl.koinApplication
+import org.koin.dsl.module
 
 fun geary(
     module: GearyModule,
+    koin: Koin = koinApplication().koin,
     configure: GearySetup.() -> Unit = {},
 ): Geary {
-    val application = koinApplication {
-        properties(module.properties)
-        modules(module.module)
+    @OptIn(KoinInternalApi::class)
+    koin.apply {
+        propertyRegistry.saveProperties(module.properties)
+        loadModules(listOf(module.module))
     }
-    val initializer = application.koin.get<EngineInitializer>()
+    val initializer = koin.get<EngineInitializer>()
     initializer.init()
-    val setup = GearySetup(application)
+    val setup = GearySetup(koin)
+    koin.loadModules(listOf(module {
+        single<Geary> { setup.geary }
+    }))
     configure(setup)
     return setup.geary
 }

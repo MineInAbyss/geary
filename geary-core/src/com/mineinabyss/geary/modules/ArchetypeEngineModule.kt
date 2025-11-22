@@ -27,7 +27,6 @@ import kotlin.time.Duration.Companion.milliseconds
 internal object ArchetypesModules {
     // Module for any classes without other dependencies as parameters
     val noDependencies get() = module {
-        single<Logger> { Geary }
         single { if (getProperty("useSynchronized")) SynchronizedArrayTypeMap() else ArrayTypeMap() } withOptions {
             bind<TypeMap>()
         }
@@ -69,15 +68,17 @@ internal object ArchetypesModules {
 }
 
 fun ArchetypeEngineModule(
+    logger: Logger? = Geary,
     tickDuration: Duration = 50.milliseconds,
     reuseIDsAfterRemoval: Boolean = true,
     useSynchronized: Boolean = false,
     beginTickingOnStart: Boolean = true,
     defaults: Defaults = Defaults(),
     engineThread: () -> CoroutineContext = { (CoroutineScope(Dispatchers.Default) + CoroutineName("Geary Engine")).coroutineContext },
-    properties: Map<String, Any> = emptyMap()
+    properties: Map<String, Any> = emptyMap(),
 ) = GearyModule(
     module {
+        if (logger != null) single<Logger> { logger }
         includes(ArchetypesModules.engine)
         singleOf(::ArchetypeEventRunner) { bind<EventRunner>() }
         single {
@@ -89,7 +90,7 @@ fun ArchetypeEngineModule(
         } withOptions {
             bind<EngineInitializer>()
         }
-        single { MutableAddons(this.getKoin()) }
+        single { MutableAddons(getKoin()) }
     }, properties = mapOf(
         "tickDuration" to tickDuration,
         "reuseIDsAfterRemoval" to reuseIDsAfterRemoval,

@@ -12,43 +12,56 @@ import kotlin.io.path.pathString
 import kotlin.io.path.walk
 import kotlin.reflect.KClass
 
-object PrefabsDSLExtensions {
-    fun PrefabsDSL.fromJarResources(
+object PrefabsModuleExtensions {
+    /** Loads prefabs under a [namespace] from a list of jar resource paths provided by a [classLoaderRef]. */
+    fun PrefabsModule.fromJarResources(
+        namespace: String,
         classLoaderRef: KClass<*>,
         vararg resources: String,
     ) {
         val classLoader = classLoaderRef.java.classLoader
-        prefabsBuilder.paths.add(
-            PrefabPath(namespaced.namespace) {
+        loader.load(
+            PrefabPath(namespace) {
                 resources.asSequence()
                     .map { getResource(classLoader, it) }
-                    .mapNotNull { it?.asPrefabSource(namespaced.namespace) }
+                    .mapNotNull { it?.asPrefabSource(namespace) }
             }
         )
     }
 
-    fun PrefabsDSL.fromJarResourceDirectory(
+    /** Loads prefabs under a [namespace] from all subpaths of a jar resource path provided by a [classLoaderRef]. */
+    fun PrefabsModule.fromJarResourceDirectory(
+        namespace: String,
         classLoaderRef: KClass<*>,
         folder: String,
     ) {
         val classLoader = classLoaderRef.java.classLoader
-        prefabsBuilder.paths.add(
-            PrefabPath(namespaced.namespace) {
-                walkJarResources(classLoader, folder).map { it.asPrefabSource(namespaced.namespace) }
+        loader.load(
+            PrefabPath(namespace) {
+                walkJarResources(classLoader, folder).map { it.asPrefabSource(namespace) }
             }
         )
     }
 
-    fun PrefabsDSL.fromFiles(vararg from: java.nio.file.Path) {
-        fromFiles(*from.map { Path(it.pathString) }.toTypedArray())
+    /** Loads prefabs under a [namespace] from a list of java nio paths. */
+    fun PrefabsModule.fromFiles(
+        namespace: String,
+        vararg from: java.nio.file.Path,
+    ) {
+        fromFiles(namespace, *from.map { Path(it.pathString) }.toTypedArray())
     }
 
-    fun PrefabsDSL.fromDirectory(folder: java.nio.file.Path) {
-        fromDirectory(Path(folder.pathString))
+
+    /** Loads prefabs under a [namespace] from a java nio directory by walking it. */
+    fun PrefabsModule.fromDirectory(
+        namespace: String,
+        folder: java.nio.file.Path,
+    ) {
+        fromDirectory(namespace, Path(folder.pathString))
     }
 
     @OptIn(ExperimentalPathApi::class)
-    fun walkJarResources(
+    private fun walkJarResources(
         classLoader: ClassLoader,
         directory: String,
     ): Sequence<JarResource> = sequence {
@@ -63,11 +76,13 @@ object PrefabsDSLExtensions {
                 while (entries.hasMoreElements()) {
                     val entry = entries.nextElement()
                     if (entry.name.startsWith(directory) && !entry.isDirectory) {
-                        yield(JarResource(
-                            classLoader,
-                            path = entry.name.substringAfter(directory).removePrefix("/"),
-                            resource = entry.name
-                        ))
+                        yield(
+                            JarResource(
+                                classLoader,
+                                path = entry.name.substringAfter(directory).removePrefix("/"),
+                                resource = entry.name
+                            )
+                        )
                     }
                 }
             } else if (protocol == "file") {
@@ -75,7 +90,8 @@ object PrefabsDSLExtensions {
                 yieldAll(directoryPath.walk().filter { it.isRegularFile() }.map {
                     JarResource(
                         classLoader,
-                        path = it.toString().substringAfter(directoryPath.toString()).removePrefix(FileSystems.getDefault().separator),
+                        path = it.toString().substringAfter(directoryPath.toString())
+                            .removePrefix(FileSystems.getDefault().separator),
                         resource = directory + it.toString().substringAfter(directoryPath.toString())
                     )
                 })
@@ -83,7 +99,7 @@ object PrefabsDSLExtensions {
         }
     }
 
-    fun getResource(classLoader: ClassLoader, path: String): JarResource? {
+    private fun getResource(classLoader: ClassLoader, path: String): JarResource? {
         return classLoader.getResourceAsStream(path)?.let { stream ->
             JarResource(
                 classLoader = classLoader,
@@ -102,7 +118,7 @@ object PrefabsDSLExtensions {
     data class JarResource(
         val classLoader: ClassLoader,
         val path: String,
-        val resource: String
+        val resource: String,
     ) {
         val nameWithoutExt = path.substringAfterLast(FileSystems.getDefault().separator).substringBeforeLast(".")
         val ext = path.substringAfterLast(".")

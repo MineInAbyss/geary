@@ -6,6 +6,7 @@ import com.mineinabyss.geary.datatypes.family.MutableFamily
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.helpers.cId
 import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.WorldScoped
 import kotlin.jvm.JvmName
 
 
@@ -80,16 +81,16 @@ abstract class ShorthandQuery6<A, B, C, D, E, F>(world: Geary) : ShorthandQuery(
 }
 
 
-fun Geary.query() = object : Query(this) {}
+fun WorldScoped.query() = object : Query(world) {}
 
-fun Geary.query(match: MutableFamily.Selector.And.() -> Unit) = object : Query(this) {
+fun WorldScoped.query(match: MutableFamily.Selector.And.() -> Unit) = object : Query(world) {
     override fun ensure() = this { add(family(match)) }
 }
 
-inline fun <reified A> Geary.query(
+inline fun <reified A> WorldScoped.query(
     size1: QueryShorthands.Size1? = null,
-    noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null
-) = object : ShorthandQuery1<A>(this) {
+    noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
+) = object : ShorthandQuery1<A>(world) {
     override val involves = entityTypeOf(cId<A>())
     override fun ensure() {
         filterFamily?.let { this { it() } }
@@ -100,10 +101,10 @@ inline fun <reified A> Geary.query(
     override fun component1() = accessor1.get(this)
 }
 
-inline fun <reified A, reified B> Geary.query(
+inline fun <reified A, reified B> WorldScoped.query(
     size2: QueryShorthands.Size2? = null,
     noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
-) = object : ShorthandQuery2<A, B>(this) {
+) = object : ShorthandQuery2<A, B>(world) {
     override val involves = entityTypeOf(cId<A>(), cId<B>())
     override fun ensure() {
         filterFamily?.let { this { it() } }
@@ -117,10 +118,10 @@ inline fun <reified A, reified B> Geary.query(
 }
 
 
-inline fun <reified A, reified B, reified C> Geary.query(
+inline fun <reified A, reified B, reified C> WorldScoped.query(
     size3: QueryShorthands.Size3? = null,
     noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
-) = object : ShorthandQuery3<A, B, C>(this) {
+) = object : ShorthandQuery3<A, B, C>(world) {
     override val involves = entityTypeOf(cId<A>(), cId<B>(), cId<C>())
     override fun ensure() {
         filterFamily?.let { this { it() } }
@@ -135,10 +136,10 @@ inline fun <reified A, reified B, reified C> Geary.query(
     override fun component3(): C = accessor3.get(this)
 }
 
-inline fun <reified A, reified B, reified C, reified D> Geary.query(
+inline fun <reified A, reified B, reified C, reified D> WorldScoped.query(
     size4: QueryShorthands.Size4? = null,
     noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
-) = object : ShorthandQuery4<A, B, C, D>(this) {
+) = object : ShorthandQuery4<A, B, C, D>(world) {
     override val involves = entityTypeOf(cId<A>(), cId<B>(), cId<C>(), cId<D>())
     override fun ensure() {
         filterFamily?.let { this { it() } }
@@ -155,10 +156,10 @@ inline fun <reified A, reified B, reified C, reified D> Geary.query(
     override fun component4(): D = accessor4.get(this)
 }
 
-inline fun <reified A, reified B, reified C, reified D, reified E> Geary.query(
+inline fun <reified A, reified B, reified C, reified D, reified E> WorldScoped.query(
     size5: QueryShorthands.Size5? = null,
     noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
-) = object : ShorthandQuery5<A, B, C, D, E>(this) {
+) = object : ShorthandQuery5<A, B, C, D, E>(world) {
     override val involves = entityTypeOf(cId<A>(), cId<B>(), cId<C>(), cId<D>(), cId<E>())
     override fun ensure() {
         filterFamily?.let { this { it() } }
@@ -177,10 +178,10 @@ inline fun <reified A, reified B, reified C, reified D, reified E> Geary.query(
     override fun component5(): E = accessor5.get(this)
 }
 
-inline fun <reified A, reified B, reified C, reified D, reified E, reified F> Geary.query(
+inline fun <reified A, reified B, reified C, reified D, reified E, reified F> WorldScoped.query(
     size6: QueryShorthands.Size6? = null,
     noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
-) = object : ShorthandQuery6<A, B, C, D, E, F>(this) {
+) = object : ShorthandQuery6<A, B, C, D, E, F>(world) {
     override val involves = entityTypeOf(cId<A>(), cId<B>(), cId<C>(), cId<D>(), cId<E>(), cId<F>())
     override fun ensure() {
         filterFamily?.let { this { it() } }

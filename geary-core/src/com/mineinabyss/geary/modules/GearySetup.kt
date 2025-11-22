@@ -4,7 +4,7 @@ import co.touchlab.kermit.Severity
 import com.mineinabyss.geary.addons.dsl.GearyAddon
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.koin.core.KoinApplication
+import org.koin.core.Koin
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
@@ -14,9 +14,9 @@ import kotlin.time.Duration
  * installed. Load phases are accessible here and will be called once start gets called.
  */
 class GearySetup(
-    val application: KoinApplication,
+    val koin: Koin,
 ) {
-    val geary = Geary(application)
+    val geary = Geary(koin)
     val logger get() = geary.logger
 
     fun <T : Any> install(addon: GearyAddon<T>): T {

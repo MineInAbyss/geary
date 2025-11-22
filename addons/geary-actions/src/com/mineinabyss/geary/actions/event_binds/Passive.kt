@@ -5,7 +5,7 @@ import com.mineinabyss.geary.actions.Tasks
 import com.mineinabyss.geary.actions.execute
 import com.mineinabyss.geary.actions.serializers.DurationSerializer
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.WorldScoped
 import com.mineinabyss.geary.modules.observe
 import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.serialization.serializers.InnerSerializer
@@ -35,7 +35,7 @@ class Passive(
     )
 }
 
-fun Geary.parsePassive() = observe<OnSet>()
+fun WorldScoped.parsePassive() = observe<OnSet>()
     .involving(query<Passive>())
     .exec { (passive) ->
         passive.systems.forEach { systemBind ->

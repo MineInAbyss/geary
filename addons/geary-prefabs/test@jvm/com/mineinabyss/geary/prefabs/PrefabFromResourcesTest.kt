@@ -2,8 +2,8 @@ package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.prefabs.PrefabsDSLExtensions.fromJarResourceDirectory
-import com.mineinabyss.geary.prefabs.PrefabsDSLExtensions.fromJarResources
+import com.mineinabyss.geary.prefabs.PrefabsModuleExtensions.fromJarResourceDirectory
+import com.mineinabyss.geary.prefabs.PrefabsModuleExtensions.fromJarResources
 import com.mineinabyss.geary.serialization.formats.YamlFormat
 import com.mineinabyss.geary.serialization.serialization
 import io.kotest.matchers.shouldBe
@@ -20,12 +20,10 @@ class PrefabFromResourcesTest {
     @Test
     fun `should load prefabs from resource file`() {
         val world = world().configure {
-            namespace("test") {
-                prefabs {
-                    fromJarResources(PrefabFromResourcesTest::class, "prefabs/prefabA.yml")
-                }
+            prefabs {
+                fromJarResources("test", PrefabFromResourcesTest::class, "prefabs/prefabA.yml")
             }
-        }.start()
+        }
 
         with(world) {
             entityOfOrNull(PrefabKey.of("test:prefabA")) shouldNotBe null
@@ -36,12 +34,10 @@ class PrefabFromResourcesTest {
     @Test
     fun `should load prefabs from resources directory`() {
         val world = world().configure {
-            namespace("test") {
-                prefabs {
-                    fromJarResourceDirectory(PrefabFromResourcesTest::class, "prefabs")
-                }
+            prefabs {
+                fromJarResourceDirectory("test", PrefabFromResourcesTest::class, "prefabs")
             }
-        }.start()
+        }
         with(world) {
             entityOfOrNull(PrefabKey.of("test:prefabA")) shouldNotBe null
             entityOfOrNull(PrefabKey.of("test:prefabB")) shouldNotBe null

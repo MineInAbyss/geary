@@ -99,7 +99,7 @@ object TaskActionByNameSerializer : KSerializer<Task<Action>> {
             action.key.content.let { if (!it.contains(":")) "geary:$it" else it }.fromCamelCaseToSnakeCase()
 
         val actionSerializer = ActionOrComponentAsActionSerializer(
-            world.getAddon(SerializableComponents).serializers
+            world.getAddon(SerializableComponents).formats
                 .getSerializerFor(serialName, GearyComponent::class)
                 ?: error("Serializer for action $serialName not found")
         )

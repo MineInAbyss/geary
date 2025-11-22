@@ -16,6 +16,6 @@ class DeferredSystemBuilder<T : Query, R>(
             mapping().execOnFinish(run)
         }
         val system = System(systemBuilder.name, systemBuilder.query, onTick, systemBuilder.interval)
-        return systemBuilder.pipeline.addSystem(system)
+        return systemBuilder.worldScoped.addCloseable(systemBuilder.pipeline.addSystem(system))
     }
 }

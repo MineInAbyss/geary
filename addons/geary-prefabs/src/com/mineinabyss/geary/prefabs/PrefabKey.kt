@@ -1,7 +1,8 @@
 package com.mineinabyss.geary.prefabs
 
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.WorldScoped
+import com.mineinabyss.geary.prefabs.PrefabKey.Companion.of
 import com.mineinabyss.geary.prefabs.serializers.PrefabKeySerializer
 import kotlinx.serialization.Serializable
 
@@ -34,7 +35,7 @@ data class PrefabKey private constructor(val namespace: String, val key: String)
     }
 }
 
-fun Geary.entityOfOrNull(key: PrefabKey?): Entity? = key?.let { getAddon(Prefabs).manager[key] }
+fun WorldScoped.entityOfOrNull(key: PrefabKey?): Entity? = key?.let { world.getAddon(Prefabs)[key] }
 
-fun Geary.entityOf(key: PrefabKey): Entity = entityOfOrNull(key)
+fun WorldScoped.entityOf(key: PrefabKey): Entity = entityOfOrNull(key)
     ?: error("Requested non null prefab entity for key '$key', but it does not exist.")

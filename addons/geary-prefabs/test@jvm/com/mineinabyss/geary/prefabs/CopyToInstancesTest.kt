@@ -17,8 +17,8 @@ class CopyToInstancesTest : GearyTest() {
     override fun setupGeary() = geary(TestEngineModule) {
         serialization {
             registerComponentSerializers(
-                String.serializer(),
-                Int.serializer(),
+                String::class to String.serializer(),
+                Int::class to Int.serializer(),
             )
         }
 

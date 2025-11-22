@@ -2,13 +2,11 @@ package com.mineinabyss.geary.actions
 
 import com.mineinabyss.geary.actions.event_binds.bindEntityObservers
 import com.mineinabyss.geary.actions.event_binds.parsePassive
-import com.mineinabyss.geary.addons.dsl.gearyAddon
+import com.mineinabyss.geary.addons.dsl.createAddon
 
-val GearyActions = gearyAddon<Unit>("actions") {
+val GearyActions = createAddon<Unit>("actions") {
     onEnable {
-        addCloseables(
-            bindEntityObservers(),
-            parsePassive()
-        )
+        bindEntityObservers()
+        parsePassive()
     }
 }

@@ -7,13 +7,13 @@ import com.mineinabyss.geary.datatypes.entityTypeOf
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.modules.get
-import com.mineinabyss.geary.test.GearyTest
 import com.mineinabyss.geary.modules.relationOf
+import com.mineinabyss.geary.test.GearyTest
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.koin.core.component.get
 
 internal class ArchetypeTest : GearyTest() {
     private sealed class RelatesTo

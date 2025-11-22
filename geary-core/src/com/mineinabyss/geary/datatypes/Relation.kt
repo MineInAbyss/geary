@@ -1,11 +1,6 @@
 package com.mineinabyss.geary.datatypes
 
-import com.mineinabyss.geary.helpers.componentId
-import com.mineinabyss.geary.helpers.componentIdWithNullable
-import com.mineinabyss.geary.helpers.readableString
-import com.mineinabyss.geary.modules.Geary
 import kotlin.jvm.JvmInline
-import kotlin.reflect.KClass
 
 /**
  * A combination of a data [kind] and [target] entity that represents a relation between two entities.
@@ -34,7 +29,7 @@ value class Relation private constructor(
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
 
-    override fun toString(): String = "${kind.readableString(TODO())} to ${target.readableString(TODO())}"
+    override fun toString(): String = "$kind to $target"
 
     companion object {
         fun of(

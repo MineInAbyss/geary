@@ -4,29 +4,22 @@ import co.touchlab.kermit.Logger
 import co.touchlab.kermit.mutableLoggerConfigInit
 import co.touchlab.kermit.platformLogWriter
 import com.mineinabyss.geary.addons.dsl.GearyAddon
-import com.mineinabyss.geary.addons.dsl.GearyAddonDSL
-import com.mineinabyss.geary.datatypes.*
-import com.mineinabyss.geary.datatypes.family.Family
+import com.mineinabyss.geary.datatypes.Component
+import com.mineinabyss.geary.datatypes.Entity
+import com.mineinabyss.geary.datatypes.Relation
 import com.mineinabyss.geary.datatypes.family.MutableFamily
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.engine.*
-import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.engine.archetypes.EntityRemove
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.observers.EventRunner
-import com.mineinabyss.geary.observers.builders.ObserverWithData
-import com.mineinabyss.geary.observers.builders.ObserverWithoutData
-import com.mineinabyss.geary.systems.builders.SystemBuilder
-import com.mineinabyss.geary.systems.query.CachedQuery
 import com.mineinabyss.geary.systems.query.Query
 import org.koin.core.Koin
-import org.koin.core.KoinApplication
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.koin.core.component.inject
-import kotlin.reflect.KClass
 
 /**
  * Root class for users to access geary functionality.
@@ -38,10 +31,15 @@ import kotlin.reflect.KClass
  * Any functions that modify the state of the engine modify it right away,
  * they are not scheduled for load phases like [GearySetup] is.
  */
-interface Geary : KoinComponent, GearyAddonDSL {
-    abstract val application: KoinApplication
-    open val logger: Logger get() = application.koin.get()
-    override fun getKoin(): Koin = application.koin
+interface Geary : KoinComponent, WorldScoped {
+    override val logger: Logger get() = get<Logger>()
+
+    fun newScope(): WorldScoped {
+        return addCloseable(object : WorldScoped {
+            override val closeables: MutableList<AutoCloseable> = mutableListOf()
+            override val world: Geary = this@Geary
+        })
+    }
 
     // By default, we always get the latest instance of deps, the Impl class gets them once for user
     // access where the engine isn't expected to be reloaded (ex. like it might be in tests)
@@ -67,62 +65,22 @@ interface Geary : KoinComponent, GearyAddonDSL {
         engine.tick()
     }
 
-    // Queries
-
-    fun findEntities(family: Family): EntityArray {
-        return queryManager.getEntitiesMatching(family).toEntityArray(world = this)
+    fun configure(setup: GearySetup.() -> Unit): Geary {
+        GearySetup(getKoin()).setup()
+        return this
     }
-
-    fun <T : Query> cache(
-        query: T,
-    ): CachedQuery<T> {
-        return queryManager.trackQuery(query)
-    }
-
-    fun <T : Query> cache(
-        create: (Geary) -> T,
-    ): CachedQuery<T> {
-        return cache(create(this))
-    }
-
-    fun <T : Query> system(
-        query: T,
-    ): SystemBuilder<T> {
-        val defaultName = Throwable().stackTraceToString()
-            .lineSequence()
-            .drop(2) // First line error, second line is this function
-            .first()
-            .trim()
-            .substringBeforeLast("(")
-            .substringAfter("$")
-            .substringAfter("Kt.")
-            .substringAfter("create")
-
-        return SystemBuilder(defaultName, query, pipeline)
-    }
-
-    fun relationOf(kind: KClass<*>, target: KClass<*>): Relation =
-        Relation.of(componentId(kind), componentId(target))
-
-    fun EntityType.getArchetype(): Archetype =
-        get<ArchetypeProvider>().getArchetype(this)
-
-    /** Gets the entity associated with this [EntityId], stripping it of any roles. */
-    fun EntityId.toGeary(): Entity = Entity(this and ENTITY_MASK, this@Geary)
-
-    /** Gets the entity associated with this [Long]. */
-    fun Long.toGeary(): Entity = Entity(toULong() and ENTITY_MASK, this@Geary)
-
-    val NO_ENTITY: Entity get() = 0L.toGeary()
 
     companion object : Logger(mutableLoggerConfigInit(listOf(platformLogWriter())), "Geary") {
-        operator fun invoke(application: KoinApplication, logger: Logger? = null): Geary = Impl(application, logger)
+        operator fun invoke(application: Koin, logger: Logger? = null): Geary = Impl(application, logger)
     }
 
     class Impl(
-        override val application: KoinApplication,
+        koin: Koin,
         logger: Logger? = null,
     ) : Geary {
+        private val _koin = koin
+        override val world: Geary = this@Impl
+        override val closeables: MutableList<AutoCloseable> = mutableListOf()
         override val logger: Logger = logger ?: super.logger
         override val eventRunner: EventRunner by inject()
         override val read: EntityReadOperations by inject()
@@ -137,9 +95,11 @@ interface Geary : KoinComponent, GearyAddonDSL {
         override val records: ArrayTypeMap by inject()
         override val engine: GearyEngine by inject()
         override val addons: MutableAddons by inject()
+        override fun getKoin(): Koin = _koin
     }
 
-    fun stringify() = application.toString().removePrefix("org.koin.core.KoinApplication")
+
+    fun stringify() = getKoin().toString().removePrefix("org.koin.core.KoinApplication")
 }
 
 inline fun <reified K : Component?, reified T : Component> Geary.relationOf(): Relation =
@@ -147,34 +107,6 @@ inline fun <reified K : Component?, reified T : Component> Geary.relationOf(): R
 
 inline fun <reified K : Component?> Geary.relationOf(target: Entity): Relation =
     Relation.of(componentIdWithNullable<K>(), target.id)
-
-inline fun <reified T : Any> Geary.get() = application.koin.get<T>()
-
-// TODO simple api for running queries in place without caching
-inline fun <T : Query> execute(
-    query: T,
-    run: T.() -> Unit = {},
-): CachedQuery<T> {
-    TODO()
-}
-
-inline fun <reified T : Any> Geary.observe(name: String? = null): ObserverWithoutData {
-    return ObserverWithoutData(
-        listOf(componentId<T>()),
-        world = this,
-        onBuild = { eventRunner.addObserver(it) },
-        onClose = { eventRunner.removeObserver(it) }
-    )
-}
-
-inline fun <reified T : Any> Geary.observeWithData(name: String? = null): ObserverWithData<T> {
-    return ObserverWithData(
-        listOf(componentId<T>()),
-        world = this,
-        onBuild = { eventRunner.addObserver(it) },
-        onClose = { eventRunner.removeObserver(it) }
-    )
-}
 
 inline fun Geary.findEntities(init: MutableFamily.Selector.And.() -> Unit) =
     findEntities(family(init))

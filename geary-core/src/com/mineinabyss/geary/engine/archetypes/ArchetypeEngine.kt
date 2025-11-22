@@ -33,7 +33,7 @@ open class ArchetypeEngine(
                 it.system.interval == null
                         || (currentTick % (it.system.interval / tickDuration).toInt().coerceAtLeast(1) == 0L)
             }
-            .also { logger.v { "Ticking engine with systems $it" } }
+            .also { logger.v { "Ticking engine with systems ${it.map { it.system.name }}" } }
             .fastForEach { system ->
                 runCatching {
                     system.tick()

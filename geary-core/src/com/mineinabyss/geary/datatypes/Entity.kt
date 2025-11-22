@@ -367,7 +367,7 @@ class Entity(val id: EntityId, val world: Geary) {
         getOrSet<Unit> { }
     }
 
-    private fun requireSameWorldAs(other: Entity) = require(world.application == other.world.application) {
+    private fun requireSameWorldAs(other: Entity) = require(world.getKoin() == other.world.getKoin()) {
         "Entities must be in the same world to interact with each other. " +
                 "This entity is in ${world.stringify()}, while the other is in ${other.world.stringify()}"
     }
@@ -379,12 +379,12 @@ class Entity(val id: EntityId, val world: Geary) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Entity) return false
-        return id == other.id && world.application == other.world.application
+        return id == other.id && world.getKoin() == other.world.getKoin()
     }
 
     override fun hashCode(): Int {
         var result = id.hashCode()
-        result = 31 * result + world.application.hashCode()
+        result = 31 * result + world.getKoin().hashCode()
         return result
     }
 }

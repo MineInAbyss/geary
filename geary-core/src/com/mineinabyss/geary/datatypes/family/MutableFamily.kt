@@ -5,7 +5,7 @@ import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.engine.id
 import com.mineinabyss.geary.engine.idWithNullable
-import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.WorldScoped
 
 inline fun family(init: MutableFamily.Selector.And.() -> Unit): Family.Selector.And {
     return MutableFamily.Selector.And().apply(init)
@@ -107,14 +107,15 @@ sealed interface MutableFamily : Family {
             }
         }
 
-        inline fun <reified K, reified T> Geary.hasRelation(): Unit = hasRelation<K>(componentProvider.idWithNullable<T>())
+        inline fun <reified K, reified T> WorldScoped.hasRelation(): Unit =
+            hasRelation<K>(world.componentProvider.idWithNullable<T>())
 
-        inline fun <reified K> Geary.hasRelation(target: EntityId) {
-            val kind = componentProvider.idWithNullable<K>()
+        inline fun <reified K> WorldScoped.hasRelation(target: EntityId) {
+            val kind = world.componentProvider.idWithNullable<K>()
             hasRelation(kind, target)
         }
 
-        inline fun <reified K> Geary.hasRelation(target: Entity): Unit = hasRelation<K>(target.id)
+        inline fun <reified K> WorldScoped.hasRelation(target: Entity): Unit = hasRelation<K>(target.id)
 
 
         inline fun or(init: Or.() -> Unit) {
@@ -129,11 +130,11 @@ sealed interface MutableFamily : Family {
             add(AndNot().apply(init))
         }
 
-        inline fun <reified T : Component> Geary.has(): Unit =
-            has(componentProvider.id<T>())
+        inline fun <reified T : Component> WorldScoped.has(): Unit =
+            has(world.componentProvider.id<T>())
 
-        inline fun <reified T : Component> Geary.hasSet(): Unit =
-            hasSet(componentProvider.id<T>())
+        inline fun <reified T : Component> WorldScoped.hasSet(): Unit =
+            hasSet(world.componentProvider.id<T>())
 
         fun has(vararg componentIds: ComponentId) {
             has(componentIds)

@@ -1,10 +1,10 @@
 package com.mineinabyss.geary.autoscan
 
-import com.mineinabyss.geary.addons.dsl.gearyAddon
+import com.mineinabyss.geary.addons.dsl.createAddon
 import com.mineinabyss.geary.serialization.SerializableComponents
 import org.koin.core.module.dsl.scopedOf
 
-val AutoScanAddon = gearyAddon<AutoScanner>("autoscan") {
+val AutoScanAddon = createAddon<AutoScanner>("autoscan") {
     dependsOn(SerializableComponents)
 
     scopedModule {

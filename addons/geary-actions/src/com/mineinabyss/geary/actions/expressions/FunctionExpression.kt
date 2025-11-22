@@ -17,7 +17,7 @@ interface FunctionExpression<I, O> {
         ): FunctionExpressionWithInput<*, *> {
             val serializableComponents = world.getAddon(SerializableComponents)
             val compClass = ComponentIdSerializer(serializableComponents.serializers, world).getComponent(name, module)
-            val serializer = serializableComponents.serializers.getSerializerFor(compClass)
+            val serializer = serializableComponents.formats.getSerializerFor(compClass)
                 ?: error("No serializer found for component $name")
             val expr = serializableComponents.formats
                 .getFormat("yml")

@@ -3,20 +3,19 @@ package com.mineinabyss.geary.serialization
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.fromCamelCaseToSnakeCase
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.hasNamespace
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.capturedKClass
-import kotlinx.serialization.modules.SerializersModule
 import kotlin.reflect.KClass
 
-class SerializersByMap(
-    val serialName2Component: Map<String, KClass<out Component>>,
-) : ComponentSerializers {
-    val module: SerializersModule = TODO()
+class SerializersByMap : ComponentSerializers {
+    private val serialName2Component = mutableMapOf<String, KClass<out Component>>()
+    val component2serialName = mutableMapOf<KClass<out Component>, String>()
 
-    val component2serialName: Map<KClass<out Component>, String> = serialName2Component
-        .entries
-        .associate { it.value to it.key }
+    override fun <T : Any> registerSerialNameFor(kClass: KClass<T>, serialName: String) {
+        serialName2Component[serialName] = kClass
+        component2serialName[kClass] = serialName
+    }
+
 
     //TODO allow this to work for all registered classes, not just components
     override fun getClassFor(serialName: String, namespaces: List<String>): KClass<out Component> {
@@ -28,18 +27,6 @@ class SerializersByMap(
             serialName2Component["$namespace:$parsedKey"]
         })
             ?: error("$parsedKey is not a component registered in any of the namespaces: $defaultNamespaces")
-    }
-
-    override fun <T : Component> getSerializerFor(
-        key: String,
-        baseClass: KClass<in T>,
-    ): DeserializationStrategy<T>? =
-        module.getPolymorphic(baseClass = baseClass, serializedClassName = key)
-
-    override fun <T : Component> getSerializerFor(kClass: KClass<in T>): DeserializationStrategy<T>? {
-        val serialName = getSerialNameFor(kClass) ?: return null
-
-        return getSerializerFor(serialName, Component::class)
     }
 
     override fun getSerialNameFor(kClass: KClass<out Component>): String? =

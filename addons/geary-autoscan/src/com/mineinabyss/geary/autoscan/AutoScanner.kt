@@ -28,6 +28,6 @@ class AutoScanner(
             classLoader,
             limitToPackages,
             serializableComponents,
-        )
+        ).apply(block)
     }
 }

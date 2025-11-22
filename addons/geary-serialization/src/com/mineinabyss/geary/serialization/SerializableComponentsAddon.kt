@@ -1,10 +1,10 @@
 package com.mineinabyss.geary.serialization
 
-import com.mineinabyss.geary.addons.dsl.gearyAddon
+import com.mineinabyss.geary.addons.dsl.createAddon
 import org.koin.core.module.dsl.scopedOf
 import org.koin.dsl.bind
 
-val SerializableComponents = gearyAddon<SerializableComponentsModule>("serializeable-components") {
+val SerializableComponents = createAddon<SerializableComponentsModule>("serializeable-components") {
     scopedModule {
         scopedOf(::SerializersByMap) bind ComponentSerializers::class
         scopedOf(::SerializationFormats)

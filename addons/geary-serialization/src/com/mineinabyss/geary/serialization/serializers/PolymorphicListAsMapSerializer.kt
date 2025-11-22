@@ -3,12 +3,13 @@ package com.mineinabyss.geary.serialization.serializers
 import com.charleskorn.kaml.YamlInput
 import com.charleskorn.kaml.YamlMap
 import com.mineinabyss.geary.datatypes.GearyComponent
-import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.fromCamelCaseToSnakeCase
 import com.mineinabyss.geary.serialization.ComponentSerializers.Companion.hasNamespace
-import kotlinx.serialization.*
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.builtins.serializer
+import com.mineinabyss.geary.serialization.getWorld
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.PolymorphicSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.SerializersModule
@@ -31,6 +32,8 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         val components = mutableListOf<T>()
         val componentMap = decoder.decodeSerializableValue(YamlMap.serializer())
         val yaml = (decoder as YamlInput).yaml
+        val world = decoder.serializersModule.getWorld()
+        val logger = world.logger
 
         componentMap.entries.forEach { (yamlKey, node) ->
             val key = yamlKey.content
@@ -41,7 +44,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                 if (config.onMissingSerializer != OnMissing.IGNORE) config.whenComponentMalformed(key, null)
                 when (config.onMissingSerializer) {
                     OnMissing.ERROR -> error("Missing serializer for polymorphic key: $key")
-                    OnMissing.WARN -> Geary.w("No serializer found for $key, ignoring")
+                    OnMissing.WARN -> logger.w("No serializer found for $key, ignoring")
                     OnMissing.IGNORE -> Unit
                 }
                 return@forEach
@@ -55,11 +58,11 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                     }
 
                     if (config.skipMalformedComponents) {
-                        Geary.w {
-                            "Malformed component $key, ignoring:\n" +
+                        logger.w {
+                            "Could not decode component '$key', ignoring:\n" +
                                     it.stackTraceToString()
                                         .lineSequence()
-                                        .joinToString("\n", limit = 10, truncated = "...")
+                                        .joinToString("\n", limit = 5, truncated = "...")
                         }
                     } else throw it
                 }

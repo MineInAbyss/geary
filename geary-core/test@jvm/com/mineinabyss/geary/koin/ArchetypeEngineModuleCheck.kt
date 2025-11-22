@@ -1,14 +1,12 @@
 package com.mineinabyss.geary.koin
 
 import co.touchlab.kermit.LoggerConfig
-import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeReadOperations
 import com.mineinabyss.geary.modules.ArchetypeEngineModule
-import com.mineinabyss.geary.modules.ArchetypesModules
 import com.mineinabyss.geary.modules.TestEngineModule
 import com.mineinabyss.geary.modules.geary
 import org.junit.jupiter.api.Test
+import org.koin.core.Koin
 import org.koin.core.annotation.KoinExperimentalAPI
-import org.koin.core.module.Module
 import org.koin.dsl.koinApplication
 import org.koin.test.check.checkModules
 import org.koin.test.verify.verify
@@ -20,7 +18,14 @@ class ArchetypeEngineModuleCheck {
     @Test
     fun checkKoinModule() {
         ArchetypeEngineModule().module.verify(
-            extraTypes = listOf(Boolean::class, Duration::class, LoggerConfig::class, CoroutineContext::class, Function0::class)
+            extraTypes = listOf(
+                Boolean::class,
+                Duration::class,
+                LoggerConfig::class,
+                CoroutineContext::class,
+                Function0::class,
+                Koin::class,
+            )
         )
     }
 
@@ -35,6 +40,6 @@ class ArchetypeEngineModuleCheck {
 
     @Test
     fun startGeary() {
-        geary(TestEngineModule).start()
+        geary(TestEngineModule)
     }
 }

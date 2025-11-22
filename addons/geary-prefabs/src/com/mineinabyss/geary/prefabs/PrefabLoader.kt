@@ -1,19 +1,19 @@
 package com.mineinabyss.geary.prefabs
 
-import co.touchlab.kermit.Logger
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.WorldScoped
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.prefabs.helpers.inheritPrefabsIfNeeded
-import com.mineinabyss.geary.serialization.formats.Formats
+import com.mineinabyss.geary.serialization.SerializationFormats
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer.Companion.provideConfig
-import com.mineinabyss.geary.systems.query.Query
+import com.mineinabyss.geary.systems.query.query
 import kotlinx.io.Source
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
@@ -22,19 +22,19 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlin.uuid.Uuid
 
 class PrefabLoader(
-    val sources: PrefabSources,
-    val world: Geary,
-    val formats: Formats,
-    val logger: Logger,
-) {
-    private val needsInherit = world.cache(::NeedsInherit)
+    override val world: Geary,
+    val formats: SerializationFormats,
+) : WorldScoped by world.newScope() {
+    private val needsInherit = cache(query<InheritPrefabs>())
 
-    fun loadOrUpdatePrefabs() {
-        TODO()
+    /**
+     * Loads prefabs from a list of [PrefabPath]s, updating any existing ones if they have the same [PrefabKey].
+     */
+    fun load(vararg paths: PrefabPath) {
         val results = mutableListOf<String>()
         val deferredLoadOperations = mutableListOf<() -> PrefabLoadResult>()
 
-        sources.paths.forEach { prefabsPath ->
+        paths.forEach { prefabsPath ->
             logger.i("Loading prefabs for namespace '${prefabsPath.namespace}'")
 
             val loaded = buildList {
@@ -47,9 +47,9 @@ class PrefabLoader(
                 })
                 addAll(prefabsPath.sources().map { (source, key, formatExt) ->
 
-                    val result = load(key, source, world.getAddon(Prefabs).manager[key], formatExt)
+                    val result = load(key, source, world.getAddon(Prefabs)[key], formatExt)
                     if (result is PrefabLoadResult.Defer) deferredLoadOperations.add {
-                        load(key, source, world.getAddon(Prefabs).manager[key], formatExt)
+                        load(key, source, world.getAddon(Prefabs)[key], formatExt)
                     }
                     result
                 })
@@ -144,7 +144,7 @@ class PrefabLoader(
                 }
             )
             val serializer = PolymorphicListAsMapSerializer.ofComponents(config)
-            val format = formats[formatExt] ?: throw IllegalArgumentException("Unknown file format $formatExt")
+            val format = formats.getFormat(formatExt)
             logger.v("Loading prefab $key from $source")
 
             format.decode(
@@ -190,7 +190,7 @@ class PrefabLoader(
 
     fun loadFromPathOrReloadExisting(namespace: String, path: Path): PrefabLoadResult {
         val key = PrefabKey.of(namespace, path.name.substringBeforeLast('.'))
-        val existing = world.getAddon(Prefabs).manager[key]
+        val existing = world.getAddon(Prefabs)[key]
         existing?.clear()
         return loadFromPath(namespace, path, existing)
     }
@@ -210,10 +210,6 @@ class PrefabLoader(
         data class Warn(val entity: Entity) : PrefabLoadResult()
         data object Defer : PrefabLoadResult()
         data class Failure(val error: Throwable) : PrefabLoadResult()
-    }
-
-    class NeedsInherit(world: Geary) : Query(world) {
-        val inheritPrefabs by get<InheritPrefabs>()
     }
 
     companion object {

@@ -18,7 +18,7 @@ class GearyEntityComponentIdSerializerTest : GearyTest() {
     override fun setupGeary() = geary(TestEngineModule) {
         serialization {
             registerComponentSerializers(
-                A.serializer()
+                A::class to A.serializer()
             )
         }
     }
