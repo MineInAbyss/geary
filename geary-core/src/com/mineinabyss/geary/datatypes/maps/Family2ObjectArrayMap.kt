@@ -111,7 +111,7 @@ internal class Family2ObjectArrayMap<T>(
             is Family.Selector.AndNot -> {
                 // We take current bits and removed any matched inside, if null is returned, all bits are removed
                 val inside = family.andNot.reduceToBits(BitSet::or) ?: return bitsOf()
-                (bits ?: bitsOf().apply { set(0, _elements.lastIndex) }).apply {
+                (bits ?: bitsOf().apply { set(0, _elements.size) }).apply {
                     andNot(inside)
                 }
             }
