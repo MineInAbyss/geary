@@ -1,6 +1,7 @@
 package com.mineinabyss.geary.helpers
 
 import com.mineinabyss.geary.components.ComponentInfo
+import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.modules.WorldScoped
 import kotlin.reflect.KClass
@@ -13,6 +14,13 @@ fun WorldScoped.entity(): Entity = Entity(world.entityProvider.create(), world)
 
 /** @see entity */
 inline fun WorldScoped.entity(run: Entity.() -> Unit): Entity = entity().apply(run)
+
+/** @see entity */
+inline fun WorldScoped.entity(name: String, run: Entity.() -> Unit = {}): Entity = entity {
+    set(EntityName(name))
+    apply(run)
+}
+
 
 /** Creates a new empty entity that will get removed once [run] completes or fails. */
 inline fun <T> WorldScoped.temporaryEntity(

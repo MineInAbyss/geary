@@ -14,6 +14,10 @@ class EntityInfoReader {
         lines[name] = eval
     }
 
+    init {
+        addInfoLine("id") { it.id.toString() }
+    }
+
     fun readEntityInfo(entity: Entity): String {
         return lines.mapNotNull {
             val value = it.value(entity) ?: return@mapNotNull null

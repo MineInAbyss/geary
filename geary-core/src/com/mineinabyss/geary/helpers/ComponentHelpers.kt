@@ -4,7 +4,7 @@ import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.modules.Geary
 import kotlin.reflect.KClass
 
-fun EntityId.readableString(world: Geary): String = buildString {
+fun EntityId.readableString(world: Geary?): String = buildString {
     val id = this@readableString
     if (id.hasRole(RELATION)) {
         append(id.toRelation().toString())
@@ -13,7 +13,7 @@ fun EntityId.readableString(world: Geary): String = buildString {
     if (id.hasRole(RELATION)) append("R") else append('-')
     if (id.hasRole(HOLDS_DATA)) append("D") else append('-')
     append(" ")
-    val componentName = (world.getComponentInfo(id)?.kClass as? KClass<*>)?.simpleName
+    val componentName = (world?.getComponentInfo(id)?.kClass as? KClass<*>)?.simpleName
     if (componentName == null) append(id and ENTITY_MASK)
     else append(componentName)
 }

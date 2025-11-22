@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.datatypes
 
+import com.mineinabyss.geary.helpers.readableString
 import kotlin.jvm.JvmInline
 
 /**
@@ -29,7 +30,7 @@ value class Relation private constructor(
 
     override fun compareTo(other: Relation): Int = id.compareTo(other.id)
 
-    override fun toString(): String = "$kind to $target"
+    override fun toString(): String = "${kind.readableString(null)} to ${target.readableString(null)}"
 
     companion object {
         fun of(

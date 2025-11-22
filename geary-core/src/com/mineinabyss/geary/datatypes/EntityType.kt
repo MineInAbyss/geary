@@ -87,7 +87,7 @@ class EntityType private constructor(
     }
 
     override fun toString(): String =
-        inner.joinToString(", ", prefix = "[", postfix = "]") { it.readableString(TODO()) }
+        inner.joinToString(", ", prefix = "[", postfix = "]") { it.readableString(null) }
 }
 
 

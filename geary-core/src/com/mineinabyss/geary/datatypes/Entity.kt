@@ -373,7 +373,8 @@ class Entity(val id: EntityId, val world: Geary) {
     }
 
     override fun toString(): String {
-        return "$id(${world.infoReader.readEntityInfo(this)})"
+        val name = get<EntityName>()?.name ?: "Entity"
+        return "$name(${world.infoReader.readEntityInfo(this)})"
     }
 
     override fun equals(other: Any?): Boolean {
