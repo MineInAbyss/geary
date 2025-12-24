@@ -16,7 +16,6 @@ import com.mineinabyss.geary.systems.query.Query
 @OptIn(UnsafeAccessors::class)
 class RelationsWithDataAccessor<K, T>(
     val comp: ComponentProvider,
-    override val originalAccessor: Accessor?,
     val kind: ComponentId,
     val target: EntityId,
 ) : ReadOnlyAccessor<List<RelationWithData<K, T>>>, FamilyMatching {
@@ -25,16 +24,14 @@ class RelationsWithDataAccessor<K, T>(
     private var cachedRelations = emptyList<Relation>()
     private var cachedArchetype: Archetype? = null
 
-    override fun get(query: Query): List<RelationWithData<K, T>> {
-        val archetype = query.archetype
-        if (archetype != cachedArchetype) {
+    override fun load(archetype: Archetype) {
+        cachedRelations = archetype.getRelations(kind, target)
             cachedArchetype = archetype
-            cachedRelations = archetype.getRelations(kind, target)
-        }
+    }
 
-        @Suppress("UNCHECKED_CAST")
-        return archetype.readRelationDataFor(
-            query.row,
+    override fun get(row: Int): List<RelationWithData<K, T>> {
+        return cachedArchetype!!.readRelationDataFor(
+            row,
             kind,
             target,
             cachedRelations

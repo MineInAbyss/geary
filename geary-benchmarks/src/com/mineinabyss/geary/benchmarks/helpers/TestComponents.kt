@@ -6,3 +6,5 @@ data class Comp3(val id: Int)
 data class Comp4(val id: Int)
 data class Comp5(val id: Int)
 data class Comp6(val id: Int)
+
+data class Comp1L(val id: Long)

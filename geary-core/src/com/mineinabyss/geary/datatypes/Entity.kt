@@ -15,7 +15,6 @@ import com.mineinabyss.geary.observers.events.OnAdd
 import com.mineinabyss.geary.observers.events.OnEntityRemoved
 import com.mineinabyss.geary.observers.events.OnRemove
 import com.mineinabyss.geary.observers.events.OnSet
-import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import com.mineinabyss.geary.systems.query.query
 import kotlinx.coroutines.channels.Channel

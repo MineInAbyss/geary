@@ -99,7 +99,7 @@ abstract class ObserverEventsBuilder<Context> : ExecutableObserver<Context> {
 
     override fun filter(vararg queries: Query) = involvingAny().filter(*queries)
 
-    override fun exec(handle: Context.() -> Unit) = involvingAny().exec { handle() }
+    override fun exec(handle: context(Int) Context.() -> Unit) = involvingAny().exec { handle() }
 
     fun <Q : ShorthandQuery> involving(involvingQuery: Q) =
         QueryInvolvingObserverBuilder(

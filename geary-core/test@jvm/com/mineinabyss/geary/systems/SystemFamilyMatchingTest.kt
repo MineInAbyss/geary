@@ -3,7 +3,7 @@ package com.mineinabyss.geary.systems
 import com.mineinabyss.geary.datatypes.HOLDS_DATA
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.systems.query.Query
+import com.mineinabyss.geary.systems.query.query
 import com.mineinabyss.geary.test.GearyTest
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
@@ -14,10 +14,8 @@ class SystemFamilyMatchingTest : GearyTest() {
     val stringId = componentId<String>() or HOLDS_DATA
     val intId = componentId<Int>()
 
-    val system = system(object : Query(this) {
-        val string by get<String>()
-        override fun ensure() = this { has<Int>() }
-    }).defer { it.string }.onFinish { data, entity ->
+
+    val system = system(query<String> { has<Int>() }).defer { (string) -> string }.onFinish { data, entity ->
         data shouldBe entity.get<String>()
         entity.has<Int>() shouldBe true
     }

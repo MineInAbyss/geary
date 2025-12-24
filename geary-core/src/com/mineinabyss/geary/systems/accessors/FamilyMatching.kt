@@ -7,5 +7,5 @@ import com.mineinabyss.geary.datatypes.family.Family
  * (ex a component accessor needs the component present on the entity.)
  */
 interface FamilyMatching {
-    val family: Family.Selector?
+    val family: Family
 }

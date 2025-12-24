@@ -3,28 +3,27 @@ package com.mineinabyss.geary.systems.accessors.type
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.engine.archetypes.Archetype
-import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.ReadOnlyAccessor
-import com.mineinabyss.geary.systems.query.Query
-import kotlin.reflect.KProperty
 
 class ComponentOrDefaultAccessor<T>(
-    override val originalAccessor: Accessor?,
     val id: ComponentId,
     val default: () -> T,
 ) : ReadOnlyAccessor<T> {
     private var cachedIndex = -1
-    private var cachedArchetype: Archetype? = null
+    private var cachedDataArray: Array<T> = arrayOf<Any>() as Array<T>
+    private var defaultForArchetype: T? = null
+
+    override fun load(archetype: Archetype) {
+        cachedIndex = archetype.indexOf(id)
+        if (cachedIndex != -1) {
+            defaultForArchetype = default()
+            cachedDataArray = archetype.componentData[cachedIndex].content as Array<T>
+        }
+    }
 
     @OptIn(UnsafeAccessors::class)
-    override fun get(query: Query): T {
-        val archetype = query.archetype
-        if (archetype !== cachedArchetype) {
-            cachedArchetype = archetype
-            cachedIndex = archetype.indexOf(id)
-        }
-        if (cachedIndex == -1) return default()
-        @Suppress("UNCHECKED_CAST")
-        return archetype.componentData[cachedIndex][query.row] as T
+    override fun get(row: Int): T {
+        if (cachedIndex == -1) return defaultForArchetype!!
+        else return cachedDataArray[row]
     }
 }

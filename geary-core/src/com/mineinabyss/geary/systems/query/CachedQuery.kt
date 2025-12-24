@@ -11,15 +11,34 @@ import com.mineinabyss.geary.datatypes.toEntityArray
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.fastForEach
+import com.mineinabyss.geary.modules.WorldScoped
 import org.koin.core.component.get
 
-class CachedQuery<T : Query> internal constructor(val query: T): AutoCloseable {
+
+context(row: Int, world: WorldScoped) val row get() = row
+//context(row: Int, world: WorldScoped) val unsafeEntity get() = row
+class CachedQuery<T : Query> internal constructor(val query: T) : AutoCloseable {
     val matchedArchetypes: MutableObjectList<Archetype> = MutableObjectList()
-    val family = query.buildFamily()
-    val cachingAccessors = query.cachingAccessors.toTypedArray()
+    val family = query.family
 
     var closed: Boolean = false
         internal set
+
+    /**
+     * Quickly iterates over all matched archetypes, calling [block] for each.
+     */
+    inline fun forEachArchetype(block: Archetype.(T) -> Unit) {
+        ensureNotClosed()
+        val matched = matchedArchetypes
+        var n = 0
+        val size = matched.size
+        val query = query
+        while (n < size) {
+            val archetype = matched[n]
+            if (archetype.size != 0) block(archetype, query)
+            n++
+        }
+    }
 
     /**
      * Quickly iterates over all matched entities, running [run] for each.
@@ -27,30 +46,20 @@ class CachedQuery<T : Query> internal constructor(val query: T): AutoCloseable {
      * Use [apply] on the query to use its accessors.
      * */
     @OptIn(UnsafeAccessors::class)
-    inline fun forEach(run: (T) -> Unit) {
-        ensureNotClosed()
-        val matched = matchedArchetypes
-        var n = 0
-        val size = matched.size // Get size ahead of time to avoid rerunning on entities that end up in new archetypes
-        val accessors = cachingAccessors
-//        val query = query
-        while (n < size) {
-            val archetype = matched[n]
-
+    inline fun forEach(run: context(Int) (T) -> Unit) {
+        forEachArchetype { query ->
             // We disallow entity archetype modifications while iterating, but allow creating new entities.
             // These will always end up at the end of the archetype list, so we just don't iterate over them.
-            val upTo = archetype.size
-            var row = 0
-            query.row = 0
-            query.archetype = archetype
-            accessors.fastForEach { it.updateCache(archetype) }
-            while (row < upTo) {
+            query.load(this)
+            forEachRow {
                 run(query)
-                query.row++
-                row++
             }
-            n++
         }
+    }
+
+    @OptIn(UnsafeAccessors::class)
+    inline fun forEachAccessor(run: context(Int) (T) -> Unit) {
+
     }
 
     /**
@@ -62,19 +71,15 @@ class CachedQuery<T : Query> internal constructor(val query: T): AutoCloseable {
      * - When iterating, ensure of all entities matching this query, only the current entity is modified.
      */
     @UnsafeAccessors
-    inline fun forEachMutating(entities: EntityArray, run: (Entity, T) -> Unit) {
-        ensureNotClosed()
-        val accessors = cachingAccessors
+    inline fun forEachMutating(entities: EntityArray, run: context(Int) (Entity, T) -> Unit) {
         val query = query
         val world = query.world
         require(entities.world == query.world) { "Entities must belong to the same world as the query" }
         val records = world.records
         entities.forEachId { id ->
             records.runOn(id) { archetype, row ->
-                query.archetype = archetype
-                query.row = row
-                accessors.fastForEach { it.updateCache(archetype) }
-                run(Entity(id, world), query)
+                query.load(archetype)
+                run(row, Entity(id, world), query)
             }
         }
     }
@@ -86,7 +91,7 @@ class CachedQuery<T : Query> internal constructor(val query: T): AutoCloseable {
      * - When iterating, ensure of all entities matching this query, only the current entity is modified.
      */
     @UnsafeAccessors
-    inline fun forEachMutating(run: (Entity, T) -> Unit) {
+    inline fun forEachMutating(run: context(Int) (Entity, T) -> Unit) {
         ensureNotClosed()
         forEachMutating(entities(), run)
     }
@@ -113,7 +118,6 @@ class CachedQuery<T : Query> internal constructor(val query: T): AutoCloseable {
         val matched = matchedArchetypes
         var n = 0
         val size = matched.size
-        val accessors = cachingAccessors
 
         // current archetype
         var archetype = query.world.get<ArchetypeProvider>().rootArchetype // avoid nullable perf loss
@@ -121,51 +125,51 @@ class CachedQuery<T : Query> internal constructor(val query: T): AutoCloseable {
 
         // current entity
         var row = 0
-        query.archetype = archetype
-        accessors.fastForEach { it.updateCache(archetype) }
+        query.load(archetype)
 
-        fun prepareRow(): Boolean {
-            if (row >= upTo) return false
-            query.row = row
-            return true
-        }
+        TODO()
+//        fun prepareRow(): Boolean {
+//            if (row >= upTo) return false
+//            query.row = row
+//            return true
+//        }
+//
+//        fun prepareArchetype(): Boolean {
+//            if (n >= size) return false
+//            archetype = matched[n]
+//            upTo = archetype.size
+//            query.archetype = archetype
+//            accessors.fastForEach { it.load(archetype) }
+//            return true
+//        }
 
-        fun prepareArchetype(): Boolean {
-            if (n >= size) return false
-            archetype = matched[n]
-            upTo = archetype.size
-            query.archetype = archetype
-            accessors.fastForEach { it.updateCache(archetype) }
-            return true
-        }
-
-        fun terminatedError(): Nothing = error("Sequence must be consumed inside use block")
-        var closed = false
-
-        val collected = try {
-            collector(generateSequence(seedFunction = {
-                if (closed) terminatedError()
-                prepareArchetype()
-                prepareRow()
-                query
-            }) {
-                if (closed) terminatedError()
-                row++
-                if (prepareRow()) {
-                    query
-                } else {
-                    n++
-                    if (prepareArchetype()) {
-                        prepareRow()
-                        query
-                    } else null
-                }
-            }.constrainOnce())
-        } finally {
-            //TODO issues if it's just root archetype?
-            closed = true
-        }
-        return collected
+//        fun terminatedError(): Nothing = error("Sequence must be consumed inside use block")
+//        var closed = false
+//
+//        val collected = try {
+//            collector(generateSequence(seedFunction = {
+//                if (closed) terminatedError()
+//                prepareArchetype()
+//                prepareRow()
+//                query
+//            }) {
+//                if (closed) terminatedError()
+//                row++
+//                if (prepareRow()) {
+//                    query
+//                } else {
+//                    n++
+//                    if (prepareArchetype()) {
+//                        prepareRow()
+//                        query
+//                    } else null
+//                }
+//            }.constrainOnce())
+//        } finally {
+//            //TODO issues if it's just root archetype?
+//            closed = true
+//        }
+//        return collected
     }
 
     inline fun <R> map(crossinline run: (T) -> R): List<R> {
@@ -183,7 +187,7 @@ class CachedQuery<T : Query> internal constructor(val query: T): AutoCloseable {
     }
 
     @OptIn(UnsafeAccessors::class)
-    inline fun <R> mapWithEntity(crossinline run: (T) -> R): List<Deferred<R>> {
+    inline fun <R> mapWithEntity(crossinline run: context(Int) (T) -> R): List<Deferred<R>> {
         ensureNotClosed()
         val deferred = mutableListOf<Deferred<R>>()
         forEach {

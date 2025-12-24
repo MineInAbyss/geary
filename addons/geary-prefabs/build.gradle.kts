@@ -5,6 +5,9 @@ plugins {
 }
 
 kotlin {
+    compilerOptions {
+        freeCompilerArgs.set(listOf("-Xcontext-parameters"))
+    }
     sourceSets {
         commonMain {
             dependencies {

@@ -7,6 +7,11 @@ plugins {
     kotlin("plugin.allopen") version idofrontLibs.versions.kotlin.get()
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.set(listOf("-Xcontext-parameters"))
+    }
+}
 configure<AllOpenExtension> {
     annotation("org.openjdk.jmh.annotations.State")
 }

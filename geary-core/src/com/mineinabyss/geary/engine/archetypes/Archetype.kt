@@ -5,7 +5,6 @@ import com.mineinabyss.geary.components.ReservedComponents
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.helpers.*
-import com.mineinabyss.geary.observers.events.*
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import kotlin.jvm.JvmField
 
@@ -40,6 +39,7 @@ class Archetype internal constructor(
 
     /** An outer list with indices for component ids, and sub-lists with data indexed by entity [ids]. */
     @JvmField
+    @PublishedApi
     internal val componentData: Array<MutableComponentList<Component>> =
         Array(dataHoldingType.size) { mutableComponentListOf() }
 
@@ -74,6 +74,13 @@ class Archetype internal constructor(
      * @return The internally used index for this component [id], or 0 if not present. Use contains to check for presence.
      */
     fun indexOf(id: ComponentId): Int = dataHoldingType.indexOf(id)
+
+    /**
+     * @return The underlying data array for a component at a given [index].
+     */
+    fun <T> getComponentArray(index: Int): EraseArrayType<T> {
+        return EraseArrayType(componentData[index].content as Array<T>)
+    }
 
     /**
      * @return The data under a [componentId] for an entity at [row].
@@ -380,6 +387,15 @@ class Archetype internal constructor(
 
         componentData.fastForEach { it.removeAt(lastIndex) }
 //        unregisterIfEmpty() TODO reimplement
+    }
+
+    inline fun forEachRow(block: Int.() -> Unit) {
+        val upTo = size
+        var row = 0
+        while (row < upTo) {
+            block(row)
+            row++
+        }
     }
 
     override fun equals(other: Any?): Boolean {

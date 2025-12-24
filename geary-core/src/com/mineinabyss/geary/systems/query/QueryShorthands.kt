@@ -1,121 +1,130 @@
 package com.mineinabyss.geary.systems.query
 
-import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.entityTypeOf
+import com.mineinabyss.geary.datatypes.family.Family
 import com.mineinabyss.geary.datatypes.family.MutableFamily
 import com.mineinabyss.geary.datatypes.family.family
+import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.helpers.cId
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.WorldScoped
+import com.mineinabyss.geary.systems.accessors.Accessor
+import com.mineinabyss.geary.systems.accessors.Accessors
+import com.mineinabyss.geary.systems.accessors.ReadOnlyAccessor
+import com.mineinabyss.geary.systems.accessors.ReadWriteAccessor
 import kotlin.jvm.JvmName
 
 
-abstract class ShorthandQuery(world: Geary) : Query(world) {
-    abstract val involves: EntityType
-}
+abstract class ShorthandQuery(world: Geary, family: Family?) : Query(world, family)
 
-abstract class ShorthandQuery1<A>(world: Geary) : ShorthandQuery(world) {
+class ShorthandQuery1<A1, A : ReadOnlyAccessor<A1>>(
+    world: Geary,
+    val accessor1: A,
+    family: Family? = null,
+) : ShorthandQuery(world, family) {
+    override val accessors = setOf(accessor1)
+
+    context(row: Int)
     val comp1 get() = component1()
 
-    abstract operator fun component1(): A
+    override fun load(archetype: Archetype) {
+        accessor1.load(archetype)
+    }
+
+    context(row: Int)
+    inline operator fun component1(): A1 = accessor1[row]
+
+    inline operator fun component1(): A = accessor1
 }
 
-abstract class ShorthandQuery2<A, B>(world: Geary) : ShorthandQuery(world) {
-    val comp1 get() = component1()
-    val comp2 get() = component2()
+class ShorthandQuery2<A1, A : ReadOnlyAccessor<A1>, B1, B : ReadOnlyAccessor<B1>>(
+    world: Geary,
+    val accessor1: A,
+    val accessor2: B,
+    family: Family? = null,
+) : ShorthandQuery(world, family) {
+    override val accessors = setOf(accessor1, accessor2)
 
-    abstract operator fun component1(): A
-    abstract operator fun component2(): B
+    context(row: Int)
+    operator fun component1(): A1 = accessor1[row]
+
+    context(row: Int)
+    operator fun component2(): B1 = accessor2[row]
 }
 
-abstract class ShorthandQuery3<A, B, C>(world: Geary) : ShorthandQuery(world) {
-    val comp1 get() = component1()
-    val comp2 get() = component2()
-    val comp3 get() = component3()
+class ShorthandQuery3<A1, A : ReadOnlyAccessor<A1>, B1, B : ReadOnlyAccessor<B1>, C1, C : ReadOnlyAccessor<C1>>(
+    world: Geary,
+    val accessor1: A,
+    val accessor2: B,
+    val accessor3: C,
+    family: Family? = null,
+) : ShorthandQuery(world, family) {
+    override val accessors = setOf(accessor1, accessor2, accessor3)
 
-    abstract operator fun component1(): A
-    abstract operator fun component2(): B
-    abstract operator fun component3(): C
+    context(row: Int)
+    operator fun component1(): A1 = accessor1[row]
+
+    context(row: Int)
+    operator fun component2(): B1 = accessor2[row]
+
+    context(row: Int)
+    operator fun component3(): C1 = accessor3[row]
 }
 
-abstract class ShorthandQuery4<A, B, C, D>(world: Geary) : ShorthandQuery(world) {
-    val comp1 get() = component1()
-    val comp2 get() = component2()
-    val comp3 get() = component3()
-    val comp4 get() = component4()
+class ShorthandQuery4<A1, A : ReadOnlyAccessor<A1>, B1, B : ReadOnlyAccessor<B1>, C1, C : ReadOnlyAccessor<C1>, D1, D : ReadOnlyAccessor<D1>>(
+    world: Geary,
+    val accessor1: A,
+    val accessor2: B,
+    val accessor3: C,
+    val accessor4: D,
+    family: Family? = null,
+) : ShorthandQuery(world, family) {
+    override val accessors = setOf(accessor1, accessor2, accessor3, accessor4)
 
-    abstract operator fun component1(): A
-    abstract operator fun component2(): B
-    abstract operator fun component3(): C
-    abstract operator fun component4(): D
+    context(row: Int)
+    operator fun component1(): A1 = accessor1[row]
+
+    context(row: Int)
+    operator fun component2(): B1 = accessor2[row]
+
+    context(row: Int)
+    operator fun component3(): C1 = accessor3[row]
+
+    context(row: Int)
+    operator fun component4(): D1 = accessor4[row]
 }
 
-abstract class ShorthandQuery5<A, B, C, D, E>(world: Geary) : ShorthandQuery(world) {
-    val comp1 get() = component1()
-    val comp2 get() = component2()
-    val comp3 get() = component3()
-    val comp4 get() = component4()
-    val comp5 get() = component5()
-
-    abstract operator fun component1(): A
-    abstract operator fun component2(): B
-    abstract operator fun component3(): C
-    abstract operator fun component4(): D
-    abstract operator fun component5(): E
+fun WorldScoped.query() = object : Query(world, null) {
+    override val accessors = setOf<Accessor<*>>()
 }
 
-abstract class ShorthandQuery6<A, B, C, D, E, F>(world: Geary) : ShorthandQuery(world) {
-    val comp1 get() = component1()
-    val comp2 get() = component2()
-    val comp3 get() = component3()
-    val comp4 get() = component4()
-    val comp5 get() = component5()
-    val comp6 get() = component6()
-
-    abstract operator fun component1(): A
-    abstract operator fun component2(): B
-    abstract operator fun component3(): C
-    abstract operator fun component4(): D
-    abstract operator fun component5(): E
-    abstract operator fun component6(): F
+fun WorldScoped.query(match: MutableFamily.Selector.And.() -> Unit) = object : Query(world, family(match)) {
+    override val accessors = setOf<Accessor<*>>()
 }
 
-
-fun WorldScoped.query() = object : Query(world) {}
-
-fun WorldScoped.query(match: MutableFamily.Selector.And.() -> Unit) = object : Query(world) {
-    override fun ensure() = this { add(family(match)) }
-}
+fun <A1, A : ReadOnlyAccessor<A1>> WorldScoped.query(
+    accessor1: A,
+    filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
+) = ShorthandQuery1(
+    world, accessor1,
+    entityTypeOf(),
+    filterFamily?.let { family(filterFamily) }
+)
 
 inline fun <reified A> WorldScoped.query(
     size1: QueryShorthands.Size1? = null,
     noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
-) = object : ShorthandQuery1<A>(world) {
-    override val involves = entityTypeOf(cId<A>())
-    override fun ensure() {
-        filterFamily?.let { this { it() } }
-    }
-
-    private val accessor1 = getPotentiallyNullable<A>()
-
-    override fun component1() = accessor1.get(this)
-}
+) = query(Accessors.getPotentiallyNullable<A>(), filterFamily)
 
 inline fun <reified A, reified B> WorldScoped.query(
     size2: QueryShorthands.Size2? = null,
     noinline filterFamily: (MutableFamily.Selector.And.() -> Unit)? = null,
-) = object : ShorthandQuery2<A, B>(world) {
-    override val involves = entityTypeOf(cId<A>(), cId<B>())
-    override fun ensure() {
-        filterFamily?.let { this { it() } }
-    }
-
-    private val accessor1 = getPotentiallyNullable<A>()
-    private val accessor2 = getPotentiallyNullable<B>()
-
-    override fun component1(): A = accessor1.get(this)
-    override fun component2(): B = accessor2.get(this)
-}
+) = ShorthandQuery2<A, ReadWriteAccessor<A>, B, ReadWriteAccessor<B>>(
+    world,
+    Accessors.getPotentiallyNullable<A>(),
+    Accessors.getPotentiallyNullable<B>(),
+    filterFamily?.let { family(filterFamily) }
+)
 
 
 inline fun <reified A, reified B, reified C> WorldScoped.query(
@@ -203,7 +212,7 @@ inline fun <reified A, reified B, reified C, reified D, reified E, reified F> Wo
 }
 
 @JvmName("toList1")
-inline fun <T> CachedQuery<ShorthandQuery1<T>>.toList(): List<T> = map { it.component1() }
+inline fun <T> CachedQuery<ShorthandQuery1<T, *>>.toList(): List<T> = map { it.component1() }
 
 @JvmName("toList2")
 inline fun <T, R> CachedQuery<ShorthandQuery2<T, R>>.toList(): List<Pair<T, R>> =

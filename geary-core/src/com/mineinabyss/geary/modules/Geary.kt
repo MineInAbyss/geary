@@ -111,4 +111,4 @@ inline fun <reified K : Component?> Geary.relationOf(target: Entity): Relation =
 inline fun Geary.findEntities(init: MutableFamily.Selector.And.() -> Unit) =
     findEntities(family(init))
 
-inline fun Geary.findEntities(query: Query) = findEntities(query.buildFamily())
+inline fun Geary.findEntities(query: Query) = findEntities(query.family)

@@ -1,32 +1,29 @@
 package com.mineinabyss.geary.systems.query
 
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
+import com.mineinabyss.geary.datatypes.EntityId
+import com.mineinabyss.geary.datatypes.EntityType
+import com.mineinabyss.geary.datatypes.family.Family
+import com.mineinabyss.geary.datatypes.family.family
+import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.modules.WorldScoped
 import com.mineinabyss.geary.systems.accessors.Accessor
+import com.mineinabyss.geary.systems.accessors.FamilyMatching
 import com.mineinabyss.geary.systems.accessors.type.ComponentAccessor
-import kotlin.reflect.KProperty
 
-abstract class Query(world: Geary) : QueriedEntity(world, cacheAccessors = true) {
-    /** Automatically matches families for any accessor that's supposed to match a family. */
-    operator fun <T : Accessor> T.provideDelegate(
-        thisRef: Any,
-        prop: KProperty<*>,
-    ): T {
-        props[prop.name] = this
-        return this
+abstract class Query(world: Geary, family: Family?) : WorldScoped by world.newScope() {
+    abstract val accessors: Set<Accessor<*>>
+    val involves: EntityType = EntityType(accessors.filterIsInstance<ComponentAccessor<*>>().map { it.id })
+
+    val family = family {
+        accessors.filterIsInstance<FamilyMatching>().forEach { add(it.family) }
+        if(family != null) add(family)
     }
 
-    protected open fun ensure() {}
+    open fun load(archetype: Archetype) {}
 
-    @PublishedApi
-    internal fun initialize() {
-        ensure()
-    }
-
-    // Optional helpers for avoiding delegates in accessors
-
-    @Suppress("NOTHING_TO_INLINE") // These functions are here for maximum speed over delegates, we can inline :)
-    inline operator fun <T : Any> ComponentAccessor<T>.invoke(): T = get(this@Query)
-
-    @Suppress("NOTHING_TO_INLINE")
-    inline fun <T : Any> ComponentAccessor<T>.set(value: T) = set(this@Query, value)
+    @UnsafeAccessors
+    val unsafeEntity: EntityId
+        get() = TODO() //this.archetype.getEntity(row)
 }

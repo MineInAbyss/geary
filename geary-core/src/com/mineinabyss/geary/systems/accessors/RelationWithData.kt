@@ -1,13 +1,12 @@
 package com.mineinabyss.geary.systems.accessors
 
-import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.EntityId
 import com.mineinabyss.geary.datatypes.Relation
 
 /**
  * Helper class for getting a compact overview of data stored in a relation.
  */
-data class RelationWithData<K : Component?, T : Component?>(
+data class RelationWithData<K, T>(
     val data: K,
     val targetData: T,
     val relation: Relation,

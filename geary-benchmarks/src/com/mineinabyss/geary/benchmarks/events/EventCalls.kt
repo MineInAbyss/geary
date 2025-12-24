@@ -14,11 +14,11 @@ class EventCalls {
     private class TestEvent
 
     var targets = emptyList<Entity>()
-    var geary: Geary = geary(TestEngineModule).start()
+    var geary: Geary = geary(TestEngineModule)
 
     @Setup(Level.Invocation)
     fun setupPerInvocation() {
-        geary = geary(TestEngineModule).start()
+        geary = geary(TestEngineModule)
         targets = (1..oneMil).map { geary.entity().apply { set(it) } }
         createListener()
     }

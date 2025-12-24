@@ -27,7 +27,6 @@ class ArchetypeQueryManager : QueryManager {
     val archetypeCount get() = archetypes.elements.size
 
     override fun <T : Query> trackQuery(query: T): CachedQuery<T> {
-        query.initialize()
         val queryRunner = CachedQuery(query)
         val matched = archetypes.match(queryRunner.family)
         queryRunner.matchedArchetypes += matched

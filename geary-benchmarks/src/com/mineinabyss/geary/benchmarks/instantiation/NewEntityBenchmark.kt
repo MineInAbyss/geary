@@ -12,7 +12,7 @@ import org.openjdk.jmh.annotations.*
 
 @State(Scope.Benchmark)
 class NewEntityBenchmark {
-    var geary: Geary = geary(TestEngineModule).start()
+    var geary: Geary = geary(TestEngineModule)
 
     @Setup
     fun setLoggingLevel() {
@@ -21,7 +21,7 @@ class NewEntityBenchmark {
 
     @Setup(Level.Invocation)
     fun setupPerInvocation() {
-        geary = geary(TestEngineModule).start()
+        geary = geary(TestEngineModule)
     }
 
     @Benchmark

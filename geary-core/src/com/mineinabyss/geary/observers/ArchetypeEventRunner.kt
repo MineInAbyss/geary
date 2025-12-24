@@ -58,9 +58,9 @@ class ArchetypeEventRunner(
             if (observer.family.contains(archetype.type)) {
                 observer.queries.fastForEach { query ->
                     @OptIn(UnsafeAccessors::class)
-                    query.reset(row, archetype)
+                    query.load(archetype)
                 }
-                observer.handle.run(entity, eventData, involvedComponent)
+                observer.handle.run(row, entity, eventData, involvedComponent)
             }
         }
     }

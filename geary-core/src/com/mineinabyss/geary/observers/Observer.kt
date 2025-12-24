@@ -27,5 +27,5 @@ data class Observer(
 }
 
 fun interface ObserverHandle {
-    fun run(entity: EntityId, data: Any?, involvedComponent: ComponentId?)
+    fun run(row: Int, entity: EntityId, data: Any?, involvedComponent: ComponentId?)
 }

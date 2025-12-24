@@ -47,7 +47,7 @@ class MutableAddons(
 
     fun getScope(addon: GearyAddon<*>): AddonScope = getScope(addon.name)
 
-    fun getScope(name: String): AddonScope = createdScopes[name] ?: error("Scope for addon $name not found")
+    fun getScope(name: String): AddonScope = createdScopes[name] ?: error("Tried to get addon '$name' but it was not loaded")
 
     fun <T : Any> getAddon(addon: GearyAddon<T>): T {
         val scope = getScope(addon)
