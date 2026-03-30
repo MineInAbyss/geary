@@ -27,6 +27,8 @@ dependencyResolutionManagement {
 
 include(
     "geary-benchmarks",
+    "geary-datastructures",
+    "geary-sparse",
     "geary-core",
     "geary-test",
 )
