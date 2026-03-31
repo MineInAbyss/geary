@@ -1,10 +1,10 @@
 package com.mineinabyss.geary.modules
 
 import co.touchlab.kermit.Severity
-import com.mineinabyss.geary.addons.dsl.GearyAddon
+import com.mineinabyss.features.Feature
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.koin.core.Koin
+import org.kodein.di.DI
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
@@ -14,13 +14,14 @@ import kotlin.time.Duration
  * installed. Load phases are accessible here and will be called once start gets called.
  */
 class GearySetup(
-    val koin: Koin,
+    di: DI,
 ) {
-    val geary = Geary(koin)
+    val geary = Geary(di)
     val logger get() = geary.logger
 
-    fun <T : Any> install(addon: GearyAddon<T>): T {
-        return geary.addons.install(addon)
+    fun <T : Any> install(addon: Feature<T>): T {
+        geary.addons.enable(addon)
+        return geary.getAddon(addon)
     }
 
     fun loggerSeverity(severity: Severity) {

@@ -5,6 +5,7 @@ import com.mineinabyss.geary.components.ComponentInfo
 import com.mineinabyss.geary.components.ReservedComponents
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.engine.ComponentProvider
+import com.mineinabyss.geary.engine.EntityMutateOperations
 import com.mineinabyss.geary.engine.EntityProvider
 import kotlin.reflect.KClassifier
 
@@ -27,7 +28,7 @@ class ComponentAsEntityProvider(
     }
 
     private fun registerComponentIdForClass(kClass: KClassifier): ComponentId {
-        logger.v("Registering new component: $kClass")
+        logger.v { "Registering new component: $kClass" }
         val compEntity = entityProvider.create()
 //        compEntity.set(ComponentInfo(kClass), noEvent = true)
         classToComponentMap[kClass] = compEntity.toLong()
@@ -35,7 +36,7 @@ class ComponentAsEntityProvider(
     }
 
     private fun createReservedComponents() {
-        logger.v("Creating reserved components")
+        logger.v { "Creating reserved components" }
         ReservedComponents.reservedComponents.forEach { (kClass, id) ->
             classToComponentMap[kClass] = id.toLong()
         }

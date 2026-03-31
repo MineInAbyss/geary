@@ -1,6 +1,8 @@
 package com.mineinabyss.geary.prefabs
 
-import com.mineinabyss.geary.addons.dsl.createAddon
+import com.mineinabyss.features.addCloseables
+import com.mineinabyss.features.feature
+import com.mineinabyss.geary.addons.world
 import com.mineinabyss.geary.components.EntityName
 import com.mineinabyss.geary.components.relations.NoInherit
 import com.mineinabyss.geary.helpers.addParent
@@ -17,93 +19,97 @@ import com.mineinabyss.geary.prefabs.helpers.inheritPrefabsIfNeeded
 import com.mineinabyss.geary.serialization.SerializableComponents
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import com.mineinabyss.geary.systems.query.query
-import org.koin.core.module.dsl.scopedOf
+import org.kodein.di.bindSingletonOf
 
-val Prefabs = createAddon<PrefabsModule>("prefabs") {
-    dependsOn(SerializableComponents)
+val Prefabs = feature<PrefabsModule>("prefabs") {
+    dependsOn {
+        features(SerializableComponents)
+    }
 
-    scopedModule {
-        scopedOf(::PrefabLoader)
-        scopedOf(::PrefabsModule)
+    dependencies {
+        bindSingletonOf(::PrefabLoader)
+        bindSingletonOf(::PrefabsModule)
     }
 
     onEnable {
-        observe<PrefabLoaded>("Inherit prefabs on load").exec { entity.inheritPrefabsIfNeeded() }
+        world {
+            observe<PrefabLoaded>("Inherit prefabs on load").exec { entity.inheritPrefabsIfNeeded() }
 
-        observe<OnSet>("Track prefabs by key").involving(query<PrefabKey>()).exec { (key) ->
-            entity.addRelation<NoInherit, PrefabKey>()
-        }
-
-        observe<OnSet>("Parse ChildOnPrefab").involving(query<ChildOnPrefab>()).exec { (child) ->
-            entity {
-                addParent(entity)
-                setAll(child.components)
+            observe<OnSet>("Track prefabs by key").involving(query<PrefabKey>()).exec { (key) ->
+                entity.addRelation<NoInherit, PrefabKey>()
             }
-            entity.remove<ChildOnPrefab>()
-        }
 
-        observe<OnSet>("Parse ChildrenOnPrefab").involving(query<ChildrenOnPrefab>()).exec { (children) ->
-            children.nameToComponents.forEach { (name, components) ->
+            observe<OnSet>("Parse ChildOnPrefab").involving(query<ChildOnPrefab>()).exec { (child) ->
                 entity {
-                    set(EntityName(name))
-                    set(Prefab())
                     addParent(entity)
-                    addRelation<NoInherit, Prefab>()
-                    setAll(components)
+                    setAll(child.components)
                 }
+                entity.remove<ChildOnPrefab>()
             }
-            entity.remove<ChildrenOnPrefab>()
-        }
 
-        observe<OnSet>("Parse instances on prefab").involving(query<InstancesOnPrefab, PrefabKey>())
-            .exec { (instances, prefabKey) ->
-                entity.addRelation<NoInherit, InstancesOnPrefab>()
-                instances.nameToComponents.forEach { (name, components) ->
+            observe<OnSet>("Parse ChildrenOnPrefab").involving(query<ChildrenOnPrefab>()).exec { (children) ->
+                children.nameToComponents.forEach { (name, components) ->
                     entity {
-                        set(PrefabKey.of(prefabKey.namespace, name))
+                        set(EntityName(name))
                         set(Prefab())
-                        set(InheritPrefabs(setOf(prefabKey)))
+                        addParent(entity)
                         addRelation<NoInherit, Prefab>()
                         setAll(components)
                     }
-                    logger.d("Created instance $name of prefab $prefabKey")
+                }
+                entity.remove<ChildrenOnPrefab>()
+            }
+
+            observe<OnSet>("Parse instances on prefab").involving(query<InstancesOnPrefab, PrefabKey>())
+                .exec { (instances, prefabKey) ->
+                    entity.addRelation<NoInherit, InstancesOnPrefab>()
+                    instances.nameToComponents.forEach { (name, components) ->
+                        entity {
+                            set(PrefabKey.of(prefabKey.namespace, name))
+                            set(Prefab())
+                            set(InheritPrefabs(setOf(prefabKey)))
+                            addRelation<NoInherit, Prefab>()
+                            setAll(components)
+                        }
+                        logger.d("Created instance $name of prefab $prefabKey")
+                    }
+                }
+
+            observe<OnSet>("Parse RelationOnPrefab").involving(query<RelationOnPrefab>()).exec { (relation) ->
+                try {
+                    val target = entity.lookup(relation.target)?.id ?: return@exec
+                    entity.setRelation(componentId(relation.data::class), target, relation.data)
+                } finally {
+                    entity.remove<RelationOnPrefab>()
                 }
             }
 
-        observe<OnSet>("Parse RelationOnPrefab").involving(query<RelationOnPrefab>()).exec { (relation) ->
-            try {
-                val target = entity.lookup(relation.target)?.id ?: return@exec
-                entity.setRelation(componentId(relation.data::class), target, relation.data)
-            } finally {
-                entity.remove<RelationOnPrefab>()
-            }
-        }
+            observe<OnSet>("Parse RelationWithData").involving(query<RelationWithData<*, *>>())
+                .exec { (relationWithData) ->
+                    val entity = entity
+                    val data = relationWithData.data
+                    val targetData = relationWithData.targetData
+                    if (data != null) entity.set(data, relationWithData.relation.id)
+                    else entity.add(relationWithData.relation.id)
+                    if (targetData != null) entity.set(targetData, relationWithData.target)
+                    entity.remove<RelationWithData<*, *>>()
+                }
 
-        observe<OnSet>("Parse RelationWithData").involving(query<RelationWithData<*, *>>())
-            .exec { (relationWithData) ->
-                val entity = entity
-                val data = relationWithData.data
-                val targetData = relationWithData.targetData
-                if (data != null) entity.set(data, relationWithData.relation.id)
-                else entity.add(relationWithData.relation.id)
-                if (targetData != null) entity.set(targetData, relationWithData.target)
-                entity.remove<RelationWithData<*, *>>()
+            observeWithData<OnExtend>("Handle CopyToInstances on extend").exec {
+                val copy = event.baseEntity.toGeary().get<CopyToInstances>() ?: return@exec
+                copy.decodeComponentsTo(entity)
             }
 
-        observeWithData<OnExtend>("Handle CopyToInstances on extend").exec {
-            val copy = event.baseEntity.toGeary().get<CopyToInstances>() ?: return@exec
-            copy.decodeComponentsTo(entity)
-        }
-
-        observeWithData<ReEmitEvent>("Handle ReEmitEvent").exec {
-            entity.getRelationsByKind(event.findByRelationKind).forEach { relation ->
-                val entity = relation.target.toGeary()
-                if (entity.exists()) entity.emit(event = event.dataComponentId, data = event.data)
+            observeWithData<ReEmitEvent>("Handle ReEmitEvent").exec {
+                entity.getRelationsByKind(event.findByRelationKind).forEach { relation ->
+                    val entity = relation.target.toGeary()
+                    if (entity.exists()) entity.emit(event = event.dataComponentId, data = event.data)
+                }
             }
-        }
 
-        world.infoReader.addInfoLine("prefabs") { entity ->
-            entity.prefabs.mapNotNull { it.get<PrefabKey>().toString() }.joinToString()
+            world.infoReader.addInfoLine("prefabs") { entity ->
+                entity.prefabs.mapNotNull { it.get<PrefabKey>().toString() }.joinToString()
+            }
         }
     }
 }

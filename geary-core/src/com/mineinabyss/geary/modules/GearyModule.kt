@@ -1,45 +1,32 @@
 package com.mineinabyss.geary.modules
 
-import org.koin.core.Koin
-import org.koin.core.annotation.KoinInternalApi
-import org.koin.core.module.Module
-import org.koin.dsl.koinApplication
-import org.koin.dsl.module
+import com.mineinabyss.features.FeatureManager
+import org.kodein.di.DI
+import org.kodein.di.bindSingleton
+import org.kodein.di.direct
+import org.kodein.di.instance
 
 fun geary(
     module: GearyModule,
-    koin: Koin = koinApplication().koin,
+    extendDI: DI? = null,
     configure: GearySetup.() -> Unit = {},
 ): Geary {
-    @OptIn(KoinInternalApi::class)
-    koin.apply {
-        propertyRegistry.saveProperties(module.properties)
-        loadModules(listOf(module.module))
+    val di = DI {
+        extendDI?.let { extend(it) }
+        import(module.module)
     }
-    val initializer = koin.get<EngineInitializer>()
+    val initializer = di.direct.instance<EngineInitializer>()
     initializer.init()
-    val setup = GearySetup(koin)
-    koin.loadModules(listOf(module {
-        single<Geary> { setup.geary }
-    }))
+    val withGeary = DI {
+        extend(di)
+        bindSingleton<Geary> { Geary(this.di) }
+        bindSingleton { FeatureManager(this.di) }
+    }
+    val setup = GearySetup(withGeary)
     configure(setup)
-    return setup.geary
+    return Geary(withGeary)
 }
 
-//data class UninitializedGearyModule(
-//    val setup: GearySetup,
-//    val initializer: EngineInitializer,
-//) {
-//    inline fun configure(configure: GearySetup.() -> Unit): UninitializedGearyModule = apply { setup.configure() }
-//
-//    fun start(): Geary {
-//        val world = Geary(setup.application)
-//        initializer.start()
-//        return world
-//    }
-//}
-
 data class GearyModule(
-    val module: Module,
-    val properties: Map<String, Any> = emptyMap(),
+    val module: DI.Module,
 )

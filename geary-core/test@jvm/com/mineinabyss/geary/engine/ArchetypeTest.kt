@@ -13,7 +13,8 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.koin.core.component.get
+import org.kodein.di.direct
+import org.kodein.di.instance
 
 internal class ArchetypeTest : GearyTest() {
     private sealed class RelatesTo
@@ -55,7 +56,7 @@ internal class ArchetypeTest : GearyTest() {
         val relatesTo = relationOf<RelatesTo>(target)
         val instanceOf = relationOf<InstanceOf?>(target)
         val instanceOf2 = relationOf<InstanceOf?>(target2)
-        val arc = get<ArchetypeProvider>().getArchetype(entityTypeOf(relatesTo.id, instanceOf.id, instanceOf2.id))
+        val arc = direct.instance<ArchetypeProvider>().getArchetype(entityTypeOf(relatesTo.id, instanceOf.id, instanceOf2.id))
         arc.getRelationsByTarget(target.id).map { Relation.of(it) }
             .shouldContainExactlyInAnyOrder(relatesTo, instanceOf)
         arc.getRelationsByKind(componentId<InstanceOf>()).map { Relation.of(it) }

@@ -11,7 +11,8 @@ import com.mineinabyss.geary.observers.builders.ObserverWithoutData
 import com.mineinabyss.geary.systems.builders.SystemBuilder
 import com.mineinabyss.geary.systems.query.CachedQuery
 import com.mineinabyss.geary.systems.query.Query
-import org.koin.core.component.get
+import org.kodein.di.direct
+import org.kodein.di.instance
 import kotlin.reflect.KClass
 
 @GearyDSL
@@ -73,7 +74,7 @@ interface WorldScoped : AutoCloseable {
     fun relationOf(kind: KClass<*>, target: KClass<*>): Relation =
         Relation.of(componentId(kind), componentId(target))
 
-    fun EntityType.getArchetype(): Archetype = world.get<ArchetypeProvider>().getArchetype(this)
+    fun EntityType.getArchetype(): Archetype = world.direct.instance<ArchetypeProvider>().getArchetype(this)
 
     /** Gets the entity associated with this [EntityId], stripping it of any roles. */
     fun EntityId.toGeary(): Entity = Entity(this and ENTITY_MASK, world)
@@ -82,6 +83,12 @@ interface WorldScoped : AutoCloseable {
     fun Long.toGeary(): Entity = Entity(toULong() and ENTITY_MASK, world)
 
     val NO_ENTITY: Entity get() = 0L.toGeary()
+
+    fun <T> use(block: WorldScoped.() -> T): T {
+        return (this as AutoCloseable).use {
+            block()
+        }
+    }
 
     override fun close() {
         closeables.reversed().forEach { it.close() }

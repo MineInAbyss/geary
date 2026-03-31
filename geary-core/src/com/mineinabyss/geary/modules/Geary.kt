@@ -3,7 +3,9 @@ package com.mineinabyss.geary.modules
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.mutableLoggerConfigInit
 import co.touchlab.kermit.platformLogWriter
-import com.mineinabyss.geary.addons.dsl.GearyAddon
+import com.mineinabyss.features.Feature
+import com.mineinabyss.features.FeatureManager
+import com.mineinabyss.features.get
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.Relation
@@ -16,10 +18,10 @@ import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.observers.EventRunner
 import com.mineinabyss.geary.systems.query.Query
-import org.koin.core.Koin
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
-import org.koin.core.component.inject
+import org.kodein.di.DI
+import org.kodein.di.DirectDI
+import org.kodein.di.direct
+import org.kodein.di.instance
 
 /**
  * Root class for users to access geary functionality.
@@ -31,8 +33,8 @@ import org.koin.core.component.inject
  * Any functions that modify the state of the engine modify it right away,
  * they are not scheduled for load phases like [GearySetup] is.
  */
-interface Geary : KoinComponent, WorldScoped {
-    override val logger: Logger get() = get<Logger>()
+interface Geary : DI, WorldScoped {
+    override val logger: Logger get() = direct.instance<Logger>()
 
     fun newScope(): WorldScoped {
         return addCloseable(object : WorldScoped {
@@ -43,69 +45,66 @@ interface Geary : KoinComponent, WorldScoped {
 
     // By default, we always get the latest instance of deps, the Impl class gets them once for user
     // access where the engine isn't expected to be reloaded (ex. like it might be in tests)
-    val eventRunner: EventRunner get() = get()
-    val read: EntityReadOperations get() = get()
-    val infoReader: EntityInfoReader get() = get()
-    val write: EntityMutateOperations get() = get()
-    val queryManager: QueryManager get() = get()
-    val pipeline: Pipeline get() = get()
-    val entityProvider: EntityProvider get() = get()
-    val entityRemoveProvider: EntityRemove get() = get()
-    val components: Components get() = get()
-    val componentProvider: ComponentProvider get() = get()
-    val records: ArrayTypeMap get() = get()
-    val engine: GearyEngine get() = get()
-    val addons: MutableAddons get() = get()
+    val eventRunner: EventRunner get() = direct.instance()
+    val read: EntityReadOperations get() = direct.instance()
+    val infoReader: EntityInfoReader get() = direct.instance()
+    val write: EntityMutateOperations get() = direct.instance()
+    val queryManager: QueryManager get() = direct.instance()
+    val pipeline: Pipeline get() = direct.instance()
+    val entityProvider: EntityProvider get() = direct.instance()
+    val entityRemoveProvider: EntityRemove get() = direct.instance()
+    val components: Components get() = direct.instance()
+    val componentProvider: ComponentProvider get() = direct.instance()
+    val records: ArrayTypeMap get() = direct.instance()
+    val engine: GearyEngine get() = direct.instance()
+    val addons: FeatureManager get() = direct.instance()
 
-    fun <T : Any> getAddon(addon: GearyAddon<T>): T = addons.getAddon(addon)
+    fun <T : Any> getAddon(addon: Feature<T>): T = addons.get(addon)
 
-    fun <T : Any> getAddonOrNull(addon: GearyAddon<T>?): T? = addon?.let { addons.getAddonOrNull(addon) }
+    fun <T : Any> getAddonOrNull(addon: Feature<T>?): T? = addon?.let { addons.getOrNull(addon) }
 
     fun tick() {
         engine.tick()
     }
 
     fun configure(setup: GearySetup.() -> Unit): Geary {
-        GearySetup(getKoin()).setup()
+        GearySetup(di).setup()
         return this
     }
 
     companion object : Logger(mutableLoggerConfigInit(listOf(platformLogWriter())), "Geary") {
-        operator fun invoke(application: Koin, logger: Logger? = null): Geary = Impl(application, logger)
+        operator fun invoke(di: DI, logger: Logger? = null): Geary = Impl(di, logger)
     }
 
     class Impl(
-        koin: Koin,
+        di: DI,
         logger: Logger? = null,
-    ) : Geary {
-        private val _koin = koin
+    ) : Geary, DirectDI by di.direct {
         override val world: Geary = this@Impl
         override val closeables: MutableList<AutoCloseable> = mutableListOf()
         override val logger: Logger = logger ?: super.logger
-        override val eventRunner: EventRunner by inject()
-        override val read: EntityReadOperations by inject()
-        override val infoReader: EntityInfoReader by inject()
-        override val write: EntityMutateOperations by inject()
-        override val queryManager: QueryManager by inject()
-        override val pipeline: Pipeline by inject()
-        override val entityProvider: EntityProvider by inject()
-        override val entityRemoveProvider: EntityRemove by inject()
-        override val components: Components by inject()
-        override val componentProvider: ComponentProvider by inject()
-        override val records: ArrayTypeMap by inject()
-        override val engine: GearyEngine by inject()
-        override val addons: MutableAddons by inject()
-        override fun getKoin(): Koin = _koin
+        override val eventRunner: EventRunner by di.instance()
+        override val read: EntityReadOperations by di.instance()
+        override val infoReader: EntityInfoReader by di.instance()
+        override val write: EntityMutateOperations by di.instance()
+        override val queryManager: QueryManager by di.instance()
+        override val pipeline: Pipeline by di.instance()
+        override val entityProvider: EntityProvider by di.instance()
+        override val entityRemoveProvider: EntityRemove by di.instance()
+        override val components: Components by di.instance()
+        override val componentProvider: ComponentProvider by di.instance()
+        override val records: ArrayTypeMap by di.instance()
+        override val engine: GearyEngine by di.instance()
+        override val addons: FeatureManager by di.instance()
     }
 
-
-    fun stringify() = getKoin().toString().removePrefix("org.koin.core.KoinApplication")
+    fun stringify() = instance<String>("name")
 }
 
-inline fun <reified K : Component?, reified T : Component> Geary.relationOf(): Relation =
+inline fun <reified K, reified T : Component> Geary.relationOf(): Relation =
     Relation.of(componentIdWithNullable<K>(), componentId<T>())
 
-inline fun <reified K : Component?> Geary.relationOf(target: Entity): Relation =
+inline fun <reified K> Geary.relationOf(target: Entity): Relation =
     Relation.of(componentIdWithNullable<K>(), target.id)
 
 inline fun Geary.findEntities(init: MutableFamily.Selector.And.() -> Unit) =

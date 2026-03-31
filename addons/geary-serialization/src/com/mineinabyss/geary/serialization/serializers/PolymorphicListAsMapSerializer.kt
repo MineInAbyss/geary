@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.serialization.serializers
 
+import co.touchlab.kermit.Logger
 import com.charleskorn.kaml.YamlInput
 import com.charleskorn.kaml.YamlMap
 import com.mineinabyss.geary.datatypes.GearyComponent
@@ -32,8 +33,6 @@ open class PolymorphicListAsMapSerializer<T : Any>(
         val components = mutableListOf<T>()
         val componentMap = decoder.decodeSerializableValue(YamlMap.serializer())
         val yaml = (decoder as YamlInput).yaml
-        val world = decoder.serializersModule.getWorld()
-        val logger = world.logger
 
         componentMap.entries.forEach { (yamlKey, node) ->
             val key = yamlKey.content
@@ -44,7 +43,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                 if (config.onMissingSerializer != OnMissing.IGNORE) config.whenComponentMalformed(key, null)
                 when (config.onMissingSerializer) {
                     OnMissing.ERROR -> error("Missing serializer for polymorphic key: $key")
-                    OnMissing.WARN -> logger.w("No serializer found for $key, ignoring")
+                    OnMissing.WARN -> Logger.w("No serializer found for $key, ignoring")
                     OnMissing.IGNORE -> Unit
                 }
                 return@forEach
@@ -58,7 +57,7 @@ open class PolymorphicListAsMapSerializer<T : Any>(
                     }
 
                     if (config.skipMalformedComponents) {
-                        logger.w {
+                        Logger.w {
                             "Could not decode component '$key', ignoring:\n" +
                                     it.stackTraceToString()
                                         .lineSequence()

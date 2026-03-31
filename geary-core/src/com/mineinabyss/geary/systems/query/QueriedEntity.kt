@@ -11,7 +11,8 @@ import com.mineinabyss.geary.modules.WorldScoped
 import com.mineinabyss.geary.systems.accessors.Accessor
 import com.mineinabyss.geary.systems.accessors.AccessorOperations
 import com.mineinabyss.geary.systems.accessors.FamilyMatching
-import org.koin.core.component.get
+import org.kodein.di.direct
+import org.kodein.di.instance
 import kotlin.jvm.JvmField
 
 open class QueriedEntity(
@@ -21,7 +22,7 @@ open class QueriedEntity(
     @PublishedApi
     @UnsafeAccessors
     @JvmField
-    internal var archetype = world.get<ArchetypeProvider>().rootArchetype
+    internal var archetype = world.direct.instance<ArchetypeProvider>().rootArchetype
 
     internal val extraFamilies: MutableList<Family> = mutableListOf()
 

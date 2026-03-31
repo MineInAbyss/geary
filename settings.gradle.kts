@@ -29,6 +29,7 @@ include(
     "geary-benchmarks",
     "geary-core",
     "geary-test",
+    "geary-examples",
 )
 
 // Go through addons directory and load all projects based on file name
@@ -38,3 +39,6 @@ for (addon in file("addons").listFiles()) {
         project(":${addon.name}").projectDir = file(addon)
     }
 }
+
+
+includeBuild("../features")

@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.prefabs
 
+import com.mineinabyss.geary.serialization.GearyWorldProvider
 import com.mineinabyss.geary.serialization.formats.YamlFormat
 import com.mineinabyss.geary.serialization.serializers.PolymorphicListAsMapSerializer
 import io.kotest.matchers.shouldBe
@@ -8,6 +9,7 @@ import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import org.junit.jupiter.api.Test

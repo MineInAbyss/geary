@@ -10,17 +10,21 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.TestInstance
-import org.koin.core.Koin
-import org.koin.core.component.get
+import org.kodein.di.DI
+import org.kodein.di.DIContainer
+import org.kodein.di.DirectDI
+import org.kodein.di.direct
+import org.kodein.di.instance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class GearyTest : Geary {
-    private var _koin: Koin? = null
-    override fun getKoin(): Koin = _koin!!
+    private var _di: DI? = null
+    override val container: DIContainer get() = _di!!.container
+    override val di: DI get() = _di!!
     override val closeables: MutableList<AutoCloseable> = mutableListOf()
     override val world: Geary = this
 
-    val rootArchetype get() = get<ArchetypeProvider>().rootArchetype
+    val rootArchetype get() = direct.instance<ArchetypeProvider>().rootArchetype
 
     open fun setupGeary() = geary(TestEngineModule)
 
@@ -29,12 +33,12 @@ abstract class GearyTest : Geary {
     }
 
     fun startEngine() {
-        _koin = setupGeary().getKoin()
+        _di = setupGeary().di
     }
 
     @AfterAll
     fun clearEngine() {
-        _koin = null
+        _di = null
     }
 
     /** Recreates the engine. */

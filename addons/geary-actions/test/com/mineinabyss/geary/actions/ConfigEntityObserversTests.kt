@@ -38,10 +38,10 @@ class ConfigEntityObserversTests : GearyTest() {
             withCommonComponentNames()
 
             registerComponentSerializers(
-                String.serializer(),
-                Print.serializer(),
-                EntityObservers.serializer(),
-                MyComp.serializer(),
+                String::class to String.serializer(),
+                Print::class to Print.serializer(),
+                EntityObservers::class to EntityObservers.serializer(),
+                MyComp::class to MyComp.serializer(),
             )
         }
     }

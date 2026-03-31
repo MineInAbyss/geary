@@ -15,7 +15,8 @@ kotlin {
                 implementation(libs.androidx.collection)
                 implementation(idofrontLibs.kotlin.reflect)
 
-                api(idofrontLibs.koin.core)
+                api(libs.kodein.di)
+                api("com.mineinabyss.features:core:0.1")
                 api(idofrontLibs.kotlinx.io)
                 api(idofrontLibs.kermit)
                 api(idofrontLibs.kotlinx.coroutines)
@@ -30,7 +31,6 @@ kotlin {
                 implementation(idofrontLibs.kotlinx.coroutines.test)
                 implementation(idofrontLibs.kotest.assertions)
                 implementation(idofrontLibs.kotest.property)
-                implementation(libs.koin.test)
             }
             kotlin.setSrcDirs(files("test@jvm"))
             resources.setSrcDirs(files("resources"))

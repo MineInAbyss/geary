@@ -7,6 +7,7 @@ roaringbitmap = "1.0.6"
 statelyConcurrency = "2.0.7"
 koin = "4.1.0"
 junitJupiter = "5.8.1"
+kodein = "7.30.0"
 
 [libraries]
 androidx-collection = { module = "androidx.collection:collection", version.ref = "androidxCollection" }
@@ -17,3 +18,4 @@ roaringbitmap = { module = "org.roaringbitmap:RoaringBitmap", version.ref = "roa
 stately-concurrency = { module = "co.touchlab:stately-concurrency", version.ref = "statelyConcurrency" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
+kodein-di = { module = "org.kodein.di:kodein-di", version.ref = "kodein" }

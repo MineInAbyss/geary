@@ -8,7 +8,6 @@ dependencies {
     implementation(project(":geary-core"))
     implementation(kotlin("test"))
     implementation(idofrontLibs.kotlinx.coroutines.test)
-    implementation(libs.koin.test)
     compileOnly(idofrontLibs.junit.jupiter)
 }
 

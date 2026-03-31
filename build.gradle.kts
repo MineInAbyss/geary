@@ -5,6 +5,7 @@ plugins {
     alias(idofrontLibs.plugins.mia.autoversion)
     alias(idofrontLibs.plugins.dependencyversions)
     alias(idofrontLibs.plugins.version.catalog.update)
+    alias(idofrontLibs.plugins.kotlinx.serialization) apply false
 }
 
 allprojects {

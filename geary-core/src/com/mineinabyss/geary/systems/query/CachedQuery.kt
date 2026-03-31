@@ -11,7 +11,8 @@ import com.mineinabyss.geary.datatypes.toEntityArray
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.fastForEach
-import org.koin.core.component.get
+import org.kodein.di.direct
+import org.kodein.di.instance
 
 class CachedQuery<T : Query> internal constructor(val query: T): AutoCloseable {
     val matchedArchetypes: MutableObjectList<Archetype> = MutableObjectList()
@@ -116,7 +117,7 @@ class CachedQuery<T : Query> internal constructor(val query: T): AutoCloseable {
         val accessors = cachingAccessors
 
         // current archetype
-        var archetype = query.world.get<ArchetypeProvider>().rootArchetype // avoid nullable perf loss
+        var archetype = query.world.direct.instance<ArchetypeProvider>().rootArchetype // avoid nullable perf loss
         var upTo = 0
 
         // current entity

@@ -1,13 +1,14 @@
 package com.mineinabyss.geary.serialization
 
-import com.mineinabyss.geary.addons.dsl.createAddon
-import org.koin.core.module.dsl.scopedOf
-import org.koin.dsl.bind
+import com.mineinabyss.features.feature
+import org.kodein.di.bindSingletonOf
+import org.kodein.di.delegate
 
-val SerializableComponents = createAddon<SerializableComponentsModule>("serializeable-components") {
-    scopedModule {
-        scopedOf(::SerializersByMap) bind ComponentSerializers::class
-        scopedOf(::SerializationFormats)
-        scopedOf(::SerializableComponentsModule)
+val SerializableComponents = feature<SerializableComponentsModule>("serializeable-components") {
+    dependencies {
+        bindSingletonOf(::SerializersByMap)
+        delegate<ComponentSerializers>().to<SerializersByMap>()
+        bindSingletonOf(::SerializationFormats)
+        bindSingletonOf(::SerializableComponentsModule)
     }
 }
