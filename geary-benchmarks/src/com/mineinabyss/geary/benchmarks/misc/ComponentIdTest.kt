@@ -15,27 +15,6 @@ import kotlin.reflect.typeOf
 
 @State(Scope.Benchmark)
 class ComponentIdTest : GearyBenchmark() {
-
-    @Setup
-    fun setup() {
-        Logger.setMinSeverity(Severity.Warn)
-        geary(TestEngineModule)
-    }
-
-    @Benchmark
-    fun getKType() {
-        repeat(tenMil) {
-            typeOf<Comp1>()
-        }
-    }
-
-    @Benchmark
-    fun getKClass() {
-        repeat(tenMil) {
-            typeOf<Comp1>().classifier
-        }
-    }
-
     @Benchmark
     fun componentIdFor6Comp() {
         repeat(tenMil) {
@@ -50,9 +29,7 @@ class ComponentIdTest : GearyBenchmark() {
 }
 
 fun main() {
-    geary(TestEngineModule)
     ComponentIdTest().apply {
-        setup()
         repeat(10) {
             componentIdFor6Comp()
         }

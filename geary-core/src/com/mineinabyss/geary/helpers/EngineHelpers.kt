@@ -36,12 +36,12 @@ inline fun <T> WorldScoped.temporaryEntity(
     }
 }
 
-inline fun <reified T> WorldScoped.component(): Entity = component(T::class)
+inline fun <reified T> WorldScoped.component(): Entity = componentId<T>().toGeary()
 
 fun WorldScoped.component(kClass: KClass<*>): Entity = componentId(kClass).toGeary()
 
 /** Gets or registers the id of a component of type [T] */
-inline fun <reified T> WorldScoped.componentId(): ComponentId = componentId(T::class)
+expect inline fun <reified T> WorldScoped.componentId(): ComponentId
 
 /** Gets or registers the id of a component of type [T], adding the [HOLDS_DATA] role if [T] is not nullable. */
 inline fun <reified T> WorldScoped.componentIdWithNullable(): ComponentId =

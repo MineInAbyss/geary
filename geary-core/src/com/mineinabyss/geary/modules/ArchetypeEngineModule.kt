@@ -50,7 +50,7 @@ internal object ArchetypesModules {
 
     val components = DI.Module("components") {
         import(entities)
-        bindSingletonOf(::ComponentAsEntityProvider)
+        bindSingletonOf(::ComponentProvider)
         bindSingletonOf(::Components)
     }
 

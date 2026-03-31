@@ -2,7 +2,6 @@ package com.mineinabyss.geary.modules
 
 import com.mineinabyss.geary.engine.Pipeline
 import com.mineinabyss.geary.engine.archetypes.ArchetypeEngine
-import com.mineinabyss.geary.engine.archetypes.ComponentAsEntityProvider
 
 class ArchetypeEngineInitializer(
     val beginTickingOnStart: Boolean,
