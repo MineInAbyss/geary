@@ -15,11 +15,11 @@ class ManyComponentsBenchmark {
         Logger.setMinSeverity(Severity.Warn)
     }
 
-    var geary: Geary = geary(TestEngineModule).start()
+    var geary: Geary = geary(TestEngineModule)
 
     @Setup(Level.Invocation)
     fun setupPerInvocation() {
-        geary = geary(TestEngineModule).start()
+        geary = geary(TestEngineModule)
     }
 
     @Benchmark

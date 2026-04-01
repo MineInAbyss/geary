@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-
 plugins {
     alias(idofrontLibs.plugins.kotlin.multiplatform)
     alias(idofrontLibs.plugins.mia.autoversion)
@@ -45,7 +43,6 @@ allprojects {
                 }
             }
 
-            @OptIn(ExperimentalKotlinGradlePluginApi::class)
             compilerOptions {
                 freeCompilerArgs.addAll(
                     listOf(

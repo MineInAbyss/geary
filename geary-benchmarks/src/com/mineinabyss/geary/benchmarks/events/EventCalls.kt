@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.benchmarks.events
 
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.Severity
 import com.mineinabyss.geary.benchmarks.helpers.oneMil
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.helpers.entity
@@ -14,11 +16,15 @@ class EventCalls {
     private class TestEvent
 
     var targets = emptyList<Entity>()
-    var geary: Geary = geary(TestEngineModule).start()
+    var geary: Geary = geary(TestEngineModule)
+
+    init {
+        Logger.setMinSeverity(Severity.Warn)
+    }
 
     @Setup(Level.Invocation)
     fun setupPerInvocation() {
-        geary = geary(TestEngineModule).start()
+        geary = geary(TestEngineModule)
         targets = (1..oneMil).map { geary.entity().apply { set(it) } }
         createListener()
     }
@@ -38,7 +44,10 @@ class EventCalls {
 }
 
 fun main() {
-    geary(TestEngineModule)
+//    val types = mutableMapOf<Class<*>, Long>()
+//    geary(TestEngineModule)
+//    repeat(oneMil) { String::class.java }
+//    repeat(oneMil) { types[String::class.java] }
     EventCalls().apply {
         setupPerInvocation()
         repeat(1000) {

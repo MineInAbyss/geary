@@ -5,7 +5,6 @@ import co.touchlab.kermit.mutableLoggerConfigInit
 import co.touchlab.kermit.platformLogWriter
 import com.mineinabyss.features.Feature
 import com.mineinabyss.features.FeatureManager
-import com.mineinabyss.features.get
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.datatypes.Relation
@@ -19,7 +18,6 @@ import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.observers.EventRunner
 import com.mineinabyss.geary.systems.query.Query
 import org.kodein.di.DI
-import org.kodein.di.DirectDI
 import org.kodein.di.direct
 import org.kodein.di.instance
 
@@ -79,23 +77,24 @@ interface Geary : DI, WorldScoped {
     class Impl(
         di: DI,
         logger: Logger? = null,
-    ) : Geary, DirectDI by di.direct {
+    ) : Geary, DI by di {
+        private val direct = di.direct
         override val world: Geary = this@Impl
         override val closeables: MutableList<AutoCloseable> = mutableListOf()
         override val logger: Logger = logger ?: super.logger
-        override val eventRunner: EventRunner by di.instance()
-        override val read: EntityReadOperations by di.instance()
-        override val infoReader: EntityInfoReader by di.instance()
-        override val write: EntityMutateOperations by di.instance()
-        override val queryManager: QueryManager by di.instance()
-        override val pipeline: Pipeline by di.instance()
-        override val entityProvider: EntityProvider by di.instance()
-        override val entityRemoveProvider: EntityRemove by di.instance()
-        override val components: Components by di.instance()
-        override val componentProvider: ComponentProvider by di.instance()
-        override val records: ArrayTypeMap by di.instance()
-        override val engine: GearyEngine by di.instance()
-        override val addons: FeatureManager by di.instance()
+        override val eventRunner: EventRunner = direct.instance()
+        override val read: EntityReadOperations = direct.instance()
+        override val infoReader: EntityInfoReader = direct.instance()
+        override val write: EntityMutateOperations = direct.instance()
+        override val queryManager: QueryManager = direct.instance()
+        override val pipeline: Pipeline = direct.instance()
+        override val entityProvider: EntityProvider = direct.instance()
+        override val entityRemoveProvider: EntityRemove = direct.instance()
+        override val components: Components = direct.instance()
+        override val componentProvider: ComponentProvider = direct.instance()
+        override val records: ArrayTypeMap = direct.instance()
+        override val engine: GearyEngine = direct.instance()
+        override val addons: FeatureManager = direct.instance()
     }
 
     fun stringify() = instance<String>("name")
