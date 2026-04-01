@@ -1,14 +1,16 @@
 package com.mineinabyss.geary.autoscan
 
-import com.mineinabyss.geary.addons.dsl.createAddon
+import com.mineinabyss.features.feature
 import com.mineinabyss.geary.serialization.SerializableComponents
-import org.koin.core.module.dsl.scopedOf
+import org.kodein.di.bindSingletonOf
 
-val AutoScanAddon = createAddon<AutoScanner>("autoscan") {
-    dependsOn(SerializableComponents)
+val AutoScanAddon = feature<AutoScanner>("autoscan") {
+    dependsOn {
+        features(SerializableComponents)
+    }
 
-    scopedModule {
-        scopedOf(::AutoScanner)
+    dependencies {
+        bindSingletonOf(::AutoScanner)
     }
 
     onEnable {

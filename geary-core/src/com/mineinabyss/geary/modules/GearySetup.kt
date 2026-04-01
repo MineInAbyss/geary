@@ -4,7 +4,7 @@ import co.touchlab.kermit.Severity
 import com.mineinabyss.features.Feature
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.kodein.di.DI
+import org.kodein.di.DirectDI
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
@@ -14,7 +14,7 @@ import kotlin.time.Duration
  * installed. Load phases are accessible here and will be called once start gets called.
  */
 class GearySetup(
-    di: DI,
+    di: DirectDI,
 ) {
     val geary = Geary(di)
     val logger get() = geary.logger

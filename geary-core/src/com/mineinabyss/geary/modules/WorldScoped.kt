@@ -11,16 +11,15 @@ import com.mineinabyss.geary.observers.builders.ObserverWithoutData
 import com.mineinabyss.geary.systems.builders.SystemBuilder
 import com.mineinabyss.geary.systems.query.CachedQuery
 import com.mineinabyss.geary.systems.query.Query
-import org.kodein.di.direct
+import org.kodein.di.DirectDIAware
 import org.kodein.di.instance
 import kotlin.reflect.KClass
 
 @GearyDSL
-interface WorldScoped : AutoCloseable {
+interface WorldScoped : AutoCloseable, DirectDIAware {
     val closeables: MutableList<AutoCloseable>
     val world: Geary
     val logger get() = world.logger
-
     /**
      * Adds an [AutoCloseable] resource that will be closed right before the addon's onClose method is called.
      */
@@ -74,7 +73,7 @@ interface WorldScoped : AutoCloseable {
     fun relationOf(kind: KClass<*>, target: KClass<*>): Relation =
         Relation.of(componentId(kind), componentId(target))
 
-    fun EntityType.getArchetype(): Archetype = world.direct.instance<ArchetypeProvider>().getArchetype(this)
+    fun EntityType.getArchetype(): Archetype = world.instance<ArchetypeProvider>().getArchetype(this)
 
     /** Gets the entity associated with this [EntityId], stripping it of any roles. */
     fun EntityId.toGeary(): Entity = Entity(this and ENTITY_MASK, world)

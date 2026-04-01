@@ -7,7 +7,7 @@ import com.mineinabyss.geary.modules.WorldScoped
 import org.kodein.di.instance
 
 inline fun FeatureDI.world(block: WorldScoped.() -> Unit) {
-    val scope = instance<Geary>().newScope()
+    val scope = instance<Geary>().newScope(this)
     try {
         scope.apply(block)
     } finally {
