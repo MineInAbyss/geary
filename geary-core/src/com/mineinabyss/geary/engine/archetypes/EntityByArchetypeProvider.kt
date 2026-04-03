@@ -2,6 +2,7 @@ package com.mineinabyss.geary.engine.archetypes
 
 import co.touchlab.kermit.Logger
 import co.touchlab.stately.concurrency.AtomicLong
+import com.mineinabyss.geary.components.ReservedComponents
 import com.mineinabyss.geary.datatypes.EntityId
 import com.mineinabyss.geary.datatypes.EntityStack
 import com.mineinabyss.geary.datatypes.Relation
@@ -11,7 +12,6 @@ import com.mineinabyss.geary.engine.EntityProvider
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeMutateOperations
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeReadOperations
 import com.mineinabyss.geary.helpers.NO_COMPONENT
-import com.mineinabyss.geary.components.ReservedComponents
 import com.mineinabyss.geary.observers.EventRunner
 
 class EntityRemove(
@@ -56,6 +56,7 @@ class EntityByArchetypeProvider(
     private val reuseIDsAfterRemoval: Boolean = true,
     private val archetypeProvider: ArchetypeProvider,
     private val records: ArrayTypeMap,
+    private val logger: Logger,
 ) : EntityProvider {
     internal val removedEntities: EntityStack = EntityStack()
     private val currId = AtomicLong(0L)
@@ -69,7 +70,7 @@ class EntityByArchetypeProvider(
         val entity: EntityId = if (reuseIDsAfterRemoval) {
             removedEntities.popOrElse { (currId.incrementAndGet() - 1).toULong() }
         } else (currId.incrementAndGet() - 1).toULong()
-        Logger.v { "Creating new entity with id $entity" }
+        logger.v { "Creating new entity with id $entity" }
 
         createRecord(entity)
         return entity

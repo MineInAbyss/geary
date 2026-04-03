@@ -2,14 +2,17 @@ package com.mineinabyss.geary.engine.archetypes
 
 import androidx.collection.getOrElse
 import androidx.collection.set
+import co.touchlab.kermit.Logger
 import co.touchlab.stately.concurrency.Synchronizable
 import co.touchlab.stately.concurrency.synchronize
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.EntityType
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
+import com.mineinabyss.geary.helpers.readableString
 
 class SimpleArchetypeProvider(
     private val records: ArrayTypeMap,
+    private val logger: Logger,
     private val queryManager: ArchetypeQueryManager,
 ) : ArchetypeProvider {
     override val rootArchetype: Archetype by lazy {
@@ -26,6 +29,7 @@ class SimpleArchetypeProvider(
         arc.componentRemoveEdges[componentEdge.toLong()] = prevNode
         prevNode.componentAddEdges[componentEdge.toLong()] = arc
         queryManager.registerArchetype(arc)
+        logger.v { "Creating archetype from new component ${componentEdge.readableString(null)}: $arc" }
         return arc
     }
 

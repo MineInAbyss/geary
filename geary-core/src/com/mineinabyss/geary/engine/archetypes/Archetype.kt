@@ -1,11 +1,13 @@
 package com.mineinabyss.geary.engine.archetypes
 
-import androidx.collection.*
+import androidx.collection.LongSparseArray
+import androidx.collection.getOrElse
+import androidx.collection.mutableLongListOf
+import androidx.collection.set
 import com.mineinabyss.geary.components.ReservedComponents
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
-import com.mineinabyss.geary.helpers.*
-import com.mineinabyss.geary.observers.events.*
+import com.mineinabyss.geary.helpers.fastForEach
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import kotlin.jvm.JvmField
 
@@ -384,6 +386,10 @@ class Archetype internal constructor(
 
     override fun equals(other: Any?): Boolean {
         return type == (other as? Archetype)?.type
+    }
+
+    override fun toString(): String {
+        return "Archetype(id=$id,type=${type})"
     }
 
     companion object {

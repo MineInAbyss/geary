@@ -15,9 +15,8 @@ fun geary(
 //    val initializer = di.direct.instance<EngineInitializer>()
 //    initializer.init()
     val withGeary = DI.direct {
-        extendDI?.let { extend(it) }
-        import(module.module)
-//        extend(di)
+        extendDI?.let { extend(it, allowOverride = true) }
+        import(module.module, allowOverride = true)
         bindSingleton<Geary> { Geary(this.directDI) }
         bindSingleton { FeatureManager(this.di) }
     }

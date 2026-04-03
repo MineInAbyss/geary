@@ -2,6 +2,7 @@ package com.mineinabyss.geary.modules
 
 import co.touchlab.kermit.Severity
 import com.mineinabyss.features.Feature
+import com.mineinabyss.features.feature
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.kodein.di.DirectDI
@@ -21,6 +22,19 @@ class GearySetup(
 
     fun <T : Any> install(addon: Feature<T>): T {
         geary.addons.enable(addon)
+        return geary.getAddon(addon)
+    }
+
+    fun <T : Any> install(addon: Feature<T>, configure: T.() -> Unit): T {
+        val configuration = feature("${addon.name}-anonymous") {
+            dependsOn { features(addon) }
+
+            onEnable {
+                val instance = addon.extract(this)
+                configure(instance)
+            }
+        }
+        geary.addons.enable(configuration)
         return geary.getAddon(addon)
     }
 

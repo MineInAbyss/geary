@@ -1,30 +1,24 @@
 package com.mineinabyss.geary.modules
 
 import co.touchlab.kermit.Logger
-import com.mineinabyss.features.FeatureManager
 import com.mineinabyss.features.get
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.datatypes.maps.SynchronizedArrayTypeMap
-import com.mineinabyss.geary.engine.*
+import com.mineinabyss.geary.engine.Components
+import com.mineinabyss.geary.engine.EntityInfoReader
+import com.mineinabyss.geary.engine.PipelineImpl
+import com.mineinabyss.geary.engine.QueryManager
 import com.mineinabyss.geary.engine.archetypes.*
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeMutateOperations
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeReadOperations
 import com.mineinabyss.geary.helpers.async.AsyncCatcher
 import com.mineinabyss.geary.helpers.async.IgnoringAsyncCatcher
 import com.mineinabyss.geary.observers.ArchetypeEventRunner
-import com.mineinabyss.geary.observers.EventRunner
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.plus
-import org.kodein.di.DI
-import org.kodein.di.bindInstance
-import org.kodein.di.bindSet
-import org.kodein.di.bindSingleton
-import org.kodein.di.bindSingletonOf
-import org.kodein.di.delegate
-import org.kodein.di.instance
-import org.kodein.di.instanceOrNull
+import org.kodein.di.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -45,7 +39,14 @@ internal object ArchetypesModules {
 
     val entities = DI.Module("entities") {
         import(archetypes)
-        bindSingleton { EntityByArchetypeProvider(instance("reuseIDsAfterRemoval"), get(), get()) }
+        bindSingleton {
+            EntityByArchetypeProvider(
+                instance("reuseIDsAfterRemoval"),
+                instance(),
+                instance(),
+                instance()
+            )
+        }
     }
 
     val components = DI.Module("components") {

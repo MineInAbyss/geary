@@ -74,4 +74,4 @@ import com.mineinabyss.geary.modules.GearySetup
 
 @GearyDSL
 fun GearySetup.serialization(configure: SerializableComponentsModule.() -> Unit) =
-    install(SerializableComponents).apply(configure)
+    install(SerializableComponents, configure)

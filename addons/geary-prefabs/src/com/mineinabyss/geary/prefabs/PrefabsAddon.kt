@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.prefabs
 
-import com.mineinabyss.features.addCloseables
 import com.mineinabyss.features.feature
 import com.mineinabyss.geary.addons.world
 import com.mineinabyss.geary.components.EntityName
@@ -20,6 +19,7 @@ import com.mineinabyss.geary.serialization.SerializableComponents
 import com.mineinabyss.geary.systems.accessors.RelationWithData
 import com.mineinabyss.geary.systems.query.query
 import org.kodein.di.bindSingletonOf
+import org.kodein.di.instance
 
 val Prefabs = feature<PrefabsModule>("prefabs") {
     dependsOn {
@@ -33,6 +33,7 @@ val Prefabs = feature<PrefabsModule>("prefabs") {
 
     onEnable {
         world {
+            addCloseables(instance<PrefabLoader>(), instance<PrefabsModule>())
             observe<PrefabLoaded>("Inherit prefabs on load").exec { entity.inheritPrefabsIfNeeded() }
 
             observe<OnSet>("Track prefabs by key").involving(query<PrefabKey>()).exec { (key) ->
