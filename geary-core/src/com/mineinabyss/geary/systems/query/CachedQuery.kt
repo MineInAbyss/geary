@@ -2,6 +2,7 @@ package com.mineinabyss.geary.systems.query
 
 import androidx.collection.MutableObjectList
 import androidx.collection.mutableLongListOf
+import com.mineinabyss.dependencies.get
 import com.mineinabyss.geary.annotations.optin.ExperimentalGearyApi
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.datatypes.Entity
@@ -11,9 +12,8 @@ import com.mineinabyss.geary.datatypes.toEntityArray
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.fastForEach
-import org.kodein.di.instance
 
-class CachedQuery<T : Query> internal constructor(val query: T): AutoCloseable {
+class CachedQuery<T : Query> internal constructor(val query: T) : AutoCloseable {
     val matchedArchetypes: MutableObjectList<Archetype> = MutableObjectList()
     val family = query.buildFamily()
     val cachingAccessors = query.cachingAccessors.toTypedArray()
@@ -116,7 +116,7 @@ class CachedQuery<T : Query> internal constructor(val query: T): AutoCloseable {
         val accessors = cachingAccessors
 
         // current archetype
-        var archetype = query.world.instance<ArchetypeProvider>().rootArchetype // avoid nullable perf loss
+        var archetype = query.world.get<ArchetypeProvider>().rootArchetype // avoid nullable perf loss
         var upTo = 0
 
         // current entity

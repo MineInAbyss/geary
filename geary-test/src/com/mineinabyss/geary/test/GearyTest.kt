@@ -1,8 +1,11 @@
 package com.mineinabyss.geary.test
 
+import com.mineinabyss.dependencies.DIContext
+import com.mineinabyss.dependencies.get
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.TestEngineModule
+import com.mineinabyss.geary.modules.WorldScoped
 import com.mineinabyss.geary.modules.geary
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -10,17 +13,14 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.TestInstance
-import org.kodein.di.DirectDI
-import org.kodein.di.instance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-abstract class GearyTest : Geary {
-    private var _di: DirectDI? = null
-    override val directDI: DirectDI get() = _di!!
-    override val closeables: MutableList<AutoCloseable> = mutableListOf()
-    override val world: Geary = this
+abstract class GearyTest : WorldScoped {
+    private var _world: Geary? = null
+    override val world: Geary get() = _world!!
+    override val di: DIContext get() = world.di
 
-    val rootArchetype get() = instance<ArchetypeProvider>().rootArchetype
+    val rootArchetype get() = get<ArchetypeProvider>().rootArchetype
 
     open fun setupGeary() = geary(TestEngineModule)
 
@@ -29,12 +29,12 @@ abstract class GearyTest : Geary {
     }
 
     fun startEngine() {
-        _di = setupGeary().directDI
+        _world = setupGeary()
     }
 
     @AfterAll
     fun clearEngine() {
-        _di = null
+        _world = null
     }
 
     /** Recreates the engine. */

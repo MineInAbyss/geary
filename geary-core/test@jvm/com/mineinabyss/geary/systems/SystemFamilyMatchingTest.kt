@@ -14,7 +14,7 @@ class SystemFamilyMatchingTest : GearyTest() {
     val stringId = componentId<String>() or HOLDS_DATA
     val intId = componentId<Int>()
 
-    val system = system(object : Query(this) {
+    val system = system(object : Query(world) {
         val string by get<String>()
         override fun ensure() = this { has<Int>() }
     }).defer { it.string }.onFinish { data, entity ->

@@ -40,9 +40,9 @@ class SystemRemovalTest : GearyTest() {
         entity { set(1) }
 
         // act
-        tick()
+        world.tick()
         system.close()
-        tick()
+        world.tick()
 
         // assert
         calls shouldBe listOf(1)

@@ -1,16 +1,22 @@
 package com.mineinabyss.geary.addons
 
-import com.mineinabyss.features.FeatureDI
-import com.mineinabyss.features.addCloseables
+import com.mineinabyss.dependencies.DI.Module
+import com.mineinabyss.dependencies.MutableDIContext
+import com.mineinabyss.dependencies.addCloseable
+import com.mineinabyss.dependencies.get
+import com.mineinabyss.dependencies.module
 import com.mineinabyss.geary.modules.Geary
-import com.mineinabyss.geary.modules.WorldScoped
-import org.kodein.di.instance
+import com.mineinabyss.geary.modules.MutableWorldScoped
 
-inline fun FeatureDI.world(block: WorldScoped.() -> Unit) {
-    val scope = instance<Geary>().newScope(this)
-    try {
-        scope.apply(block)
-    } finally {
-        addCloseables(scope)
+fun gearyAddon(
+    name: String,
+    block: MutableWorldScoped.() -> Unit,
+): Module = module(name) {
+    val world = get<Geary>()
+    val worldScoped = object : MutableWorldScoped {
+        override val world: Geary = world
+        override val di: MutableDIContext = this@module.di
     }
+    addCloseable(worldScoped)
+    worldScoped.apply { block() }
 }

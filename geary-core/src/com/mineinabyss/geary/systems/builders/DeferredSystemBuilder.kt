@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.systems.builders
 
+import com.mineinabyss.dependencies.addCloseable
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.systems.System
 import com.mineinabyss.geary.systems.TrackedSystem

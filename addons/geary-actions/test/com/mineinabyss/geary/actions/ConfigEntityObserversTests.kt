@@ -32,7 +32,7 @@ class ConfigEntityObserversTests : GearyTest() {
     class MyComp()
 
     override fun setupGeary() = geary(TestEngineModule) {
-        install(GearyActions)
+        load(GearyActions)
 
         serialization {
             withCommonComponentNames()
@@ -57,7 +57,7 @@ class ConfigEntityObserversTests : GearyTest() {
                   string: "Hello World"
         """.trimIndent()
 
-        val format = YamlFormat(getAddon(SerializableComponents).formats.module)
+        val format = YamlFormat(world.getAddon(SerializableComponents).formats.module)
         val entity = format.decodeFromString(GearyEntitySerializer(), entityDef)
         val printed = mutableListOf<String>()
         observeWithData<Print>().exec { printed += event.string }

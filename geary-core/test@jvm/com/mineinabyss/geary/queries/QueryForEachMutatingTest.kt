@@ -21,7 +21,7 @@ class QueryForEachMutatingTest : GearyTest() {
 
     @Test
     fun `forEach should fail when modifying unsafeEntity's archetype`() {
-        val query = queryManager.trackQuery(query<Int>())
+        val query = world.queryManager.trackQuery(query<Int>())
         shouldThrowAny {
             @OptIn(UnsafeAccessors::class)
             query.forEach {
@@ -32,8 +32,8 @@ class QueryForEachMutatingTest : GearyTest() {
 
     @Test
     fun `forEachEntity should allow modifying archetypes while iterating`() {
-        val query = queryManager.trackQuery(query<Int>())
-        val postQuery = queryManager.trackQuery(query<Long>())
+        val query = world.queryManager.trackQuery(query<Int>())
+        val postQuery = world.queryManager.trackQuery(query<Long>())
 
         @OptIn(UnsafeAccessors::class)
         query.forEachMutating { entity, (integer) ->

@@ -1,107 +1,85 @@
 package com.mineinabyss.geary.modules
 
 import co.touchlab.kermit.Logger
-import com.mineinabyss.features.get
+import com.mineinabyss.dependencies.*
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.datatypes.maps.SynchronizedArrayTypeMap
-import com.mineinabyss.geary.engine.Components
-import com.mineinabyss.geary.engine.EntityInfoReader
-import com.mineinabyss.geary.engine.PipelineImpl
-import com.mineinabyss.geary.engine.QueryManager
+import com.mineinabyss.geary.engine.*
 import com.mineinabyss.geary.engine.archetypes.*
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeMutateOperations
 import com.mineinabyss.geary.engine.archetypes.operations.ArchetypeReadOperations
 import com.mineinabyss.geary.helpers.async.AsyncCatcher
 import com.mineinabyss.geary.helpers.async.IgnoringAsyncCatcher
 import com.mineinabyss.geary.observers.ArchetypeEventRunner
+import com.mineinabyss.geary.observers.EventRunner
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.plus
-import org.kodein.di.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 internal object ArchetypesModules {
     // Module for any classes without other dependencies as parameters
-    val noDependencies = DI.Module("noDependencies") {
-        bindSingleton<ArrayTypeMap> { if (instance<Boolean>("useSynchronized")) SynchronizedArrayTypeMap() else ArrayTypeMap() }
-        bindSingleton<AsyncCatcher> { IgnoringAsyncCatcher() }
+    val noDependencies = module("noDependencies") {
+        single<ArrayTypeMap> { if (get<Boolean>("useSynchronized")) SynchronizedArrayTypeMap() else ArrayTypeMap() }
+        single<AsyncCatcher> { IgnoringAsyncCatcher() }
     }
 
-    val archetypes = DI.Module("archetypes") {
-        import(noDependencies)
-        bindSingleton { ArchetypeQueryManager() }
-        delegate<QueryManager>().to<ArchetypeQueryManager>()
-        bindSingletonOf(::SimpleArchetypeProvider)
+    val archetypes = module("archetypes") {
+        import(submodule(noDependencies))
+        single { ArchetypeQueryManager() }.and<QueryManager>()
+        single<ArchetypeProvider> { new(::SimpleArchetypeProvider) }
     }
 
-    val entities = DI.Module("entities") {
-        import(archetypes)
-        bindSingleton {
-            EntityByArchetypeProvider(
-                instance("reuseIDsAfterRemoval"),
-                instance(),
-                instance(),
-                instance()
-            )
-        }
+    val entities = module("entities") {
+        import(submodule(archetypes))
+        single { EntityByArchetypeProvider(get("reuseIDsAfterRemoval"), get(), get(), get()) }.and<EntityProvider>()
     }
 
-    val components = DI.Module("components") {
-        import(entities)
-        bindSingletonOf(::ComponentAsEntityProvider)
-        bindSingletonOf(::Components)
+    val components = module("components") {
+        import(submodule(entities))
+        single<ComponentProvider> { new(::ComponentAsEntityProvider) }
+        single { new(::Components) }
     }
 
-    val core = DI.Module("core") {
-        import(components)
-        bindSingletonOf(::ArchetypeReadOperations)
-        bindSingletonOf(::PipelineImpl)
-        bindSingletonOf(::EntityInfoReader)
+    val core = module("core") {
+        import(submodule(components))
+        single { new(::ArchetypeReadOperations) }.and<EntityReadOperations>()
+        single<Pipeline> { new(::PipelineImpl) }
+        single { new(::EntityInfoReader) }
     }
 
-    val engine = DI.Module("engine") {
-        import(core)
-        bindSingleton { ArchetypeEngine(get(), get(), instance("tickDuration"), instance("engineThread")) }
+    val engine = module("engine") {
+        import(submodule(core))
+        single { ArchetypeEngine(get(), get(), get("tickDuration"), get("engineThread")) }.and<Engine>()
     }
 }
 
 fun ArchetypeEngineModule(
-    logger: Logger? = Geary,
+    logger: Logger? = Logger,
     tickDuration: Duration = 50.milliseconds,
     reuseIDsAfterRemoval: Boolean = true,
     useSynchronized: Boolean = false,
     beginTickingOnStart: Boolean = true,
-    defaults: Defaults = Defaults(),
     engineThread: () -> CoroutineContext = { (CoroutineScope(Dispatchers.Default) + CoroutineName("Geary Engine")).coroutineContext },
-) = GearyModule(
-    DI.Module("archetypes") {
-        if (logger != null) bindSingleton<Logger> { logger }
-        import(ArchetypesModules.engine)
-        bindSingletonOf(::ArchetypeEventRunner)
-        bindSingleton {
-            ArchetypeMutateOperations(
-                get(),
-                get(),
-                get(),
-                get(),
-                get(),
-                instanceOrNull("asyncCatcher.write") ?: get()
-            )
-        }
-        bindSingletonOf(::EntityRemove)
-        bindSingleton { ArchetypeEngineInitializer(instance("beginTickingOnStart"), get(), get()) }
-        bindInstance("tickDuration") { tickDuration }
-        bindInstance("reuseIDsAfterRemoval") { reuseIDsAfterRemoval }
-        bindInstance("useSynchronized") { useSynchronized }
-        bindInstance("beginTickingOnStart") { beginTickingOnStart }
-        bindInstance("defaults") { defaults }
-        bindInstance("engineThread") { engineThread }
+) = module("geary-archetypes") {
+    if (logger != null) single<Logger> { logger }
+    single("tickDuration") { tickDuration }
+    single("reuseIDsAfterRemoval") { reuseIDsAfterRemoval }
+    single("useSynchronized") { useSynchronized }
+    single("beginTickingOnStart") { beginTickingOnStart }
+    single("engineThread") { engineThread }
 
-        onReady {
-            instance<EntityByArchetypeProvider>()
-        }
-    }
-)
+    import(submodule(ArchetypesModules.engine))
+    single<EventRunner> { new(::ArchetypeEventRunner) }
+    single { ArchetypeMutateOperations(get(), get(), get(), get(), get(), getOrNull("asyncCatcher.write") ?: get()) }
+        .and<EntityMutateOperations>()
+    single { new(::EntityRemove) }
+    single<EngineInitializer> { ArchetypeEngineInitializer(get("beginTickingOnStart"), get(), get()) }
+
+    single<Geary> { Geary(di) }
+    get<EntityProvider>()
+    get<EngineInitializer>().init()
+}

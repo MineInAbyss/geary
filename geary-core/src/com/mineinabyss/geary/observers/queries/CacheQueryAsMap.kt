@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.observers.queries
 
+import com.mineinabyss.dependencies.addCloseable
 import com.mineinabyss.geary.datatypes.Entity
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.WorldScoped

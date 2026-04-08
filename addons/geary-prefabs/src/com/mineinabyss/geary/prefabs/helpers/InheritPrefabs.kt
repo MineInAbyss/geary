@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.prefabs.helpers
 
 import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 import com.mineinabyss.geary.prefabs.entityOfOrNull

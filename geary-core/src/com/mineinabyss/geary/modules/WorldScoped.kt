@@ -1,38 +1,43 @@
 package com.mineinabyss.geary.modules
 
-import com.mineinabyss.geary.addons.dsl.GearyDSL
+import com.mineinabyss.dependencies.*
 import com.mineinabyss.geary.datatypes.*
 import com.mineinabyss.geary.datatypes.family.Family
+import com.mineinabyss.geary.datatypes.family.MutableFamily
+import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.engine.archetypes.Archetype
 import com.mineinabyss.geary.engine.archetypes.ArchetypeProvider
 import com.mineinabyss.geary.helpers.componentId
+import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.observers.builders.ObserverWithData
 import com.mineinabyss.geary.observers.builders.ObserverWithoutData
 import com.mineinabyss.geary.systems.builders.SystemBuilder
 import com.mineinabyss.geary.systems.query.CachedQuery
 import com.mineinabyss.geary.systems.query.Query
-import org.kodein.di.DirectDIAware
-import org.kodein.di.instance
 import kotlin.reflect.KClass
 
-@GearyDSL
-interface WorldScoped : AutoCloseable, DirectDIAware {
-    val closeables: MutableList<AutoCloseable>
+interface MutableWorldScoped : WorldScoped, MutableDI {
+
+}
+
+interface WorldScoped : DI {
     val world: Geary
     val logger get() = world.logger
-    /**
-     * Adds an [AutoCloseable] resource that will be closed right before the addon's onClose method is called.
-     */
-    fun <T : AutoCloseable> addCloseable(closeable: T): T {
-        closeables += closeable
-        return closeable
-    }
+
 
     /**
-     * Adds multiple [AutoCloseable] resources that will be closed right before the addon's onClose method is called.
+     * Creates a child [WorldScoped] context for this world which can register queries, systems, and observers.
+     *
+     * Closing the scope will unregister anything registered in it, except any entities it created.
+     * Reading from closed queries throws an error.
+     *
+     * Ensures the scope closes when the world closes.
      */
-    fun addCloseables(vararg closeables: AutoCloseable) {
-        this.closeables += closeables
+    fun newScope(): WorldScoped {
+        return object : WorldScoped {
+            override val world: Geary = this@WorldScoped.world
+            override val di: DIContext = this@WorldScoped.di.subcontext().di
+        }
     }
 
     fun <T : Query> cache(
@@ -73,7 +78,7 @@ interface WorldScoped : AutoCloseable, DirectDIAware {
     fun relationOf(kind: KClass<*>, target: KClass<*>): Relation =
         Relation.of(componentId(kind), componentId(target))
 
-    fun EntityType.getArchetype(): Archetype = world.instance<ArchetypeProvider>().getArchetype(this)
+    fun EntityType.getArchetype(): Archetype = world.get<ArchetypeProvider>().getArchetype(this)
 
     /** Gets the entity associated with this [EntityId], stripping it of any roles. */
     fun EntityId.toGeary(): Entity = Entity(this and ENTITY_MASK, world)
@@ -83,14 +88,19 @@ interface WorldScoped : AutoCloseable, DirectDIAware {
 
     val NO_ENTITY: Entity get() = 0L.toGeary()
 
+    fun <T : Any> getAddon(addon: DI.ModuleWithConfig<T>): T =
+        world.scope[addon] ?: error("Addon not loaded ${addon.name}")
+
+    fun <T : Any> getAddonOrNull(addon: DI.ModuleWithConfig<T>?): T? = addon?.let { world.scope[addon] }
+
+    fun tick() {
+        world.engine.tick()
+    }
+
     fun <T> use(block: WorldScoped.() -> T): T {
         return (this as AutoCloseable).use {
             block()
         }
-    }
-
-    override fun close() {
-        closeables.reversed().forEach { it.close() }
     }
 }
 
@@ -117,3 +127,14 @@ inline fun <reified T : Any> WorldScoped.observeWithData(name: String? = null): 
         onClose = { world.eventRunner.removeObserver(it) }
     )
 }
+
+inline fun <reified K, reified T : Component> WorldScoped.relationOf(): Relation =
+    Relation.of(componentIdWithNullable<K>(), componentId<T>())
+
+inline fun <reified K> WorldScoped.relationOf(target: Entity): Relation =
+    Relation.of(componentIdWithNullable<K>(), target.id)
+
+inline fun WorldScoped.findEntities(init: MutableFamily.Selector.And.() -> Unit) =
+    findEntities(family(init))
+
+inline fun WorldScoped.findEntities(query: Query) = findEntities(query.buildFamily())

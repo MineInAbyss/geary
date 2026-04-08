@@ -23,7 +23,7 @@ class RelationMatchingSystemTest : GearyTest() {
     fun relations() {
         var ran = 0
         resetEngine()
-        val system = system(object : Query(this) {
+        val system = system(object : Query(world) {
             val persists by getRelationsWithData<Persists, Any?>()
         }).exec { q ->
             ran++
@@ -56,7 +56,7 @@ class RelationMatchingSystemTest : GearyTest() {
         var ran = 0
         var persistsCount = 0
         var instanceOfCount = 0
-        val system = system(object : Query(this) {
+        val system = system(object : Query(world) {
             val persists by getRelationsWithData<Persists, Any>()
             val instanceOf by getRelationsWithData<InstanceOf?, Any?>()
         }).exec { q ->
@@ -108,7 +108,7 @@ class RelationMatchingSystemTest : GearyTest() {
             set("Test")
         }
 
-        val system = system(object : Query(this) {
+        val system = system(object : Query(world) {
             val withData by getRelationsWithData<Persists, Any>()
         }).exec { q ->
             q.withData.forAll { it.data shouldBe Persists() }
@@ -121,6 +121,6 @@ class RelationMatchingSystemTest : GearyTest() {
         system.runner.matchedArchetypes.asList().shouldNotContain(entity.type.getArchetype())
         system.runner.matchedArchetypes.asList().shouldContain(entityWithData.type.getArchetype())
 
-        engine.tick()
+        world.tick()
     }
 }

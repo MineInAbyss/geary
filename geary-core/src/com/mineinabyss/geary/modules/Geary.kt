@@ -3,22 +3,14 @@ package com.mineinabyss.geary.modules
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.mutableLoggerConfigInit
 import co.touchlab.kermit.platformLogWriter
-import com.mineinabyss.features.Feature
-import com.mineinabyss.features.FeatureManager
-import com.mineinabyss.geary.datatypes.Component
-import com.mineinabyss.geary.datatypes.Entity
-import com.mineinabyss.geary.datatypes.Relation
-import com.mineinabyss.geary.datatypes.family.MutableFamily
-import com.mineinabyss.geary.datatypes.family.family
+import com.mineinabyss.dependencies.DI
+import com.mineinabyss.dependencies.DIContext
+import com.mineinabyss.dependencies.DIScope
+import com.mineinabyss.dependencies.get
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.engine.*
 import com.mineinabyss.geary.engine.archetypes.EntityRemove
-import com.mineinabyss.geary.helpers.componentId
-import com.mineinabyss.geary.helpers.componentIdWithNullable
 import com.mineinabyss.geary.observers.EventRunner
-import com.mineinabyss.geary.systems.query.Query
-import org.kodein.di.DirectDI
-import org.kodein.di.instance
 
 /**
  * Root class for users to access geary functionality.
@@ -31,82 +23,60 @@ import org.kodein.di.instance
  * they are not scheduled for load phases like [GearySetup] is.
  */
 interface Geary : WorldScoped {
-    override val logger: Logger get() = instance<Logger>()
-
-    fun newScope(di: DirectDI = directDI): WorldScoped {
-        return addCloseable(object : WorldScoped {
-            override val closeables: MutableList<AutoCloseable> = mutableListOf()
-            override val world: Geary = this@Geary
-            override val directDI: DirectDI = di
-        })
-    }
+    override val logger: Logger get() = get<Logger>()
 
     // By default, we always get the latest instance of deps, the Impl class gets them once for user
     // access where the engine isn't expected to be reloaded (ex. like it might be in tests)
-    val eventRunner: EventRunner get() = instance()
-    val read: EntityReadOperations get() = instance()
-    val infoReader: EntityInfoReader get() = instance()
-    val write: EntityMutateOperations get() = instance()
-    val queryManager: QueryManager get() = instance()
-    val pipeline: Pipeline get() = instance()
-    val entityProvider: EntityProvider get() = instance()
-    val entityRemoveProvider: EntityRemove get() = instance()
-    val components: Components get() = instance()
-    val componentProvider: ComponentProvider get() = instance()
-    val records: ArrayTypeMap get() = instance()
-    val engine: GearyEngine get() = instance()
-    val addons: FeatureManager get() = instance()
+    val eventRunner: EventRunner
+    val read: EntityReadOperations
+    val infoReader: EntityInfoReader
+    val write: EntityMutateOperations
+    val queryManager: QueryManager
+    val pipeline: Pipeline
+    val entityProvider: EntityProvider
+    val entityRemoveProvider: EntityRemove
+    val components: Components
+    val componentProvider: ComponentProvider
+    val records: ArrayTypeMap
+    val engine: GearyEngine
+    val scope: DIScope
 
-    fun <T : Any> getAddon(addon: Feature<T>): T = addons.get(addon)
-
-    fun <T : Any> getAddonOrNull(addon: Feature<T>?): T? = addon?.let { addons.getOrNull(addon) }
-
-    fun tick() {
-        engine.tick()
-    }
-
-    fun configure(setup: GearySetup.() -> Unit): Geary {
-        GearySetup(directDI).setup()
+    fun configure(block: DIScope.() -> Unit): Geary {
+        di.scope.block()
         return this
     }
 
+    fun install(addon: DI.Module): DI {
+        return scope.load(addon)
+    }
+
+    fun <T> install(addon: DI.ModuleWithConfig<T>, configure: T.() -> Unit) = scope.load(addon, configure)
+
     companion object : Logger(mutableLoggerConfigInit(listOf(platformLogWriter())), "Geary") {
-        operator fun invoke(di: DirectDI, logger: Logger? = null): Geary = Impl(di, logger)
+        operator fun invoke(di: DI, logger: Logger? = null): Geary = Impl(di, logger)
     }
 
     class Impl(
-        di: DirectDI,
+        di: DI,
         logger: Logger? = null,
     ) : Geary {
-        override val directDI: DirectDI = di
+        override val di: DIContext = di.di
         override val world: Geary = this@Impl
-        override val closeables: MutableList<AutoCloseable> = mutableListOf()
         override val logger: Logger = logger ?: super.logger
-        override val eventRunner: EventRunner = instance()
-        override val read: EntityReadOperations = instance()
-        override val infoReader: EntityInfoReader = instance()
-        override val write: EntityMutateOperations = instance()
-        override val queryManager: QueryManager = instance()
-        override val pipeline: Pipeline = instance()
-        override val entityProvider: EntityProvider = instance()
-        override val entityRemoveProvider: EntityRemove = instance()
-        override val components: Components = instance()
-        override val componentProvider: ComponentProvider = instance()
-        override val records: ArrayTypeMap = instance()
-        override val engine: GearyEngine = instance()
-        override val addons: FeatureManager = instance()
+        override val eventRunner: EventRunner = get()
+        override val read: EntityReadOperations = get()
+        override val infoReader: EntityInfoReader = get()
+        override val write: EntityMutateOperations = get()
+        override val queryManager: QueryManager = get()
+        override val pipeline: Pipeline = get()
+        override val entityProvider: EntityProvider = get()
+        override val entityRemoveProvider: EntityRemove = get()
+        override val components: Components = get()
+        override val componentProvider: ComponentProvider = get()
+        override val records: ArrayTypeMap = get()
+        override val engine: GearyEngine = get()
+        override val scope: DIScope = get()
     }
 
-    fun stringify() = instance<String>("name")
+    fun stringify() = get<String>("name")
 }
-
-inline fun <reified K, reified T : Component> Geary.relationOf(): Relation =
-    Relation.of(componentIdWithNullable<K>(), componentId<T>())
-
-inline fun <reified K> Geary.relationOf(target: Entity): Relation =
-    Relation.of(componentIdWithNullable<K>(), target.id)
-
-inline fun Geary.findEntities(init: MutableFamily.Selector.And.() -> Unit) =
-    findEntities(family(init))
-
-inline fun Geary.findEntities(query: Query) = findEntities(query.buildFamily())

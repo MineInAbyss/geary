@@ -2,9 +2,9 @@ package com.mineinabyss.geary.queries
 
 import com.mineinabyss.geary.annotations.optin.ExperimentalGearyApi
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.test.GearyTest
 import com.mineinabyss.geary.systems.query.query
 import com.mineinabyss.geary.systems.query.toList
+import com.mineinabyss.geary.test.GearyTest
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
@@ -33,7 +33,7 @@ class SimpleQueryTest : GearyTest() {
 
     @Test
     fun `forEach should allow reading data`() {
-        val query = queryManager.trackQuery(myQuery)
+        val query = world.queryManager.trackQuery(myQuery)
 
         val nums = mutableListOf<Int>()
         query.forEach { (int) ->
@@ -44,7 +44,7 @@ class SimpleQueryTest : GearyTest() {
 
     @Test
     fun `entities should return matched entities correctly`() {
-        val query = queryManager.trackQuery(myQuery)
+        val query = world.queryManager.trackQuery(myQuery)
 
         val nums = mutableListOf<Int>()
         query.entities().forEach {
@@ -56,14 +56,14 @@ class SimpleQueryTest : GearyTest() {
 
     @Test
     fun `first should correctly return first matched entity`() {
-        val query = queryManager.trackQuery(myQuery)
+        val query = world.queryManager.trackQuery(myQuery)
 
         query.find({ it.comp1 }, { it.comp1 == 5 }) shouldBe 5
     }
 
     @Test
     fun `any should correctly check for matches if matched`() {
-        val query = queryManager.trackQuery(myQuery)
+        val query = world.queryManager.trackQuery(myQuery)
 
         query.any { it.comp1 == 5 } shouldBe true
         query.any { it.comp1 == 100 } shouldBe false
@@ -71,7 +71,7 @@ class SimpleQueryTest : GearyTest() {
 
     @Test
     fun `should be able to collect query as sequence`() {
-        val query = queryManager.trackQuery(myQuery)
+        val query = world.queryManager.trackQuery(myQuery)
 
         query.collect {
             filter { it.comp1 % 2 == 0 }.map { it.comp1.toString() }.toList()
@@ -80,7 +80,7 @@ class SimpleQueryTest : GearyTest() {
 
     @Test
     fun `should allow collecting fancier sequences`() {
-        val query = queryManager.trackQuery(myQuery)
+        val query = world.queryManager.trackQuery(myQuery)
 
         query.collect {
             filter { it.comp1 % 2 == 0 }.map { it.comp1 }.sortedByDescending { it }.take(3).toList()
@@ -89,7 +89,7 @@ class SimpleQueryTest : GearyTest() {
 
     @Test
     fun `should not allow working on sequence outside collect block`() {
-        val query = queryManager.trackQuery(myQuery)
+        val query = world.queryManager.trackQuery(myQuery)
 
         shouldThrow<IllegalStateException> {
             query.collect {
@@ -107,7 +107,7 @@ class SimpleQueryTest : GearyTest() {
         entity {
             set("Only string")
         }
-        val query = queryManager.trackQuery(query<Int, String?>())
+        val query = world.queryManager.trackQuery(query<Int, String?>())
         val matched = query.toList()
         assertSoftly(matched) {
             shouldContainAll((0..9 step 2).map { it to null })

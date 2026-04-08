@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test
 class GearyTestTest : GearyTest() {
     @Test
     fun `clear engine`() {
-        val engine = this.engine
+        val engine = world.engine
         resetEngine()
-        this.engine shouldNotBe engine
+        world.engine shouldNotBe engine
     }
 }

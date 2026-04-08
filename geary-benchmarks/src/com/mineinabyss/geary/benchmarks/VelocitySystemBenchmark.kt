@@ -1,5 +1,7 @@
 package com.mineinabyss.geary.benchmarks
 
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.Severity
 import com.mineinabyss.geary.benchmarks.helpers.GearyBenchmark
 import com.mineinabyss.geary.benchmarks.helpers.oneMil
 import com.mineinabyss.geary.benchmarks.helpers.tenMil
@@ -16,7 +18,7 @@ class VelocitySystemBenchmark : GearyBenchmark() {
     data class Velocity(val x: Float, val y: Float)
     data class Position(var x: Float, var y: Float)
 
-    fun createVelocitySystem() = system(object : Query(this) {
+    fun createVelocitySystem() = system(object : Query(world) {
         val velocity by get<Velocity>()
         var position by get<Position>()
     }).exec {
@@ -67,6 +69,7 @@ class VelocitySystemBenchmark : GearyBenchmark() {
 }
 
 fun main() {
+    Logger.setMinSeverity(Severity.Warn)
     VelocitySystemBenchmark().apply {
         setUp()
 

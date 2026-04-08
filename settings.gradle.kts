@@ -39,6 +39,3 @@ for (addon in file("addons").listFiles()) {
         project(":${addon.name}").projectDir = file(addon)
     }
 }
-
-
-includeBuild("../features")

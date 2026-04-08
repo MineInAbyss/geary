@@ -1,5 +1,6 @@
 package com.mineinabyss.geary.systems.builders
 
+import com.mineinabyss.dependencies.addCloseable
 import com.mineinabyss.geary.engine.Pipeline
 import com.mineinabyss.geary.modules.WorldScoped
 import com.mineinabyss.geary.systems.System

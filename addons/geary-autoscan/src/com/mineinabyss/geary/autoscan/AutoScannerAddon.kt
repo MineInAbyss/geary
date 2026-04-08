@@ -1,19 +1,13 @@
 package com.mineinabyss.geary.autoscan
 
-import com.mineinabyss.features.feature
+import com.mineinabyss.dependencies.*
+import com.mineinabyss.geary.addons.gearyAddon
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.serialization.SerializableComponents
-import org.kodein.di.bindSingletonOf
 
-val AutoScanAddon = feature<AutoScanner>("autoscan") {
-    dependsOn {
-        features(SerializableComponents)
-    }
-
-    dependencies {
-        bindSingletonOf(::AutoScanner)
-    }
-
-    onEnable {
+val AutoScanAddon = gearyAddon("autoscan") {
+    import(singleModule(SerializableComponents))
+    single { new(::AutoScanner) }
 //            configuration.scannedSystems.asSequence()
 //                .onEach { it.call(geary) }
 //                .map { it.name }
@@ -22,5 +16,8 @@ val AutoScanAddon = feature<AutoScanner>("autoscan") {
 //                        geary.logger.i("Autoscan loaded singleton systems: ${it.joinToString()}")
 //                    else geary.logger.i("Autoscan loaded ${it.count()} singleton systems")
 //                }
-    }
-}
+}.gets<AutoScanner>()
+
+
+fun Geary.autoscan(configure: AutoScanner.() -> Unit) =
+    scope.load(AutoScanAddon, configure)

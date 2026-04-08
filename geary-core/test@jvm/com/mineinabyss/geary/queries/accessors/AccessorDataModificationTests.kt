@@ -2,13 +2,13 @@ package com.mineinabyss.geary.queries.accessors
 
 import com.mineinabyss.geary.helpers.Comp1
 import com.mineinabyss.geary.helpers.entity
-import com.mineinabyss.geary.test.GearyTest
 import com.mineinabyss.geary.systems.query.Query
+import com.mineinabyss.geary.test.GearyTest
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class AccessorDataModificationTests : GearyTest() {
-    private fun registerQuery() = cache(object : Query(this) {
+    private fun registerQuery() = cache(object : Query(world) {
         var data by get<Comp1>()
     })
 

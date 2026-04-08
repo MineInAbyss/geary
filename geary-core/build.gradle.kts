@@ -15,9 +15,8 @@ kotlin {
                 implementation(libs.androidx.collection)
                 implementation(idofrontLibs.kotlin.reflect)
 
-                api(libs.kodein.di)
-                api("com.mineinabyss.features:core:0.1")
                 api(idofrontLibs.kotlinx.io)
+                api(idofrontLibs.dependencies)
                 api(idofrontLibs.kermit)
                 api(idofrontLibs.kotlinx.coroutines)
             }

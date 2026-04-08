@@ -12,7 +12,6 @@ allprojects {
         google()
         maven("https://repo.mineinabyss.com/releases")
         maven("https://repo.mineinabyss.com/snapshots")
-        maven("https://jitpack.io")
         mavenLocal()
     }
 }

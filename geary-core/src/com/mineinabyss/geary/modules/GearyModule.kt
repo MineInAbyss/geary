@@ -1,39 +1,15 @@
 package com.mineinabyss.geary.modules
 
-import com.mineinabyss.features.FeatureManager
-import org.kodein.di.DI
-import org.kodein.di.bindSingleton
-import org.kodein.di.instance
+import com.mineinabyss.dependencies.*
 
-fun geary(
-    module: GearyModule,
-    extendDI: DI? = null,
-    configure: GearySetup.() -> Unit = {},
+inline fun geary(
+    module: DI.Module,
+    configure: Geary.() -> Unit = {},
 ): Geary {
-//    val di = DI {
-//    }
-//    val initializer = di.direct.instance<EngineInitializer>()
-//    initializer.init()
-    val withGeary = DI.direct {
-        extendDI?.let { extend(it, allowOverride = true) }
-        import(module.module, allowOverride = true)
-        bindSingleton<Geary> { Geary(this.directDI) }
-        bindSingleton { FeatureManager(this.di) }
+    val scope = scope {
+        import(submodule(module))
     }
-    withGeary.instance<EngineInitializer>().init()
-    val setup = GearySetup(withGeary)
-    configure(setup)
-    return Geary(withGeary)
+    val geary = scope.get<Geary>()
+    configure(geary)
+    return geary
 }
-
-data class GearyModule(
-    val module: DI.Module,
-) {
-    fun withOverrides(builder: DI.Builder.() -> Unit): GearyModule {
-        return GearyModule(DI.Module(module.name, allowSilentOverride = true) {
-            import(module)
-            builder()
-        })
-    }
-}
-

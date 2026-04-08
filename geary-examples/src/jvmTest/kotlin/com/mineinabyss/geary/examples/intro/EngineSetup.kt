@@ -1,7 +1,6 @@
 package com.mineinabyss.geary.examples.intro
 
-import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
-import com.mineinabyss.geary.components.ComponentInfo
+import com.mineinabyss.dependencies.addCloseable
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.ArchetypeEngineModule
 import com.mineinabyss.geary.modules.findEntities
@@ -14,6 +13,7 @@ class EngineSetup {
     fun `simple engine setup and entity creation`() {
         val engine = geary(ArchetypeEngineModule(beginTickingOnStart = false))
         with(engine) {
+            addCloseable { logger.i { "Closing engine" } }
             val a = entity {
                 set<String>("Hello A")
             }
@@ -26,11 +26,13 @@ class EngineSetup {
                 logger.i { "${it.id} has '${it.get<String>()}'" }
             }
         }
+        engine.close()
     }
 
     @Test
     fun `simple manual ticking`() {
-        with(geary(ArchetypeEngineModule(beginTickingOnStart = false))) {
+        geary(ArchetypeEngineModule(beginTickingOnStart = false)).use {
+            addCloseable { logger.i { "Closing engine" } }
             system(query()).execOnAll {
                 logger.i { "There are ${count()} entities: ${entities().joinToString { it.type.toString() }}!" }
             }
@@ -51,7 +53,6 @@ class EngineSetup {
             system(query()).execOnAll {
                 logger.i("System added to engine!")
             }
-            engine.tick()
         }
         engine.tick()
     }
