@@ -32,7 +32,7 @@ class ConfigEntityObserversTests : GearyTest() {
     class MyComp()
 
     override fun setupGeary() = geary(TestEngineModule) {
-        load(GearyActions)
+        install(GearyActions)
 
         serialization {
             withCommonComponentNames()

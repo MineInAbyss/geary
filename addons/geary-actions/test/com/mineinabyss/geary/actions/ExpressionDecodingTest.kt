@@ -27,13 +27,13 @@ class ExpressionDecodingTest : GearyTest() {
     override fun setupGeary() = geary(TestEngineModule) {
         serialization {
             registerComponentSerializers(
-                TestFunction.serializer()
+                TestFunction::class to TestFunction.serializer()
             )
             format("yml", ::YamlFormat)
         }
     }
 
-    val format get() = getAddon(SerializableComponents).formats["yml"] as YamlFormat
+    val format get() = getAddon(SerializableComponents).formats.getFormat("yml") as YamlFormat
 //    @org.junit.jupiter.api.Test
 //    fun `should correctly decode json`() {
 //        val input = """

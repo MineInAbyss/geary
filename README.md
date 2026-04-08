@@ -30,7 +30,7 @@ Read our [Quickstart guide](https://docs.mineinabyss.com/geary/quickstart/) to s
 data class Position(var x: Double, var y: Double)
 data class Velocity(var x: Double, var y: Double)
 
-fun Geary.updatePositionSystem() = system(query<Position, Velocity>())
+fun WorldScoped.updatePositionSystem() = system(query<Position, Velocity>())
     .every(interval = 20.milliseconds)
     .exec { (position, velocity) ->
         // We can access our components like regular variables!
@@ -41,22 +41,27 @@ fun Geary.updatePositionSystem() = system(query<Position, Velocity>())
 
 fun main() {
     // Set up geary
-    geary(ArchetypeEngineModule) {
+    val world = geary(ArchetypeEngineModule()) {
         // example engine configuration
         install(Prefabs)
     }
 
-    val posSystem = geary.updatePositionSystem()
+    with(world) {
+        // Create our system
+        val posSystem = updatePositionSystem()
 
-    // Create an entity the system can run on
-    entity {
-        setAll(Position(0.0, 0.0), Velocity(1.0, 0.0))
+        // Create an entity the system can run on
+        entity {
+            setAll(Position(0.0, 0.0), Velocity(1.0, 0.0))
+        }
+
+        posSystem.tick() // exec just this system
+        tick() // exec all registered repeating systems, interval used to calculate every n ticks to run
+
+        val positions: List<Position> = posSystem.map { (pos) -> pos }
     }
-    
-    posSystem.tick() // exec just this system
-    geary.engine.tick() // exec all registered repeating systems, interval used to calculate every n ticks to run
-    
-    val positions: List<Position> = posSystem.map { (pos) -> pos }
+
+    world.close() // Use world.newScope(), then close to separate groups of systems into modules
 }
 
 ```
