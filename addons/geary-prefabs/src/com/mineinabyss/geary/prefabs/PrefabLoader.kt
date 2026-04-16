@@ -184,7 +184,7 @@ class PrefabLoader(
         logger.d("Loading prefab at path $path")
         return load(key, SystemFileSystem.source(path).buffered(), writeTo, ext).also { result ->
             // Mark path we loaded from to allow for reloading
-            if (result is PrefabLoadResult.Success) result.entity.set(Prefab(path))
+            if (result is PrefabLoadResult.HasEntity) result.entity.set(Prefab(path))
         }
     }
 
@@ -205,11 +205,15 @@ class PrefabLoader(
         entity.inheritPrefabsIfNeeded()
     }
 
-    sealed class PrefabLoadResult {
-        data class Success(val entity: Entity) : PrefabLoadResult()
-        data class Warn(val entity: Entity) : PrefabLoadResult()
-        data object Defer : PrefabLoadResult()
-        data class Failure(val error: Throwable) : PrefabLoadResult()
+    sealed interface PrefabLoadResult {
+        sealed interface HasEntity : PrefabLoadResult {
+            val entity: Entity
+        }
+
+        data class Success(override val entity: Entity) : HasEntity
+        data class Warn(override val entity: Entity) : HasEntity
+        data object Defer : PrefabLoadResult
+        data class Failure(val error: Throwable) : PrefabLoadResult
     }
 
     companion object {

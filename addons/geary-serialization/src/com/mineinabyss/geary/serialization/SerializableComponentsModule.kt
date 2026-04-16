@@ -14,11 +14,6 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.serializerOrNull
 import kotlin.reflect.KClass
 
-//data class ComponentRegisterResult(
-//    val success: Map<KClass<*>, KSerializer<*>>,
-//    val failure: Map<KClass<*>, Throwable>,
-//)
-
 data class SerializableComponentsModule(
     val serializers: ComponentSerializers,
     val formats: SerializationFormats,
