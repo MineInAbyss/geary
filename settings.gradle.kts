@@ -4,23 +4,22 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         maven("https://repo.mineinabyss.com/releases")
-        maven("https://repo.mineinabyss.com/snapshots")
-        mavenLocal()
+//        maven("https://repo.mineinabyss.com/snapshots")
     }
+    includeBuild("conventions")
 }
 
 dependencyResolutionManagement {
-    val idofrontVersion: String by settings
+    val catalogVersion: String by settings
 
     repositories {
         maven("https://repo.mineinabyss.com/releases")
-        maven("https://repo.mineinabyss.com/snapshots")
-        mavenLocal()
+//        maven("https://repo.mineinabyss.com/snapshots")
     }
 
     versionCatalogs {
         create("idofrontLibs") {
-            from("com.mineinabyss:catalog:$idofrontVersion")
+            from("com.mineinabyss:catalog:$catalogVersion")
         }
     }
 }
@@ -37,5 +36,13 @@ for (addon in file("addons").listFiles()) {
     if (addon.isDirectory) {
         include(addon.name)
         project(":${addon.name}").projectDir = file(addon)
+    }
+}
+
+gradle.lifecycle.beforeProject {
+    repositories {
+        mavenCentral()
+        google()
+        maven("https://repo.mineinabyss.com/releases")
     }
 }

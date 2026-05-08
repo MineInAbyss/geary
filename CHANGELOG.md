@@ -13,6 +13,7 @@ MAJOR is set to zero.
 
 ### Changed
 
-- Switched to our own small DI library for internal module and for addons
+- Switched to our own small DI library for internal module and for addons, docs can be
+  found [here](https://docs.mineinabyss.com/dependencies-kt/)
 - `WorldScoped` is now the preferred receiver when writing extension functions. `WorldScoped.newScope()` can be used to
   register systems, observers, etc... and automatically unregister them when calling `close` on the returned scope

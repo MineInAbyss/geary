@@ -100,3 +100,9 @@ As the project matures, our primary goal is to make it useful to more people. He
 - Multiplatform support, with js, jvm, and native targets
 - Publish numbers for benchmarks and cover more parts of the engine with them
 - Relation queries, ex. entities with a parent that has X component.
+
+## Development
+
+- `gradle build` builds the project
+- `gradle allTests` runs tests
+- `gradle docsServe` serve docs locally

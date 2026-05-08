@@ -33,7 +33,7 @@ class EntityRemove(
             queryManager.childrenOf(entity).forEach {
                 val parents = reader.parentsOf(it)
                 // Remove self from the child's parents or remove the child if it no longer has parents
-                if (parents == ulongArrayOf(this)) remove(it)
+                if (parents.contentEquals(ulongArrayOf(this))) remove(it)
                 else write.removeComponentFor(it, Relation.of(components.childOf, this).id, false)
             }
         }

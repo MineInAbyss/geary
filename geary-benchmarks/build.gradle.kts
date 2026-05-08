@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.allopen.gradle.AllOpenExtension
 
 plugins {
     id(idofrontLibs.plugins.mia.kotlin.jvm.get().pluginId)
-    id("org.jetbrains.kotlinx.benchmark") version "0.4.9"
+    alias(idofrontLibs.plugins.kotlinx.benchmark)
     kotlin("plugin.allopen") version idofrontLibs.versions.kotlin.get()
 }
 
@@ -13,7 +13,7 @@ configure<AllOpenExtension> {
 
 dependencies {
     implementation(project(":geary-core"))
-    implementation(libs.kotlinx.benchmark.runtime)
+    implementation(idofrontLibs.kotlinx.benchmark.runtime)
 }
 
 benchmark {

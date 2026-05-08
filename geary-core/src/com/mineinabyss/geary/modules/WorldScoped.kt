@@ -89,7 +89,7 @@ interface WorldScoped : DI {
     val NO_ENTITY: Entity get() = 0L.toGeary()
 
     fun <T : Any> getAddon(addon: DI.ModuleWithConfig<T>): T =
-        world.scope[addon] ?: error("Addon not loaded ${addon.name}")
+        world.scope.getOrNull(addon) ?: error("Addon not loaded ${addon.name}")
 
     fun <T : Any> getAddonOrNull(addon: DI.ModuleWithConfig<T>?): T? = addon?.let { world.scope[addon] }
 

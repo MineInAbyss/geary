@@ -1,18 +1,16 @@
 plugins {
     id(idofrontLibs.plugins.mia.kotlin.multiplatform.get().pluginId)
+    id("multiplatform-targets")
     id(idofrontLibs.plugins.mia.publication.get().pluginId)
     alias(idofrontLibs.plugins.kotlinx.serialization)
 }
 
 kotlin {
-    compilerOptions {
-        freeCompilerArgs.set(listOf("-Xcontext-parameters"))
-    }
     sourceSets {
         commonMain {
             dependencies {
                 implementation(libs.stately.concurrency)
-                implementation(libs.androidx.collection)
+                implementation(idofrontLibs.androidx.collection)
                 implementation(idofrontLibs.kotlin.reflect)
 
                 api(idofrontLibs.kotlinx.io)

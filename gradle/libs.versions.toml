@@ -1,13 +1,9 @@
 [versions]
-androidxCollection = "1.4.0"
 atomicfu = "0.24.0"
-kotlinxBenchmarkRuntime = "0.4.10"
 roaringbitmap = "1.0.6"
 statelyConcurrency = "2.0.7"
 
 [libraries]
-androidx-collection = { module = "androidx.collection:collection", version.ref = "androidxCollection" }
 atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
-kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinxBenchmarkRuntime" }
 roaringbitmap = { module = "org.roaringbitmap:RoaringBitmap", version.ref = "roaringbitmap" }
 stately-concurrency = { module = "co.touchlab:stately-concurrency", version.ref = "statelyConcurrency" }

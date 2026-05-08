@@ -30,7 +30,7 @@ class GearyEntityComponentIdSerializerTest : GearyTest() {
     @Test
     fun `GearyEntitySerializer should deserialize to entity correctly`() {
         // arrange
-        val format = YamlFormat(world.scope.get(SerializableComponents)!!.formats.module)
+        val format = YamlFormat(world.scope[SerializableComponents].formats.module)
         val file =
             """
             test:thing.a: {}
