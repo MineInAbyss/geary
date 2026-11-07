@@ -40,6 +40,10 @@ class CachedQuery<T : Query> internal constructor(val query: T) : AutoCloseable 
             // We disallow entity archetype modifications while iterating, but allow creating new entities.
             // These will always end up at the end of the archetype list, so we just don't iterate over them.
             val upTo = archetype.size
+            if (upTo == 0) {
+                n++
+                continue
+            }
             var row = 0
             query.row = 0
             query.archetype = archetype
@@ -250,7 +254,9 @@ class CachedQuery<T : Query> internal constructor(val query: T) : AutoCloseable 
     fun entities(): EntityArray {
         ensureNotClosed()
         val entities = mutableLongListOf()
-        forEach { entities.add(it.unsafeEntity.toLong()) }
+        matchedArchetypes.forEach { archetype ->
+            for (row in 0 until archetype.size) entities.add(archetype.getEntity(row).toLong())
+        }
         return entities.toEntityArray(query.world)
     }
 

@@ -27,12 +27,9 @@ open class ArrayTypeMap : TypeMap {
 
     fun indexOrAdd(archetype: Archetype): Int {
         if (archetype.indexInRecords != -1) return archetype.indexInRecords
-        val index = archList.indexOf(archetype)
-        archetype.indexInRecords = index
-        return if (index == -1) {
-            archList.add(archetype)
-            archList.lastIndex
-        } else index
+        archList.add(archetype)
+        archetype.indexInRecords = archList.lastIndex
+        return archetype.indexInRecords
     }
 
     override fun remove(entity: EntityId) {

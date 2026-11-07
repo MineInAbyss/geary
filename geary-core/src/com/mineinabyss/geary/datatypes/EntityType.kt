@@ -22,7 +22,8 @@ class EntityType private constructor(
     operator fun contains(id: ComponentId): Boolean = indexOf(id) != -1
 
     fun indexOf(id: ComponentId): Int {
-        return inner.indexOf(id)
+        val index = binarySearch(id)
+        return if (index < 0) -1 else index
     }
 
     tailrec fun binarySearch(id: ComponentId, fromIndex: Int = 0, toIndex: Int = size - 1): Int {
@@ -40,7 +41,7 @@ class EntityType private constructor(
     fun last(): ComponentId = inner.last()
 
     inline fun forEach(run: (ComponentId) -> Unit) {
-        for (i in 0..inner.lastIndex) {
+        for (i in inner.indices) {
             run(inner[i])
         }
     }
@@ -74,7 +75,7 @@ class EntityType private constructor(
     }
 
     operator fun plus(other: EntityType): EntityType {
-        return EntityType(inner.plus(other.inner))
+        return EntityType((inner + other.inner).toSet())
     }
 
     operator fun minus(id: ComponentId): EntityType {
