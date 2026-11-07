@@ -3,6 +3,8 @@ package com.mineinabyss.geary.observers.entity
 import com.mineinabyss.geary.components.relations.ChildOf
 import com.mineinabyss.geary.datatypes.ComponentId
 import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.datatypes.family.family
+import com.mineinabyss.geary.datatypes.toEntityArray
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.observers.EventToObserversMap
@@ -42,6 +44,20 @@ fun GearyEntity.removeObserver(observer: Observer) = with(world) {
             map.removeObserver(observer)
             if (map.isEmpty) removeRelation<Observer>(observerEntity)
         }
+    }
+}
+
+/**
+ * Removes every observer attached to this entity, along with the copies [attachObserver] gave its instances.
+ * Clearing the entity alone leaves those copies behind, so instances would keep firing the old observers
+ */
+fun GearyEntity.detachObservers() = with(world) {
+    getRelationsByKind(comp.observer).forEach { relation ->
+        val observerEntity = relation.target.toGeary()
+        queryManager.getEntitiesMatching(family { hasRelation(comp.observer, observerEntity.id) })
+            .toEntityArray(world)
+            .forEach { it.removeRelation<Observer>(observerEntity) }
+        observerEntity.removeEntity()
     }
 }
 
