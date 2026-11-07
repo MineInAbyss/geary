@@ -3,9 +3,11 @@ package com.mineinabyss.geary.modules
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.mutableLoggerConfigInit
 import co.touchlab.kermit.platformLogWriter
+import co.touchlab.stately.concurrency.AtomicReference
 import com.mineinabyss.dependencies.DI
 import com.mineinabyss.dependencies.DIContext
 import com.mineinabyss.dependencies.DIScope
+import com.mineinabyss.dependencies.addCloseable
 import com.mineinabyss.dependencies.get
 import com.mineinabyss.geary.datatypes.maps.ArrayTypeMap
 import com.mineinabyss.geary.engine.*
@@ -52,6 +54,9 @@ interface Geary : WorldScoped {
 
     fun <T> install(addon: DI.ModuleWithConfig<T>, configure: T.() -> Unit) = scope.load(addon, configure)
 
+    /** Null when [addon] is not loaded or failed to load */
+    fun <T : Any> addonOrNull(addon: DI.ModuleWithConfig<T>): T? = scope.getOrNull(addon)
+
     companion object : Logger(mutableLoggerConfigInit(listOf(platformLogWriter())), "Geary") {
         operator fun invoke(di: DI, logger: Logger? = null): Geary = Impl(di, logger)
     }
@@ -76,6 +81,29 @@ interface Geary : WorldScoped {
         override val records: ArrayTypeMap = get()
         override val engine: GearyEngine = get()
         override val scope: DIScope = get()
+
+        // Resolving an addon through the scope reflects on its type every call, and hot paths like entity conversion call it constantly.
+        // Copy on write since addons load rarely and lookups can come from any thread
+        private val addonCache = AtomicReference<Map<DI.ModuleWithConfig<*>, Any>>(emptyMap())
+
+        override fun <T : Any> addonOrNull(addon: DI.ModuleWithConfig<T>): T? {
+            @Suppress("UNCHECKED_CAST")
+            addonCache.get()[addon]?.let { return it as T }
+            val loaded = scope.getOrNull(addon as DI.Module) ?: return null
+            val value = addon.get(loaded)
+            loaded.addCloseable { updateAddonCache { it - addon } }
+            updateAddonCache { it + (addon to value) }
+            // An unload between the lookup and the put already ran its closeable, so the entry would stay forever
+            if (scope.getOrNull(addon as DI.Module) !== loaded) updateAddonCache { it - addon }
+            return value
+        }
+
+        private inline fun updateAddonCache(update: (Map<DI.ModuleWithConfig<*>, Any>) -> Map<DI.ModuleWithConfig<*>, Any>) {
+            while (true) {
+                val current = addonCache.get()
+                if (addonCache.compareAndSet(current, update(current))) return
+            }
+        }
     }
 
     fun stringify() = get<String>("name")
