@@ -95,12 +95,6 @@ class ArchetypeMutateOperations(
             }
         }
 
-        // Children of instantiated prefabs should be children of the instance
-        queryManager.childrenOf(baseEntity).forEach { child ->
-            // Add instanceEntity as parent
-            addComponentFor(instanceEntity, components.couldHaveChildren, true)
-            addComponentFor(child, Relation.of(components.childOf, instanceEntity).id, false)
-        }
         records.runOn(instanceEntity) { arch, row -> instanceArch = arch; instanceRow = row }
 
         if (callEvent) eventRunner.callEvent(

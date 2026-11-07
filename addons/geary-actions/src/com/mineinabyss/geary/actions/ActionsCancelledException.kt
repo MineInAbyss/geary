@@ -1,3 +1,3 @@
 package com.mineinabyss.geary.actions
 
-class ActionsCancelledException : Exception()
+class ActionsCancelledException : Exception(null, null, false, false)
