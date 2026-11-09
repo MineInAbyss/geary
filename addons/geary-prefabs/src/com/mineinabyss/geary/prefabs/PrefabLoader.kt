@@ -6,6 +6,7 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.helpers.entity
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.WorldScoped
+import com.mineinabyss.geary.observers.entity.detachObservers
 import com.mineinabyss.geary.prefabs.configuration.components.CopyToInstances
 import com.mineinabyss.geary.prefabs.configuration.components.InheritPrefabs
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
@@ -170,7 +171,10 @@ class PrefabLoader(
 
         val entity = writeTo ?: world.entity()
         markAsPrefab(entity, key)
-        decoded.getOrNull()?.let { entity.setAll(it) }
+        decoded.getOrNull()?.let {
+            writeTo?.detachObservers()
+            entity.setAll(it)
+        }
         return when {
             hadMalformed -> PrefabLoadResult.Warn(entity)
             else -> PrefabLoadResult.Success(entity)
@@ -191,6 +195,7 @@ class PrefabLoader(
     fun loadFromPathOrReloadExisting(namespace: String, path: Path): PrefabLoadResult {
         val key = PrefabKey.of(namespace, path.name.substringBeforeLast('.'))
         val existing = world.getAddon(Prefabs)[key]
+        existing?.detachObservers()
         existing?.clear()
         return loadFromPath(namespace, path, existing)
     }
@@ -200,6 +205,7 @@ class PrefabLoader(
         val prefab = entity.get<Prefab>() ?: error("Entity was not an already loaded prefab")
         val key = entity.get<PrefabKey>() ?: error("Entity did not have a prefab key")
         val file = prefab.file ?: error("Prefab did not have a file")
+        entity.detachObservers()
         entity.clear()
         loadFromPath(key.namespace, file, entity)
         entity.inheritPrefabsIfNeeded()
